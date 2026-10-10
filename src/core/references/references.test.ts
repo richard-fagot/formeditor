@@ -17,6 +17,10 @@ describe('portée', () => {
     }
     expect(scope.get('tiers.nom')?.alias).toBe('tiers');
   });
+  it('décrit les variables système : type, description, valeurs d’une énumération (autocomplétion)', () => {
+    expect(scope.get('sys.type_adherent')).toMatchObject({ type: 'enum', values: ['ud', 'amicale', 'particulier'], description: 'Catégorie de l\'adhérent.' });
+    expect(scope.get('sys.sinistres.date')).toMatchObject({ kind: 'system', type: 'date' });
+  });
   it('résout les chemins connus et refuse les inconnus', () => {
     expect(resolvePath(scope, ['victimes', 'prenom'])?.kind).toBe('field');
     expect(resolvePath(scope, ['inconnu'])).toBeUndefined();

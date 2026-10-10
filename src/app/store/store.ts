@@ -26,6 +26,8 @@ export interface PreviewState {
   sys?: Record<string, unknown>;
   /** Erreurs affichées après une tentative d'avancer. */
   attempted?: boolean;
+  /** Synthèse d'où l'on est revenu modifier une réponse (bouton « Revenir à la synthèse »). */
+  returnTo?: string;
   lang?: string;
 }
 
@@ -36,7 +38,7 @@ export interface AppState {
   view: Record<string, 'diagram' | 'preview'>;
   selection: Selection;
   /** Champ à mettre en saisie dès l'affichage (intitulé d'un nœud, condition d'une arête). */
-  focusRequest?: { kind: 'label' | 'condition'; id: string; n: number };
+  focusRequest?: { kind: 'label' | 'condition' | 'variable'; id: string; n: number };
   palette: { open: boolean; mode: PaletteMode };
   dirty: boolean;
   uiLang: string;
@@ -53,6 +55,8 @@ export interface AppState {
   libraryItem?: LibraryItem;
   /** Panneau latéral de la bibliothèque à côté du logigramme (glisser-déposer). */
   libraryPanel: boolean;
+  /** Panneaux repliables de la prévisualisation : état du système, débogage. */
+  previewPanels: { system: boolean; debug: boolean };
 }
 
 export interface AppActions {
@@ -69,7 +73,7 @@ export interface AppActions {
   openTab(tab: TabId): void;
   closeTab(tab: TabId): void;
   select(sel: Selection): void;
-  requestFocus(kind: 'label' | 'condition', id: string): void;
+  requestFocus(kind: 'label' | 'condition' | 'variable', id: string): void;
   markExported(): void;
 }
 
@@ -109,6 +113,7 @@ export const useStore = create<Store>()(
     problemsOpen: true,
     fitRequest: 0,
     libraryPanel: true,
+    previewPanels: { system: true, debug: false },
 
     edit(scope, recipe, key) {
       const before = takeSnapshot(get().ws, scope);

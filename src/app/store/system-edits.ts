@@ -1,5 +1,6 @@
 import { isValidKey, newId, uniqueKey, type SystemVariable, type VariableType, type Workspace } from '../../core/model';
 import { renameKey } from '../../core/references';
+import type { PreviewState } from './store';
 
 /** Dictionnaire de l'état du système et scénarios : éditions pures (sur brouillon immer ou copie). */
 
@@ -73,4 +74,19 @@ export function valueError(v: SystemVariable, value: unknown): string | undefine
       return undefined;
     }
   }
+}
+
+/** Valeurs d'exemple du dictionnaire de l'état du système. */
+export function exampleSystemState(ws: Workspace): Record<string, unknown> {
+  return Object.fromEntries(vars(ws).filter((v) => v.example !== undefined).map((v) => [v.name, v.example]));
+}
+
+/** Scénario choisi dans une prévisualisation (le premier par défaut ; `''` : valeurs d'exemple). */
+export function scenarioOf(ws: Workspace, p: PreviewState | undefined) {
+  return ws.project.scenarios.find((s) => s.id === p?.scenarioId) ?? (p?.scenarioId === undefined ? ws.project.scenarios[0] : undefined);
+}
+
+/** État du système d'une prévisualisation : valeurs éditées, sinon celles du scénario, sinon les exemples. */
+export function systemStateOf(ws: Workspace, p: PreviewState | undefined): Record<string, unknown> {
+  return p?.sys ?? scenarioOf(ws, p)?.values ?? exampleSystemState(ws);
 }

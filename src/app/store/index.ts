@@ -12,5 +12,8 @@ export {
 } from './library-edits';
 export { groupIntoBlock, groupEntries } from './group';
 export { questionnaireKeys, canRenameQuestionnaire, renameQuestionnaire, patchQuestionnaire } from './questionnaire-edits';
-export { addVariable, deleteVariable, renameVariable, setVariableType, addScenario, deleteScenario, valueError } from './system-edits';
+export {
+  addVariable, deleteVariable, renameVariable, setVariableType, addScenario, deleteScenario, valueError,
+  exampleSystemState, scenarioOf, systemStateOf,
+} from './system-edits';
 export { useT, useEditorEnv, activeGraphRef, activeQuestionnaire } from './hooks';

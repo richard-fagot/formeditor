@@ -4,6 +4,7 @@ import { bindShortcuts } from '../../app/shortcuts';
 import { useStore, useT } from '../../app/store';
 import { Button, Dialog } from '../../ui-kit';
 import { Library } from '../library';
+import { SystemState } from '../system-state';
 import { Palette } from './Palette';
 import { QuestionnaireView } from './QuestionnaireView';
 import { Tabs } from './Tabs';
@@ -36,7 +37,7 @@ export function App() {
       <main className="min-h-0 flex-1">
         {active.startsWith('q:') && <QuestionnaireView key={active} id={active.slice(2)} />}
         {active === 'library' && <Library />}
-        {active === 'system' && <p className="p-8 text-sm text-slate-400">{t('system.todo')}</p>}
+        {active === 'system' && <SystemState />}
       </main>
       <Palette />
       <Dialog open={!!notice} onOpenChange={() => useStore.getState().set((s) => void (s.notice = undefined))} title={notice?.title ?? ''} description={notice?.title}>
