@@ -83,3 +83,15 @@ La session principale orchestre et ne code pas elle-même. Pour chaque phase de 
 4. Verdict CONFORME (ou seulement des mineurs) : fusionner dans `main`, push, phase suivante.
 
 Les points d'arrêt des démos restent valables.
+
+## Évolutions (après la livraison initiale)
+
+Une demande par fichier : `docs/evolutions/EVO-NNN-titre.md`, avec une ligne `Statut :`
+(à faire | en cours | fait AAAA-MM-JJ | abandonné). Pour chaque évolution « à faire », par numéro croissant :
+1. Branche `evo-NNN`, statut « en cours ».
+2. Mettre à jour `docs/spec.md` (le § concerné) pour qu'elle décrive le nouveau comportement.
+3. Confier la réalisation au sous-agent `realisateur`, avec la spec mise à jour et les critères
+   d'acceptation ; un test couvre chaque critère.
+4. Faire relire par `relecteur`, corriger si besoin.
+5. Fusionner, statut « fait » avec la date.
+Si une demande contredit la spec sans que ce soit explicitement voulu, demander avant de coder.
