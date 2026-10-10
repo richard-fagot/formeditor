@@ -1,0 +1,36 @@
+{
+  "formatVersion": 1,
+  "kind": "library",
+  "questions": [
+    {
+      "id": "lq_choix",
+      "key": "choix",
+      "label": { "fr": "Choix" },
+      "type": "multiple",
+      "options": [{ "value": "x", "label": { "fr": "X" } }],
+      "source": { "from": "sys.liste" }
+    }
+  ],
+  "blocks": [
+    {
+      "id": "blk",
+      "key": "bloc",
+      "title": { "fr": "Bloc" },
+      "start": "bn_choix",
+      "nodes": [
+        {
+          "kind": "question",
+          "id": "bn_choix",
+          "key": "choix_bloc",
+          "label": { "fr": "Choix" },
+          "type": "single",
+          "options": [],
+          "source": { "from": "sys.liste", "value": "id" }
+        },
+        { "kind": "exit", "id": "bx", "name": "fin" }
+      ],
+      "edges": [{ "id": "be1", "from": "bn_choix", "to": "bx" }]
+    }
+  ],
+  "labelSets": []
+}

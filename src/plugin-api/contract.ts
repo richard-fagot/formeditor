@@ -14,7 +14,7 @@ export interface EditorEnv {
   questionType(type: QuestionType): QuestionTypePlugin | undefined;
 }
 
-/** Option d'un choix résolue dans le contexte : libellé statique ou texte calculé (source dynamique). */
+/** Option d'un choix résolue dans le contexte : libellé statique ou texte calculé (entrée dynamique). */
 export interface ResolvedOption {
   value: string;
   label: Label | string;
@@ -31,7 +31,7 @@ export interface RenderEnv extends EditorEnv {
   evaluate(expr: string, extra?: Record<string, unknown>): unknown;
   /** Évalue une condition dans le contexte courant. */
   condition(expr: string, extra?: Record<string, unknown>): boolean;
-  /** Options visibles d'un choix : statiques dont la condition est vraie, puis source dynamique. */
+  /** Options visibles d'un choix : entrées dont la condition est vraie, déployées dans l'ordre. */
   options(q: Question): ResolvedOption[];
   /** Environnement dont le contexte est enrichi (occurrence d'une structure : clés sœurs sans préfixe). */
   scoped(extra: Record<string, unknown>): RenderEnv;

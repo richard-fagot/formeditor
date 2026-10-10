@@ -1,7 +1,7 @@
 import { evaluate, evaluateCondition, type EvalContext, type EvalEnv } from '../expressions';
-import { OTHER_VALUE, type ChoiceOption, type Label, type MultipleChoiceQuestion, type SingleChoiceQuestion } from '../model';
+import { isDynamicEntry, OTHER_VALUE, type Label, type MultipleChoiceQuestion, type SingleChoiceQuestion } from '../model';
 
-/** Option proposée : libellé statique (`Label`) ou texte calculé (source dynamique). */
+/** Option proposée : libellé statique (`Label`) ou texte calculé (entrée dynamique). */
 export interface ResolvedOption {
   value: string;
   label: Label | string;
@@ -18,21 +18,29 @@ function onItem(expr: string | undefined, item: unknown, env: EvalEnv): unknown 
 }
 
 /**
- * Options d'un choix dans un contexte : options statiques dont la condition est vraie (ou absente),
- * puis options de la source dynamique (docs/FORMAT.md §7.5). Doublons, valeurs vides et `other` écartés.
+ * Options d'un choix dans un contexte : chaque entrée dont la condition est vraie (ou absente) est
+ * déployée à sa position (docs/FORMAT.md §7.3, §7.5) : option statique telle quelle, entrée dynamique
+ * en autant d'options que sa source fournit d'éléments. Valeurs vides, `other` et valeurs déjà proposées plus haut écartées.
  */
 export function choiceOptions(q: SingleChoiceQuestion | MultipleChoiceQuestion, ctx: EvalContext, env: EvalEnv = {}): ResolvedOption[] {
-  const out: ResolvedOption[] = q.options
-    .filter((o: ChoiceOption) => !o.when || evaluateCondition(o.when, ctx, env))
-    .map((o) => ({ value: o.value, label: o.label }));
-  if (!q.source) return out;
-  const seen = new Set(out.map((o) => o.value));
-  for (const item of asList(evaluate(q.source.from, ctx, env))) {
-    if (item === null || item === undefined) continue;
-    const value = text(onItem(q.source.value, item, env));
-    if (!value || value === OTHER_VALUE || seen.has(value)) continue;
-    seen.add(value);
-    out.push({ value, label: text(onItem(q.source.label, item, env)) || value, dynamic: true });
+  const out: ResolvedOption[] = [];
+  const seen = new Set<string>();
+  const push = (o: ResolvedOption) => {
+    if (!o.value || o.value === OTHER_VALUE || seen.has(o.value)) return;
+    seen.add(o.value);
+    out.push(o);
+  };
+  for (const entry of q.options) {
+    if (entry.when && !evaluateCondition(entry.when, ctx, env)) continue;
+    if (!isDynamicEntry(entry)) {
+      push({ value: entry.value, label: entry.label });
+      continue;
+    }
+    for (const item of asList(evaluate(entry.from, ctx, env))) {
+      if (item === null || item === undefined) continue;
+      const value = text(onItem(entry.value, item, env));
+      push({ value, label: text(onItem(entry.label, item, env)) || value, dynamic: true });
+    }
   }
   return out;
 }

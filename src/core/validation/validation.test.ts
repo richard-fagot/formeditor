@@ -100,6 +100,23 @@ describe('checkWorkspace', () => {
     expect(codes(w)).toEqual(expect.arrayContaining(['unknownReference@n_lien']));
     expect(checkWorkspace(w).find((i) => i.code === 'unknownReference' && i.nodeId === 'n_lien')?.params.ref).toBe('sys.sinistres.nature');
   });
+  it('entrées dynamiques d’un choix : référence inconnue, expression invalide, noms relatifs, condition', () => {
+    const w = mutate((x) => {
+      const lien = decl(x).nodes.find((n) => n.id === 'n_lien') as unknown as { options: Record<string, unknown>[] };
+      lien.options.push(
+        { from: 'sys.inconnue' },
+        { from: 'sys.sinistres', label: 'natur', value: 'id' },
+        { from: 'sys.sinistres', when: 'type_sinistre = ' },
+        { from: 'sys.sinistres +' },
+      );
+    });
+    const found = checkWorkspace(w).filter((i) => i.nodeId === 'n_lien');
+    const at = (property: string) => found.filter((i) => i.property === property).map((i) => `${i.code}:${i.params.ref ?? ''}`);
+    expect(at('options[2].from')).toEqual(['unknownReference:sys.inconnue']);
+    expect(at('options[3].label')).toEqual(['unknownReference:sys.sinistres.natur']);
+    expect(at('options[4].when')).toEqual(['invalidExpression:']);
+    expect(at('options[5].from')).toEqual(['invalidExpression:']);
+  });
   it('clé en double, nœud inaccessible, sans sortie, sans « sinon »', () => {
     const w = mutate((x) => {
       const q = decl(x);
@@ -149,8 +166,8 @@ describe('checkWorkspace', () => {
 describe('options visibles et messages paramétrables', () => {
   const choice = {
     id: 'c', key: 'c', label: { fr: 'c' }, type: 'single', required: true,
-    options: [{ value: 'a', label: { fr: 'A' } }, { value: 'b', label: { fr: 'B' }, when: 'sys.x = 1' }],
-    source: { from: 'sys.l' }, other: {},
+    options: [{ value: 'a', label: { fr: 'A' } }, { value: 'b', label: { fr: 'B' }, when: 'sys.x = 1' }, { from: 'sys.l' }],
+    other: {},
   } as Question;
   it('refuse une valeur qui n’est plus parmi les options visibles (statiques, dynamiques, « Autre »)', () => {
     const ctx = { sys: { x: 2, l: ['d'] } };
