@@ -5,7 +5,8 @@ sérialisation, import/export unitaire et bundle. Dépend uniquement de `core/mo
 
 ## API
 - `SCHEMAS`, `validateDocument(doc) → string[]`, `documentKind(doc)`.
-- `migrate(doc, migrations?, target?)`, `MIGRATIONS` (vide en v1).
+- `migrate(doc, migrations?, target?)`, `MIGRATIONS` (1 → 2 : `source` d'un choix devient une entrée dynamique
+  placée après les options statiques, questionnaires, bibliothèque et bundle, champs de structure compris).
 - `serialize(doc)` : JSON indenté 2 espaces, ordre des clés conservé, `\n` final.
 - `newWorkspace(name, lang)`, `emptyLibrary()`, `toBundle(ws)`.
 - `exportFiles(ws) → FileContent[]` (`projet.json`, `bibliotheque.json`, `<q>.json`, `<q>.layout.json`, `bloc_<cle>.layout.json`).
@@ -23,4 +24,4 @@ Le sens de chaque propriété (navigation, validation, expressions) est dans `do
 - L'aller-retour import/export de l'exemple est identique à l'octet près (`tests/reference/format.test.ts`).
 
 ## Tests
-`format.test.ts` (unitaires) ; `tests/reference/format.test.ts` (exemple).
+`format.test.ts` (unitaires, migration 1 → 2 sur `fixtures/*-v1.json`) ; `tests/reference/format.test.ts` (exemple).

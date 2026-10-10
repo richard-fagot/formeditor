@@ -1,5 +1,5 @@
 {
-  "formatVersion": 1,
+  "formatVersion": 2,
   "kind": "questionnaire",
   "id": "q_declaration",
   "key": "declaration_sinistre",
@@ -101,18 +101,18 @@
       "required": true,
       "options": [
         {
+          "from": "sys.sinistres",
+          "label": "date & ' — ' & nature",
+          "value": "id"
+        },
+        {
           "value": "aucun",
           "label": {
             "fr": "Non, aucun",
             "en": "No"
           }
         }
-      ],
-      "source": {
-        "from": "sys.sinistres",
-        "label": "date & ' — ' & nature",
-        "value": "id"
-      }
+      ]
     },
     {
       "kind": "question",

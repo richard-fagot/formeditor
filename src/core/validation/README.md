@@ -7,7 +7,7 @@ Dépend de `core/model`, `core/expressions`, `core/references`, `core/runtime` (
 - `validateAnswer(question, value, ctx, env?, other?)` → `FieldError[]` (`path`, `param`, `message` multilingue).
   `ctx` doit contenir la réponse sous sa clé (contraintes libres). Messages : `question.messages[param]`
   sinon `defaultMessage(param, borne)`. Choix : une valeur absente des options visibles (statiques dont la
-  condition est vraie, source dynamique, « Autre ») donne `option`. Structure répétable : `[]` est vide si la
+  condition est vraie, entrées dynamiques déployées, « Autre ») donne `option`. Structure répétable : `[]` est vide si la
   question est facultative (`repeat.min` ignoré) ; obligatoire, `repeat.min` (≥ 1) s'applique, et sans minimum
   la liste vide donne `required`.
 - `messageParams(question)` : paramètres dont le message est personnalisable pour cette question.

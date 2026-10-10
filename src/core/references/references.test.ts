@@ -36,7 +36,8 @@ describe('collecte et usages', () => {
   it('collecte les expressions des arêtes, libellés, bornes, sources', () => {
     const all = collectExpressions(ws);
     expect(all.some((f) => f.loc.edgeId === 'e_date_lien')).toBe(true);
-    expect(all.some((f) => f.loc.property === 'source.label' && f.loc.relative)).toBe(true);
+    expect(all.some((f) => f.loc.property === 'options[0].label' && f.loc.relative && f.loc.source === 'sys.sinistres')).toBe(true);
+    expect(all.some((f) => f.loc.property === 'options[0].from' && !f.loc.relative)).toBe(true);
     expect(all.some((f) => f.loc.owner.kind === 'libraryQuestion' && f.loc.property === 'min')).toBe(true);
     expect(all.some((f) => f.loc.structure === 'victimes' && f.text === 'hospitalise = true')).toBe(true);
   });
@@ -77,9 +78,18 @@ describe('renommage propagé', () => {
     w = renameKey(w, { kind: 'system', name: 'sinistres' }, 'historique');
     expect(edge(decl(w), 'e_date_lien').when).toBe('$count(sys.historique[date <= $$.date_sinistre]) > 0');
     expect(w.project.scenarios[0]!.values.historique).toBeDefined();
-    expect((node(decl(w), 'n_lien').source as { label: string }).label).toBe("date & ' — ' & nature");
+    expect((node(decl(w), 'n_lien').options as { from?: string; label: unknown }[])[0]).toMatchObject({ from: 'sys.historique', label: "date & ' — ' & nature" });
   });
-  it('champ d’une liste système : expressions absolues et relatives (source), exemple, scénarios', () => {
+  it('entrées dynamiques d’un choix : `from` et `when` suivis au renommage, libellé statique intact', () => {
+    const base = structuredClone(ws);
+    const lien = node(decl(base), 'n_lien') as { options: Record<string, unknown>[] };
+    lien.options.splice(1, 0, { from: 'type_sinistre', when: "type_sinistre != 'vol'" });
+    const w = renameKey(base, { kind: 'question', owner: Q, nodeId: 'n_type' }, 'nature_sinistre');
+    const options = node(decl(w), 'n_lien').options as Record<string, unknown>[];
+    expect(options[1]).toEqual({ from: 'nature_sinistre', when: "nature_sinistre != 'vol'" });
+    expect(options.map((o) => ('from' in o ? 'dyn' : o.value))).toEqual(lien.options.map((o) => ('from' in o ? 'dyn' : o.value)));
+  });
+  it('champ d’une liste système : expressions absolues et relatives (entrée dynamique), exemple, scénarios', () => {
     const base = structuredClone(ws);
     edge(decl(base), 'e_date_lien').when = "$count(sys.sinistres.date) > 0 and sys.sinistres.nature = 'Vol'";
     edge(decl(base), 'e_lien_victimes').when = "$count(sys.sinistres[date > '2025-01-01']) > 0";
@@ -90,7 +100,7 @@ describe('renommage propagé', () => {
     expect(Object.keys((w.project.scenarios[0]!.values.sinistres as object[])[0]!)).toEqual(['id', 'date_survenance', 'nature']);
     expect(edge(decl(w), 'e_date_lien').when).toBe("$count(sys.sinistres.date_survenance) > 0 and sys.sinistres.nature = 'Vol'");
     expect(edge(decl(w), 'e_lien_victimes').when).toBe("$count(sys.sinistres[date_survenance > '2025-01-01']) > 0");
-    expect(node(decl(w), 'n_lien').source).toEqual({ from: 'sys.sinistres', label: "date_survenance & ' — ' & nature", value: 'id' });
+    expect((node(decl(w), 'n_lien').options as unknown[])[0]).toEqual({ from: 'sys.sinistres', label: "date_survenance & ' — ' & nature", value: 'id' });
     // Nom invalide, déjà pris, champ inconnu : projet inchangé.
     expect(renameKey(base, { kind: 'systemField', variable: 'sinistres', field: 'date' }, 'nature')).toBe(base);
     expect(renameKey(base, { kind: 'systemField', variable: 'sinistres', field: 'date' }, 'Pas Valide')).toBe(base);

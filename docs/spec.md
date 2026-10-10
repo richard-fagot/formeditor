@@ -80,11 +80,18 @@ Une question comporte :
 | Tri-state | Booléen avec une troisième valeur (« Ne sait pas »…), via un jeu de libellés. |
 | Structure | Groupe de champs de tous types sauf structure. Chaque champ a sa clé, ses contraintes et sa condition d'affichage. Peut être **répétable** (min/max d'occurrences, ex. plusieurs victimes ou témoins), avec un bouton « Ajouter » pour créer une occurrence et la possibilité d'en supprimer une. |
 
-**Options transverses**, applicables au choix unique, au choix multiple, au booléen et au tri-state :
+**Autre (préciser)**, applicable au choix unique, au choix multiple, au booléen et au tri-state : ajoute une option qui ouvre un champ texte. Libellé éditable, précision obligatoire ou facultative. Elle est toujours affichée en dernier.
 
-- **Autre (préciser)** : ajoute une option qui ouvre un champ texte. Libellé éditable, précision obligatoire ou facultative.
-- **Source dynamique** (ex-« champ paramétré ») : les options, ou une partie, proviennent d'une référence. Exemples : une réponse précédente (« Bleu » réapparaît dans une liste), une liste d'objets de l'état du système (dates des sinistres de la personne). Pour une liste d'objets, on définit l'expression du libellé affiché et celle de la valeur retenue.
-- **Options conditionnées** : chaque option statique peut avoir une condition d'affichage.
+**Options d'un choix unique ou multiple** : une suite ordonnée d'**entrées**, affichées strictement dans l'ordre saisi. Chaque entrée est :
+
+- une **option statique** (valeur, libellé multilingue) ;
+- ou une **entrée dynamique** (ex-« champ paramétré ») : une référence qui fournit zéro, une ou plusieurs options, déployées **à sa position**, dans l'ordre de la source. Exemples : une réponse précédente (« Bleu » réapparaît dans une liste), une liste d'objets de l'état du système (dates des sinistres de la personne). Pour une liste d'objets, on définit dans le panneau de propriétés l'expression du libellé affiché et celle de la valeur retenue. Plusieurs entrées dynamiques peuvent coexister, à n'importe quelle position.
+
+Toute entrée peut être déplacée (boutons du panneau de propriétés ou ordre des lignes de la saisie rapide ; pas de glisser-déposer ni de raccourci dédié, comme pour les options statiques), supprimée, dupliquée et porter une **condition d'affichage** ; une entrée dynamique dont la condition est fausse n'affiche aucune valeur. Une valeur déjà proposée plus haut dans la liste n'est pas répétée.
+
+Saisie rapide (§4.3) : une ligne `$<référence>` (ex. `$sys.sinistres`, `$couleur_preferee`) crée une entrée dynamique ; toute autre ligne crée une option statique (une option qui commence par `$` s'écrit `\$…`). Une référence inconnue ou mal écrite est signalée par les vérifications (§4.6).
+
+Le booléen et le tri-state n'ont pas d'entrées : leurs libellés viennent du jeu de libellés (EVO-001, arbitrage A).
 
 ### 3.5 Clés et références (proposition)
 
@@ -159,7 +166,7 @@ Une question est un rectangle : intitulé en gras en haut, clé en discret, puis
 | Nombre | `<entier naturel>`, `<réel>`, etc. |
 | Choix unique | Options avec boutons radio, tronquées par « … » si trop longues. |
 | Choix multiple | Options avec cases à cocher, tronquées par « … ». |
-| Source dynamique | La référence affichée, ex. `<sys.sinistres : date>` ou `<couleur_preferee>`. |
+| Entrée dynamique (choix) | La référence affichée **à sa position** parmi les options, ex. `<sys.sinistres : date>` ou `<couleur_preferee>`. |
 | Structure | Miniature des champs, tronquée par « … ». Mention « × n » si répétable. |
 
 Badges discrets : obligatoire, « Autre », condition, référence bibliothèque, traduction manquante. Les autres nœuds (bloc, information, synthèse, fin) ont chacun une forme distincte. Les arêtes affichent leur condition en abrégé et leur rang si plusieurs sortent d'un nœud.
@@ -221,7 +228,7 @@ La prévisualisation exécute le questionnaire avec le même moteur de parcours 
 
 - **Wizard** : une question par page, barre de progression indicative, boutons précédent / suivant. Pages d'information, de synthèse et de fin rendues selon leur type.
 - **Validation** des contraintes à la saisie, avec les messages spécifiés.
-- **Synthèse** : récapitulatif automatique ; un clic sur une réponse ramène à la question. Si la modification change le parcours, les réponses des questions qui n'appartiennent plus au chemin sont effacées.
+- **Synthèse** : récapitulatif automatique ; un clic sur une réponse ramène à la question. Si la modification change le parcours, les réponses des questions qui n'appartiennent plus au chemin sont effacées. Une réponse du chemin devenue invalide (ex. valeur dynamique disparue après un changement de réponse ou d'état du système) est conservée, mais le parcours ne peut pas atteindre une fin : le wizard ramène à la première question concernée, avec son message d'erreur, jusqu'à ce qu'elle soit corrigée.
 - **Panneau d'état du système**, repliable, à côté du wizard :
   - choix d'un **scénario nommé** (« UD avec 2 sinistres », « Amicale sans sinistre ») ;
   - **édition libre** des valeurs, avec possibilité d'enregistrer le résultat comme nouveau scénario ;

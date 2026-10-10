@@ -1,10 +1,9 @@
 import type { FC } from 'react';
-import { OTHER_VALUE, type MultipleChoiceQuestion, type Question, type SingleChoiceQuestion } from '../../../core/model';
+import { isDynamicEntry, OTHER_VALUE, type ChoiceEntry, type MultipleChoiceQuestion, type Question, type SingleChoiceQuestion } from '../../../core/model';
 import { previewText, tr, type EditorEnv, type FieldProps, type QuestionPropertiesProps, type QuestionTypePlugin, type RenderEnv } from '../../../plugin-api';
 import { Field, Input } from '../../../ui-kit';
 import { OptionsEditor } from './options-editor';
 import { OTHER_LABEL, OtherEditor } from './other-editor';
-import { SourceEditor } from './source-editor';
 
 type Choice = SingleChoiceQuestion | MultipleChoiceQuestion;
 const T = {
@@ -15,16 +14,19 @@ const T = {
 };
 const MAX_PREVIEW = 4;
 
-/** Options conservées lors d'un changement de type (choix unique ↔ multiple). */
+/** Entrées et « Autre » conservés lors d'un changement de type (choix unique ↔ multiple). */
 const keep = (previous?: Question) =>
   previous && (previous.type === 'single' || previous.type === 'multiple')
-    ? { options: previous.options, ...(previous.other ? { other: previous.other } : {}), ...(previous.source ? { source: previous.source } : {}) }
+    ? { options: previous.options, ...(previous.other ? { other: previous.other } : {}) }
     : { options: [], ...(previous && 'other' in previous && previous.other ? { other: previous.other } : {}) };
+
+/** Aperçu d'une entrée : libellé d'une option statique, `<référence : libellé>` d'une entrée dynamique. */
+const entryPreview = (o: ChoiceEntry, env: EditorEnv) =>
+  isDynamicEntry(o) ? `<${o.from}${o.label ? ` : ${o.label}` : ''}>` : previewText(o.label, env);
 
 function Preview({ question, env }: { question: Choice; env: EditorEnv }) {
   const mark = question.type === 'single' ? '○' : '☐';
-  const items = question.options.map((o) => previewText(o.label, env) + (o.when ? ' ?' : ''));
-  if (question.source) items.push(`<${question.source.from}${question.source.label ? ` : ${question.source.label}` : ''}>`);
+  const items = question.options.map((o) => entryPreview(o, env) + (o.when ? ' ?' : ''));
   if (question.other) items.push(previewText(question.other.label ?? OTHER_LABEL, env));
   return (
     <ul className="space-y-px text-slate-500">
@@ -39,7 +41,6 @@ function Properties({ question, update, env }: QuestionPropertiesProps<Choice>) 
   return (
     <div className="space-y-3">
       <OptionsEditor options={question.options} env={env} onChange={(options) => update({ options })} />
-      <SourceEditor source={question.source} env={env} onChange={(source) => update({ source })} />
       <OtherEditor other={question.other} env={env} onChange={(other) => update({ other })} />
       {question.type === 'multiple' && (
         <div className="grid grid-cols-2 gap-2">
@@ -101,7 +102,7 @@ const common = {
   badges: (q: Choice) => (q.other ? ['other'] : []),
 };
 
-/** Type « choix unique » : options statiques (conditionnables), source dynamique, « Autre ». */
+/** Type « choix unique » : entrées ordonnées (options statiques, entrées dynamiques, conditionnables), « Autre ». */
 export const singleType = {
   ...common,
   type: 'single',

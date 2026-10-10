@@ -16,6 +16,7 @@ export type NumberBound = number | Expression;
 /** Borne de date : date ISO littérale (`2024-01-31`) ou expression (`$today()`, `date_sinistre`). */
 export type DateBound = string;
 
+/** Option statique d'un choix. */
 export interface ChoiceOption {
   value: string;
   label: Label;
@@ -29,15 +30,25 @@ export interface OtherOption {
   detailRequired?: boolean;
 }
 
-/** Options issues d'une référence (réponse précédente ou liste de l'état du système). */
-export interface DynamicSource {
+/**
+ * Entrée dynamique d'un choix : zéro, une ou plusieurs options issues d'une référence (réponse
+ * précédente, liste de l'état du système), déployées à sa position. Reconnue à la présence de `from`.
+ */
+export interface DynamicEntry {
   /** Liste source. */
   from: Expression;
   /** Libellé affiché, évalué sur chaque élément (`$` = l'élément). Défaut : l'élément. */
   label?: Expression;
   /** Valeur retenue, évaluée sur chaque élément. Défaut : l'élément. */
   value?: Expression;
+  /** Condition d'affichage de l'entrée (évaluée dans le contexte de la page). */
+  when?: Expression;
 }
+
+/** Entrée de la liste ordonnée des options d'un choix : option statique ou entrée dynamique. */
+export type ChoiceEntry = ChoiceOption | DynamicEntry;
+
+export const isDynamicEntry = (e: ChoiceEntry): e is DynamicEntry => 'from' in e;
 
 interface QuestionBase {
   /** Id technique immuable. */
@@ -84,9 +95,9 @@ export interface NumberQuestion extends QuestionBase {
 }
 
 interface ChoiceBase extends QuestionBase {
-  options: ChoiceOption[];
+  /** Entrées dans l'ordre d'affichage. */
+  options: ChoiceEntry[];
   other?: OtherOption;
-  source?: DynamicSource;
 }
 export interface SingleChoiceQuestion extends ChoiceBase {
   type: 'single';

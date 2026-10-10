@@ -110,19 +110,8 @@
         }
       }
     },
-    "otherOption": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "label": {
-          "$ref": "#/$defs/label"
-        },
-        "detailRequired": {
-          "type": "boolean"
-        }
-      }
-    },
-    "dynamicSource": {
+    "dynamicEntry": {
+      "description": "Entrée dynamique : options issues d'une liste (réponse précédente, variable système), déployées à sa position. Reconnue à la présence de `from`.",
       "type": "object",
       "required": [
         "from"
@@ -133,10 +122,38 @@
           "$ref": "#/$defs/expression"
         },
         "label": {
-          "$ref": "#/$defs/expression"
+          "$ref": "#/$defs/expression",
+          "description": "Libellé affiché, évalué sur chaque élément."
         },
         "value": {
+          "$ref": "#/$defs/expression",
+          "description": "Valeur retenue, évaluée sur chaque élément."
+        },
+        "when": {
           "$ref": "#/$defs/expression"
+        }
+      }
+    },
+    "choiceEntry": {
+      "description": "Entrée de la liste ordonnée des options : option statique ou entrée dynamique.",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/option"
+        },
+        {
+          "$ref": "#/$defs/dynamicEntry"
+        }
+      ]
+    },
+    "otherOption": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "$ref": "#/$defs/label"
+        },
+        "detailRequired": {
+          "type": "boolean"
         }
       }
     },
@@ -477,15 +494,13 @@
       "properties": {
         "options": {
           "type": "array",
+          "description": "Entrées dans l'ordre d'affichage.",
           "items": {
-            "$ref": "#/$defs/option"
+            "$ref": "#/$defs/choiceEntry"
           }
         },
         "other": {
           "$ref": "#/$defs/otherOption"
-        },
-        "source": {
-          "$ref": "#/$defs/dynamicSource"
         }
       },
       "required": [
@@ -497,15 +512,13 @@
       "properties": {
         "options": {
           "type": "array",
+          "description": "Entrées dans l'ordre d'affichage.",
           "items": {
-            "$ref": "#/$defs/option"
+            "$ref": "#/$defs/choiceEntry"
           }
         },
         "other": {
           "$ref": "#/$defs/otherOption"
-        },
-        "source": {
-          "$ref": "#/$defs/dynamicSource"
         },
         "minSelected": {
           "type": "integer",

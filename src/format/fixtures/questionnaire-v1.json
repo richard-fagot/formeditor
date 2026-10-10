@@ -1,0 +1,53 @@
+{
+  "formatVersion": 1,
+  "kind": "questionnaire",
+  "id": "q_v1",
+  "key": "ancien",
+  "title": { "fr": "Projet enregistré en version 1" },
+  "start": "n_lien",
+  "nodes": [
+    {
+      "kind": "question",
+      "id": "n_lien",
+      "key": "sinistre_lie",
+      "label": { "fr": "Sinistre lié ?" },
+      "type": "single",
+      "options": [
+        { "value": "aucun", "label": { "fr": "Non, aucun" } },
+        { "value": "autre", "label": { "fr": "Un autre" }, "when": "sys.actif = true" }
+      ],
+      "source": { "from": "sys.sinistres", "label": "date & ' — ' & nature", "value": "id" }
+    },
+    {
+      "kind": "question",
+      "id": "n_couleurs",
+      "key": "couleurs",
+      "label": { "fr": "Couleurs" },
+      "type": "multiple",
+      "options": [{ "value": "bleu", "label": { "fr": "Bleu" } }]
+    },
+    {
+      "kind": "question",
+      "id": "n_struct",
+      "key": "detail",
+      "label": { "fr": "Détail" },
+      "type": "structure",
+      "fields": [
+        {
+          "id": "f_prefere",
+          "key": "prefere",
+          "label": { "fr": "Préférée" },
+          "type": "single",
+          "options": [],
+          "source": { "from": "couleurs" }
+        }
+      ]
+    },
+    { "kind": "end", "id": "n_fin", "message": { "fr": "Fin" } }
+  ],
+  "edges": [
+    { "id": "e1", "from": "n_lien", "to": "n_couleurs" },
+    { "id": "e2", "from": "n_couleurs", "to": "n_struct" },
+    { "id": "e3", "from": "n_struct", "to": "n_fin" }
+  ]
+}

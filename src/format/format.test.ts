@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { FORMAT_VERSION, type Questionnaire } from '../core/model';
 import { validateDocument } from './validate';
@@ -63,6 +64,72 @@ describe('migrate', () => {
   });
   it('refuse une version plus récente que l’outil', () => {
     expect(() => migrate({ formatVersion: 9 }, migrations, 3)).toThrow(/plus récent/);
+  });
+});
+
+describe('migration 1 → 2 (EVO-001 : entrées d’options ordonnées)', () => {
+  const fixture = (name: string) => ({ name, text: readFileSync(new URL(`./fixtures/${name}`, import.meta.url), 'utf8') });
+  const nodes = (doc: Record<string, unknown>) => doc.nodes as Record<string, unknown>[];
+
+  it('`source` devient une entrée dynamique placée après les options statiques, partout', () => {
+    const q = migrate(JSON.parse(fixture('questionnaire-v1.json').text));
+    expect(q.formatVersion).toBe(2);
+    expect(validateDocument(q)).toEqual([]);
+    const [lien, couleurs, struct] = nodes(q);
+    expect(lien!.source).toBeUndefined();
+    expect(lien!.options).toEqual([
+      { value: 'aucun', label: { fr: 'Non, aucun' } },
+      { value: 'autre', label: { fr: 'Un autre' }, when: 'sys.actif = true' },
+      { from: 'sys.sinistres', label: "date & ' — ' & nature", value: 'id' },
+    ]);
+    expect(couleurs!.options).toEqual([{ value: 'bleu', label: { fr: 'Bleu' } }]);
+    expect((struct!.fields as Record<string, unknown>[])[0]).toMatchObject({ options: [{ from: 'couleurs' }] });
+    expect(JSON.stringify(q)).not.toContain('"source"');
+
+    const lib = migrate(JSON.parse(fixture('bibliotheque-v1.json').text));
+    expect(validateDocument(lib)).toEqual([]);
+    expect((lib.questions as Record<string, unknown>[])[0]!.options).toEqual([{ value: 'x', label: { fr: 'X' } }, { from: 'sys.liste' }]);
+    expect(nodes((lib.blocks as Record<string, unknown>[])[0]!)[0]!.options).toEqual([{ from: 'sys.liste', value: 'id' }]);
+  });
+
+  it('un projet enregistré avant l’évolution se charge (fichiers ou bundle v1), dynamiques en fin de liste', () => {
+    const { workspace, errors } = importFiles([fixture('questionnaire-v1.json'), fixture('bibliotheque-v1.json')]);
+    expect(errors).toEqual([]);
+    const bundleV1 = { ...JSON.parse(exportBundle(workspace!)), formatVersion: 1 };
+    // Bundle v1 reconstitué : on remet l'ancienne forme (`source` à part).
+    const lien = bundleV1.questionnaires[0].nodes[0];
+    lien.source = lien.options.pop();
+    const back = importFiles([{ name: 'ancien.bundle.json', text: JSON.stringify(bundleV1) }]);
+    expect(back.errors).toEqual([]);
+    expect(back.workspace!.questionnaires[0]!.nodes[0]).toMatchObject({ options: [{ value: 'aucun' }, { value: 'autre' }, { from: 'sys.sinistres' }] });
+  });
+
+  it('export puis réimport : l’ordre des entrées est identique', () => {
+    const q = minimalQuestionnaire();
+    const options = [
+      { value: 'b', label: { fr: 'B' } },
+      { from: 'sys.liste', label: 'nom', value: 'id', when: 'sys.actif = true' },
+      { value: 'a', label: { fr: 'A' } },
+      { from: 'nom' },
+    ];
+    q.nodes[0] = { kind: 'question', id: 'n1', key: 'choix', label: { fr: 'Choix' }, type: 'single', options };
+    const ws = { ...newWorkspace('P', 'fr'), questionnaires: [q] };
+    const back = importFiles(exportFiles(ws));
+    expect(back.errors).toEqual([]);
+    expect(back.workspace!.questionnaires[0]!.nodes[0]).toMatchObject({ options });
+    expect(importFiles([{ name: 'p.bundle.json', text: exportBundle(ws) }]).workspace!.questionnaires[0]!.nodes[0]).toMatchObject({ options });
+  });
+
+  it('refuse l’ancien champ `source` dans un fichier version 2', () => {
+    const q = migrate(JSON.parse(fixture('questionnaire-v1.json').text));
+    nodes(q)[0]!.source = { from: 'sys.sinistres' };
+    expect(validateDocument(q).length).toBeGreaterThan(0);
+  });
+
+  it('refuse une entrée qui mélange option statique et entrée dynamique', () => {
+    const q = migrate(JSON.parse(fixture('questionnaire-v1.json').text));
+    nodes(q)[0]!.options = [{ value: 'a', label: { fr: 'A' }, from: 'sys.x' }];
+    expect(validateDocument(q).length).toBeGreaterThan(0);
   });
 });
 

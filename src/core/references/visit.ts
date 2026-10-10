@@ -1,5 +1,5 @@
 import {
-  isVariantLabel, type Edge, type Graph, type GraphNode, type Label, type LocalizedText,
+  isDynamicEntry, isVariantLabel, type Edge, type Graph, type GraphNode, type Label, type LocalizedText,
   type Question, type StructureField, type Workspace,
 } from '../model';
 
@@ -19,9 +19,9 @@ export interface ExprLocation {
   property: string;
   /** Clé de la structure si l'expression est dans un champ de structure (clés sœurs sans préfixe). */
   structure?: string;
-  /** Expression évaluée sur chaque élément d'une liste (source dynamique) : noms relatifs. */
+  /** Expression évaluée sur chaque élément d'une liste (entrée dynamique) : noms relatifs. */
   relative?: boolean;
-  /** Pour une expression relative : expression de la liste source (`source.from`). */
+  /** Pour une expression relative : expression de la liste source (`from` de l'entrée). */
   source?: string;
   /** Texte d'une variante : affiché seulement si cette condition est vraie. */
   guard?: string;
@@ -79,20 +79,18 @@ export function mapQuestion<Q extends Question | StructureField>(q: Q, f: ExprMa
       break;
     case 'single':
     case 'multiple':
-      out.options = q.options.map((o, i) => ({
-        ...o,
-        label: mapLabel(o.label, f, at(`options[${i}].label`)),
-        ...(o.when ? { when: f(o.when, 'expr', at(`options[${i}].when`)) } : {}),
-      }));
-      if (q.source) {
-        const rel = (p: string): ExprLocation => ({ ...at(`source.${p}`), relative: true, source: q.source!.from });
-        out.source = {
-          ...q.source,
-          from: f(q.source.from, 'expr', at('source.from')),
-          ...(q.source.label ? { label: f(q.source.label, 'expr', rel('label')) } : {}),
-          ...(q.source.value ? { value: f(q.source.value, 'expr', rel('value')) } : {}),
+      out.options = q.options.map((o, i) => {
+        const when = o.when ? { when: f(o.when, 'expr', at(`options[${i}].when`)) } : {};
+        if (!isDynamicEntry(o)) return { ...o, label: mapLabel(o.label, f, at(`options[${i}].label`)), ...when };
+        const rel = (p: string): ExprLocation => ({ ...at(`options[${i}].${p}`), relative: true, source: o.from });
+        return {
+          ...o,
+          from: f(o.from, 'expr', at(`options[${i}].from`)),
+          ...(o.label ? { label: f(o.label, 'expr', rel('label')) } : {}),
+          ...(o.value ? { value: f(o.value, 'expr', rel('value')) } : {}),
+          ...when,
         };
-      }
+      });
       break;
     case 'structure':
       out.fields = q.fields.map((fd) => mapQuestion(fd, f, { ...base, structure: q.key, property: `fields.${fd.key}` }));

@@ -1,6 +1,6 @@
 # EVO-001 — Options dynamiques placées librement parmi les options
 
-Statut : à faire
+Statut : fait 2026-10-10
 
 ## Besoin
 
@@ -73,8 +73,8 @@ puis « Un tiers ».
 - Quand une entrée dynamique porte une condition fausse, alors aucune de ses valeurs n'est affichée.
 - Quand la source est une liste d'objets (ex. sinistres avec date et nature), alors les expressions
   de libellé et de valeur s'appliquent à chaque objet, à la position de l'entrée.
-- Quand une question booléenne ou tri-state contient une entrée dynamique, alors l'ordre saisi
-  est respecté de la même façon.
+- ~~Quand une question booléenne ou tri-state contient une entrée dynamique, alors l'ordre saisi
+  est respecté de la même façon.~~ Abandonné (arbitrage A, voir Analyse).
 - Quand je saisis une option statique dont le libellé commence par `<`, alors elle reste une option
   statique.
 - Quand une réponse désigne une valeur dynamique qui a disparu, alors le parcours ne peut pas être
@@ -106,3 +106,77 @@ Décision :
   puis réaliser l'évolution ;
 - un point remet en cause la demande ou demande un arbitrage métier → statut « à arbitrer »,
   options listées avec leurs conséquences, **arrêt sans coder**.
+
+## Analyse
+
+### 1. Faisabilité et modules impactés
+
+Faisable dans l'architecture actuelle pour le choix unique et le choix multiple. Modules (d'après `docs/MAP.md`) :
+
+- `core/model` : `options` devient une suite d'entrées `ChoiceOption | DynamicEntry`
+  (`{ "from", "label"?, "value"?, "when"? }`) ; `source` disparaît.
+- `format` : `formatVersion` 2, migration 1 → 2 (`source` convertie en entrée placée après les options
+  statiques), JSON Schema ; `docs/FORMAT.md` §7.3 / §7.5 ; exemple (entrée dynamique en tête ou au milieu)
+  et chemins attendus.
+- `core/runtime` (`choiceOptions`) : déploiement de chaque entrée à sa position.
+- `core/references`, `core/validation` : parcours des expressions des entrées (renommage, références
+  inconnues), syntaxe de saisie mal écrite signalée (§4.6), vérification de fin de parcours (point 3).
+- `plugins/question-types/choice` : saisie rapide, détail par entrée, aperçu du logigramme ; suppression de
+  `source-editor.tsx` (ses réglages passent dans le détail de l'entrée).
+- `ui/preview` : blocage de la fin de parcours (point 3).
+
+**Point qui demande un arbitrage — booléen et tri-state.** La demande suppose que ces types acceptent
+déjà une source dynamique. Ce n'est pas le cas : la spec §3.4 le prévoyait, mais DECISIONS.md (phase 6)
+l'a écarté (« une source dynamique n'a pas de sens pour un booléen »). Le format ne le prévoit pas
+(FORMAT.md §7.2 / §7.5). Une réponse booléenne vaut `true` / `false` (tri-state : `"unknown"` en plus).
+Une entrée dynamique y ajouterait des valeurs texte quelconques, ce qui change le type de la réponse et
+le sens des expressions (`assurance_connue = true`). Options :
+
+- **A — Limiter l'évolution au choix unique et au choix multiple.** Booléen et tri-state restent inchangés.
+  Le critère « booléen ou tri-state » est abandonné. On aligne la spec §3.4 sur l'existant. Le besoin se
+  couvre avec un choix unique dont les options statiques sont « Oui » / « Non ». Changement le plus simple.
+- **B — Booléen et tri-state reçoivent des entrées.** Les libellés Oui / Non / Ne sait pas deviennent des
+  entrées positionnables, et des entrées dynamiques s'ajoutent entre elles. La réponse devient
+  `true` / `false` / `"unknown"` **ou** une chaîne issue de la source. Ce type mixte rend les expressions
+  ambiguës, et ce n'est plus vraiment un booléen. Il faut aussi revoir le format, l'aperçu, la validation
+  et l'éditeur de ces deux types. Coût élevé.
+- **C — Dynamique seulement après les libellés fixes.** Booléen et tri-state reçoivent des entrées dynamiques
+  placées après Oui / Non (/ Ne sait pas), avec le même type de réponse mixte que B, mais sans libellés
+  déplaçables. Coût moyen, même ambiguïté de type que B.
+
+Recommandation : **A**.
+
+### 2. Syntaxe de saisie retenue
+
+Une ligne qui commence par `$` crée une entrée dynamique. La suite de la ligne est l'expression source :
+`$sys.champ_dynamique`, `$couleur_preferee`, `$sys.sinistres[nature = 'vol']`. Une ligne qui commence par `<`
+reste toujours une option statique, sans échappement. Pour écrire une option statique qui commence par `$`
+(rare : « $100 »), on l'écrit `\$100`. Ce choix est le plus simple : un seul marqueur, proche de la
+demande, et `<` reste libre. Une expression invalide ou une référence inconnue est signalée par les
+vérifications non bloquantes (§4.6), comme toute expression.
+
+### 3. Réponse devenue invalide
+
+Le contrôle existe déjà à la saisie : une valeur absente des options visibles est refusée (`validateAnswer`,
+code `option`). « Revenir à la synthèse » revalide aussi déjà chaque page repassée. Mécanisme ajouté :
+avant d'afficher une **fin**, le wizard revalide toutes les réponses du chemin effectif, dans le contexte
+de leur page. À la première réponse invalide, il ramène sur cette question avec son message d'erreur.
+Le parcours ne peut donc pas se terminer tant qu'elle n'a pas été corrigée. La réponse n'est pas effacée
+automatiquement : §5 n'efface que les réponses **hors chemin**. Celle-ci est sur le chemin, l'utilisateur
+la corrige. La vérification se trouve dans `ui/preview` (avec `validateAnswer`), et `core/runtime` ne
+dépend toujours pas de `core/validation`.
+
+Doublons : une valeur déjà proposée plus haut dans la liste n'est pas répétée. C'est le comportement
+actuel, conservé sans autre traitement.
+
+### Décision
+
+Point 1 arbitré le 2026-10-10 : **option A** retenue. L'évolution porte sur le choix unique et le choix
+multiple. Booléen et tri-state restent inchangés, et le critère « booléen ou tri-state » est abandonné.
+Les choix des points 2 et 3 sont reportés dans `docs/DECISIONS.md`.
+
+### Écart accepté à la réalisation
+
+Déplacer, dupliquer et supprimer une entrée se font avec les boutons du panneau de propriétés, ou en
+réordonnant les lignes de la saisie rapide. Il n'y a ni glisser-déposer ni raccourci dédié, comme pour
+les options statiques existantes. Écart mineur, à rouvrir dans une évolution si le besoin se confirme.

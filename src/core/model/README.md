@@ -5,8 +5,9 @@ utilitaires purs. Aucun import externe : c'est la base de tous les autres module
 
 ## API
 - `text.ts` : `LocalizedText`, `Label` (texte ou variantes `{variants, otherwise}`), `Expression`, `isVariantLabel`, `labelTexts`.
-- `question.ts` : `Question` (union discriminée par `type`), `QUESTION_TYPES`, `ChoiceOption`, `OtherOption`,
-  `DynamicSource`, `StructureField`, `OTHER_VALUE` (`"other"`), `UNKNOWN_VALUE` (`"unknown"`).
+- `question.ts` : `Question` (union discriminée par `type`), `QUESTION_TYPES`, `ChoiceEntry` (entrée d'un choix :
+  `ChoiceOption` statique ou `DynamicEntry` `{ from, label?, value?, when? }`, discriminées par `isDynamicEntry` = présence de `from`),
+  `OtherOption`, `StructureField`, `OTHER_VALUE` (`"other"`), `UNKNOWN_VALUE` (`"unknown"`).
 - `node.ts` : `GraphNode` (union par `kind` : question locale ou de bibliothèque, block, info, summary, end, exit),
   `isLocalQuestion`, `isLibraryQuestion`.
 - `graph.ts` : `Edge`, `Graph`.

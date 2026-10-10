@@ -1,8 +1,8 @@
-import { useMemo, type ReactNode } from 'react';
+import { useEffect, useMemo, type ReactNode } from 'react';
 import { Bug, ChevronLeft, ChevronRight, Database, RotateCcw, Undo2 } from 'lucide-react';
 import { OTHER_VALUE } from '../../core/model';
-import { back, buildContext, currentStep, getAnswer, next, otherPath, progress, resume, setAnswer, start, type RuntimeInput, type Session } from '../../core/runtime';
-import { checkWorkspace, validateAnswer } from '../../core/validation';
+import { back, currentStep, getAnswer, next, otherPath, progress, resume, setAnswer, start, type RuntimeInput, type Session } from '../../core/runtime';
+import { checkWorkspace } from '../../core/validation';
 import { nodeKind, questionType } from '../../registry';
 import { runCommand } from '../../app/commands';
 import { useStore, useT } from '../../app/store';
@@ -10,6 +10,7 @@ import { Button, Select, cn } from '../../ui-kit';
 import { DebugPanel } from './DebugPanel';
 import { Summary } from './Summary';
 import { SystemPanel } from './SystemPanel';
+import { answerErrors, guardEnd } from './path-check';
 import { makeRenderEnv, usePreview } from './usePreview';
 
 /** Wizard : une page par question, pages d'information, de synthèse et de fin, via le moteur de parcours ; panneaux d'état du système et de débogage. */
@@ -83,20 +84,18 @@ function MissingTranslations({ questionnaireId, lang }: { questionnaireId: strin
 }
 
 /** Erreurs de validation de la réponse à la page courante d'une session. */
-function errorsAt(input: RuntimeInput, s: Session) {
-  const step = currentStep(input, s);
-  const q = step.question;
-  if (!q || !step.answerPath) return [];
-  const value = getAnswer(s.answers, step.answerPath);
-  const other = getAnswer(s.answers, otherPath(step.answerPath)) as string | undefined;
-  const ctx = buildContext(input, s.answers, step.id);
-  return validateAnswer(q, value, { ...ctx, ...(value === null ? {} : { [q.key]: value }) }, input.env, other);
-}
+const errorsAt = (input: RuntimeInput, s: Session) => (s.history.length ? answerErrors(input, s.answers, s.history.at(-1)!) : []);
 
 /** Page courante, progression, précédent / suivant (et retour à la synthèse après une modification). */
 function Wizard({ questionnaireId, preview }: { questionnaireId: string; preview: ReturnType<typeof usePreview> }) {
   const t = useT();
   const { input, session, lang, uiLang, update, state } = preview;
+  // Fin affichée alors qu'une réponse du chemin est devenue invalide (état du système modifié) : retour à la question.
+  const guarded = guardEnd(input, session);
+  const guardedStep = guarded?.history.at(-1);
+  useEffect(() => {
+    if (guarded) update({ session: guarded, attempted: true, returnTo: undefined });
+  }, [guardedStep]);
   if (!session.history.length) return <p className="flex-1 p-8 text-slate-400" data-testid="preview">{t('preview.empty')}</p>;
   const step = currentStep(input, session);
   const env = makeRenderEnv(input, session, step.id, lang, uiLang);
@@ -115,7 +114,11 @@ function Wizard({ questionnaireId, preview }: { questionnaireId: string; preview
   /** Avance (validation d'abord) ; `move` calcule la nouvelle session. */
   const advance = (move: (s: Session) => Session, revalidate = false) => {
     if (check().length) return update({ attempted: true, session });
-    const s = move(session);
+    const moved = move(session);
+    // Pas de fin tant qu'une réponse du chemin est invalide : retour à la première concernée, erreurs affichées.
+    const guardedEnd = guardEnd(input, moved);
+    if (guardedEnd) return update({ session: guardedEnd, attempted: true, returnTo: undefined });
+    const s = moved;
     // Retour à la synthèse arrêté sur une page déjà répondue mais devenue invalide : erreurs affichées.
     update({ session: s, attempted: revalidate && errorsAt(input, s).length > 0, ...(s.history.at(-1) === state?.returnTo ? { returnTo: undefined } : {}) });
   };
