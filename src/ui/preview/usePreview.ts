@@ -1,21 +1,9 @@
 import { useMemo } from 'react';
 import { evaluate, evaluateCondition, pickText, resolveLabel, type EvalContext } from '../../core/expressions';
-import type { Workspace } from '../../core/model';
 import { buildContext, choiceOptions, resolveStep, start, type RuntimeInput, type Session } from '../../core/runtime';
 import type { RenderEnv } from '../../plugin-api';
-import { useStore, type PreviewState } from '../../app/store';
+import { systemStateOf, useStore, type PreviewState } from '../../app/store';
 import { questionType } from '../../registry';
-
-/** Valeurs d'exemple du dictionnaire de l'état du système. */
-export function exampleSystemState(ws: Workspace): Record<string, unknown> {
-  return Object.fromEntries(ws.project.systemState.filter((v) => v.example !== undefined).map((v) => [v.name, v.example]));
-}
-
-export function systemStateOf(ws: Workspace, p: PreviewState | undefined): Record<string, unknown> {
-  if (p?.sys) return p.sys;
-  const sc = ws.project.scenarios.find((s) => s.id === p?.scenarioId) ?? (p?.scenarioId === undefined ? ws.project.scenarios[0] : undefined);
-  return sc?.values ?? exampleSystemState(ws);
-}
 
 /** État de la prévisualisation d'un questionnaire : entrée du moteur, session (créée au besoin), langue. */
 export function usePreview(questionnaireId: string) {

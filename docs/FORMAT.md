@@ -96,7 +96,9 @@ Un bloc ne contient pas d'instance de bloc. Un même bloc peut être instancié 
 Le parcours garde l'historique des pages visitées ; « précédent » revient à la page précédente.
 Après une modification (retour arrière, retour depuis une synthèse), le **chemin projeté** est
 recalculé depuis le départ avec les réponses connues ; les réponses des questions qui n'y figurent
-plus sont **effacées**.
+plus sont **effacées**. Après un retour depuis une synthèse, « revenir à la synthèse » avance sur les
+pages déjà vues et répondues, et s'arrête à la synthèse, à la première page nouvelle du chemin, à une
+question sans réponse, à une réponse devenue invalide ou à une fin (`resume`, `src/core/runtime`).
 
 ## 5. Questions
 
@@ -118,7 +120,8 @@ Deux règles de validation complètent les paramètres (implémentation de réf�
   (`messages.option`). Une option devenue invisible ne permet donc plus de valider la question.
 - **Structure répétable facultative** : `repeat.min` ne s'applique pas à une structure répétable
   facultative laissée vide (aucune occurrence saisie). Il s'applique si la question est obligatoire
-  ou dès qu'une occurrence est saisie.
+  ou dès qu'une occurrence est saisie. Une structure répétable obligatoire sans `repeat.min` (ou avec
+  `min: 0`) laissée vide (`[]`) est refusée avec le paramètre `required`.
 
 | `type` | Valeur de la réponse | Paramètres |
 | --- | --- | --- |
@@ -199,6 +202,10 @@ Fonctions ajoutées par l'outil (à fournir par l'implémentation cible) :
 - `languages`, `defaultLanguage`.
 - `systemState[]` : dictionnaire des variables fournies par le logiciel hôte : `name`, `type`
   (`text`, `number`, `date`, `boolean`, `enum` avec `values`, `list` avec `fields`), `description?`, `example?`.
+  Les noms des variables et des champs d'une liste sont des clés (`^[a-z][a-z0-9_]*$`), uniques
+  (dans le dictionnaire, dans la liste). Quand `source.from` désigne une liste système dont les champs
+  sont déclarés, les noms relatifs de `source.label` / `source.value` doivent être de ces champs
+  (sinon « référence inconnue »).
 - `scenarios[]` : `{ id, name, values }` — jeux de valeurs de l'état du système pour la prévisualisation.
 - `questionnaires[]` : `{ id, file }`.
 

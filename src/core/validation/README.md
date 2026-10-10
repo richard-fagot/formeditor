@@ -8,7 +8,8 @@ Dépend de `core/model`, `core/expressions`, `core/references`, `core/runtime` (
   `ctx` doit contenir la réponse sous sa clé (contraintes libres). Messages : `question.messages[param]`
   sinon `defaultMessage(param, borne)`. Choix : une valeur absente des options visibles (statiques dont la
   condition est vraie, source dynamique, « Autre ») donne `option`. Structure répétable : `[]` est vide si la
-  question est facultative (`repeat.min` ignoré), sinon `repeat.min` s'applique.
+  question est facultative (`repeat.min` ignoré) ; obligatoire, `repeat.min` (≥ 1) s'applique, et sans minimum
+  la liste vide donne `required`.
 - `messageParams(question)` : paramètres dont le message est personnalisable pour cette question.
 - `checkWorkspace(ws)` → `Issue[]` : `code`, `severity`, `owner`, `nodeId?`, `edgeId?`, `property?`, `params`.
 - `describeIssue(issue, lang)` : texte fr/en.
@@ -20,6 +21,9 @@ Dépend de `core/model`, `core/expressions`, `core/references`, `core/runtime` (
 `missingTranslation`, `libraryMissing`, `missingStart`.
 
 ## Choix
+- Dictionnaire de l'état du système : noms de variables et de champs de liste invalides / en double → `invalidKey` /
+  `duplicateKey` avec le propriétaire `{ kind: 'system', id: <variable> }`. Expressions relatives d'une source dont
+  `from` est une liste système à champs déclarés : nom inconnu → `unknownReference` (`sys.x.nom`).
 - `missingStart` n'est pas signalé sur un graphe vide (questionnaire neuf) ; le premier nœud ajouté devient le départ (`app/store`).
 - `notGuaranteed` ignore les références testées par `$exists(…)` et, dans une variante de libellé, celles
   déjà présentes dans la condition de la variante.

@@ -37,6 +37,22 @@ function checkQuestion(ws: Workspace, q: Question, owner: Owner, nodeId: string,
   }
 }
 
+/** Dictionnaire de l'état du système : noms de variables et de champs de liste (clés valides, uniques). */
+function checkSystem(ws: Workspace, out: Issue[]) {
+  const seen = new Set<string>();
+  for (const v of ws.project.systemState) {
+    const owner: Owner = { kind: 'system', id: v.name };
+    if (!isValidKey(v.name)) out.push(issue('invalidKey', owner, {}, { key: v.name }));
+    if (seen.has(v.name)) out.push(issue('duplicateKey', owner, {}, { key: v.name }));
+    seen.add(v.name);
+    const names = (v.fields ?? []).map((f) => f.name);
+    names.forEach((n, i) => {
+      if (!isValidKey(n)) out.push(issue('invalidKey', owner, {}, { key: `${v.name}.${n}` }));
+      if (names.indexOf(n) !== i) out.push(issue('duplicateKey', owner, {}, { key: `${v.name}.${n}` }));
+    });
+  }
+}
+
 function checkTranslations(ws: Workspace, out: Issue[]) {
   const langs = ws.project.languages;
   const seen = new Set<string>();
@@ -76,6 +92,7 @@ export function checkWorkspace(ws: Workspace): Issue[] {
     out.push(...checkGraph(ws, b, owner));
   }
   for (const q of ws.library.questions) checkQuestion(ws, q, { kind: 'libraryQuestion', id: q.id }, q.id, out);
+  checkSystem(ws, out);
   out.push(...checkReferences(ws));
   checkTranslations(ws, out);
   return out;

@@ -46,6 +46,9 @@ describe('validateAnswer', () => {
     // Facultative laissée vide (`[]`) : `repeat.min` ne s'applique pas ; obligatoire : il s'applique.
     expect(params(s, [])).toEqual([]);
     expect(params({ ...s, required: true }, [])).toEqual([':minOccurrences']);
+    // Obligatoire sans `repeat.min` : la liste vide est une réponse manquante.
+    expect(params({ ...s, required: true, repeat: {} }, [])).toEqual([':required']);
+    expect(params({ ...s, required: true, repeat: { max: 2 } }, [{ h: false }])).toEqual([]);
     expect(params(s, [{ h: false }, { h: true }])).toEqual(['v[1].j:required']);
     expect(params(s, [{ h: false }, { h: false }, { h: false }])).toEqual([':maxOccurrences']);
   });
@@ -75,6 +78,18 @@ describe('checkWorkspace', () => {
       decl(x).edges.find((e) => e.id === 'e_lien_victimes')!.when = 'type_sinistre = ';
     });
     expect(codes(w)).toEqual(expect.arrayContaining(['unknownReference@e_date_victimes', 'invalidExpression@e_lien_victimes']));
+  });
+  it('dictionnaire : nom de variable ou de champ de liste invalide ou en double ; référence relative inconnue', () => {
+    const w = mutate((x) => {
+      const fields = x.project.systemState.find((v) => v.name === 'sinistres')!.fields!;
+      fields[0]!.name = 'Mauvais nom';
+      fields[2]!.name = 'date';
+      x.project.systemState.push({ name: 'nom_assure', type: 'text' });
+    });
+    const sys = checkWorkspace(w).filter((i) => i.owner.kind === 'system').map((i) => `${i.code}:${i.owner.id}:${i.params.key}`);
+    expect(sys).toEqual(['invalidKey:sinistres:sinistres.Mauvais nom', 'duplicateKey:sinistres:sinistres.date', 'duplicateKey:nom_assure:nom_assure']);
+    expect(codes(w)).toEqual(expect.arrayContaining(['unknownReference@n_lien']));
+    expect(checkWorkspace(w).find((i) => i.code === 'unknownReference' && i.nodeId === 'n_lien')?.params.ref).toBe('sys.sinistres.nature');
   });
   it('clé en double, nœud inaccessible, sans sortie, sans « sinon »', () => {
     const w = mutate((x) => {

@@ -58,7 +58,10 @@ export function checkReferences(ws: Workspace): Issue[] {
       out.push(issue('invalidExpression', f.loc.owner, where, { expr: bad[0], error: bad[1]!.message }));
       continue;
     }
-    if (f.loc.relative) continue;
+    if (f.loc.relative) {
+      out.push(...checkRelative(ws, f, where));
+      continue;
+    }
     const scopes = scopesFor(f);
     const unknown = refsOf(f).filter((r) => scopes.some((s) => !resolvePath(s, r)));
     for (const r of new Set(unknown.map((x) => x.join('.')))) out.push(issue('unknownReference', f.loc.owner, where, { ref: r }));
@@ -107,4 +110,14 @@ function checkGuaranteed(
     }
   }
   return out;
+}
+
+/** Noms relatifs d'une source dont `from` est une liste système à schéma déclaré : chaque nom doit être un champ. */
+function checkRelative(ws: Workspace, f: FoundExpression, where: Partial<Issue>): Issue[] {
+  const list = f.loc.source ? extractReferences(f.loc.source).find((r) => r.length === 2 && r[0] === 'sys') : undefined;
+  const v = list && ws.project.systemState.find((x) => x.name === list[1]);
+  if (v?.type !== 'list' || !v.fields?.length) return [];
+  const names = new Set(v.fields.map((x) => x.name));
+  const unknown = new Set(refsOf(f).map((r) => r[0]!).filter((n) => !names.has(n)));
+  return [...unknown].map((n) => issue('unknownReference', f.loc.owner, where, { ref: `sys.${v.name}.${n}` }));
 }

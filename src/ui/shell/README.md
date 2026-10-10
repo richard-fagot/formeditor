@@ -7,7 +7,7 @@ Cadre de l'application. Dépend de `app/*`, `ui/*`, `ui-kit`.
   (`app/shortcuts`, relancée si `keymap` change), barre, onglets, contenu, palette, fenêtre d'erreurs d'import.
 - `TopBar` : nom du projet, nouveau / ouvrir / exemple / exporter (bundle, fichiers), langue du contenu,
   langue de l'interface, indicateur « modifications non exportées », bouton de palette.
-- `Tabs` : questionnaires ouverts (fermer, rouvrir), nouveau questionnaire, bibliothèque (`ui/library`), état du système.
+- `Tabs` : questionnaires ouverts (fermer, rouvrir), nouveau questionnaire, bibliothèque (`ui/library`), état du système (`ui/system-state`).
 - `QuestionnaireView` : sous-onglets Logigramme / Prévisualisation ; panneau latéral de la bibliothèque
   (`ui/library`, affiché / masqué par `view.libraryPanel`), graphe + panneau Problèmes (`ui/diagram`), propriétés à droite.
 - `Palette` (cmdk) : commandes disponibles, insertion depuis la bibliothèque (« Insérer : … ») et recherche de nœud ;

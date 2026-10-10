@@ -7,7 +7,9 @@ import {
 export type Owner =
   | { kind: 'questionnaire'; id: string }
   | { kind: 'block'; id: string }
-  | { kind: 'libraryQuestion'; id: string };
+  | { kind: 'libraryQuestion'; id: string }
+  /** Variable du dictionnaire de l'état du système (problèmes du dictionnaire seulement). */
+  | { kind: 'system'; id: string };
 
 export interface ExprLocation {
   owner: Owner;
@@ -19,6 +21,8 @@ export interface ExprLocation {
   structure?: string;
   /** Expression évaluée sur chaque élément d'une liste (source dynamique) : noms relatifs. */
   relative?: boolean;
+  /** Pour une expression relative : expression de la liste source (`source.from`). */
+  source?: string;
   /** Texte d'une variante : affiché seulement si cette condition est vraie. */
   guard?: string;
   /** Langues renseignées (non vides) du texte multilingue d'où vient ce gabarit. */
@@ -81,7 +85,7 @@ export function mapQuestion<Q extends Question | StructureField>(q: Q, f: ExprMa
         ...(o.when ? { when: f(o.when, 'expr', at(`options[${i}].when`)) } : {}),
       }));
       if (q.source) {
-        const rel = (p: string): ExprLocation => ({ ...at(`source.${p}`), relative: true });
+        const rel = (p: string): ExprLocation => ({ ...at(`source.${p}`), relative: true, source: q.source!.from });
         out.source = {
           ...q.source,
           from: f(q.source.from, 'expr', at('source.from')),

@@ -17,6 +17,10 @@ describe('portée', () => {
     }
     expect(scope.get('tiers.nom')?.alias).toBe('tiers');
   });
+  it('décrit les variables système : type, description, valeurs d’une énumération (autocomplétion)', () => {
+    expect(scope.get('sys.type_adherent')).toMatchObject({ type: 'enum', values: ['ud', 'amicale', 'particulier'], description: 'Catégorie de l\'adhérent.' });
+    expect(scope.get('sys.sinistres.date')).toMatchObject({ kind: 'system', type: 'date' });
+  });
   it('résout les chemins connus et refuse les inconnus', () => {
     expect(resolvePath(scope, ['victimes', 'prenom'])?.kind).toBe('field');
     expect(resolvePath(scope, ['inconnu'])).toBeUndefined();
@@ -73,6 +77,21 @@ describe('renommage propagé', () => {
     expect(edge(decl(w), 'e_date_lien').when).toBe('$count(sys.historique) > 0');
     expect(w.project.scenarios[0]!.values.historique).toBeDefined();
     expect((node(decl(w), 'n_lien').source as { label: string }).label).toBe("date & ' — ' & nature");
+  });
+  it('champ d’une liste système : expressions absolues et relatives (source), exemple, scénarios', () => {
+    const base = structuredClone(ws);
+    edge(decl(base), 'e_date_lien').when = "$count(sys.sinistres.date) > 0 and sys.sinistres.nature = 'Vol'";
+    const w = renameKey(base, { kind: 'systemField', variable: 'sinistres', field: 'date' }, 'date_survenance');
+    const v = w.project.systemState.find((x) => x.name === 'sinistres')!;
+    expect(v.fields!.map((f) => f.name)).toEqual(['id', 'date_survenance', 'nature']);
+    expect(v.example).toEqual([{ id: 'S-001', date_survenance: '2025-03-12', nature: 'Dégât des eaux' }]);
+    expect(Object.keys((w.project.scenarios[0]!.values.sinistres as object[])[0]!)).toEqual(['id', 'date_survenance', 'nature']);
+    expect(edge(decl(w), 'e_date_lien').when).toBe("$count(sys.sinistres.date_survenance) > 0 and sys.sinistres.nature = 'Vol'");
+    expect(node(decl(w), 'n_lien').source).toEqual({ from: 'sys.sinistres', label: "date_survenance & ' — ' & nature", value: 'id' });
+    // Nom invalide, déjà pris, champ inconnu : projet inchangé.
+    expect(renameKey(base, { kind: 'systemField', variable: 'sinistres', field: 'date' }, 'nature')).toBe(base);
+    expect(renameKey(base, { kind: 'systemField', variable: 'sinistres', field: 'date' }, 'Pas Valide')).toBe(base);
+    expect(renameKey(base, { kind: 'systemField', variable: 'sinistres', field: 'zz' }, 'yy')).toBe(base);
   });
   it('ne modifie rien d’autre que les références concernées', () => {
     const w = renameKey(ws, { kind: 'question', owner: Q, nodeId: 'n_canaux' }, 'canaux');

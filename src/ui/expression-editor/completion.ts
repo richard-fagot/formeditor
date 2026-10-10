@@ -20,7 +20,7 @@ export function completeReferences(getScope: () => Scope) {
     }
     const options = [...getScope().values()]
       .filter((r) => r.path.startsWith(text) && r.path !== text)
-      .map((r) => ({ label: r.path, type: r.kind === 'system' ? 'variable' : 'property', detail: r.type ?? '' }));
+      .map((r) => ({ label: r.path, type: r.kind === 'system' ? 'variable' : 'property', detail: r.values?.length ? `${r.type} : ${r.values.join(' | ')}` : r.type ?? '', ...(r.description ? { info: r.description } : {}) }));
     return { from, options, validFor: /^[\w.]*$/ };
   };
 }

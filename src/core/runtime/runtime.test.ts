@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Edge, GraphNode, Workspace } from '../model';
 import {
-  back, buildContext, currentStep, goTo, next, setAnswer, start, summaryEntries, type RuntimeInput,
+  back, buildContext, currentStep, goTo, next, resume, setAnswer, start, summaryEntries, type RuntimeInput,
 } from './index';
 
 const q = (id: string, key: string, type: 'text' | 'boolean' | 'number' = 'text', extra = {}): GraphNode =>
@@ -137,5 +137,43 @@ describe('question facultative laissée vide', () => {
     expect(buildContext(inp, answers)).toMatchObject({ a: 'x', tiers: { age: 3 }, liste: [{ w: 1 }] });
     expect(buildContext(inp, answers).tiers).not.toHaveProperty('nom');
     expect(answers.tiers.nom).toBeNull();
+  });
+});
+
+describe('retour à la synthèse après modification', () => {
+  const sum: GraphNode = { kind: 'summary', id: 'sum' };
+  const inp = input(
+    [q('a', 'a'), q('b', 'b'), sum, end],
+    [e('a', 'b', "a = 'b'"), e('a', 'sum'), e('b', 'sum'), e('sum', 'fin')],
+  );
+  it('revient à la synthèse si le chemin ne change pas', () => {
+    let s = next(inp, setAnswer(inp, start(inp), 'x'));
+    s = goTo(s, 'a');
+    s = resume(inp, setAnswer(inp, s, 'y'), 'sum');
+    expect(currentStep(inp, s).id).toBe('sum');
+    expect(s.answers.a).toBe('y');
+  });
+  it('s’arrête à la première question sans réponse du nouveau chemin', () => {
+    let s = next(inp, setAnswer(inp, start(inp), 'x'));
+    s = resume(inp, setAnswer(inp, goTo(s, 'a'), 'b'), 'sum');
+    expect(currentStep(inp, s).id).toBe('b');
+    s = resume(inp, setAnswer(inp, s, 'z'), 'sum');
+    expect(currentStep(inp, s).id).toBe('sum');
+    expect(summaryEntries(inp, s).map((x) => x.stepId)).toEqual(['a', 'b']);
+  });
+  it('efface la réponse d’une question sortie du chemin', () => {
+    let s = next(inp, setAnswer(inp, start(inp), 'b'));
+    s = next(inp, setAnswer(inp, s, 'z'));
+    expect(s.answers.b).toBe('z');
+    s = resume(inp, setAnswer(inp, goTo(s, 'a'), 'x'), 'sum');
+    expect(currentStep(inp, s).id).toBe('sum');
+    expect(s.answers.b).toBeUndefined();
+  });
+  it('s’arrête sur une page déjà répondue que `accept` refuse (revalidation)', () => {
+    let s = next(inp, setAnswer(inp, start(inp), 'b'));
+    s = next(inp, setAnswer(inp, s, 'z'));
+    const refuseB = (x: typeof s) => x.history.at(-1) !== 'b';
+    s = resume(inp, goTo(s, 'a'), 'sum', refuseB);
+    expect(currentStep(inp, s).id).toBe('b');
   });
 });
