@@ -17,6 +17,7 @@ Dépend de `core/model`, `core/expressions`, `core/references`.
 `missingTranslation`, `libraryMissing`, `missingStart`.
 
 ## Choix
+- `missingStart` n'est pas signalé sur un graphe vide (questionnaire neuf) ; le premier nœud ajouté devient le départ (`app/store`).
 - `notGuaranteed` ignore les références testées par `$exists(…)` et, dans une variante de libellé, celles
   déjà présentes dans la condition de la variante.
 - Expressions d'un bloc : vérifiées dans chaque hôte ; seules ses propres clés sont soumises à `notGuaranteed`.

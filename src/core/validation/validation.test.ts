@@ -84,6 +84,12 @@ describe('checkWorkspace', () => {
       'duplicateKey@n_canaux', 'unreachable@n_type', 'deadEnd@n_tel', 'noElse@n_date',
     ]));
   });
+  it('questionnaire vide : aucun problème ; départ absent signalé dès qu’il y a des nœuds', () => {
+    const empty = mutate((x) => Object.assign(decl(x), { start: '', nodes: [], edges: [] }));
+    expect(checkWorkspace(empty).filter((i) => i.owner.kind === 'questionnaire')).toEqual([]);
+    const noStart = mutate((x) => void (decl(x).start = ''));
+    expect(codes(noStart)).toContain('missingStart@');
+  });
   it('boucle sans sortie possible', () => {
     const w = mutate((x) => {
       decl(x).edges = decl(x).edges.filter((e) => e.id !== 'e_confirmation_fin');

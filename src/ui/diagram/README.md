@@ -14,4 +14,6 @@ Dépend de `app/store`, `app/commands` (liaison tracée à la souris : `edge.cre
   l'intitulé (double-clic, Entrée, `focusRequest`) avec dérivation de la clé (`setQuestionLabel`).
 - `EdgeView` : condition abrégée, rang si plusieurs arêtes sortent du même nœud, « sinon », sortie de bloc.
 - Le conteneur porte `data-graph-focus` : les raccourcis à une lettre n'agissent que s'il a le focus.
+  Il le prend à l'ouverture d'un graphe (nouveau questionnaire, changement d'onglet), sauf saisie en cours.
+- Graphe vide : invitation « Ajouter une question » (commande `node.newQuestion`, raccourci affiché).
 - Suppression par la commande (touche Suppr), jamais par React Flow (`deleteKeyCode=null`).

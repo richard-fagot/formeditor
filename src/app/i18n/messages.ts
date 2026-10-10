@@ -40,6 +40,8 @@ export const MESSAGES = {
   'palette.nodes': { fr: 'Nœuds', en: 'Nodes' },
   'palette.empty': { fr: 'Aucun résultat.', en: 'No result.' },
   'node.newQuestion': { fr: 'Nouvelle question à la suite', en: 'New question after' },
+  'diagram.empty': { fr: 'Questionnaire vide : ajoutez la première question.', en: 'Empty questionnaire: add the first question.' },
+  'diagram.firstQuestion': { fr: 'Ajouter une question', en: 'Add a question' },
   'node.newBranch': { fr: 'Nouvelle branche conditionnée', en: 'New conditional branch' },
   'node.newInfo': { fr: 'Nouvelle page d’information', en: 'New information page' },
   'node.newSummary': { fr: 'Nouvelle page de synthèse', en: 'New summary page' },
