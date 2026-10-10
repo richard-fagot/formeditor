@@ -1,0 +1,9 @@
+{
+  "description": "Contrat résilié : fin immédiate de non-éligibilité.",
+  "questionnaire": "q_declaration",
+  "scenario": "sc_contrat_resilie",
+  "today": "2026-10-10",
+  "answers": [],
+  "path": ["n_intro", "n_fin_resilie"],
+  "outcome": "ineligible"
+}

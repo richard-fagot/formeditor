@@ -48,6 +48,7 @@ describe('références', () => {
     expect(extractReferences("'t' in canaux ? a : b")).toEqual([['canaux'], ['a'], ['b']]);
     expect(extractReferences('temoins[0].nom')).toEqual([['temoins', 'nom']]);
     expect(extractReferences('a = ')).toEqual([]);
+    expect(extractReferences('$exists(x.y) and z', { skipExists: true })).toEqual([['z']]);
   });
   it('renomme un segment de chemin racine', () => {
     expect(renameReference("type = 'a' and $count(type) > 1 and x.type = 1", ['type'], 'nature'))

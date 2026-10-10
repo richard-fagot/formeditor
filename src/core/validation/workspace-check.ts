@@ -1,0 +1,82 @@
+import { isValidKey, type Graph, type LocalizedText, type Question, type Workspace } from '../model';
+import { collectExpressions, questionOfNode, type Owner } from '../references';
+import { checkGraph } from './graph';
+import { checkReferences } from './refs-check';
+import { issue, type Issue } from './issue';
+
+function checkKeys(ws: Workspace, g: Graph, owner: Owner, out: Issue[]) {
+  const seen = new Set<string>();
+  const add = (key: string, nodeId: string) => {
+    if (!isValidKey(key)) out.push(issue('invalidKey', owner, { nodeId }, { key }));
+    if (seen.has(key)) out.push(issue('duplicateKey', owner, { nodeId }, { key }));
+    seen.add(key);
+  };
+  for (const n of g.nodes) {
+    if (n.kind === 'question' && 'ref' in n && !ws.library.questions.some((q) => q.id === n.ref)) {
+      out.push(issue('libraryMissing', owner, { nodeId: n.id }, { ref: n.ref }));
+    }
+    if (n.kind === 'block') {
+      if (!ws.library.blocks.some((b) => b.id === n.ref)) out.push(issue('libraryMissing', owner, { nodeId: n.id }, { ref: n.ref }));
+      add(n.alias, n.id);
+    }
+    const q = questionOfNode(ws, n);
+    if (q) {
+      add(q.key, n.id);
+      checkQuestion(ws, q, owner, n.id, out);
+    }
+  }
+}
+
+function checkQuestion(ws: Workspace, q: Question, owner: Owner, nodeId: string, out: Issue[]) {
+  if ((q.type === 'boolean' || q.type === 'tristate') && q.labelSet && !ws.library.labelSets.some((l) => l.id === q.labelSet)) {
+    out.push(issue('libraryMissing', owner, { nodeId }, { ref: q.labelSet }));
+  }
+  if (q.type === 'structure') {
+    const keys = q.fields.map((f) => f.key);
+    keys.forEach((k, i) => keys.indexOf(k) !== i && out.push(issue('duplicateKey', owner, { nodeId }, { key: `${q.key}.${k}` })));
+  }
+}
+
+function checkTranslations(ws: Workspace, out: Issue[]) {
+  const langs = ws.project.languages;
+  const seen = new Set<string>();
+  for (const f of collectExpressions(ws)) {
+    if (f.kind !== 'template' || !f.loc.langs) continue;
+    const missing = langs.filter((l) => !f.loc.langs!.includes(l));
+    const id = [f.loc.owner.kind, f.loc.owner.id, f.loc.nodeId, f.loc.edgeId, f.loc.property].join('|');
+    if (!missing.length || seen.has(id)) continue;
+    seen.add(id);
+    out.push(issue('missingTranslation', f.loc.owner, { nodeId: f.loc.nodeId, property: f.loc.property }, { lang: missing.join(', '), property: f.loc.property }));
+  }
+  const text = (t: LocalizedText | undefined, owner: Owner, property: string) => {
+    const missing = t ? langs.filter((l) => !t[l]?.trim()) : [];
+    if (missing.length) out.push(issue('missingTranslation', owner, { property }, { lang: missing.join(', '), property }));
+  };
+  ws.questionnaires.forEach((q) => text(q.title, { kind: 'questionnaire', id: q.id }, 'title'));
+  ws.library.blocks.forEach((b) => text(b.title, { kind: 'block', id: b.id }, 'title'));
+  for (const l of ws.library.labelSets) {
+    const owner: Owner = { kind: 'libraryQuestion', id: l.id };
+    text(l.yes, owner, `${l.key}.yes`);
+    text(l.no, owner, `${l.key}.no`);
+    if (l.kind === 'tristate') text(l.unknown ?? {}, owner, `${l.key}.unknown`);
+  }
+}
+
+/** Toutes les vérifications non bloquantes du §4.6 sur le projet. */
+export function checkWorkspace(ws: Workspace): Issue[] {
+  const out: Issue[] = [];
+  for (const q of ws.questionnaires) {
+    const owner: Owner = { kind: 'questionnaire', id: q.id };
+    checkKeys(ws, q, owner, out);
+    out.push(...checkGraph(ws, q, owner));
+  }
+  for (const b of ws.library.blocks) {
+    const owner: Owner = { kind: 'block', id: b.id };
+    checkKeys(ws, b, owner, out);
+    out.push(...checkGraph(ws, b, owner));
+  }
+  for (const q of ws.library.questions) checkQuestion(ws, q, { kind: 'libraryQuestion', id: q.id }, q.id, out);
+  out.push(...checkReferences(ws));
+  checkTranslations(ws, out);
+  return out;
+}

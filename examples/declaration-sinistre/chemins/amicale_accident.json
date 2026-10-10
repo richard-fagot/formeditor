@@ -1,0 +1,24 @@
+{
+  "description": "Amicale sans sinistre : accident corporel (pas de question de lien), une victime hospitalisée, pas de tiers.",
+  "questionnaire": "q_declaration",
+  "scenario": "sc_amicale_sans_sinistre",
+  "today": "2026-10-10",
+  "answers": [
+    { "step": "n_type", "value": "accident" },
+    { "step": "n_date", "value": "2026-08-15" },
+    {
+      "step": "n_victimes",
+      "value": [{ "prenom": "Léa", "nom": "Morel", "date_naissance": "1990-04-02", "hospitalise": true, "duree_hospitalisation": 3 }]
+    },
+    { "step": "n_montant", "value": 1200 },
+    { "step": "n_tiers", "value": false },
+    { "step": "n_circonstances", "value": "Chute lors de la kermesse annuelle de l'amicale." },
+    { "step": "n_canaux", "value": ["courrier"] },
+    { "step": "n_confirmation", "value": true }
+  ],
+  "path": [
+    "n_intro", "n_type", "n_date", "n_victimes", "n_montant", "n_tiers",
+    "n_circonstances", "n_canaux", "n_synthese", "n_confirmation", "n_fin"
+  ],
+  "outcome": "submitted"
+}

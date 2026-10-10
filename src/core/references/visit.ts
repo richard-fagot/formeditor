@@ -19,6 +19,10 @@ export interface ExprLocation {
   structure?: string;
   /** Expression évaluée sur chaque élément d'une liste (source dynamique) : noms relatifs. */
   relative?: boolean;
+  /** Texte d'une variante : affiché seulement si cette condition est vraie. */
+  guard?: string;
+  /** Langues renseignées (non vides) du texte multilingue d'où vient ce gabarit. */
+  langs?: string[];
 }
 
 /** `expr` : expression ; `template` : texte interpolable `{…}`. Renvoie le texte (éventuellement modifié). */
@@ -27,7 +31,8 @@ export type ExprMapper = (text: string, kind: 'expr' | 'template', loc: ExprLoca
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 function mapText(t: LocalizedText, f: ExprMapper, loc: ExprLocation): LocalizedText {
-  return Object.fromEntries(Object.entries(t).map(([lang, s]) => [lang, f(s, 'template', loc)]));
+  const langs = Object.keys(t).filter((l) => t[l]?.trim());
+  return Object.fromEntries(Object.entries(t).map(([lang, s]) => [lang, f(s, 'template', { ...loc, langs })]));
 }
 
 function mapLabel<L extends Label | undefined>(label: L, f: ExprMapper, loc: ExprLocation): L {
@@ -36,7 +41,7 @@ function mapLabel<L extends Label | undefined>(label: L, f: ExprMapper, loc: Exp
   return {
     variants: label.variants.map((v, i) => ({
       when: f(v.when, 'expr', { ...loc, property: `${loc.property}.variants[${i}].when` }),
-      text: mapText(v.text, f, loc),
+      text: mapText(v.text, f, { ...loc, property: `${loc.property}.variants[${i}].text`, guard: v.when }),
     })),
     otherwise: mapText(label.otherwise, f, loc),
   } as L;
@@ -44,7 +49,7 @@ function mapLabel<L extends Label | undefined>(label: L, f: ExprMapper, loc: Exp
 
 /** Applique `f` à toutes les expressions et libellés d'une question (champs de structure compris). */
 export function mapQuestion<Q extends Question | StructureField>(q: Q, f: ExprMapper, base: ExprLocation): Q {
-  const at = (property: string): ExprLocation => ({ ...base, property });
+  const at = (property: string): ExprLocation => ({ ...base, property: base.property ? `${base.property}.${property}` : property });
   const out: Record<string, unknown> = { ...q };
   out.label = mapLabel(q.label, f, at('label'));
   if (q.help) out.help = mapLabel(q.help, f, at('help'));
@@ -66,6 +71,7 @@ export function mapQuestion<Q extends Question | StructureField>(q: Q, f: ExprMa
       break;
     case 'number':
       for (const b of ['min', 'max'] as const) if (typeof q[b] === 'string') out[b] = f(q[b], 'expr', at(b));
+      if (q.unit) out.unit = mapText(q.unit, f, at('unit'));
       break;
     case 'single':
     case 'multiple':
@@ -85,7 +91,8 @@ export function mapQuestion<Q extends Question | StructureField>(q: Q, f: ExprMa
       }
       break;
     case 'structure':
-      out.fields = q.fields.map((fd) => mapQuestion(fd, f, { ...base, structure: q.key }));
+      out.fields = q.fields.map((fd) => mapQuestion(fd, f, { ...base, structure: q.key, property: `fields.${fd.key}` }));
+      if (q.repeat?.addLabel) out.repeat = { ...q.repeat, addLabel: mapText(q.repeat.addLabel, f, at('repeat.addLabel')) };
       break;
   }
   if ('other' in q && q.other?.label) out.other = { ...q.other, label: mapLabel(q.other.label, f, at('other.label')) };

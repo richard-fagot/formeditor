@@ -217,3 +217,24 @@ La question `sinistre_lie` propose « Non, aucun » puis un choix par sinistre e
 
 En fin de parcours, `confirmation = false` renvoie à la première question (boucle) : les réponses
 déjà données sont proposées à nouveau et remplacées si elles changent.
+
+## 10. Chemins attendus (jeux de test)
+
+`examples/declaration-sinistre/chemins/*.json` décrit des parcours de référence, réutilisables pour
+tester une implémentation du moteur :
+
+```json
+{
+  "questionnaire": "q_declaration",
+  "scenario": "sc_ud_2_sinistres",
+  "today": "2026-10-10",
+  "answers": [{ "step": "n_type", "value": "vol" }, { "step": "n_bloc_tiers/bn_nom", "value": "Dupont" }],
+  "path": ["n_intro", "n_type", "…", "n_fin"],
+  "outcome": "submitted"
+}
+```
+
+- `step` : id de page ; dans un bloc, `idInstance/idNœudDuBloc`.
+- Les réponses sont consommées dans l'ordre. Une page question sans réponse en file garde sa réponse
+  courante (cas d'un deuxième passage dans une boucle : l'utilisateur valide sans changer).
+- `path` : pages visitées (questions, informations, synthèses, fin), boucles comprises.
