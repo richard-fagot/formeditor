@@ -1,5 +1,6 @@
 import { evaluate, evaluateCondition, type EvalContext, type EvalEnv } from '../expressions';
 import { OTHER_VALUE, type LocalizedText, type Question, type StructureField } from '../model';
+import { choiceOptions } from '../runtime';
 import { defaultMessage } from './messages';
 
 export interface FieldError {
@@ -74,8 +75,13 @@ export function validateAnswer(
       if (q.decimals !== undefined && decimalsOf(n) > q.decimals) fail('decimals', q.decimals);
       break;
     }
+    case 'single':
     case 'multiple': {
-      const list = value as unknown[];
+      const visible = new Set(choiceOptions(q, ctx, env).map((o) => o.value));
+      if (q.other) visible.add(OTHER_VALUE);
+      const list = Array.isArray(value) ? value : [value];
+      if (list.some((v) => !visible.has(String(v)))) fail('option');
+      if (q.type === 'single') break;
       if (q.minSelected !== undefined && list.length < q.minSelected) fail('minSelected', q.minSelected);
       if (q.maxSelected !== undefined && list.length > q.maxSelected) fail('maxSelected', q.maxSelected);
       break;
@@ -118,4 +124,20 @@ function validateStructure(
       errors.push(...validateAnswer(f, occ?.[f.key], octx, env, occ?.[`${f.key}_${OTHER_VALUE}`], fpath));
     }
   });
+}
+
+const BUILTIN_PARAMS = ['minLength', 'maxLength', 'pattern', 'min', 'max', 'numberKind', 'decimals', 'minSelected', 'maxSelected'];
+
+/** Paramètres dont le message d'erreur est personnalisable (`messages.<param>`) pour cette question. */
+export function messageParams(q: Question | StructureField): string[] {
+  const r = q as unknown as Record<string, unknown>;
+  return [
+    'required',
+    ...BUILTIN_PARAMS.filter((p) => r[p] !== undefined),
+    ...(q.type === 'date' ? ['format'] : []),
+    ...(q.type === 'single' || q.type === 'multiple' ? ['option'] : []),
+    ...('other' in q && q.other?.detailRequired ? ['otherDetail'] : []),
+    ...(q.type === 'structure' && q.repeat?.min !== undefined ? ['minOccurrences'] : []),
+    ...(q.type === 'structure' && q.repeat?.max !== undefined ? ['maxOccurrences'] : []),
+  ];
 }

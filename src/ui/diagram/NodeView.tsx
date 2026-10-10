@@ -4,7 +4,8 @@ import { OTHER_TYPES, isLibraryQuestion, isVariantLabel, type GraphNode, type La
 import { questionOfNode } from '../../core/references';
 import { previewText } from '../../plugin-api';
 import { nodeKind, questionType } from '../../registry';
-import { getGraph, scopeOf, setQuestionLabel, useEditorEnv, useStore, useT } from '../../app/store';
+import { getGraph, scopeOf, setQuestionLabel, useStore, useT } from '../../app/store';
+import { usePluginEnv } from './usePluginEnv';
 import { Badge, cn } from '../../ui-kit';
 import { useDiagram } from './DiagramContext';
 
@@ -15,7 +16,7 @@ export const NodeView = memo(function NodeView({ data, selected }: NodeProps & {
   const { graph, issuesByNode } = useDiagram();
   const node = useStore((s) => getGraph(s.ws, graph)?.nodes.find((n) => n.id === data.nodeId));
   const isStart = useStore((s) => getGraph(s.ws, graph)?.start === data.nodeId);
-  const env = useEditorEnv();
+  const env = usePluginEnv();
   const t = useT();
   const focus = useStore((s) => s.focusRequest);
   const editing = focus?.kind === 'label' && focus.id === data.nodeId && node?.kind === 'question';

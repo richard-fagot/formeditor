@@ -7,6 +7,8 @@ Saisie d'expressions JSONata et de libellés multilingues. Dépend de `core/expr
   la portée et des fonctions (`completion.ts`), diagnostics en direct (syntaxe, référence inconnue).
   Entrée → `onSubmit`, Échap → quitte le champ.
 - `LabelEditor` : libellé multilingue (une saisie par langue) avec variantes conditionnelles `{variants, otherwise}`.
+- `ConstraintsEditor` : contraintes libres (règle + message) et messages des contraintes intégrées ;
+  utilisé par `ui/properties` et par les champs de structure.
 - `ExpressionEnvProvider` / `useExpressionEnv` : portée (`Scope` de `core/references`) et langues, fournies
   par le panneau de propriétés.
 

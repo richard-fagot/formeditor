@@ -220,11 +220,27 @@ test('types au clavier, saisie rapide des options, champs de structure, jeu de l
   await page.getByTestId('structure-add-field').click();
   await expect(node).toContainText('Champ 1');
 
+  // Champ de structure : aide, contrainte libre et son message.
+  const fieldBox = page.locator('details').filter({ hasText: 'champ_1' });
+  await fieldBox.getByRole('button', { name: 'Ajouter une règle' }).click();
+  await fieldBox.getByTestId('constraints').locator('.cm-content').click();
+  await page.keyboard.type("champ_1 != 'x'");
+  await fieldBox.getByTestId('constraints').getByPlaceholder('Message d’erreur').fill('Pas x');
+  await page.getByTestId('diagram').focus();
+  const download = page.waitForEvent('download');
+  await page.getByTestId('export').click();
+  const bundle = JSON.parse(readFileSync(await (await download).path(), 'utf8'));
+  expect(bundle.questionnaires[0].nodes[0].fields[0].constraints).toEqual([{ rule: "champ_1 != 'x'", message: { fr: 'Pas x' } }]);
+
   // Bibliothèque : jeu de libellés tri-state, puis choisi dans les propriétés d'un tri-state.
   await page.keyboard.press('Control+k');
   await page.keyboard.type('jeu de libellés tri-state');
   await page.keyboard.press('Enter');
   await expect(page.getByTestId('label-sets').locator('input').first()).toHaveValue('oui_non_ne_sait_pas');
   await expect(page.getByTestId('label-sets').locator('input[value="Ne sait pas"]')).toBeVisible();
+  // Annuler au clavier hors du logigramme (focus sur un bouton de la bibliothèque).
+  await page.getByTestId('label-sets').getByRole('button', { name: 'Supprimer' }).focus();
+  await page.keyboard.press('Control+z');
+  await expect(page.getByTestId('label-sets').locator('input')).toHaveCount(0);
   expect(errors).toEqual([]);
 });

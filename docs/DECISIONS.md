@@ -41,3 +41,8 @@ Une ligne par choix notable pris en cours de réalisation (écart à la spec, am
 | 2026-10-10 | Jeux de libellés édités dès la phase 6 dans l'onglet Bibliothèque (questions et blocs en phase 7) | Nécessaires au tri-state ; création / suppression par commandes, saisie par `store.edit('library')`. |
 | 2026-10-10 | Structure répétable : occurrences vides affichées jusqu'au minimum, enregistrées à la première saisie | Pas d'écriture de réponse à l'affichage ; « Supprimer » / « Ajouter » bornés par min / max. |
 | 2026-10-10 | Placeholder proposé seulement pour texte et nombre | Sans objet pour une date native, un choix ou une structure. |
+| 2026-10-10 | Réponse de choix hors des options visibles refusée par `validateAnswer` (paramètre `option`) ; `core/validation` importe `core/runtime` pour `choiceOptions` | Une option devenue invisible ne peut plus valider une question obligatoire ; un seul calcul des options visibles. |
+| 2026-10-10 | Structure répétable facultative laissée vide acceptée : `repeat.min` ne s'applique que si la question est obligatoire ou si une occurrence est saisie | « Facultatif » prime ; rendre la question obligatoire impose le minimum. |
+| 2026-10-10 | Annuler / rétablir (Ctrl+Z, Ctrl+Shift+Z, Ctrl+Y) en portée `global` | §4.4 ne restreint au graphe que les raccourcis à une lettre ; pendant une saisie, l'annulation native du champ reste active. |
+| 2026-10-10 | `questionType` ajouté à l'environnement des plugins par `ui/*` (`usePluginEnv`), pas par `app/store` | `app/store` ne dépend pas du registre (ni, indirectement, de `ui`). |
+| 2026-10-10 | Éditeur des contraintes libres et des messages partagé (`ConstraintsEditor` dans `ui/expression-editor`) | Même saisie pour une question et pour un champ de structure, sans dupliquer. |

@@ -1,21 +1,20 @@
-import { Plus, X } from 'lucide-react';
 import type { LocalQuestionNode, Question } from '../../core/model';
 import { renameKey } from '../../core/references';
 import { commonQuestionFields } from '../../plugin-api';
 import { QUESTION_TYPE_PLUGINS, questionType } from '../../registry';
-import { getGraph, setQuestionLabel, updateNode, useEditorEnv, useT, usedKeys, type GraphRef } from '../../app/store';
-import { Button, Checkbox, Field, LocalizedTextInput, Section, Select, Textarea } from '../../ui-kit';
-import { ExpressionInput, LabelEditor } from '../expression-editor';
+import { getGraph, setQuestionLabel, updateNode, useT, usedKeys, type GraphRef } from '../../app/store';
+import { Checkbox, Field, Section, Select, Textarea } from '../../ui-kit';
+import { ConstraintsEditor, ExpressionInput, LabelEditor } from '../expression-editor';
+import { messageParams } from '../../core/validation';
 import { useGraphEdit } from './useGraphEdit';
+import { usePluginEnv } from './usePluginEnv';
 import { KeyInput } from './KeyInput';
 import { DefaultValueInput } from './DefaultValueInput';
-
-const CONSTRAINT_PARAMS = ['minLength', 'maxLength', 'pattern', 'min', 'max', 'numberKind', 'decimals', 'minSelected', 'maxSelected'];
 
 /** Propriétés d'une question locale : communes, puis propres au type (plugin), contraintes et messages. */
 export function QuestionProperties({ graph, node }: { graph: GraphRef; node: LocalQuestionNode }) {
   const t = useT();
-  const env = useEditorEnv();
+  const env = usePluginEnv();
   const { edit } = useGraphEdit(graph);
   const q = node as unknown as Question;
   const plugin = questionType(q.type);
@@ -23,14 +22,6 @@ export function QuestionProperties({ graph, node }: { graph: GraphRef; node: Loc
     edit(`${node.id}:${field}`, (ws) => updateNode(ws, graph, node.id, (n) => ({ ...n, ...patch }) as typeof n));
   const taken = usedKeys(env.ws, getGraph(env.ws, graph)!).filter((k) => k !== q.key);
   const owner = { kind: graph.kind, id: graph.id } as const;
-  const messageParams = [
-    'required',
-    ...CONSTRAINT_PARAMS.filter((p) => (q as unknown as Record<string, unknown>)[p] !== undefined),
-    ...(q.type === 'date' ? ['format'] : []),
-    ...('other' in q && q.other?.detailRequired ? ['otherDetail'] : []),
-    ...(q.type === 'structure' && q.repeat?.min !== undefined ? ['minOccurrences'] : []),
-    ...(q.type === 'structure' && q.repeat?.max !== undefined ? ['maxOccurrences'] : []),
-  ];
 
   return (
     <>
@@ -83,31 +74,8 @@ export function QuestionProperties({ graph, node }: { graph: GraphRef; node: Loc
             renameField={(fieldId, k) => edit(`${node.id}:${fieldId}:key`, (ws) => renameKey(ws, { kind: 'question', owner, nodeId: node.id, fieldId }, k))} />
         </Section>
       )}
-      <Section title={t('props.constraints')} actions={
-        <Button size="sm" variant="ghost" onClick={() => update({ constraints: [...(q.constraints ?? []), { rule: '' }] })}><Plus className="size-3" />{t('props.addConstraint')}</Button>
-      }>
-        {(q.constraints ?? []).map((c, i) => (
-          <div key={i} className="space-y-1 rounded-md border border-slate-100 p-2">
-            <div className="flex items-center gap-1">
-              <ExpressionInput className="flex-1" placeholder={t('props.rule')} value={c.rule}
-                onChange={(rule) => update({ constraints: q.constraints!.map((x, j) => (j === i ? { ...x, rule } : x)) }, `constraint${i}`)} />
-              <Button size="sm" variant="ghost" aria-label={t('props.delete')} onClick={() => update({ constraints: q.constraints!.filter((_, j) => j !== i) })}><X className="size-3" /></Button>
-            </div>
-            <LocalizedTextInput languages={env.languages} activeLang={env.contentLang} placeholder={t('props.message')} value={c.message}
-              onChange={(m) => update({ constraints: q.constraints!.map((x, j) => (j === i ? { ...x, message: Object.keys(m).length ? m : undefined } : x)) }, `constraintMsg${i}`)} />
-          </div>
-        ))}
-        {messageParams.map((p) => (
-          <Field key={p} label={`${t('props.message')} — ${p}`}>
-            <LocalizedTextInput languages={env.languages} activeLang={env.contentLang} value={q.messages?.[p]}
-              onChange={(m) => {
-                const messages = { ...(q.messages ?? {}) };
-                if (Object.keys(m).length) messages[p] = m;
-                else delete messages[p];
-                update({ messages: Object.keys(messages).length ? messages : undefined }, `msg-${p}`);
-              }} />
-          </Field>
-        ))}
+      <Section title={t('props.constraints')}>
+        <ConstraintsEditor value={q} params={messageParams(q)} onChange={(patch, field) => update(patch, field)} />
       </Section>
       <Section title={t('props.description')}>
         <Textarea value={q.description ?? ''} onChange={(e) => update({ description: e.target.value || undefined })} />

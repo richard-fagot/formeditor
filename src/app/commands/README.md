@@ -21,7 +21,7 @@ Catalogue unique des actions utilisateur (spec §4.4). Palette, menus et raccour
   (glisser sur le logigramme), `questionnaire.properties`, `questionnaire.setTitle` / `rename` / `setDescription`,
   `project.rename`.
 - `library-commands.ts` : jeux de libellés (`labelSet.addBoolean`, `labelSet.addTristate`, `labelSet.delete` avec l'id).
-- `nav-commands.ts` : flèches, annuler/rétablir, ajuster la vue, logigramme ↔ prévisualisation.
+- `nav-commands.ts` : flèches, annuler/rétablir (portée `global` : actifs hors du logigramme, pas pendant une saisie ; onglet Bibliothèque → historique `library`), ajuster la vue, logigramme ↔ prévisualisation.
 - `example.ts` : exemple embarqué ; `files.ts` : téléchargement et sélection de fichiers.
 
 ## Tests

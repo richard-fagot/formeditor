@@ -34,8 +34,8 @@ export function navCommands(): Command[] {
     { id: 'nav.up', label: 'node.navPrev', keys: ['ArrowUp'], scope: 'graph', hidden: true, run: () => navigate('up') },
     { id: 'nav.right', label: 'node.navSiblingNext', keys: ['ArrowRight'], scope: 'graph', hidden: true, run: () => navigate('right') },
     { id: 'nav.left', label: 'node.navSiblingPrev', keys: ['ArrowLeft'], scope: 'graph', hidden: true, run: () => navigate('left') },
-    { id: 'edit.undo', label: 'edit.undo', keys: ['$mod+z'], scope: 'graph', run: () => st().undo(scope()) },
-    { id: 'edit.redo', label: 'edit.redo', keys: ['$mod+Shift+z', '$mod+y'], scope: 'graph', run: () => st().redo(scope()) },
+    { id: 'edit.undo', label: 'edit.undo', keys: ['$mod+z'], scope: 'global', run: () => st().undo(scope()) },
+    { id: 'edit.redo', label: 'edit.redo', keys: ['$mod+Shift+z', '$mod+y'], scope: 'global', run: () => st().redo(scope()) },
     { id: 'view.fit', label: 'view.fit', keys: ['f'], scope: 'graph', run: () => st().set((s) => void (s.fitRequest += 1)) },
     {
       id: 'view.toggle', label: 'view.toggle', keys: ['p'], scope: 'graph',

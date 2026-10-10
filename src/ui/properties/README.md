@@ -4,6 +4,8 @@ Cadre du panneau de propriétés de l'objet sélectionné (nœud ou arête ; san
 vient des plugins (`registry`). Dépend de `app/store`, `registry`, `core`, `ui-kit`, `ui/expression-editor`.
 
 ## Composants
+- `usePluginEnv()` : `useEditorEnv()` + `questionType` du registre, transmis aux plugins.
+- Contraintes et messages : `ConstraintsEditor` (`ui/expression-editor`), paramètres par `messageParams`.
 - `PropertiesPanel({ graph })` : fournit la portée des références à l'éditeur d'expression (`ExpressionEnvProvider`).
 - `QuestionnaireProperties` : titre multilingue, clé (= nom du fichier, unique, `KeyInput`), description.
 - `QuestionProperties` : intitulé (clé dérivée), clé (renommage propagé, `KeyInput`), type, obligatoire

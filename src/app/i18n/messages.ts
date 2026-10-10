@@ -85,8 +85,6 @@ export const MESSAGES = {
   'props.defaultExprHint': { fr: 'Expression, prioritaire sur la valeur littérale.', en: 'Expression, takes precedence over the literal value.' },
   'props.description': { fr: 'Description (pour l’équipe de dev)', en: 'Description (for developers)' },
   'props.constraints': { fr: 'Contraintes libres', en: 'Custom rules' },
-  'props.addConstraint': { fr: 'Ajouter une règle', en: 'Add a rule' },
-  'props.rule': { fr: 'Règle (vraie si valide)', en: 'Rule (true when valid)' },
   'props.message': { fr: 'Message d’erreur', en: 'Error message' },
   'props.edge': { fr: 'Arête', en: 'Edge' },
   'props.condition': { fr: 'Condition', en: 'Condition' },

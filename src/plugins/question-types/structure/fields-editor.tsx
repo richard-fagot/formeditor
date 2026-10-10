@@ -4,7 +4,8 @@ import { deriveKey, isValidKey, newId, QUESTION_TYPES, uniqueKey, type QuestionT
 import { structureScope } from '../../../core/references';
 import { commonQuestionFields, previewText, tr, type QuestionPropertiesProps } from '../../../plugin-api';
 import { Button, Checkbox, Field, Input, Select } from '../../../ui-kit';
-import { ExpressionEnvProvider, ExpressionInput, LabelEditor, useExpressionEnv } from '../../../ui/expression-editor';
+import { messageParams } from '../../../core/validation';
+import { ConstraintsEditor, ExpressionEnvProvider, ExpressionInput, LabelEditor, useExpressionEnv } from '../../../ui/expression-editor';
 
 const T = {
   fields: { fr: 'Champs', en: 'Fields' },
@@ -14,6 +15,7 @@ const T = {
   key: { fr: 'Clé', en: 'Key' },
   type: { fr: 'Type', en: 'Type' },
   required: { fr: 'Obligatoire', en: 'Required' },
+  help: { fr: 'Aide', en: 'Help' },
   when: { fr: "Condition d'affichage (clés sœurs sans préfixe)", en: 'Display condition (sibling keys without prefix)' },
   remove: { fr: 'Supprimer le champ', en: 'Remove field' },
   up: { fr: 'Monter', en: 'Move up' },
@@ -119,7 +121,11 @@ function FieldEditor({ field, taken, env, onChange, onRename }: {
       <Field label={tr(T.when, env.uiLang)}>
         <ExpressionInput value={field.when ?? ''} onChange={(v) => onChange({ ...field, when: v.trim() || undefined })} />
       </Field>
+      <Field label={tr(T.help, env.uiLang)}>
+        <LabelEditor value={field.help} onChange={(help) => onChange({ ...field, help })} />
+      </Field>
       {plugin && <plugin.Properties question={field} env={env} update={(patch) => onChange({ ...field, ...patch } as StructureField)} />}
+      <ConstraintsEditor value={field} params={messageParams(field)} onChange={(patch) => onChange({ ...field, ...patch } as StructureField)} />
     </div>
   );
 }

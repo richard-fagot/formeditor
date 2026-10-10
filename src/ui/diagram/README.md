@@ -2,6 +2,7 @@
 
 Logigramme d'un graphe (questionnaire ; bloc en phase 7) avec React Flow (@xyflow/react).
 Dépend de `app/store`, `app/commands` (liaison tracée à la souris : `edge.create`), `registry`, `core`, `ui-kit`.
+Les plugins reçoivent `usePluginEnv()` (environnement de l'éditeur + `questionType` du registre).
 
 ## API
 - `Diagram({ graph, issues })`.

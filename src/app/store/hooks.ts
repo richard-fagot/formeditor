@@ -2,7 +2,6 @@ import { useMemo } from 'react';
 import { makeTranslate } from '../i18n';
 import type { Questionnaire } from '../../core/model';
 import type { EditorEnv } from '../../plugin-api';
-import { questionType } from '../../registry';
 import { useStore, type Store } from './store';
 import type { GraphRef } from './graph';
 
@@ -20,13 +19,13 @@ export function activeQuestionnaire(s: Store): Questionnaire | undefined {
   return s.activeTab.startsWith('q:') ? s.ws.questionnaires.find((q) => q.id === s.activeTab.slice(2)) : undefined;
 }
 
-/** Environnement transmis aux plugins. */
-export function useEditorEnv(): EditorEnv {
+/** Environnement de l'éditeur ; l'interface y ajoute `questionType` (registre) avant de le transmettre aux plugins. */
+export function useEditorEnv(): Omit<EditorEnv, 'questionType'> {
   const ws = useStore((s) => s.ws);
   const uiLang = useStore((s) => s.uiLang);
   const contentLang = useStore((s) => s.contentLang);
   return useMemo(
-    () => ({ ws, uiLang, languages: ws.project.languages, contentLang, defaultLang: ws.project.defaultLanguage, questionType }),
+    () => ({ ws, uiLang, languages: ws.project.languages, contentLang, defaultLang: ws.project.defaultLanguage }),
     [ws, uiLang, contentLang],
   );
 }
