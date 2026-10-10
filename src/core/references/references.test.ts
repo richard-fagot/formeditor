@@ -1,0 +1,82 @@
+import { describe, expect, it } from 'vitest';
+import { exampleWorkspace } from '../../../tests/reference/example';
+import type { Questionnaire, Workspace } from '../model';
+import { blockScope, collectExpressions, findUsages, questionnaireScope, renameKey, resolvePath } from './index';
+
+const ws = exampleWorkspace();
+const decl = (w: Workspace) => w.questionnaires[0]!;
+const node = (q: Questionnaire, id: string) => q.nodes.find((n) => n.id === id) as unknown as Record<string, unknown>;
+const edge = (q: Questionnaire, id: string) => q.edges.find((e) => e.id === id)!;
+const Q = { kind: 'questionnaire', id: 'q_declaration' } as const;
+
+describe('portée', () => {
+  const scope = questionnaireScope(ws, 'q_declaration');
+  it('contient réponses, sous-champs, précisions « Autre », alias de bloc et variables système', () => {
+    for (const p of ['type_sinistre', 'type_sinistre_other', 'date_sinistre', 'victimes.prenom', 'tiers', 'tiers.nom', 'tiers.compagnie', 'sys.sinistres.nature', 'sys.plafond_expertise']) {
+      expect(scope.has(p), p).toBe(true);
+    }
+    expect(scope.get('tiers.nom')?.alias).toBe('tiers');
+  });
+  it('résout les chemins connus et refuse les inconnus', () => {
+    expect(resolvePath(scope, ['victimes', 'prenom'])?.kind).toBe('field');
+    expect(resolvePath(scope, ['inconnu'])).toBeUndefined();
+    expect(resolvePath(scope, ['sys', 'sinistres', 'montant'])).toBeUndefined();
+  });
+  it('dans un bloc : ses clés sans préfixe et celles de l’hôte', () => {
+    const b = blockScope(ws, 'blk_identite_tiers');
+    expect(b.has('nom') && b.has('assurance_connue') && b.has('type_sinistre')).toBe(true);
+  });
+});
+
+describe('collecte et usages', () => {
+  it('collecte les expressions des arêtes, libellés, bornes, sources', () => {
+    const all = collectExpressions(ws);
+    expect(all.some((f) => f.loc.edgeId === 'e_date_lien')).toBe(true);
+    expect(all.some((f) => f.loc.property === 'source.label' && f.loc.relative)).toBe(true);
+    expect(all.some((f) => f.loc.owner.kind === 'libraryQuestion' && f.loc.property === 'min')).toBe(true);
+    expect(all.some((f) => f.loc.structure === 'victimes' && f.text === 'hospitalise = true')).toBe(true);
+  });
+  it('trouve les usages d’une clé', () => {
+    const ids = findUsages(ws, ['type_sinistre']).map((f) => f.loc.edgeId ?? f.loc.nodeId);
+    expect(ids).toEqual(expect.arrayContaining(['e_date_victimes', 'e_lien_victimes', 'n_montant']));
+  });
+});
+
+describe('renommage propagé', () => {
+  it('question locale : arêtes, variantes de libellé, précision « Autre »', () => {
+    const w = renameKey(ws, { kind: 'question', owner: Q, nodeId: 'n_type' }, 'nature_sinistre');
+    expect(node(decl(w), 'n_type').key).toBe('nature_sinistre');
+    expect(edge(decl(w), 'e_date_victimes').when).toBe("nature_sinistre = 'accident'");
+    expect(JSON.stringify(node(decl(w), 'n_montant').label)).toContain("nature_sinistre = 'vol'");
+    expect(findUsages(w, ['type_sinistre'])).toEqual([]);
+  });
+  it('champ de structure : expressions sœurs sans préfixe', () => {
+    const w = renameKey(ws, { kind: 'question', owner: Q, nodeId: 'n_victimes', fieldId: 'f_hospitalise' }, 'hospitalisee');
+    const fields = node(decl(w), 'n_victimes').fields as { key: string; when?: string }[];
+    expect(fields.map((f) => f.key)).toContain('hospitalisee');
+    expect(fields.find((f) => f.key === 'duree_hospitalisation')?.when).toBe('hospitalisee = true');
+  });
+  it('question de bloc : `alias.cle` chez les hôtes, clé nue dans le bloc', () => {
+    const w = renameKey(ws, { kind: 'question', owner: { kind: 'block', id: 'blk_identite_tiers' }, nodeId: 'bn_nom' }, 'nom_tiers');
+    const block = w.library.blocks[0]!;
+    expect(JSON.stringify(block.nodes.find((n) => n.id === 'bn_assurance_connue'))).toContain('{nom_tiers}');
+    expect(JSON.stringify(node(decl(w), 'n_tiers_inconnu').text)).toContain('{tiers.nom_tiers}');
+  });
+  it('question de bibliothèque : utilisée sans préfixe chez les hôtes', () => {
+    const w = renameKey(ws, { kind: 'question', owner: { kind: 'libraryQuestion', id: 'lq_date_sinistre' }, nodeId: '' }, 'date_evenement');
+    expect(w.library.questions[0]!.key).toBe('date_evenement');
+  });
+  it('alias de bloc et variable système (scénarios compris)', () => {
+    let w = renameKey(ws, { kind: 'alias', questionnaireId: 'q_declaration', nodeId: 'n_bloc_tiers' }, 'partie_adverse');
+    expect(JSON.stringify(node(decl(w), 'n_fin').message)).toContain('partie_adverse.compagnie');
+    w = renameKey(w, { kind: 'system', name: 'sinistres' }, 'historique');
+    expect(edge(decl(w), 'e_date_lien').when).toBe('$count(sys.historique) > 0');
+    expect(w.project.scenarios[0]!.values.historique).toBeDefined();
+    expect((node(decl(w), 'n_lien').source as { label: string }).label).toBe("date & ' — ' & nature");
+  });
+  it('ne modifie rien d’autre que les références concernées', () => {
+    const w = renameKey(ws, { kind: 'question', owner: Q, nodeId: 'n_canaux' }, 'canaux');
+    const diff = JSON.stringify(w).length - JSON.stringify(ws).length;
+    expect(diff).toBe(-'_contact'.length * 2);
+  });
+});

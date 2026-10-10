@@ -17,3 +17,4 @@ Une ligne par choix notable pris en cours de réalisation (écart à la spec, am
 | 2026-10-10 | Pas de bloc dans un bloc | Simplifie moteur et références ; aucun besoin dans la spec. |
 | 2026-10-10 | Import refusé si un fichier est invalide (messages détaillés) | Évite de charger un projet incohérent dans l'interface. |
 | 2026-10-10 | Fonctions JSONata préfixées par `$` (`$count(temoins)`, pas `count(temoins)`) | Grammaire JSONata standard, portable côté dev. |
+| 2026-10-10 | Renommer une clé de l'hôte ne réécrit pas les blocs qui y font référence | Un bloc est partagé entre hôtes ; la vérification signale la référence cassée. |

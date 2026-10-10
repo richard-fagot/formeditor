@@ -20,10 +20,10 @@ carte à jour, fusion dans `main`, push.
 - [x] Tests de référence : schéma + aller-retour à l'identique
 
 ## Phase 3 — Expressions et références
-- [ ] Évaluation JSONata isolée dans `core/expressions`
-- [ ] Extraction des références, espaces de noms (`sys.`, alias de bloc, sous-champs, occurrences)
-- [ ] Renommage de clé propagé
-- [ ] Interpolation et variantes conditionnelles des libellés
+- [x] Évaluation JSONata isolée dans `core/expressions`
+- [x] Extraction des références, espaces de noms (`sys.`, alias de bloc, sous-champs, occurrences)
+- [x] Renommage de clé propagé
+- [x] Interpolation et variantes conditionnelles des libellés
 
 ## Phase 4 — Moteur de parcours et vérifications
 - [ ] Navigation par arêtes (rang, « sinon »), convergence, boucles (la réponse remplace la précédente)
