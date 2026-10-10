@@ -3,7 +3,8 @@ export { resolveStep, effectiveQuestion, isPage, questionnaireOf, type RuntimeIn
 export { buildContext, getAnswer, withAnswer, otherPath, type Answers } from './context';
 export { chooseEdge, successor, firstStep } from './navigate';
 export {
-  start, next, back, goTo, setAnswer, currentStep, prune, projectedSteps, summaryEntries, progress,
+  start, next, back, goTo, resume, setAnswer, currentStep, prune, projectedSteps, summaryEntries, progress,
   type Session, type SummaryEntry,
 } from './session';
 export { choiceOptions, type ResolvedOption } from './options';
+export { edgeTrace, type EdgeTrace } from './trace';

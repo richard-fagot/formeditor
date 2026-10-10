@@ -96,7 +96,9 @@ Un bloc ne contient pas d'instance de bloc. Un même bloc peut être instancié 
 Le parcours garde l'historique des pages visitées ; « précédent » revient à la page précédente.
 Après une modification (retour arrière, retour depuis une synthèse), le **chemin projeté** est
 recalculé depuis le départ avec les réponses connues ; les réponses des questions qui n'y figurent
-plus sont **effacées**.
+plus sont **effacées**. Après un retour depuis une synthèse, « revenir à la synthèse » avance sur les
+pages déjà vues et répondues, et s'arrête à la synthèse, à la première page nouvelle du chemin, à une
+question sans réponse ou à une fin (`resume`, `src/core/runtime`).
 
 ## 5. Questions
 

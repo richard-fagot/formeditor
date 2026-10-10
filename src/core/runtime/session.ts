@@ -53,6 +53,24 @@ export function goTo(s: Session, stepId: string): Session {
   return { ...s, history: [...s.history, stepId], blocked: false };
 }
 
+/**
+ * Après une modification depuis une synthèse : avance sur les pages déjà vues et répondues, jusqu'à
+ * `target` (la synthèse), une page nouvelle sur le chemin, une question sans réponse, une fin ou un blocage.
+ */
+export function resume(input: RuntimeInput, s: Session, target: string): Session {
+  let cur = s;
+  for (let i = 0; i < 500; i++) {
+    const n = next(input, cur);
+    if (n.blocked) return n;
+    cur = n;
+    const step = currentStep(input, cur);
+    if (step.id === target || step.node.kind === 'end') return cur;
+    if (!s.history.includes(step.id)) return cur;
+    if (step.answerPath && getAnswer(cur.answers, step.answerPath) === undefined) return cur;
+  }
+  return cur;
+}
+
 function withDefault(input: RuntimeInput, answers: Answers, stepId: string): Answers {
   const step = resolveStep(input, stepId);
   const q = step?.question;
