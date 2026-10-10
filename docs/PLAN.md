@@ -26,10 +26,10 @@ carte à jour, fusion dans `main`, push.
 - [x] Interpolation et variantes conditionnelles des libellés
 
 ## Phase 4 — Moteur de parcours et vérifications
-- [ ] Navigation par arêtes (rang, « sinon »), convergence, boucles (la réponse remplace la précédente)
-- [ ] Structures répétables, retour arrière, effacement des réponses hors chemin
-- [ ] Vérifications non bloquantes du §4.6
-- [ ] Tests de référence : chemin attendu par scénario
+- [x] Navigation par arêtes (rang, « sinon »), convergence, boucles (la réponse remplace la précédente)
+- [x] Structures répétables, retour arrière, effacement des réponses hors chemin
+- [x] Vérifications non bloquantes du §4.6
+- [x] Tests de référence : chemin attendu par scénario
 
 ## Phase 5 — Tranche verticale UI → DÉMO 1 (arrêt)
 - [ ] Shell, onglets de questionnaires, import/export, sauvegarde automatique IndexedDB

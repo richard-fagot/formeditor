@@ -67,8 +67,8 @@ export function templateExpressions(template: string): string[] {
   return parseTemplate(template).flatMap((s) => ('expr' in s ? [s.expr] : []));
 }
 
-export function templateReferences(template: string): RefPath[] {
-  return templateExpressions(template).flatMap(extractReferences);
+export function templateReferences(template: string, options: { skipExists?: boolean } = {}): RefPath[] {
+  return templateExpressions(template).flatMap((e) => extractReferences(e, options));
 }
 
 export function renameInTemplate(template: string, path: RefPath, newName: string): string {

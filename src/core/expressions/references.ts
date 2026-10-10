@@ -11,10 +11,11 @@ interface NameStep {
 type AstNode = { type: string; steps?: AstNode[] } & Record<string, unknown>;
 
 /** Parcourt l'AST et appelle `visit` pour chaque chemin racine (suite de noms en tête de chemin). */
-function walk(node: unknown, visit: (steps: NameStep[]) => void): void {
-  if (Array.isArray(node)) return node.forEach((n) => walk(n, visit));
+function walk(node: unknown, visit: (steps: NameStep[]) => void, skipExists = false): void {
+  if (Array.isArray(node)) return node.forEach((n) => walk(n, visit, skipExists));
   if (!node || typeof node !== 'object') return;
   const n = node as AstNode;
+  if (skipExists && n.type === 'function' && (n.procedure as { value?: string } | undefined)?.value === 'exists') return;
   if (n.type === 'path' && n.steps) {
     const lead: NameStep[] = [];
     for (const s of n.steps) {
@@ -23,10 +24,10 @@ function walk(node: unknown, visit: (steps: NameStep[]) => void): void {
     }
     if (lead.length) visit(lead);
     // Les étapes suivantes et les filtres sont relatifs : seule une première étape non nommée est racine.
-    else if (n.steps[0]) walk(n.steps[0], visit);
+    else if (n.steps[0]) walk(n.steps[0], visit, skipExists);
     return;
   }
-  for (const [k, v] of Object.entries(n)) if (k !== 'position' && k !== 'value') walk(v, visit);
+  for (const [k, v] of Object.entries(n)) if (k !== 'position' && k !== 'value') walk(v, visit, skipExists);
 }
 
 function ast(expr: string): unknown {
@@ -34,10 +35,13 @@ function ast(expr: string): unknown {
   return 'ast' in c ? c.ast() : undefined;
 }
 
-/** Références racines d'une expression (vide si syntaxe invalide). */
-export function extractReferences(expr: string): RefPath[] {
+/**
+ * Références racines d'une expression (vide si syntaxe invalide).
+ * `skipExists` ignore les références testées par `$exists(…)` (présence non garantie assumée).
+ */
+export function extractReferences(expr: string, options: { skipExists?: boolean } = {}): RefPath[] {
   const refs: RefPath[] = [];
-  walk(ast(expr), (steps) => refs.push(steps.map((s) => s.value)));
+  walk(ast(expr), (steps) => refs.push(steps.map((s) => s.value)), options.skipExists);
   return refs;
 }
 
