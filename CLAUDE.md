@@ -70,3 +70,16 @@ sans cérémonie. Préférer la solution la plus simple qui respecte la spec.
 | `npm run check` | Harnais complet |
 | `npm run map` | Régénère la partie factuelle de `docs/MAP.md` |
 | `npm run build` | Produit `dist/index.html` (fichier unique) |
+
+## Orchestration par sous-agents
+
+La session principale orchestre et ne code pas elle-même. Pour chaque phase de `docs/PLAN.md` :
+
+1. Créer la branche de la phase, puis confier la phase au sous-agent `realisateur`.
+2. À son retour, faire relire la phase par le sous-agent `relecteur`.
+3. Si le verdict est ÉCARTS avec au moins un point bloquant ou majeur : confier la liste au
+   `realisateur`, puis refaire relire. Trois allers-retours au plus ; au-delà, noter les écarts
+   restants dans `docs/ECARTS.md` et continuer.
+4. Verdict CONFORME (ou seulement des mineurs) : fusionner dans `main`, push, phase suivante.
+
+Les points d'arrêt des démos restent valables.

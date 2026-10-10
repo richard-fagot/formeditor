@@ -52,6 +52,7 @@ carte à jour, fusion dans `main`, push.
 - [ ] Insertion par palette et glisser-déposer, regroupement d'une sélection en bloc
 
 ## Phase 8 — Prévisualisation complète → DÉMO 2 (arrêt)
+- [ ] Écran du dictionnaire de l'état du système (§4.5) : nom, type, description, valeur d'exemple ; autocomplétion des expressions
 - [ ] Pages d'information, de synthèse (retour pour modifier), de fin
 - [ ] Panneau d'état du système, scénarios nommés, édition libre, débogage
 - [ ] Résumé de démo écrit, puis attendre la validation
