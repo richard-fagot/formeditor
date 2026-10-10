@@ -4,12 +4,12 @@ Dérouler dans l'ordre (spec §9). Cocher au fur et à mesure. Fin de phase = `n
 carte à jour, fusion dans `main`, push.
 
 ## Phase 1 — Socle
-- [ ] Vite + vite-plugin-singlefile, TypeScript strict, React
-- [ ] Vitest, Playwright (+ `npx playwright install chromium firefox`), dependency-cruiser (règles spec §8.2)
-- [ ] `npm run check` et hook pre-commit (typage + Vitest)
-- [ ] Squelette des modules du §8.2, chacun avec `index.ts` et `README.md`
-- [ ] `docs/MAP.md` + script `npm run map`
-- [ ] Test de fumée : `dist/index.html` s'ouvre en `file://` dans Firefox et Chromium
+- [x] Vite + vite-plugin-singlefile, TypeScript strict, React
+- [x] Vitest, Playwright (+ `npx playwright install chromium firefox`), dependency-cruiser (règles spec §8.2)
+- [x] `npm run check` et hook pre-commit (typage + Vitest)
+- [x] Squelette des modules du §8.2, chacun avec `index.ts` et `README.md`
+- [x] `docs/MAP.md` + script `npm run map`
+- [x] Test de fumée : `dist/index.html` s'ouvre en `file://` dans Firefox et Chromium
 
 ## Phase 2 — Modèle, format et exemple
 - [ ] Types du domaine (`core/model`)
