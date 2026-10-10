@@ -87,3 +87,59 @@ test('propriétés du questionnaire sans sélection : clé modifiable', async ({
   expect(bundle.questionnaires[0].key).toBe('sinistre');
   expect(errors).toEqual([]);
 });
+
+test('nouveau questionnaire : première question au clavier puis à la souris, sans « départ introuvable »', async ({ page }) => {
+  const errors = await open(page);
+  // Le focus reste sur le bouton « + » après le clic : N doit malgré tout créer la question.
+  await page.getByRole('button', { name: 'Nouveau questionnaire' }).click();
+  await expect(page.getByTestId('diagram-empty')).toBeVisible();
+  await expect(page.getByText('Nœud de départ introuvable')).toHaveCount(0);
+  await page.keyboard.press('n');
+  await expect(page.locator('.react-flow__node')).toHaveCount(1);
+  await expect(page.getByLabel('intitulé')).toBeFocused();
+  await page.keyboard.type('Première question');
+  await page.keyboard.press('Enter');
+  await expect(page.getByText('Nœud de départ introuvable')).toHaveCount(0);
+  await expect(page.getByTestId('diagram-empty')).toHaveCount(0);
+
+  // Second questionnaire neuf : bouton de l'état vide.
+  await page.getByRole('button', { name: 'Nouveau questionnaire' }).click();
+  await page.getByTestId('diagram-empty').getByRole('button').click();
+  await expect(page.locator('.react-flow__node')).toHaveCount(1);
+  expect(errors).toEqual([]);
+});
+
+test('clic sur un problème : les raccourcis du logigramme agissent, Entrée active toujours le bouton', async ({ page }) => {
+  const errors = await open(page);
+  await page.getByTestId('diagram').click({ position: { x: 30, y: 30 } });
+  for (const label of ['Première', 'Seconde']) {
+    await page.keyboard.press('n');
+    await expect(page.getByLabel('intitulé')).toBeFocused();
+    await page.keyboard.type(label);
+    await page.keyboard.press('Enter');
+  }
+  const nodes = page.locator('.react-flow__node');
+  await expect(nodes).toHaveCount(2);
+  const rows = page.getByTestId('problems').locator('li button');
+
+  // Clic sur un problème (le focus reste sur la ligne) puis Suppr : le nœud concerné disparaît.
+  await rows.first().click();
+  await expect(rows.first()).toBeFocused();
+  await page.keyboard.press('Delete');
+  await expect(nodes).toHaveCount(1);
+
+  // Clic sur un problème puis N : une question est créée.
+  await rows.first().click();
+  await page.keyboard.press('n');
+  await expect(nodes).toHaveCount(2);
+  await expect(page.getByLabel('intitulé')).toBeFocused();
+  await page.keyboard.press('Escape');
+
+  // Entrée sur le bouton qui replie le panneau : le panneau se replie, aucune édition d'intitulé.
+  const toggle = page.getByTestId('problems').locator('> button');
+  await toggle.focus();
+  await page.keyboard.press('Enter');
+  await expect(rows).toHaveCount(0);
+  await expect(page.getByLabel('intitulé')).toHaveCount(0);
+  expect(errors).toEqual([]);
+});

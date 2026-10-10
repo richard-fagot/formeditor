@@ -15,7 +15,8 @@ function checkFamily(edges: Edge[], owner: Owner, nodeId: string, out: Issue[]) 
 export function checkGraph(ws: Workspace, g: Graph, owner: Owner): Issue[] {
   const out: Issue[] = [];
   const ids = new Set(g.nodes.map((n) => n.id));
-  if (!ids.has(g.start)) out.push(issue('missingStart', owner));
+  // Un graphe vide (questionnaire neuf) est un état intermédiaire normal : rien à signaler.
+  if (ids.size && !ids.has(g.start)) out.push(issue('missingStart', owner));
   const reached = new Set<string>();
   const todo = [g.start];
   while (todo.length) {

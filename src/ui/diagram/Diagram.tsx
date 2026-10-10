@@ -5,8 +5,10 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import type { Issue } from '../../core/validation';
-import { runCommand } from '../../app/commands';
-import { getGraph, layoutOf, scopeOf, useStore, type GraphRef } from '../../app/store';
+import { command, runCommand } from '../../app/commands';
+import { formatKey, isTyping } from '../../app/shortcuts';
+import { getGraph, layoutOf, scopeOf, useStore, useT, type GraphRef } from '../../app/store';
+import { Button, Kbd } from '../../ui-kit';
 import { DiagramContext } from './DiagramContext';
 import { NodeView, type NodeData } from './NodeView';
 import { EdgeView } from './EdgeView';
@@ -101,9 +103,16 @@ function DiagramInner({ graph, issues }: { graph: GraphRef; issues: Issue[] }) {
 
   const focusGraph = () => container.current?.focus({ preventScroll: true });
 
+  // À l'ouverture d'un graphe (nouveau questionnaire, changement d'onglet), le logigramme prend le focus
+  // pour que les raccourcis à une lettre (N…) agissent aussitôt, sauf si une saisie est en cours.
+  useEffect(() => {
+    if (!isTyping(document.activeElement, { dialog: true })) focusGraph();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [graph.id]);
+
   return (
     <DiagramContext.Provider value={{ graph, issuesByNode }}>
-      <div ref={container} tabIndex={0} data-graph-focus data-testid="diagram" className="h-full w-full outline-none">
+      <div ref={container} tabIndex={0} data-graph-focus data-testid="diagram" className="relative h-full w-full outline-none">
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -132,7 +141,23 @@ function DiagramInner({ graph, issues }: { graph: GraphRef; issues: Issue[] }) {
           <Background gap={20} color="#e2e8f0" />
           <Controls showInteractive={false} />
         </ReactFlow>
+        {g && g.nodes.length === 0 && <EmptyHint />}
       </div>
     </DiagramContext.Provider>
+  );
+}
+
+/** Invitation affichée sur un graphe vide : la première question, à la souris ou par N. */
+function EmptyHint() {
+  const t = useT();
+  const custom = useStore((s) => s.keymap['node.newQuestion']);
+  const key = (custom ?? command('node.newQuestion')?.keys ?? [])[0];
+  return (
+    <div className="pointer-events-none absolute inset-0 flex items-center justify-center" data-testid="diagram-empty">
+      <div className="pointer-events-auto flex flex-col items-center gap-2 rounded-lg border border-dashed border-slate-300 bg-white/90 px-6 py-4 text-sm text-slate-500">
+        <span>{t('diagram.empty')}</span>
+        <Button size="sm" onClick={() => runCommand('node.newQuestion')}>{t('diagram.firstQuestion')}{key && <Kbd>{formatKey(key)}</Kbd>}</Button>
+      </div>
+    </div>
   );
 }
