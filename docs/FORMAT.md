@@ -205,7 +205,7 @@ bibliothèque ; seul l'intitulé (`label`) peut être surchargé.
 **Valeur par défaut** : en arrivant sur une page question dont la réponse est inconnue, le moteur pose
 `defaultExpr` (évaluée dans le contexte de la page) sinon `default` ; l'utilisateur peut la changer.
 Une réponse déjà connue (retour arrière, boucle) n'est pas remplacée. Les valeurs par défaut des
-champs de structure ne sont pas appliquées (version 1).
+champs de structure ne sont pas appliquées (comportement actuel de l'outil).
 
 ### 7.2 Types et forme de la réponse
 

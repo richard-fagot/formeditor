@@ -87,7 +87,7 @@ Une question comporte :
 - une **option statique** (valeur, libellé multilingue) ;
 - ou une **entrée dynamique** (ex-« champ paramétré ») : une référence qui fournit zéro, une ou plusieurs options, déployées **à sa position**, dans l'ordre de la source. Exemples : une réponse précédente (« Bleu » réapparaît dans une liste), une liste d'objets de l'état du système (dates des sinistres de la personne). Pour une liste d'objets, on définit dans le panneau de propriétés l'expression du libellé affiché et celle de la valeur retenue. Plusieurs entrées dynamiques peuvent coexister, à n'importe quelle position.
 
-Toute entrée peut être déplacée, supprimée, dupliquée et porter une **condition d'affichage** ; une entrée dynamique dont la condition est fausse n'affiche aucune valeur. Une valeur déjà proposée plus haut dans la liste n'est pas répétée.
+Toute entrée peut être déplacée (boutons du panneau de propriétés ou ordre des lignes de la saisie rapide ; pas de glisser-déposer ni de raccourci dédié, comme pour les options statiques), supprimée, dupliquée et porter une **condition d'affichage** ; une entrée dynamique dont la condition est fausse n'affiche aucune valeur. Une valeur déjà proposée plus haut dans la liste n'est pas répétée.
 
 Saisie rapide (§4.3) : une ligne `$<référence>` (ex. `$sys.sinistres`, `$couleur_preferee`) crée une entrée dynamique ; toute autre ligne crée une option statique (une option qui commence par `$` s'écrit `\$…`). Une référence inconnue ou mal écrite est signalée par les vérifications (§4.6).
 

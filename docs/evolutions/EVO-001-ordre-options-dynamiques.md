@@ -1,6 +1,6 @@
 # EVO-001 — Options dynamiques placées librement parmi les options
 
-Statut : en cours
+Statut : fait 2026-10-10
 
 ## Besoin
 
@@ -174,3 +174,9 @@ actuel, conservé sans autre traitement.
 Point 1 arbitré le 2026-10-10 : **option A** retenue. L'évolution porte sur le choix unique et le choix
 multiple. Booléen et tri-state restent inchangés, et le critère « booléen ou tri-state » est abandonné.
 Les choix des points 2 et 3 sont reportés dans `docs/DECISIONS.md`.
+
+### Écart accepté à la réalisation
+
+Déplacer, dupliquer et supprimer une entrée se font avec les boutons du panneau de propriétés, ou en
+réordonnant les lignes de la saisie rapide. Il n'y a ni glisser-déposer ni raccourci dédié, comme pour
+les options statiques existantes. Écart mineur, à rouvrir dans une évolution si le besoin se confirme.
