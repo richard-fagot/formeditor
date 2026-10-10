@@ -79,6 +79,10 @@ describe('checkWorkspace', () => {
     });
     expect(codes(w)).toEqual(expect.arrayContaining(['unknownReference@e_date_victimes', 'invalidExpression@e_lien_victimes']));
   });
+  it('vérifie les noms placés dans un filtre d’une liste système', () => {
+    const w = mutate((x) => void (decl(x).edges.find((e) => e.id === 'e_date_victimes')!.when = "$count(sys.sinistres[natur = 'Vol']) > 0"));
+    expect(checkWorkspace(w).find((i) => i.code === 'unknownReference' && i.edgeId === 'e_date_victimes')?.params.ref).toBe('sys.sinistres.natur');
+  });
   it('dictionnaire : nom de variable ou de champ de liste invalide ou en double ; référence relative inconnue', () => {
     const w = mutate((x) => {
       const fields = x.project.systemState.find((v) => v.name === 'sinistres')!.fields!;

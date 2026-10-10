@@ -23,11 +23,18 @@ function walk(node: unknown, visit: (steps: NameStep[]) => void, skipExists = fa
       lead.push(s as unknown as NameStep);
     }
     if (lead.length) visit(lead);
-    // Les étapes suivantes et les filtres sont relatifs : seule une première étape non nommée est racine.
+    // Les étapes suivantes sont relatives : seule une première étape non nommée est racine.
     else if (n.steps[0]) walk(n.steps[0], visit, skipExists);
+    // Un nom dans un filtre d'une étape de tête prolonge le chemin filtré : `sys.x[champ > 1]` → `sys.x.champ`.
+    lead.forEach((step, i) => {
+      for (const stage of ((step as unknown as AstNode).stages as AstNode[] | undefined) ?? []) {
+        if (stage.type === 'filter') walk(stage.expr, (inner) => visit([...lead.slice(0, i + 1), ...inner]), skipExists);
+      }
+    });
     return;
   }
-  for (const [k, v] of Object.entries(n)) if (k !== 'position' && k !== 'value') walk(v, visit, skipExists);
+  // Filtres hors d'un chemin de tête (`(sys.x)[champ]`) : noms relatifs, ignorés.
+  for (const [k, v] of Object.entries(n)) if (!['position', 'value', 'stages', 'predicate'].includes(k)) walk(v, visit, skipExists);
 }
 
 function ast(expr: string): unknown {
@@ -57,6 +64,8 @@ export function renameReference(expr: string, path: RefPath, newName: string): s
     edits.push({ start: s.position - s.value.length, end: s.position });
   });
   let out = expr;
-  for (const e of edits.sort((a, b) => b.start - a.start)) out = out.slice(0, e.start) + newName + out.slice(e.end);
+  // Une même étape de tête est vue une fois par chemin qui la prolonge (filtres) : une seule modification.
+  const unique = [...new Map(edits.map((e) => [e.start, e])).values()];
+  for (const e of unique.sort((a, b) => b.start - a.start)) out = out.slice(0, e.start) + newName + out.slice(e.end);
   return out;
 }

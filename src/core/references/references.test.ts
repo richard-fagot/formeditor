@@ -81,12 +81,14 @@ describe('renommage propagé', () => {
   it('champ d’une liste système : expressions absolues et relatives (source), exemple, scénarios', () => {
     const base = structuredClone(ws);
     edge(decl(base), 'e_date_lien').when = "$count(sys.sinistres.date) > 0 and sys.sinistres.nature = 'Vol'";
+    edge(decl(base), 'e_lien_victimes').when = "$count(sys.sinistres[date > '2025-01-01']) > 0";
     const w = renameKey(base, { kind: 'systemField', variable: 'sinistres', field: 'date' }, 'date_survenance');
     const v = w.project.systemState.find((x) => x.name === 'sinistres')!;
     expect(v.fields!.map((f) => f.name)).toEqual(['id', 'date_survenance', 'nature']);
     expect(v.example).toEqual([{ id: 'S-001', date_survenance: '2025-03-12', nature: 'Dégât des eaux' }]);
     expect(Object.keys((w.project.scenarios[0]!.values.sinistres as object[])[0]!)).toEqual(['id', 'date_survenance', 'nature']);
     expect(edge(decl(w), 'e_date_lien').when).toBe("$count(sys.sinistres.date_survenance) > 0 and sys.sinistres.nature = 'Vol'");
+    expect(edge(decl(w), 'e_lien_victimes').when).toBe("$count(sys.sinistres[date_survenance > '2025-01-01']) > 0");
     expect(node(decl(w), 'n_lien').source).toEqual({ from: 'sys.sinistres', label: "date_survenance & ' — ' & nature", value: 'id' });
     // Nom invalide, déjà pris, champ inconnu : projet inchangé.
     expect(renameKey(base, { kind: 'systemField', variable: 'sinistres', field: 'date' }, 'nature')).toBe(base);
