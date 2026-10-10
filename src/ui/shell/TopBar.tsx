@@ -16,10 +16,10 @@ export function TopBar() {
     <header className="flex h-12 items-center gap-2 border-b border-slate-200 bg-white px-3">
       <div className="mr-2 flex size-7 items-center justify-center rounded-lg bg-indigo-600 text-sm font-bold text-white">Q</div>
       <input
-        aria-label={t('app.title')}
+        aria-label={t('project.name')}
         className="w-56 rounded px-1.5 py-1 text-sm font-semibold text-slate-800 hover:bg-slate-50 focus:bg-white focus:outline-indigo-400"
         value={name}
-        onChange={(e) => useStore.getState().edit('project', (ws) => void (ws.project.name = e.target.value), 'name')}
+        onChange={(e) => runCommand('project.rename', e.target.value)}
       />
       <span className={cn('flex items-center gap-1 text-xs', dirty ? 'text-amber-600' : 'text-emerald-600')} data-testid="dirty">
         <span className="size-1.5 rounded-full bg-current" />
@@ -34,11 +34,11 @@ export function TopBar() {
       </div>
       <div className="ml-auto flex items-center gap-2">
         <Select aria-label={t('common.contentLang')} title={t('common.contentLang')} className="h-7 w-20 py-0 text-xs" value={contentLang}
-          onChange={(e) => useStore.getState().set((s) => void (s.contentLang = e.target.value))}>
+          onChange={(e) => runCommand('lang.content', e.target.value)}>
           {languages.map((l) => <option key={l}>{l}</option>)}
         </Select>
         <Select aria-label={t('common.lang')} title={t('common.lang')} className="h-7 w-20 py-0 text-xs" value={uiLang}
-          onChange={(e) => useStore.getState().set((s) => void (s.uiLang = e.target.value))}>
+          onChange={(e) => runCommand('lang.ui', e.target.value)}>
           {UI_LANGUAGES.map((l) => <option key={l}>{l}</option>)}
         </Select>
         <Button size="sm" onClick={() => runCommand('palette.open')} data-testid="palette-button">

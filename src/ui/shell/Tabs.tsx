@@ -23,12 +23,12 @@ export function Tabs() {
         <div key={tab} role="tab" aria-selected={tab === active}
           className={cn('group flex h-8 cursor-pointer items-center gap-1.5 rounded-t-md border border-b-0 px-3 text-sm',
             tab === active ? 'border-slate-200 bg-white text-slate-800' : 'border-transparent text-slate-500 hover:bg-slate-50')}
-          onClick={() => useStore.getState().openTab(tab)}>
+          onClick={() => runCommand('tab.show', tab)}>
           {tab === 'library' && <BookOpen className="size-3.5" />}
           {tab === 'system' && <Database className="size-3.5" />}
           <span className="max-w-48 truncate">{label(tab)}</span>
           <button type="button" aria-label={t('questionnaire.close')} className="rounded p-0.5 opacity-0 hover:bg-slate-200 group-hover:opacity-100"
-            onClick={(e) => { e.stopPropagation(); useStore.getState().closeTab(tab); }}>
+            onClick={(e) => { e.stopPropagation(); runCommand('tab.close', tab); }}>
             <X className="size-3" />
           </button>
         </div>
@@ -38,7 +38,7 @@ export function Tabs() {
         <Plus className="size-4" />
       </button>
       {closed.map((q) => (
-        <button key={q.id} type="button" className="mb-1 rounded px-2 py-0.5 text-xs text-slate-400 hover:bg-slate-200" onClick={() => useStore.getState().openTab(`q:${q.id}`)}>
+        <button key={q.id} type="button" className="mb-1 rounded px-2 py-0.5 text-xs text-slate-400 hover:bg-slate-200" onClick={() => runCommand('tab.open', `q:${q.id}`)}>
           {q.title[lang] ?? q.key}
         </button>
       ))}

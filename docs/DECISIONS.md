@@ -27,3 +27,8 @@ Une ligne par choix notable pris en cours de réalisation (écart à la spec, am
 | 2026-10-10 | Commande « Relier à un nœud… » (touche E) via la palette | La spec demande de relier au clavier sans raccourci attribué. |
 | 2026-10-10 | « Nouvelle question à la suite » s'insère entre le nœud et son successeur unique (« sinon ») | Création chaînée naturelle sans arête en double. |
 | 2026-10-10 | Mise en page automatique (L) reportée en phase 9 avec ELK | Le plan place ELK en phase 9 ; positions manuelles d'ici là. |
+| 2026-10-10 | Réponse `null` retirée (en profondeur) du contexte d'évaluation, gardée dans `answers` | `$exists(cle)` doit être faux pour une facultative laissée vide (JSONata 1.8 le dit vrai pour `null`). |
+| 2026-10-10 | Commandes paramétrées : `run(arg?)`, `runCommand(id, arg?)` ; celles qui exigent une valeur sont masquées de la palette | Onglet visé, langue choisie, valeur saisie passent par le catalogue sans dupliquer de logique. |
+| 2026-10-10 | Hors catalogue : sélection, focus, glisser de nœuds, fermeture de fenêtres, simulation de la prévisualisation, saisie des champs de nœud/arête (`store.edit` regroupé) | Ce sont des états d'interface ou des frappes continues, pas des actions du catalogue (§4.4). |
+| 2026-10-10 | Clé de questionnaire = nom du fichier (`<clé>.json`) ; l'entrée du projet suit l'historique `q:<id>` | Renommer puis annuler garde clé et fichier cohérents. |
+| 2026-10-10 | Valeur par défaut littérale : saisie brute pour `text`/`date`/`single`, JSON pour les autres types | Champ simple commun à tous les types, sans toucher au contrat des plugins. |

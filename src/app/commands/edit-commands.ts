@@ -1,0 +1,80 @@
+import type { LocalizedText } from '../../core/model';
+import {
+  activeGraphRef, activeQuestionnaire, canRenameQuestionnaire, connect, getGraph, moveEdge, patchQuestionnaire, renameQuestionnaire,
+  scopeOf, useStore, type GraphRef,
+} from '../store';
+import type { Command } from './types';
+
+const st = () => useStore.getState();
+const ref = () => (st().activeTab.startsWith('q:') ? activeGraphRef(st()) : undefined);
+
+/** Arête sélectionnée, son rang parmi les arêtes sortantes de son origine et leur nombre. */
+function selectedEdge() {
+  const r = ref();
+  const g = r && getGraph(st().ws, r);
+  const edge = g && st().selection.edge ? g.edges.find((e) => e.id === st().selection.edge) : undefined;
+  if (!r || !g || !edge) return undefined;
+  const siblings = g.edges.filter((e) => e.from === edge.from);
+  return { r, edge, rank: siblings.indexOf(edge), count: siblings.length };
+}
+
+function moveSelectedEdge(delta: -1 | 1) {
+  const s = selectedEdge();
+  if (s) st().edit(scopeOf(s.r), (ws) => moveEdge(ws, s.r, s.edge.id, delta), `${s.edge.id}:rank`);
+}
+
+/** Modifie le questionnaire actif dans son historique (`q:<id>`) ; `key` regroupe les frappes. */
+function editQuestionnaire(key: string, recipe: Parameters<ReturnType<typeof st>['edit']>[1]) {
+  const q = activeQuestionnaire(st());
+  if (q) st().edit(`q:${q.id}`, recipe, `${q.id}:${key}`);
+}
+
+const hasQuestionnaire = () => !!activeQuestionnaire(st());
+
+/** Modifications ponctuelles : rang des arêtes, liaison par glisser, propriétés du questionnaire et du projet. */
+export function editCommands(): Command[] {
+  return [
+    {
+      id: 'edge.moveUp', label: 'edge.moveUp', keys: ['Alt+ArrowUp'], scope: 'graph',
+      enabled: () => (selectedEdge()?.rank ?? 0) > 0, run: () => moveSelectedEdge(-1),
+    },
+    {
+      id: 'edge.moveDown', label: 'edge.moveDown', keys: ['Alt+ArrowDown'], scope: 'graph',
+      enabled: () => { const s = selectedEdge(); return !!s && s.rank < s.count - 1; }, run: () => moveSelectedEdge(1),
+    },
+    {
+      // Liaison tracée à la souris sur un logigramme (`arg` = { graph?, from, to } ; graphe actif par défaut).
+      id: 'edge.create', label: 'node.connect', keys: [], scope: 'graph', hidden: true,
+      run: (arg) => {
+        const { graph, from, to } = (arg ?? {}) as { graph?: GraphRef; from?: string; to?: string };
+        const r = graph ?? ref();
+        if (r && from && to) st().edit(scopeOf(r), (ws) => void connect(ws, r, from, to));
+      },
+    },
+    {
+      // Sans sélection, le panneau de propriétés affiche celles du questionnaire.
+      id: 'questionnaire.properties', label: 'questionnaire.properties', keys: [], scope: 'global', enabled: hasQuestionnaire,
+      run: () => st().select({ graph: ref(), nodes: [] }),
+    },
+    {
+      id: 'questionnaire.setTitle', label: 'questionnaire.title', keys: [], scope: 'global', hidden: true, enabled: hasQuestionnaire,
+      run: (title) => editQuestionnaire('title', (ws) => patchQuestionnaire(ws, activeQuestionnaire(st())!.id, { title: title as LocalizedText })),
+    },
+    {
+      id: 'questionnaire.setDescription', label: 'props.description', keys: [], scope: 'global', hidden: true, enabled: hasQuestionnaire,
+      run: (d) => editQuestionnaire('description', (ws) => patchQuestionnaire(ws, activeQuestionnaire(st())!.id, { description: String(d ?? '') })),
+    },
+    {
+      id: 'questionnaire.rename', label: 'questionnaire.key', keys: [], scope: 'global', hidden: true, enabled: hasQuestionnaire,
+      run: (key) => {
+        const id = activeQuestionnaire(st())!.id;
+        if (typeof key !== 'string' || !canRenameQuestionnaire(st().ws, id, key)) return;
+        editQuestionnaire('key', (ws) => renameQuestionnaire(ws, id, key));
+      },
+    },
+    {
+      id: 'project.rename', label: 'project.name', keys: [], scope: 'global', hidden: true,
+      run: (name) => st().edit('project', (ws) => void (ws.project.name = String(name ?? '')), 'name'),
+    },
+  ];
+}

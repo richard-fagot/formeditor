@@ -74,3 +74,16 @@ test('créer deux questions au clavier, relier, prévisualiser, exporter', async
   await expect(page.getByTestId('dirty')).toContainText('exporté');
   expect(errors).toEqual([]);
 });
+
+test('propriétés du questionnaire sans sélection : clé modifiable', async ({ page }) => {
+  const errors = await open(page);
+  const key = page.getByLabel('Clé du questionnaire');
+  await expect(key).toBeVisible();
+  await key.fill('sinistre');
+  await key.press('Enter');
+  const download = page.waitForEvent('download');
+  await page.getByTestId('export').click();
+  const bundle = JSON.parse(readFileSync(await (await download).path(), 'utf8'));
+  expect(bundle.questionnaires[0].key).toBe('sinistre');
+  expect(errors).toEqual([]);
+});

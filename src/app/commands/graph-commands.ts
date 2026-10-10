@@ -116,6 +116,17 @@ export function graphCommands(): Command[] {
     },
     { id: 'node.connect', label: 'node.connect', keys: ['e'], scope: 'graph', enabled: () => !!selectedNode(), run: () => st().set((s) => void (s.palette = { open: true, mode: 'connect' })) },
     {
+      // Palette en mode « relier » : relie la sélection au nœud choisi (`arg` = id de la cible).
+      id: 'node.connectTo', label: 'node.connect', keys: [], scope: 'graph', hidden: true, enabled: () => !!selectedNode(),
+      run: (target) => {
+        const r = ref()!;
+        const from = selectedNode()!.id;
+        if (typeof target !== 'string') return;
+        edit(r, (ws) => void connect(ws, r, from, target));
+        st().select({ graph: r, nodes: [target] });
+      },
+    },
+    {
       id: 'node.setStart', label: 'node.setStart', keys: [], scope: 'graph', enabled: () => !!selectedNode(),
       run: () => {
         const r = ref()!;
@@ -144,13 +155,3 @@ export function graphCommands(): Command[] {
     },
   ];
 }
-
-/** Connecte la sélection au nœud choisi dans la palette. */
-export function connectSelectedTo(target: string): void {
-  const r = ref();
-  const from = selectedNode()?.id;
-  if (!r || !from) return;
-  edit(r, (ws) => void connect(ws, r, from, target));
-  st().select({ graph: r, nodes: [target] });
-}
-

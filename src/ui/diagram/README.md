@@ -1,7 +1,7 @@
 # ui/diagram
 
 Logigramme d'un graphe (questionnaire ; bloc en phase 7) avec React Flow (@xyflow/react).
-Dépend de `app/store`, `registry`, `core`, `ui-kit`.
+Dépend de `app/store`, `app/commands` (liaison tracée à la souris : `edge.create`), `registry`, `core`, `ui-kit`.
 
 ## API
 - `Diagram({ graph, issues })`.

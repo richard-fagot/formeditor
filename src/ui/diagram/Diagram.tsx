@@ -5,7 +5,8 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import type { Issue } from '../../core/validation';
-import { connect, getGraph, layoutOf, scopeOf, useStore, type GraphRef } from '../../app/store';
+import { runCommand } from '../../app/commands';
+import { getGraph, layoutOf, scopeOf, useStore, type GraphRef } from '../../app/store';
 import { DiagramContext } from './DiagramContext';
 import { NodeView, type NodeData } from './NodeView';
 import { EdgeView } from './EdgeView';
@@ -120,7 +121,7 @@ function DiagramInner({ graph, issues }: { graph: GraphRef; issues: Issue[] }) {
             focusGraph();
           }}
           onNodeDoubleClick={(_, n) => useStore.getState().requestFocus('label', n.id)}
-          onConnect={(c) => c.source && c.target && useStore.getState().edit(scopeOf(graph), (ws) => void connect(ws, graph, c.source, c.target))}
+          onConnect={(c) => c.source && c.target && runCommand('edge.create', { graph, from: c.source, to: c.target })}
           deleteKeyCode={null}
           selectionKeyCode="Shift"
           multiSelectionKeyCode="Shift"

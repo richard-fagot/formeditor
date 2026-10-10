@@ -2,11 +2,13 @@ import { useMemo } from 'react';
 import { isLibraryQuestion, isLocalQuestion, type GraphNode } from '../../core/model';
 import { blockScope, questionnaireScope } from '../../core/references';
 import { nodeKind } from '../../registry';
-import { getGraph, scopeOf, useEditorEnv, useStore, useT, type GraphRef } from '../../app/store';
+import { runCommand } from '../../app/commands';
+import { getGraph, useEditorEnv, useStore, useT, type GraphRef } from '../../app/store';
 import { Button, Field, Section } from '../../ui-kit';
 import { ExpressionEnvProvider, LabelEditor } from '../expression-editor';
 import { EdgeProperties } from './EdgeProperties';
 import { QuestionProperties } from './QuestionProperties';
+import { QuestionnaireProperties } from './QuestionnaireProperties';
 import { useGraphEdit } from './useGraphEdit';
 
 /** Panneau de propriétés de l'objet sélectionné ; le contenu propre à chaque type vient des plugins. */
@@ -21,12 +23,14 @@ export function PropertiesPanel({ graph }: { graph: GraphRef }) {
   );
   const node = selection.nodes.length === 1 ? g?.nodes.find((n) => n.id === selection.nodes[0]) : undefined;
   const edge = selection.edge ? g?.edges.find((e) => e.id === selection.edge) : undefined;
+  const questionnaire = graph.kind === 'questionnaire' ? env.ws.questionnaires.find((q) => q.id === graph.id) : undefined;
   return (
     <ExpressionEnvProvider value={{ scope, uiLang: env.uiLang, languages: env.languages, contentLang: env.contentLang }}>
       <div className="h-full overflow-y-auto pb-8" data-testid="properties">
         {node && <NodeProperties graph={graph} node={node} isStart={g?.start === node.id} />}
         {!node && edge && g && <EdgeProperties graph={graph} g={g} edge={edge} />}
-        {!node && !edge && <p className="p-4 text-sm text-slate-400">{t('props.empty')}</p>}
+        {!node && !edge && questionnaire && <QuestionnaireProperties questionnaire={questionnaire} />}
+        {!node && !edge && !questionnaire && <p className="p-4 text-sm text-slate-400">{t('props.empty')}</p>}
       </div>
     </ExpressionEnvProvider>
   );
@@ -55,7 +59,7 @@ function NodeProperties({ graph, node, isStart }: { graph: GraphRef; node: Graph
       )}
       {!isStart && (
         <Section title={t('node.start')}>
-          <Button size="sm" onClick={() => useStore.getState().edit(scopeOf(graph), (ws) => void (getGraph(ws, graph)!.start = node.id))}>
+          <Button size="sm" onClick={() => runCommand('node.setStart')}>
             {t('node.setStart')}
           </Button>
         </Section>
