@@ -76,7 +76,7 @@ export function importFiles(files: FileContent[], current?: Workspace): ImportRe
   const projectDoc = docs.find((d) => documentKind(d.doc) === 'project');
   const ws: Workspace = projectDoc
     ? { project: projectDoc.doc as unknown as Project, library: emptyLibrary(), questionnaires: [], layouts: [] }
-    : structuredClone(current ?? newWorkspace('Nouveau projet'));
+    : (JSON.parse(JSON.stringify(current ?? newWorkspace('Nouveau projet'))) as Workspace);
   for (const { name, doc } of docs) {
     const kind = documentKind(doc);
     if (kind === 'library') ws.library = doc as unknown as Library;

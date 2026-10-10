@@ -1,7 +1,14 @@
 # app/persistence
 
-Sauvegarde automatique IndexedDB.
+Sauvegarde automatique du projet dans IndexedDB (idb-keyval), en continu (délai 500 ms après chaque
+changement), et restauration au démarrage. Dépend de `format` et `app/store`.
 
-- **Dépend de** : format
-- **API** : voir `index.ts`.
-- **État** : squelette (phase 1).
+## API
+- `restoreSession()` → `Promise<boolean>` ; `startAutosave()` → désinscription.
+
+## Contenu sauvegardé
+Le bundle JSON (même format que l'export), l'indicateur « modifications non exportées », les onglets
+ouverts, la langue de l'interface et les raccourcis personnalisés. L'export reste la source de vérité partageable.
+
+## Pièges
+- En `file://`, IndexedDB est disponible dans Firefox et Chromium ; toute erreur est ignorée (l'outil reste utilisable).

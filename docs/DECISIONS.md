@@ -20,3 +20,10 @@ Une ligne par choix notable pris en cours de réalisation (écart à la spec, am
 | 2026-10-10 | Renommer une clé de l'hôte ne réécrit pas les blocs qui y font référence | Un bloc est partagé entre hôtes ; la vérification signale la référence cassée. |
 | 2026-10-10 | « Mal typée » (§4.6) limitée à la syntaxe et à l'existence des références | Inférence de types JSONata coûteuse pour un gain faible. |
 | 2026-10-10 | Effacement hors chemin : projection depuis le départ ; au-delà d'une question sans réponse, on conserve tout ce qui reste atteignable | N'efface jamais une réponse qui pourrait encore servir. |
+| 2026-10-10 | Module `src/plugin-api` (types du contrat des plugins) importable par plugins, registre et interface | Les plugins ne peuvent importer ni le registre ni l'interface ; le contrat doit vivre à part. |
+| 2026-10-10 | Annuler/rétablir maison (instantanés par portée : questionnaire, bibliothèque, projet) au lieu de zundo | zundo gère un historique par store ; l'historique par questionnaire tient en ~80 lignes. Immer pour les modifications. |
+| 2026-10-10 | `app/commands` importe `registry` | Les commandes « Type : … » sont générées depuis la liste des types. |
+| 2026-10-10 | Onglet suivant/précédent : Ctrl+Tab gardé mais doublé par Alt+→ / Alt+← | Les navigateurs ne transmettent pas Ctrl+Tab à la page. |
+| 2026-10-10 | Commande « Relier à un nœud… » (touche E) via la palette | La spec demande de relier au clavier sans raccourci attribué. |
+| 2026-10-10 | « Nouvelle question à la suite » s'insère entre le nœud et son successeur unique (« sinon ») | Création chaînée naturelle sans arête en double. |
+| 2026-10-10 | Mise en page automatique (L) reportée en phase 9 avec ELK | Le plan place ELK en phase 9 ; positions manuelles d'ici là. |

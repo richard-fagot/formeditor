@@ -32,13 +32,13 @@ carte à jour, fusion dans `main`, push.
 - [x] Tests de référence : chemin attendu par scénario
 
 ## Phase 5 — Tranche verticale UI → DÉMO 1 (arrêt)
-- [ ] Shell, onglets de questionnaires, import/export, sauvegarde automatique IndexedDB
-- [ ] Logigramme React Flow + panneau de propriétés
-- [ ] Catalogue de commandes, palette Ctrl+K, raccourcis par défaut du §4.4, annuler/rétablir
-- [ ] Types booléen et texte ; arêtes conditionnées avec éditeur d'expression
-- [ ] Prévisualisation minimale
-- [ ] Test de fumée enrichi : créer 2 questions au clavier, relier, prévisualiser, exporter
-- [ ] Résumé de démo écrit, puis attendre la validation
+- [x] Shell, onglets de questionnaires, import/export, sauvegarde automatique IndexedDB
+- [x] Logigramme React Flow + panneau de propriétés
+- [x] Catalogue de commandes, palette Ctrl+K, raccourcis par défaut du §4.4, annuler/rétablir
+- [x] Types booléen et texte ; arêtes conditionnées avec éditeur d'expression
+- [x] Prévisualisation minimale
+- [x] Test de fumée enrichi : créer 2 questions au clavier, relier, prévisualiser, exporter
+- [x] Résumé de démo écrit, puis attendre la validation
 
 ## Phase 6 — Types restants
 - [ ] Date, nombre
