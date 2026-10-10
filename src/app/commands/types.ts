@@ -11,10 +11,11 @@ export interface Command {
   scope: 'global' | 'graph';
   /** Le raccourci reste actif pendant une saisie (Ctrl+K, Ctrl+S). */
   allowInInput?: boolean;
-  /** Masquée de la palette (navigation aux flèches). */
+  /** Masquée de la palette (navigation aux flèches, commandes qui attendent une valeur saisie). */
   hidden?: boolean;
   enabled?(): boolean;
-  run(): void;
+  /** `arg` : paramètre facultatif fourni par un bouton ou un champ (onglet visé, langue, valeur saisie). */
+  run(arg?: unknown): void;
 }
 
 export const labelOf = (c: Command, t: Translate) => (typeof c.label === 'function' ? c.label(t) : t(c.label));

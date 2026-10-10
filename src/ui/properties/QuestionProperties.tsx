@@ -8,6 +8,7 @@ import { Button, Checkbox, Field, LocalizedTextInput, Section, Select, Textarea 
 import { ExpressionInput, LabelEditor } from '../expression-editor';
 import { useGraphEdit } from './useGraphEdit';
 import { KeyInput } from './KeyInput';
+import { DefaultValueInput } from './DefaultValueInput';
 
 const CONSTRAINT_PARAMS = ['minLength', 'maxLength', 'pattern', 'min', 'max', 'numberKind', 'decimals', 'minSelected', 'maxSelected'];
 
@@ -54,6 +55,12 @@ export function QuestionProperties({ graph, node }: { graph: GraphRef; node: Loc
             <ExpressionInput value={typeof q.required === 'string' ? q.required : ''} onChange={(v) => update({ required: v || undefined }, 'requiredWhen')} />
           </Field>
         )}
+        <Field label={t('props.default')} hint={t('props.defaultHint')}>
+          <DefaultValueInput type={q.type} value={q.default} invalidText={t('props.defaultInvalid')} onChange={(v) => update({ default: v })} />
+        </Field>
+        <Field label={t('props.defaultExpr')} hint={t('props.defaultExprHint')}>
+          <ExpressionInput value={q.defaultExpr ?? ''} onChange={(v) => update({ defaultExpr: v || undefined })} />
+        </Field>
         <Field label={t('props.help')}>
           <LabelEditor value={q.help} onChange={(help) => update({ help })} />
         </Field>

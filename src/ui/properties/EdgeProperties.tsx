@@ -1,7 +1,8 @@
 import { ArrowDown, ArrowUp, Trash2 } from 'lucide-react';
 import type { Edge, Graph } from '../../core/model';
 import { previewText } from '../../plugin-api';
-import { moveEdge, removeEdge, scopeOf, useEditorEnv, useStore, useT, type GraphRef } from '../../app/store';
+import { runCommand } from '../../app/commands';
+import { useEditorEnv, useStore, useT, type GraphRef } from '../../app/store';
 import { questionOfNode } from '../../core/references';
 import { Button, Field, Section, Select } from '../../ui-kit';
 import { ExpressionInput } from '../expression-editor';
@@ -11,7 +12,7 @@ import { useGraphEdit } from './useGraphEdit';
 export function EdgeProperties({ graph, g, edge }: { graph: GraphRef; g: Graph; edge: Edge }) {
   const t = useT();
   const env = useEditorEnv();
-  const { edit, patchEdge } = useGraphEdit(graph);
+  const { patchEdge } = useGraphEdit(graph);
   const focus = useStore((s) => s.focusRequest);
   const siblings = g.edges.filter((e) => e.from === edge.from);
   const rank = siblings.indexOf(edge) + 1;
@@ -49,12 +50,9 @@ export function EdgeProperties({ graph, g, edge }: { graph: GraphRef; g: Graph; 
         </Field>
       )}
       <div className="flex gap-1">
-        <Button size="sm" disabled={rank === 1} onClick={() => edit(`${edge.id}:rank`, (ws) => moveEdge(ws, graph, edge.id, -1))}><ArrowUp className="size-3" />{t('edge.moveUp')}</Button>
-        <Button size="sm" disabled={rank === siblings.length} onClick={() => edit(`${edge.id}:rank`, (ws) => moveEdge(ws, graph, edge.id, 1))}><ArrowDown className="size-3" />{t('edge.moveDown')}</Button>
-        <Button size="sm" variant="danger" className="ml-auto" onClick={() => {
-          useStore.getState().edit(scopeOf(graph), (ws) => removeEdge(ws, graph, edge.id));
-          useStore.getState().select({ graph, nodes: [] });
-        }}><Trash2 className="size-3" />{t('props.delete')}</Button>
+        <Button size="sm" disabled={rank === 1} onClick={() => runCommand('edge.moveUp')}><ArrowUp className="size-3" />{t('edge.moveUp')}</Button>
+        <Button size="sm" disabled={rank === siblings.length} onClick={() => runCommand('edge.moveDown')}><ArrowDown className="size-3" />{t('edge.moveDown')}</Button>
+        <Button size="sm" variant="danger" className="ml-auto" onClick={() => runCommand('node.delete')}><Trash2 className="size-3" />{t('props.delete')}</Button>
       </div>
     </Section>
   );

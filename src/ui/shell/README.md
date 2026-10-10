@@ -13,4 +13,6 @@ Cadre de l'application. Dépend de `app/*`, `ui/*`, `ui-kit`.
 - `Palette` (cmdk) : commandes disponibles + recherche de nœud ; mode « relier » (commande E).
 - `ProblemsPanel` : vérifications du §4.6 du questionnaire ; clic = sélection.
 
-Tous les boutons appellent des commandes (`runCommand`) : rien n'est câblé en dehors du catalogue.
+Tous les boutons, sélecteurs (langues), onglets (afficher, fermer, rouvrir) et le nom du projet appellent
+des commandes (`runCommand`) : aucune action n'est câblée en dehors du catalogue. Restent hors catalogue,
+par choix (DECISIONS.md) : la sélection (clic sur un problème, un nœud de la palette), la fermeture des fenêtres.

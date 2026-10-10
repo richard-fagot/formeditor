@@ -6,4 +6,5 @@ export {
   usedKeys, freshKey, NODE_SPACING, type GraphRef,
 } from './graph';
 export { setQuestionLabel } from './question-edits';
+export { questionnaireKeys, canRenameQuestionnaire, renameQuestionnaire, patchQuestionnaire } from './questionnaire-edits';
 export { useT, useEditorEnv, activeGraphRef, activeQuestionnaire } from './hooks';

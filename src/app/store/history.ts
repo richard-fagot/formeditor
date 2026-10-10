@@ -1,4 +1,4 @@
-import type { Layout, Library, Project, Questionnaire, Workspace } from '../../core/model';
+import type { Layout, Library, Project, Questionnaire, QuestionnaireEntry, Workspace } from '../../core/model';
 
 /**
  * Historique annuler/rétablir par portée : un par questionnaire (`q:<id>`), un pour la bibliothèque,
@@ -7,7 +7,7 @@ import type { Layout, Library, Project, Questionnaire, Workspace } from '../../c
 export type Scope = `q:${string}` | 'library' | 'project';
 
 export type Snapshot =
-  | { scope: `q:${string}`; questionnaire?: Questionnaire; layout?: Layout }
+  | { scope: `q:${string}`; questionnaire?: Questionnaire; layout?: Layout; entry?: QuestionnaireEntry }
   | { scope: 'library'; library: Library; layouts: Layout[] }
   | { scope: 'project'; project: Project };
 
@@ -29,7 +29,13 @@ export function takeSnapshot(ws: Workspace, scope: Scope): Snapshot {
   }
   if (scope === 'project') return { scope, project: ws.project };
   const id = scope.slice(2);
-  return { scope, questionnaire: ws.questionnaires.find((q) => q.id === id), layout: ws.layouts.find((l) => l.graph === id) };
+  return {
+    scope,
+    questionnaire: ws.questionnaires.find((q) => q.id === id),
+    layout: ws.layouts.find((l) => l.graph === id),
+    // Entrée du projet (nom de fichier, dérivé de la clé) : suit le questionnaire dans son historique.
+    entry: ws.project.questionnaires.find((e) => e.id === id),
+  };
 }
 
 /** Remet en place un instantané dans `ws` (brouillon immer). */
@@ -52,6 +58,8 @@ export function restoreSnapshot(ws: Workspace, s: Snapshot): void {
   } else if (i >= 0) ws.questionnaires.splice(i, 1);
   ws.layouts = ws.layouts.filter((l) => l.graph !== id);
   if (s.layout) ws.layouts.push(s.layout);
+  const e = ws.project.questionnaires.findIndex((x) => x.id === id);
+  if (s.entry && e >= 0) ws.project.questionnaires[e] = s.entry;
 }
 
 /** Enregistre `before` dans l'historique, sauf s'il prolonge la modification précédente (même clé, rapprochée). */

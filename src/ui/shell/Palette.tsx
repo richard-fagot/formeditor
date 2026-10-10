@@ -1,6 +1,6 @@
 import { Command as Cmdk } from 'cmdk';
 import { activeGraphRef, getGraph, useEditorEnv, useStore, useT } from '../../app/store';
-import { commands, connectSelectedTo, labelOf } from '../../app/commands';
+import { commands, labelOf, runCommand } from '../../app/commands';
 import { formatKey, keysOf } from '../../app/shortcuts';
 import { questionOfNode } from '../../core/references';
 import { previewText } from '../../plugin-api';
@@ -49,7 +49,7 @@ export function Palette() {
                 <Cmdk.Item key={n.id} value={`${n.text} ${n.key} ${n.id}`} className={ITEM}
                   onSelect={() => {
                     close();
-                    if (connect) connectSelectedTo(n.id);
+                    if (connect) runCommand('node.connectTo', n.id);
                     else useStore.getState().select({ graph: ref, nodes: [n.id] });
                     refocus();
                   }}>

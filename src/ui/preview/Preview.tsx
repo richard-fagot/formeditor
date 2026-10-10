@@ -20,14 +20,14 @@ export function Preview({ questionnaireId }: { questionnaireId: string }) {
   const value = step.answerPath ? getAnswer(session.answers, step.answerPath) : undefined;
   const other = step.answerPath ? (getAnswer(session.answers, otherPath(step.answerPath)) as string | undefined) : undefined;
   const ctx = buildContext(input, session.answers, step.id);
-  const errors = q && state?.attempted ? validateAnswer(q, value, { ...ctx, [q.key]: value }, input.env, other) : [];
+  const errors = q && state?.attempted ? validateAnswer(q, value, { ...ctx, ...(value === null ? {} : { [q.key]: value }) }, input.env, other) : [];
   const errorMap: Record<string, string[]> = {};
   for (const e of errors) (errorMap[e.path] ??= []).push(env.label(e.message));
   const isEnd = step.node.kind === 'end';
   const hostNodeId = step.instance?.id ?? step.node.id;
 
   const goNext = () => {
-    if (q && validateAnswer(q, value, { ...ctx, [q.key]: value }, input.env, other).length) return update({ attempted: true, session });
+    if (q && validateAnswer(q, value, { ...ctx, ...(value === null ? {} : { [q.key]: value }) }, input.env, other).length) return update({ attempted: true, session });
     update({ session: next(input, session), attempted: false });
   };
   const select = () => useStore.getState().select({ graph: { kind: 'questionnaire', id: questionnaireId }, nodes: [hostNodeId] });

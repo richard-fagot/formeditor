@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { blankWorkspace, insertNode, useStore } from './index';
+import { blankWorkspace, canRenameQuestionnaire, insertNode, renameQuestionnaire, useStore } from './index';
 import type { GraphNode } from '../../core/model';
 
 const node = (id: string): GraphNode => ({ kind: 'question', id, key: id, label: { fr: id }, type: 'text' });
@@ -31,5 +31,20 @@ describe('historique par questionnaire', () => {
     expect(useStore.getState().history[`q:${q1}`]!.past).toHaveLength(1);
     useStore.getState().undo(`q:${q1}`);
     expect(useStore.getState().ws.questionnaires[0]!.title).toEqual({ fr: 'Questionnaire' });
+  });
+  it('renomme la clé d’un questionnaire et son fichier, annulable dans son historique', () => {
+    const s = useStore.getState();
+    const q1 = s.ws.questionnaires[0]!.id;
+    expect(canRenameQuestionnaire(s.ws, q1, 'sinistre')).toBe(true);
+    expect(canRenameQuestionnaire(s.ws, q1, 'Mauvaise clé')).toBe(false);
+    expect(canRenameQuestionnaire(s.ws, q1, 'sys')).toBe(false);
+    s.edit(`q:${q1}`, (ws) => renameQuestionnaire(ws, q1, 'sinistre'));
+    let ws = useStore.getState().ws;
+    expect(ws.questionnaires[0]!.key).toBe('sinistre');
+    expect(ws.project.questionnaires.find((e) => e.id === q1)!.file).toBe('sinistre.json');
+    useStore.getState().undo(`q:${q1}`);
+    ws = useStore.getState().ws;
+    expect(ws.questionnaires[0]!.key).toBe('questionnaire');
+    expect(ws.project.questionnaires.find((e) => e.id === q1)!.file).toBe('questionnaire.json');
   });
 });

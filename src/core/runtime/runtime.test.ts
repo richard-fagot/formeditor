@@ -119,3 +119,23 @@ describe('valeurs par défaut', () => {
     expect(s.answers.b).toBe('x!');
   });
 });
+
+describe('question facultative laissée vide', () => {
+  const inp = input(
+    [q('a', 'a'), q('b', 'b'), q('oui', 'oui'), q('non', 'non'), end],
+    [e('a', 'b'), e('b', 'oui', '$exists(a)'), e('b', 'non'), e('oui', 'fin'), e('non', 'fin')],
+  );
+  it('a la réponse null mais n’est pas « renseignée » pour $exists', () => {
+    let s = next(inp, start(inp));
+    expect(s.answers.a).toBeNull();
+    expect(buildContext(inp, s.answers)).not.toHaveProperty('a');
+    s = next(inp, setAnswer(inp, s, 'x'));
+    expect(currentStep(inp, s).id).toBe('non');
+  });
+  it('retire les null en profondeur sans toucher aux réponses', () => {
+    const answers = { a: 'x', tiers: { nom: null, age: 3 }, liste: [{ v: null, w: 1 }] };
+    expect(buildContext(inp, answers)).toMatchObject({ a: 'x', tiers: { age: 3 }, liste: [{ w: 1 }] });
+    expect(buildContext(inp, answers).tiers).not.toHaveProperty('nom');
+    expect(answers.tiers.nom).toBeNull();
+  });
+});
