@@ -161,7 +161,16 @@
             "en": "{prenom}'s date of birth"
           },
           "type": "date",
-          "max": "$today()"
+          "max": "$today()",
+          "constraints": [
+            {
+              "rule": "$age(date_naissance) < 120",
+              "message": {
+                "fr": "Date de naissance improbable.",
+                "en": "Unlikely date of birth."
+              }
+            }
+          ]
         },
         {
           "id": "f_hospitalise",
@@ -186,7 +195,16 @@
             "fr": "jours",
             "en": "days"
           },
-          "when": "hospitalise = true"
+          "when": "hospitalise = true",
+          "constraints": [
+            {
+              "rule": "duree_hospitalisation <= 365",
+              "message": {
+                "fr": "Au plus 365 jours.",
+                "en": "365 days at most."
+              }
+            }
+          ]
         }
       ]
     },
@@ -209,6 +227,21 @@
           "en": "Estimated amount of damage"
         }
       },
+      "help": {
+        "variants": [
+          {
+            "when": "$exists(victimes[hospitalise])",
+            "text": {
+              "fr": "Incluez les frais médicaux des {$count(victimes[hospitalise])} personne(s) hospitalisée(s).",
+              "en": "Include the medical costs of the {$count(victimes[hospitalise])} hospitalised person(s)."
+            }
+          }
+        ],
+        "otherwise": {
+          "fr": "Estimation hors taxes, en euros.",
+          "en": "Estimate excluding tax, in euros."
+        }
+      },
       "type": "number",
       "required": true,
       "numberKind": "real",
@@ -227,8 +260,8 @@
         "en": "Expert assessment"
       },
       "text": {
-        "fr": "Au-delà de {sys.plafond_expertise} €, un expert vous contactera sous 48 heures.",
-        "en": "Above {sys.plafond_expertise} €, an expert will contact you within 48 hours."
+        "fr": "Au-delà de {sys.plafond_expertise} €, un expert vous contactera avant le {$addDays($today(), 2)}.",
+        "en": "Above {sys.plafond_expertise} €, an expert will contact you before {$addDays($today(), 2)}."
       }
     },
     {
@@ -240,7 +273,8 @@
         "en": "Is a third party involved?"
       },
       "type": "boolean",
-      "required": true
+      "required": true,
+      "default": false
     },
     {
       "kind": "block",
@@ -265,11 +299,29 @@
         "en": "Describe the circumstances"
       },
       "help": {
-        "fr": "Lieu, heure, déroulement.",
-        "en": "Place, time, sequence of events."
+        "variants": [
+          {
+            "when": "type_sinistre = 'other'",
+            "text": {
+              "fr": "Décrivez ce sinistre ({type_sinistre_other}) : lieu, heure, déroulement.",
+              "en": "Describe this claim ({type_sinistre_other}): place, time, sequence of events."
+            }
+          },
+          {
+            "when": "$daysBetween(date_sinistre, $today()) > 5",
+            "text": {
+              "fr": "Lieu, heure, déroulement, et pourquoi la déclaration intervient {$daysBetween(date_sinistre, $today())} jours après les faits.",
+              "en": "Place, time, sequence of events, and why the claim comes {$daysBetween(date_sinistre, $today())} days later."
+            }
+          }
+        ],
+        "otherwise": {
+          "fr": "Lieu, heure, déroulement.",
+          "en": "Place, time, sequence of events."
+        }
       },
       "type": "text",
-      "required": true,
+      "required": "montant_estime > sys.plafond_expertise or tiers_implique = true or type_sinistre = 'other'",
       "multiline": true,
       "minLength": 20,
       "maxLength": 2000
@@ -307,7 +359,13 @@
             "en": "Mail"
           }
         }
-      ]
+      ],
+      "other": {
+        "label": {
+          "fr": "Autre moyen (préciser)",
+          "en": "Other means (specify)"
+        }
+      }
     },
     {
       "kind": "question",
@@ -335,7 +393,8 @@
         "en": "Is this information correct?"
       },
       "type": "boolean",
-      "required": true
+      "required": true,
+      "labelSet": "ls_confirmation"
     },
     {
       "kind": "end",
@@ -383,7 +442,7 @@
       "id": "e_date_lien",
       "from": "n_date",
       "to": "n_lien",
-      "when": "$count(sys.sinistres) > 0"
+      "when": "$count(sys.sinistres[date <= $$.date_sinistre]) > 0"
     },
     {
       "id": "e_date_victimes",
@@ -486,7 +545,8 @@
       "id": "e_confirmation_retour",
       "from": "n_confirmation",
       "to": "n_type",
-      "when": "confirmation = false"
+      "when": "confirmation = false",
+      "description": "Boucle : l’adhérent corrige sa déclaration ; les nouvelles réponses remplacent les précédentes."
     },
     {
       "id": "e_confirmation_fin",

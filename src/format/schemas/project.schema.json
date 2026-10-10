@@ -44,15 +44,19 @@
           "type": "array",
           "items": {
             "type": "string"
-          }
+          },
+          "description": "Valeurs possibles d'une énumération (`type: enum`)."
         },
         "fields": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/variable"
-          }
+          },
+          "description": "Champs des objets d'une liste (`type: list`)."
         },
-        "example": {}
+        "example": {
+          "description": "Valeur d'exemple (documentation, autocomplétion)."
+        }
       }
     }
   },
@@ -75,12 +79,15 @@
     "languages": {
       "type": "array",
       "minItems": 1,
+      "uniqueItems": true,
       "items": {
-        "type": "string"
-      }
+        "$ref": "common.schema.json#/$defs/langCode"
+      },
+      "description": "Langues des contenus."
     },
     "defaultLanguage": {
-      "type": "string"
+      "$ref": "common.schema.json#/$defs/langCode",
+      "description": "Langue de repli ; doit figurer dans `languages`."
     },
     "systemState": {
       "type": "array",
@@ -109,7 +116,8 @@
             "type": "string"
           },
           "values": {
-            "type": "object"
+            "type": "object",
+            "description": "Valeurs de l'état du système, par nom de variable (`sys.<nom>`)."
           }
         }
       }
@@ -128,7 +136,8 @@
             "type": "string"
           },
           "file": {
-            "type": "string"
+            "type": "string",
+            "description": "Nom du fichier du questionnaire (`<clé>.json`), à côté de `projet.json`."
           }
         }
       }

@@ -259,7 +259,7 @@ function travel(s: AppState, scope: Scope, from: 'past' | 'future'): void {
 
 /**
  * Après annuler / rétablir : ferme les onglets des questionnaires disparus (création annulée), rouvre ceux
- * qui réapparaissent (création rétablie) ; sélection et vue côte à côte suivent.
+ * qui réapparaissent (création rétablie) ; sélection, bloc affiché dans la bibliothèque et vue côte à côte suivent.
  */
 function syncTabs(s: AppState, before: Set<string>): void {
   const now = new Set(s.ws.questionnaires.map((q) => q.id));
@@ -269,6 +269,9 @@ function syncTabs(s: AppState, before: Set<string>): void {
   for (const id of now) if (!before.has(id) && !s.tabs.includes(`q:${id}`)) s.tabs.push(`q:${id}`);
   if (!s.tabs.includes(s.activeTab)) s.activeTab = s.tabs[Math.max(0, Math.min(i, s.tabs.length) - 1)] ?? 'library';
   if (s.selection.graph?.kind === 'questionnaire' && !now.has(s.selection.graph.id)) s.selection = { nodes: [] };
+  const blocks = new Set(s.ws.library.blocks.map((b) => b.id));
+  if (s.selection.graph?.kind === 'block' && !blocks.has(s.selection.graph.id)) s.selection = { nodes: [] };
+  if (s.libraryItem?.kind === 'block' && !blocks.has(s.libraryItem.id)) s.libraryItem = undefined;
   if (s.compare && !now.has(s.compare)) s.compare = undefined;
 }
 

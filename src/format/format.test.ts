@@ -35,6 +35,19 @@ describe('validateDocument', () => {
     q.nodes[0]!.decimals = 2;
     expect(validateDocument(q).join()).toMatch(/decimals|unevaluated/);
   });
+  it('refuse un id de nœud contenant « / » (réservé aux étapes instance/nœud)', () => {
+    const q = minimalQuestionnaire();
+    q.nodes[0]!.id = 'bloc/n1';
+    expect(validateDocument(q).length).toBeGreaterThan(0);
+  });
+  it('refuse un code de langue invalide dans le projet et dans un texte', () => {
+    const ws = newWorkspace('Projet', 'fr');
+    expect(validateDocument({ ...ws.project, languages: ['fr', 'Français'] }).length).toBeGreaterThan(0);
+    expect(validateDocument({ ...ws.project, defaultLanguage: 'FR' }).length).toBeGreaterThan(0);
+    expect(validateDocument({ ...minimalQuestionnaire(), title: { fr_FR: 'Test' } }).length).toBeGreaterThan(0);
+    expect(validateDocument({ ...ws.project, languages: ['fr', 'fr'] }).length).toBeGreaterThan(0);
+    expect(validateDocument({ ...ws.project, languages: ['fr', 'pt-BR'] })).toEqual([]);
+  });
   it('refuse un document sans kind', () => {
     expect(validateDocument({ formatVersion: 1 })).toEqual(['Type de document inconnu (propriété "kind").']);
   });

@@ -7,11 +7,22 @@
       "type": "string",
       "description": "Expression JSONata écrite avec les clés lisibles (docs/FORMAT.md)."
     },
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[^/]+$",
+      "description": "Identifiant technique stable et opaque, sans « / » (réservé aux étapes `instance/nœud` des chemins). Jamais utilisé dans une expression."
+    },
+    "langCode": {
+      "type": "string",
+      "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]+)?$",
+      "description": "Code de langue : `fr`, `en`, `pt-BR`…"
+    },
     "localizedText": {
       "type": "object",
-      "description": "Texte multilingue : une entrée par code de langue.",
+      "description": "Texte multilingue : une entrée par code de langue du projet. Langue absente = traduction manquante (repli sur la langue par défaut).",
       "propertyNames": {
-        "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]+)?$"
+        "$ref": "#/$defs/langCode"
       },
       "additionalProperties": {
         "type": "string"
@@ -88,7 +99,8 @@
           "type": "string",
           "not": {
             "const": "other"
-          }
+          },
+          "description": "Valeur enregistrée dans la réponse ; `other` est réservée."
         },
         "label": {
           "$ref": "#/$defs/label"
@@ -210,8 +222,7 @@
           "additionalProperties": false,
           "properties": {
             "id": {
-              "type": "string",
-              "minLength": 1
+              "$ref": "#/$defs/id"
             },
             "description": {
               "type": "string"
@@ -229,6 +240,7 @@
           "description": "Question de la bibliothèque, par référence ; libellé surchargeable."
         },
         {
+          "description": "Instance d'un bloc de la bibliothèque : ses clés sont vues de l'hôte sous `alias.cle`.",
           "type": "object",
           "required": [
             "kind",
@@ -239,8 +251,7 @@
           "additionalProperties": false,
           "properties": {
             "id": {
-              "type": "string",
-              "minLength": 1
+              "$ref": "#/$defs/id"
             },
             "description": {
               "type": "string"
@@ -257,6 +268,7 @@
           }
         },
         {
+          "description": "Page d'information sans saisie.",
           "type": "object",
           "required": [
             "kind",
@@ -266,8 +278,7 @@
           "additionalProperties": false,
           "properties": {
             "id": {
-              "type": "string",
-              "minLength": 1
+              "$ref": "#/$defs/id"
             },
             "description": {
               "type": "string"
@@ -284,6 +295,7 @@
           }
         },
         {
+          "description": "Page de synthèse des réponses du parcours effectif.",
           "type": "object",
           "required": [
             "kind",
@@ -292,8 +304,7 @@
           "additionalProperties": false,
           "properties": {
             "id": {
-              "type": "string",
-              "minLength": 1
+              "$ref": "#/$defs/id"
             },
             "description": {
               "type": "string"
@@ -307,6 +318,7 @@
           }
         },
         {
+          "description": "Fin de parcours ; `outcome` est l'issue métier.",
           "type": "object",
           "required": [
             "kind",
@@ -316,8 +328,7 @@
           "additionalProperties": false,
           "properties": {
             "id": {
-              "type": "string",
-              "minLength": 1
+              "$ref": "#/$defs/id"
             },
             "description": {
               "type": "string"
@@ -337,6 +348,7 @@
           }
         },
         {
+          "description": "Sortie nommée d'un bloc (uniquement dans un bloc de la bibliothèque).",
           "type": "object",
           "required": [
             "kind",
@@ -346,8 +358,7 @@
           "additionalProperties": false,
           "properties": {
             "id": {
-              "type": "string",
-              "minLength": 1
+              "$ref": "#/$defs/id"
             },
             "description": {
               "type": "string"
@@ -376,19 +387,23 @@
       "description": "Arête. Les arêtes sortant d'un même nœud sont évaluées dans l'ordre du tableau ; celle sans condition est le « sinon ».",
       "properties": {
         "id": {
-          "type": "string"
+          "$ref": "#/$defs/id"
         },
         "from": {
-          "type": "string"
+          "type": "string",
+          "description": "Id du nœud de départ (dans le même graphe)."
         },
         "to": {
-          "type": "string"
+          "type": "string",
+          "description": "Id du nœud d'arrivée (dans le même graphe)."
         },
         "when": {
-          "$ref": "#/$defs/expression"
+          "$ref": "#/$defs/expression",
+          "description": "Condition ; absente = arête « sinon »."
         },
         "exit": {
-          "type": "string"
+          "type": "string",
+          "description": "Arête sortant d'une instance de bloc : nom de la sortie du bloc concernée ; absente = toute sortie."
         },
         "description": {
           "type": "string"
@@ -571,8 +586,7 @@
       ],
       "properties": {
         "id": {
-          "type": "string",
-          "minLength": 1
+          "$ref": "#/$defs/id"
         },
         "key": {
           "$ref": "#/$defs/key"

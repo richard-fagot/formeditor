@@ -69,12 +69,13 @@ describe('renommage propagé', () => {
   it('question de bibliothèque : utilisée sans préfixe chez les hôtes', () => {
     const w = renameKey(ws, { kind: 'question', owner: { kind: 'libraryQuestion', id: 'lq_date_sinistre' }, nodeId: '' }, 'date_evenement');
     expect(w.library.questions[0]!.key).toBe('date_evenement');
+    expect(edge(decl(w), 'e_date_lien').when).toBe('$count(sys.sinistres[date <= $$.date_evenement]) > 0');
   });
   it('alias de bloc et variable système (scénarios compris)', () => {
     let w = renameKey(ws, { kind: 'alias', questionnaireId: 'q_declaration', nodeId: 'n_bloc_tiers' }, 'partie_adverse');
     expect(JSON.stringify(node(decl(w), 'n_fin').message)).toContain('partie_adverse.compagnie');
     w = renameKey(w, { kind: 'system', name: 'sinistres' }, 'historique');
-    expect(edge(decl(w), 'e_date_lien').when).toBe('$count(sys.historique) > 0');
+    expect(edge(decl(w), 'e_date_lien').when).toBe('$count(sys.historique[date <= $$.date_sinistre]) > 0');
     expect(w.project.scenarios[0]!.values.historique).toBeDefined();
     expect((node(decl(w), 'n_lien').source as { label: string }).label).toBe("date & ' — ' & nature");
   });

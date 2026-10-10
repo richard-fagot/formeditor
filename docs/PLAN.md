@@ -64,4 +64,4 @@ carte à jour, fusion dans `main`, push.
 - [x] Vue côte à côte, mise en page automatique ELK
 
 ## Phase 10 — Livraison à l'équipe de dev
-- [ ] `docs/FORMAT.md` relu et complet, schémas, exemple à jour
+- [x] `docs/FORMAT.md` relu et complet, schémas, exemple à jour
