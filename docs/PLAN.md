@@ -56,7 +56,7 @@ carte à jour, fusion dans `main`, push.
 - [x] Pages d'information, de synthèse (retour pour modifier), de fin
 - [x] Panneau d'état du système, scénarios nommés, édition libre, débogage
 - [x] Résumé de démo écrit (`docs/DEMO-2.md`)
-- [ ] Attendre la validation
+- [x] Attendre la validation
 
 ## Phase 9 — i18n, paramètres, finitions
 - [ ] Langues des contenus, traductions manquantes, changement de langue en prévisualisation
