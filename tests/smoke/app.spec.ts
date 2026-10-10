@@ -144,7 +144,7 @@ test('clic sur un problème : les raccourcis du logigramme agissent, Entrée act
   expect(errors).toEqual([]);
 });
 
-test('exemple : choix avec option conditionnée et source dynamique, date, structure répétable', async ({ page }) => {
+test('exemple : choix avec option conditionnée et entrée dynamique, date, structure répétable', async ({ page }) => {
   const errors = await open(page);
   await page.keyboard.press('Control+k');
   await page.keyboard.type('exemple');
@@ -171,7 +171,7 @@ test('exemple : choix avec option conditionnée et source dynamique, date, struc
   await preview.locator('input[type=date]').fill('2026-09-01');
   await next.click();
 
-  // Source dynamique : sinistres de l'état du système.
+  // Entrée dynamique : sinistres de l'état du système.
   await expect(preview).toContainText('2025-02-03 — Vol');
   await preview.getByText('2026-05-20 — Dégât des eaux').click();
   await next.click();

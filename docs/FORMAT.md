@@ -1,4 +1,4 @@
-# Format des questionnaires — version 1
+# Format des questionnaires — version 2
 
 Ce document décrit le format JSON produit par l'éditeur de questionnaires. Il s'adresse à l'équipe
 de développement (et à l'IA qui l'assiste) chargée de construire le moteur cible et les formulaires
@@ -34,7 +34,7 @@ libellés et interpolation — 6. Nœuds — 7. Questions — 8. Réponses — 9
 | `<clé>.layout.json`, `bloc_<clé>.layout.json` | `layout` | Positions des nœuds dans l'éditeur. | **non** (à ignorer) |
 | `<projet>.bundle.json` | `bundle` | `project`, `library`, `questionnaires[]`, `layouts[]` dans un seul fichier. | oui (même contenu) |
 
-- Chaque fichier (et le bundle) porte `formatVersion` (entier, actuellement `1`) et `kind`.
+- Chaque fichier (et le bundle) porte `formatVersion` (entier, actuellement `2`) et `kind`.
 - L'outil migre automatiquement à l'ouverture un fichier d'une version antérieure ; il refuse un fichier
   d'une version plus récente. Un moteur cible peut refuser toute version qu'il ne connaît pas.
 - Tout élément (projet, questionnaire, nœud, arête, question, bloc, variable, scénario, jeu de libellés)
@@ -47,7 +47,7 @@ Squelette d'un questionnaire :
 
 ```json
 {
-  "formatVersion": 1,
+  "formatVersion": 2,
   "kind": "questionnaire",
   "id": "q_declaration",
   "key": "declaration_sinistre",
@@ -214,8 +214,8 @@ champs de structure ne sont pas appliquées (version 1).
 | `text` | chaîne | `multiline?` (zone de texte), `minLength?`, `maxLength?`, `pattern?` (expression régulière JavaScript) |
 | `date` | chaîne `AAAA-MM-JJ` | `min?`, `max?` : date ISO littérale ou expression (`$today()`, `date_sinistre`, `sys.date_effet_contrat`) |
 | `number` | nombre | `numberKind?` (`real` défaut, `natural` = entier ≥ 0, `integer`), `min?`, `max?` (nombre ou expression), `decimals?` (décimales max.), `unit?` (texte multilingue affiché après le champ) |
-| `single` | chaîne : `value` de l'option | `options[]`, `other?`, `source?` |
-| `multiple` | tableau de chaînes | `options[]`, `other?`, `source?`, `minSelected?`, `maxSelected?` |
+| `single` | chaîne : `value` de l'option | `options[]` (entrées, §7.3), `other?` |
+| `multiple` | tableau de chaînes | `options[]` (entrées, §7.3), `other?`, `minSelected?`, `maxSelected?` |
 | `boolean` | `true` / `false` | `labelSet?` (id d'un jeu `boolean` ; défaut « Oui / Non »), `other?` |
 | `tristate` | `true` / `false` / `"unknown"` | `labelSet?` (id d'un jeu `tristate` ; défaut « Oui / Non / Ne sait pas »), `other?` |
 | `structure` | objet `{ <clé du champ>: réponse }`, ou **tableau** de tels objets si répétable | `fields[]`, `repeat?` |
@@ -225,8 +225,25 @@ Une question laissée vide a pour réponse `null` (§8).
 
 ### 7.3 Options (`single`, `multiple`)
 
-`{ "value": "vol", "label": {…}, "when"?: "<condition d'affichage>" }`. La valeur `other` est réservée.
-Une option dont `when` ne vaut pas `true` n'est pas proposée (et une réponse qui la désigne est refusée, §9.1).
+`options[]` est une suite **ordonnée** d'entrées, affichées strictement dans cet ordre. Chaque entrée est :
+
+- une **option statique** : `{ "value": "vol", "label": {…}, "when"?: "<condition d'affichage>" }`.
+  La valeur `other` est réservée ;
+- ou une **entrée dynamique**, reconnue à la présence de `from` :
+  `{ "from": "<expression>", "label"?: "<expression>", "value"?: "<expression>", "when"?: "<condition>" }` (§7.5).
+
+Une entrée dont `when` ne vaut pas `true` n'est pas proposée (entrée dynamique : aucune de ses valeurs ;
+une réponse qui la désigne est refusée, §9.1). Les entrées visibles sont déployées dans l'ordre :
+une option statique donne une option, une entrée dynamique en donne zéro, une ou plusieurs **à sa position**.
+Une valeur vide, `other` ou déjà proposée plus haut dans la liste (statique ou dynamique) est écartée.
+« Autre » (§7.4) vient toujours après toutes les entrées.
+
+```json
+"options": [
+  { "from": "sys.sinistres", "label": "date & ' — ' & nature", "value": "id" },
+  { "value": "aucun", "label": { "fr": "Non, aucun", "en": "No" } }
+]
+```
 
 ### 7.4 « Autre (préciser) » (`single`, `multiple`, `boolean`, `tristate`)
 
@@ -235,23 +252,24 @@ Une option dont `when` ne vaut pas `true` n'est pas proposée (et une réponse q
 rangée à côté de la réponse sous la clé `<clé>_other` (§8) et se lit ainsi dans les expressions :
 `{type_sinistre_other}`. `detailRequired: true` rend la précision obligatoire quand `"other"` est choisi.
 
-### 7.5 Source dynamique (`single`, `multiple`)
+### 7.5 Entrée dynamique (`single`, `multiple`)
 
-`source: { "from": "<expression>", "label"?: "<expression>", "value"?: "<expression>" }` : les options
-proviennent d'une liste, réponse précédente ou variable système.
+`{ "from": "<expression>", "label"?: "<expression>", "value"?: "<expression>", "when"?: "<condition>" }`,
+placée dans `options[]` (§7.3) : les options proviennent d'une liste, réponse précédente ou variable système.
+Plusieurs entrées dynamiques peuvent coexister, à n'importe quelle position.
 
-1. `from` est évaluée dans le contexte de la page ; une valeur unique est traitée comme une liste d'un élément.
+1. `when` (facultative) est évaluée dans le contexte de la page ; si elle ne vaut pas `true`, l'entrée ne donne rien.
+   `from` est évaluée dans le contexte de la page ; une valeur unique est traitée comme une liste d'un
+   élément ; une valeur absente ou une liste vide ne donne aucune option (ni erreur).
 2. Pour chaque élément non nul, `value` puis `label` sont évaluées **avec l'élément pour seul contexte**
    (`date & ' — ' & nature` lit les champs de l'élément ; `$` est l'élément). Sans `value` (`label`),
    l'élément lui-même sert de valeur (de libellé). Un libellé vide prend la valeur.
-3. Les valeurs sont converties en chaînes (objet → JSON). Les valeurs vides, `other` et les doublons
-   (y compris avec une option statique) sont écartés.
-4. Les options dynamiques suivent les options statiques visibles.
+3. Les valeurs sont converties en chaînes (objet → JSON). Les valeurs vides, `other` et celles déjà
+   proposées plus haut dans la liste (y compris par une option statique) sont écartées.
+4. Les options obtenues prennent la place de l'entrée, dans l'ordre de la liste source.
 
-```json
-"options": [{ "value": "aucun", "label": { "fr": "Non, aucun", "en": "No" } }],
-"source": { "from": "sys.sinistres", "label": "date & ' — ' & nature", "value": "id" }
-```
+Version 1 : les options dynamiques étaient décrites à part (`source`, sans `when`) et suivaient les options
+statiques. La migration 1 → 2 place cette `source` en dernière entrée de `options[]` : l'affichage est inchangé.
 
 ### 7.6 Structure
 
@@ -314,7 +332,7 @@ Le contexte de validation est celui de la page (§10.2) où la réponse en cours
    - `number` : `numberKind` (`natural` : entier ≥ 0 ; `integer` : entier) ; `min`, `max` (nombre, ou
      expression : ignorée si elle ne donne pas un nombre) ; `decimals` (nombre de chiffres après la virgule).
    - `single`, `multiple` : chaque valeur doit être parmi les options **visibles** au moment de la
-     validation (statiques dont `when` vaut `true`, source dynamique, `other` si « Autre » est activé),
+     validation (entrées dont `when` vaut `true`, déployées comme au §7.3, `other` si « Autre » est activé),
      sinon `option` ; puis `minSelected`, `maxSelected` (nombre de valeurs cochées).
    - `structure` : `repeat.min` / `repeat.max` sur le nombre d'occurrences (`minOccurrences`,
      `maxOccurrences`) ; s'il n'y a pas d'erreur d'occurrences, chaque champ **visible** de chaque
@@ -357,7 +375,7 @@ Le message d'une erreur est `messages.<paramètre>` s'il existe, sinon le messag
 Les expressions sont écrites en **JSONata 1.8** (implémentations en JavaScript, Java, .NET, Python…),
 avec les **clés** lisibles. Elles apparaissent dans : `when` des arêtes, des options, des variantes et
 des champs de structure ; `required` ; `defaultExpr` ; `min` / `max` non littéraux ; `constraints[].rule` ;
-`source.from` / `label` / `value` ; et entre accolades dans les textes interpolés.
+`from` / `label` / `value` des entrées dynamiques ; et entre accolades dans les textes interpolés.
 
 Une **condition** (`when`, `required`, règle libre) est vraie **seulement si** l'expression vaut le
 booléen `true`. Toute autre valeur (`false`, absente, chaîne, objet, liste) ou une erreur d'évaluation
@@ -372,7 +390,8 @@ L'expression est évaluée sur un objet racine :
 - dans un bloc : les réponses du bloc **aussi** sans préfixe, prioritaires sur une clé homonyme de l'hôte ;
 - dans un champ de structure (`when`, règles, libellés du champ) : les champs de l'occurrence sans
   préfixe, prioritaires ;
-- dans `source.label` / `source.value` : **uniquement** l'élément de la liste.
+- dans `label` / `value` d'une entrée dynamique : **uniquement** l'élément de la liste (`from` et `when`
+  de l'entrée sont évalués dans le contexte de la page).
 
 Les fonctions de date utilisent la date du jour du moteur (figée par `today` dans les tests, §15).
 
@@ -509,6 +528,12 @@ synthèse » avance alors (comme « Suivant », avec validation et effacement) s
 répondues, et s'arrête à la synthèse, à la première page qui n'avait pas été vue, à une question sans
 réponse, à une réponse devenue invalide (§9) ou à une fin.
 
+**Fin bloquée par une réponse invalide.** Avant d'afficher une fin, le moteur revalide (§9) chaque réponse
+connue du chemin effectif (pages du chemin projeté depuis le départ, §11.5), dans le contexte de sa page.
+À la première réponse invalide (ex. valeur dynamique disparue après un changement d'état du système ou
+d'une réponse précédente), il ramène l'utilisateur à cette question, avec son message (`option`…), au
+lieu d'afficher la fin. La réponse n'est pas effacée : l'utilisateur la corrige, puis avance normalement.
+
 ## 12. Bibliothèque (`bibliotheque.json`)
 
 - `questions[]` : questions réutilisables (§7), référencées par `{ "kind": "question", "id", "ref" }`.
@@ -526,7 +551,7 @@ en contenir : le moteur cible peut les vérifier à son tour.
 | Code | Problème |
 | --- | --- |
 | `invalidExpression` | Expression syntaxiquement invalide. |
-| `unknownReference` | Clé, alias, variable système ou champ inconnu (y compris noms relatifs d'une source tirée d'une liste système). |
+| `unknownReference` | Clé, alias, variable système ou champ inconnu (y compris noms relatifs d'une entrée dynamique tirée d'une liste système). |
 | `unknownFilterReference` | Clé de question écrite nue dans un filtre (écrire `$$.cle`). |
 | `notGuaranteed` | Référence à une question qui n'est pas posée sur tous les chemins menant à l'expression (sauf dans `$exists(…)` ou dans le texte d'une variante dont la condition la teste). |
 | `duplicateKey`, `invalidKey` | Clé en double ou hors `snake_case` / réservée (§2). |
@@ -550,7 +575,7 @@ L'exemple fourni ne produit aucun problème.
 | Choix unique : option conditionnée, « Autre » avec précision obligatoire | `n_type` |
 | Question de bibliothèque : date avec bornes calculées, messages, `defaultExpr: "$today()"` | `n_date` → `lq_date_sinistre` |
 | Filtre et `$$` : lien demandé s'il existe un sinistre antérieur | `e_date_lien` : `$count(sys.sinistres[date <= $$.date_sinistre]) > 0` |
-| Source dynamique depuis une liste système | `n_lien` |
+| Entrée dynamique (liste système d'objets) placée **avant** une option statique | `n_lien` |
 | Structure répétable, champ conditionné, libellé `{prenom}`, règles libres (`$age`) | `n_victimes` |
 | Libellé et aide à variantes, `$exists(victimes[hospitalise])`, nombre réel à 2 décimales | `n_montant` |
 | `$addDays` interpolé | `n_expertise` |
@@ -612,4 +637,8 @@ doit égaler `path`, toutes les réponses doivent avoir été consommées et l'i
 
 Toute évolution incompatible incrémente `formatVersion` et s'accompagne d'une migration dans l'outil,
 des schémas, de ce document et de l'exemple. Les ajouts compatibles (nouvelle propriété facultative)
-sont documentés ici. Version actuelle : **1**.
+sont documentés ici. Version actuelle : **2**.
+
+| Version | Changement | Migration |
+| --- | --- | --- |
+| 2 | Options d'un choix : suite ordonnée d'entrées (statiques ou dynamiques) ; `source` disparaît (EVO-001). | `source` → entrée dynamique placée après les options statiques. |
