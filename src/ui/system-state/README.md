@@ -1,7 +1,23 @@
 # ui/system-state
 
-Dictionnaire des variables et scénarios.
+Onglet « État du système » (spec §4.5) : dictionnaire des variables du projet et scénarios nommés.
+Fournit aussi la saisie des valeurs, réutilisée par le panneau d'état du système de `ui/preview`.
+Dépend de `app/commands`, `app/store`, `core/model`, `core/references` (usages), `ui-kit`, `ui/properties` (`KeyInput`).
 
-- **Dépend de** : app
-- **API** : voir `index.ts`.
-- **État** : squelette (phase 1).
+## API
+- `SystemState` : écran complet (variables à gauche, scénarios à droite).
+- `ValueInput` : saisie d'une valeur selon le type déclaré (texte, nombre, date, booléen, énumération ;
+  liste d'objets en JSON, transmise seulement si valide) ; signale un écart au type (`valueError`, non bloquant).
+- `SystemValuesEditor` : une `ValueInput` par variable du dictionnaire (`id` = `<idPrefix>-<nom>`).
+
+## Fichiers
+- `VariableCard.tsx` : nom (renommage propagé : commande `system.renameVariable`), type (`setVariableType`),
+  description, valeurs d'une énumération (une par ligne), schéma d'une liste (champs de types simples),
+  valeur d'exemple, nombre d'usages (`findUsages`), suppression (`system.deleteVariable`).
+- `ScenarioCard.tsx` : nom, description, valeurs ; dupliquer (`scenario.add` avec l'id), supprimer (`scenario.delete`).
+
+## Invariants
+- Création, suppression, renommage passent par les commandes ; la saisie continue passe par
+  `store.edit('project', …, clé)` (frappes regroupées, annulable dans l'historique du projet).
+- L'autocomplétion des expressions lit le dictionnaire via la portée de `core/references` (`sys.…`,
+  description en info-bulle, valeurs d'une énumération en détail).

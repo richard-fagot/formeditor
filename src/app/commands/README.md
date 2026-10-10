@@ -26,11 +26,15 @@ Catalogue unique des actions utilisateur (spec §4.4). Palette, menus et raccour
   la sélection, ou à la position d'un dépôt), `view.libraryPanel`, `node.group` (Ctrl+G, questionnaire seulement ; point
   d'historique aussi dans `library`), `node.toLibrary`, `node.openInLibrary`, `node.newExit` (bloc seulement).
 - Les commandes du graphe agissent sur le graphe actif (`activeGraphRef`) : questionnaire, ou bloc affiché dans l'onglet Bibliothèque.
+- `system-commands.ts` : `system.addVariable` (ouvre l'onglet, focus sur le nom), `system.deleteVariable`, `system.renameVariable`
+  (`{ name, next }` ; point d'historique dans chaque portée réécrite), `scenario.add` (sans paramètre : valeurs d'exemple ; avec un id :
+  copie), `scenario.delete`, `preview.saveScenario` (prévisualisation affichée ; `arg` = nom), `preview.toggleSystem`, `preview.toggleDebug`.
 - `nav-commands.ts` : flèches, annuler/rétablir (portée `global` : actifs hors du logigramme, pas pendant une saisie ; onglet Bibliothèque → historique `library`), ajuster la vue, logigramme ↔ prévisualisation.
 - `example.ts` : exemple embarqué ; `files.ts` : téléchargement et sélection de fichiers.
 
 ## Tests
 `commands.test.ts` (jeux de libellés, onglets, langues, rang et suppression d'arête, propriétés du questionnaire) ;
+`system-commands.test.ts` (dictionnaire, scénarios, enregistrement depuis la prévisualisation, panneaux) ;
 `library-commands.test.ts` (insertion, dépôt, regroupement et annulation, édition d'un bloc, sortie nommée, question vers la bibliothèque).
 
 ## Ajouter une action

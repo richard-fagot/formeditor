@@ -35,8 +35,8 @@ export function VariableCard({ variable: v, names }: { variable: SystemVariable;
   const typeLabel = (x: VariableType) => t(`vartype.${x}`);
   return (
     <div ref={box} className="space-y-3 rounded-lg border border-slate-200 bg-white p-4 shadow-xs" data-testid={`variable-${v.name}`}>
-      <div className="flex flex-wrap items-start gap-3">
-        <Field label={t('system.name')} hint={t('system.nameHint')} className="w-64">
+      <div className="flex items-start gap-3">
+        <Field label={t('system.name')} hint={t('system.nameHint')} className="min-w-0 flex-1">
           <KeyInput value={v.name} taken={names.filter((n) => n !== v.name)} invalidText={t('system.nameInvalid')}
             onCommit={(next) => runCommand('system.renameVariable', { name: v.name, next })} />
         </Field>
@@ -45,7 +45,7 @@ export function VariableCard({ variable: v, names }: { variable: SystemVariable;
             {VAR_TYPES.map((x) => <option key={x} value={x}>{typeLabel(x)}</option>)}
           </Select>
         </Field>
-        <div className="ml-auto flex items-center gap-2 pt-5">
+        <div className="flex shrink-0 items-center gap-2 pt-5">
           <Badge tone={uses ? 'indigo' : 'slate'}>{uses ? t('system.usedBy', { n: uses }) : t('system.unused')}</Badge>
           <Button size="sm" variant="danger" onClick={() => runCommand('system.deleteVariable', v.name)}>
             <Trash2 className="size-3" />{t('props.delete')}

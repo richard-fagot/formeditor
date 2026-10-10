@@ -310,3 +310,60 @@ test('bibliothèque : glisser une question, insérer un bloc (I), déplier, grou
   await expect(page.getByTestId('library-question').getByLabel('Clé', { exact: true })).toHaveValue('telephone');
   expect(errors).toEqual([]);
 });
+
+test('dictionnaire de l’état du système, panneaux de la prévisualisation, retour depuis la synthèse', async ({ page }) => {
+  const errors = await open(page);
+  await page.keyboard.press('Control+k');
+  await page.keyboard.type('exemple');
+  await page.keyboard.press('Enter');
+  await expect(page.locator('.react-flow__node').first()).toBeVisible();
+
+  // Dictionnaire : variables de l'exemple, nouvelle variable avec focus sur son nom.
+  await page.getByRole('button', { name: 'État du système' }).click();
+  await expect(page.getByTestId('variable-sinistres')).toContainText('Schéma des objets de la liste');
+  await page.getByTestId('add-variable').click();
+  await expect(page.getByTestId('variable-variable').getByRole('textbox').first()).toBeFocused();
+  await page.keyboard.type('canal_entree');
+  await page.keyboard.press('Enter');
+  await expect(page.getByTestId('variable-canal_entree')).toBeVisible();
+
+  // Prévisualisation : édition libre de l'état du système, réévaluation immédiate.
+  await page.getByRole('tab', { name: /Déclaration/ }).click();
+  await page.getByTestId('view-preview').click();
+  const preview = page.getByTestId('preview');
+  const next = page.getByTestId('preview-next');
+  await expect(preview).toContainText('Bonjour UD du Rhône');
+  await page.getByTestId('system-panel').getByLabel('sys.nom_assure').fill('Mme Test');
+  await expect(preview).toContainText('Bonjour Mme Test');
+  await page.getByTestId('save-scenario').click();
+  await expect(page.getByTestId('scenario-select')).toContainText('UD avec 2 sinistres *');
+
+  // Débogage : conditions des arêtes sortantes de la page courante.
+  await page.getByRole('button', { name: 'Débogage' }).click();
+  await expect(page.getByTestId('debug-edge')).toHaveCount(2);
+  await expect(page.getByTestId('debug-panel')).toContainText('sys.contrat_actif = false');
+
+  // Parcours jusqu'à la synthèse, retour pour modifier, puis retour à la synthèse.
+  await page.getByTestId('scenario-select').selectOption({ label: 'Amicale sans sinistre' });
+  await next.click();
+  await preview.getByText('Vol', { exact: true }).click();
+  await next.click();
+  await preview.locator('input[type=date]').fill('2026-09-01');
+  await next.click();
+  await preview.getByRole('textbox').fill('100');
+  await next.click();
+  await preview.getByText('Non', { exact: true }).click();
+  await next.click();
+  await preview.getByRole('textbox').fill('Vol constaté au local le matin.');
+  await next.click();
+  await preview.getByText('Courriel').click();
+  await next.click();
+  const summary = page.getByTestId('summary');
+  await expect(summary).toContainText('Vol constaté au local le matin.');
+  await summary.getByText('Décrivez les circonstances').click();
+  await preview.getByRole('textbox').fill('Vol constaté au local le soir même.');
+  await page.getByTestId('preview-back-to-summary').click();
+  await expect(summary).toContainText('Vol constaté au local le soir même.');
+  await expect(page.getByTestId('debug-panel')).toContainText('circonstances');
+  expect(errors).toEqual([]);
+});
