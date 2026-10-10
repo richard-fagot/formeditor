@@ -78,3 +78,30 @@ describe('commandes des paramètres et de l’affichage', () => {
     expect(command('view.layout')!.enabled!()).toBe(false);
   });
 });
+
+describe('annuler / rétablir la création d’un questionnaire', () => {
+  it('ferme l’onglet à l’annulation, le rouvre au rétablissement ; projet cohérent', () => {
+    st().loadWorkspace(exampleWorkspace());
+    runCommand('questionnaire.new');
+    const id = st().activeTab.slice(2);
+    runCommand('node.newQuestion');
+    expect(st().ws.questionnaires.find((q) => q.id === id)!.nodes).toHaveLength(1);
+    runCommand('edit.undo');
+    runCommand('edit.undo');
+    expect(st().ws.questionnaires.some((q) => q.id === id)).toBe(false);
+    expect(st().ws.project.questionnaires.some((e) => e.id === id)).toBe(false);
+    expect(st().tabs).not.toContain(`q:${id}`);
+    expect(st().activeTab.startsWith('q:') ? st().ws.questionnaires.some((q) => `q:${q.id}` === st().activeTab) : true).toBe(true);
+    // Une modification sans effet n'enregistre rien : l'historique à rétablir est conservé.
+    st().edit(`q:${id}`, () => undefined);
+    expect(st().history[`q:${id}`]!.future.length).toBeGreaterThan(0);
+    st().redo('project');
+    expect(st().ws.questionnaires.some((q) => q.id === id)).toBe(true);
+    expect(st().ws.project.questionnaires.some((e) => e.id === id)).toBe(true);
+    expect(st().tabs).toContain(`q:${id}`);
+    st().redo(`q:${id}`);
+    expect(st().ws.questionnaires.find((q) => q.id === id)!.nodes).toHaveLength(1);
+    const files = st().ws.project.questionnaires.map((e) => e.id).sort();
+    expect(files).toEqual(st().ws.questionnaires.map((q) => q.id).sort());
+  });
+});

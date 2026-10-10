@@ -5,9 +5,10 @@ demande de focus, palette, langues, raccourcis personnalisés, historique, état
 Dépend de `core`, `format`, `app/i18n`, `plugin-api` (utilitaires).
 
 ## API
-- `useStore` ; actions : `edit(scope, recipe, key?)` (si la modification touche d'autres portées — renommage propagé,
+- `useStore` ; actions : `edit(scope, recipe, key?)` (sans effet : aucun point ; si la modification touche d'autres portées — renommage propagé,
   regroupement — elle devient une transaction sur toutes les portées modifiées, `changedScopes`), `transact(scopes, recipe)` (points liés dans chaque portée modifiée :
-  annuler / rétablir dans l'une le fait dans toutes celles où ce point est en tête), `undo(scope)`, `redo(scope)`, `checkpoint(scope)`,
+  annuler / rétablir dans l'une le fait dans toutes celles où ce point est en tête), `undo(scope)` / `redo(scope)` (onglets synchronisés :
+  questionnaire disparu → onglet fermé, réapparu → rouvert), `redo(scope)`, `checkpoint(scope)`,
   `silent(recipe)` (sans historique), `set(recipe)` (état d'interface), `loadWorkspace`, `openTab`, `closeTab`,
   `select`, `requestFocus('label' | 'condition' | 'variable', id)`, `markExported`.
 - Portées d'historique (`history.ts`) : `q:<id>` (questionnaire, sa mise en page et son entrée dans le projet), `library`, `project` ;

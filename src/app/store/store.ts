@@ -133,8 +133,11 @@ export const useStore = create<Store>()(
         const result = recipe(s.ws as Workspace);
         if (result) s.ws = result;
       });
+      // Rien de changé : aucun point d'historique (le `future` est conservé).
+      const changed = changedScopes(ws, get().ws);
+      if (!changed.length) return;
       // Modification propagée hors de sa portée (renommage d'une clé visible ailleurs…) : transaction.
-      const spill = changedScopes(ws, get().ws).filter((sc) => sc !== scope);
+      const spill = changed.filter((sc) => sc !== scope);
       const tx = spill.length ? ++txCounter : undefined;
       set((s) => {
         s.history[scope] = record(s.history[scope] ?? { past: [], future: [] }, tx ? { ...before, tx } : before, tx ? undefined : key);
@@ -238,6 +241,7 @@ export function changedScopes(a: Workspace, b: Workspace): Scope[] {
 function travel(s: AppState, scope: Scope, from: 'past' | 'future'): void {
   const top = s.history[scope]?.[from].at(-1);
   if (!top) return;
+  const ids = new Set(s.ws.questionnaires.map((q) => q.id));
   const scopes = top.tx === undefined
     ? [scope]
     : (Object.keys(s.history) as Scope[]).filter((sc) => s.history[sc]![from].at(-1)?.tx === top.tx);
@@ -249,7 +253,23 @@ function travel(s: AppState, scope: Scope, from: 'past' | 'future'): void {
     const to = from === 'past' ? 'future' : 'past';
     s.history[sc] = { ...h, [from]: h[from].slice(0, -1), [to]: [...h[to], current], lastKey: undefined } as ScopeHistory;
   }
+  syncTabs(s, ids);
   s.dirty = true;
+}
+
+/**
+ * Après annuler / rétablir : ferme les onglets des questionnaires disparus (création annulée), rouvre ceux
+ * qui réapparaissent (création rétablie) ; sélection et vue côte à côte suivent.
+ */
+function syncTabs(s: AppState, before: Set<string>): void {
+  const now = new Set(s.ws.questionnaires.map((q) => q.id));
+  const gone = (tab: TabId) => tab.startsWith('q:') && !now.has(tab.slice(2));
+  const i = s.tabs.indexOf(s.activeTab);
+  s.tabs = s.tabs.filter((tab) => !gone(tab));
+  for (const id of now) if (!before.has(id) && !s.tabs.includes(`q:${id}`)) s.tabs.push(`q:${id}`);
+  if (!s.tabs.includes(s.activeTab)) s.activeTab = s.tabs[Math.max(0, Math.min(i, s.tabs.length) - 1)] ?? 'library';
+  if (s.selection.graph?.kind === 'questionnaire' && !now.has(s.selection.graph.id)) s.selection = { nodes: [] };
+  if (s.compare && !now.has(s.compare)) s.compare = undefined;
 }
 
 /** Portée d'historique d'un graphe édité. */
