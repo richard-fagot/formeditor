@@ -16,7 +16,7 @@ Dépend de `core`, `format`, `app/i18n`, `plugin-api` (utilitaires).
 - Questionnaire (`questionnaire-edits.ts`) : `renameQuestionnaire` (clé + fichier `<clé>.json` du projet),
   `canRenameQuestionnaire`, `questionnaireKeys`, `patchQuestionnaire` (titre, description).
 - `setQuestionLabel` : change l'intitulé et, si la clé était dérivée de l'ancien, la redérive et propage.
-- Hooks : `useT()`, `useEditorEnv()`, `activeGraphRef`, `activeQuestionnaire`.
+- Hooks : `useT()`, `useEditorEnv()` (environnement de l'éditeur sans `questionType`, ajouté par `ui/*` via `usePluginEnv`), `activeGraphRef`, `activeQuestionnaire`.
 
 ## Pièges
 - Les sélecteurs `useStore(s => …)` doivent renvoyer une valeur stable (pas d'objet neuf) : sinon boucle de rendu.

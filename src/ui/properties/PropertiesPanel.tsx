@@ -3,18 +3,19 @@ import { isLibraryQuestion, isLocalQuestion, type GraphNode } from '../../core/m
 import { blockScope, questionnaireScope } from '../../core/references';
 import { nodeKind } from '../../registry';
 import { runCommand } from '../../app/commands';
-import { getGraph, useEditorEnv, useStore, useT, type GraphRef } from '../../app/store';
+import { getGraph, useStore, useT, type GraphRef } from '../../app/store';
 import { Button, Field, Section } from '../../ui-kit';
 import { ExpressionEnvProvider, LabelEditor } from '../expression-editor';
 import { EdgeProperties } from './EdgeProperties';
 import { QuestionProperties } from './QuestionProperties';
 import { QuestionnaireProperties } from './QuestionnaireProperties';
 import { useGraphEdit } from './useGraphEdit';
+import { usePluginEnv } from './usePluginEnv';
 
 /** Panneau de propriétés de l'objet sélectionné ; le contenu propre à chaque type vient des plugins. */
 export function PropertiesPanel({ graph }: { graph: GraphRef }) {
   const t = useT();
-  const env = useEditorEnv();
+  const env = usePluginEnv();
   const selection = useStore((s) => s.selection);
   const g = getGraph(env.ws, graph);
   const scope = useMemo(
@@ -38,7 +39,7 @@ export function PropertiesPanel({ graph }: { graph: GraphRef }) {
 
 function NodeProperties({ graph, node, isStart }: { graph: GraphRef; node: GraphNode; isStart: boolean }) {
   const t = useT();
-  const env = useEditorEnv();
+  const env = usePluginEnv();
   const { patchNode } = useGraphEdit(graph);
   const plugin = nodeKind(node.kind);
   return (

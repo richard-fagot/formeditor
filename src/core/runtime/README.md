@@ -13,6 +13,8 @@ Dépend de `core/model`, `core/expressions`.
 - `progress(input, s)` : progression indicative (0..1).
 - `buildContext(input, answers, stepId?)` : contexte d'évaluation (réponses + `sys` + clés du bloc sans préfixe ;
   les valeurs `null` sont retirées en profondeur, `answers` garde `null`).
+- `choiceOptions(question, ctx, env?)` : options visibles d'un choix (statiques dont `when` est vraie, puis
+  source dynamique ; valeurs en chaînes, doublons / vides / `other` écartés).
 - `successor`, `chooseEdge`, `firstStep`, `prune`, `projectedSteps`, `getAnswer`, `withAnswer`, `otherPath`.
 
 ## Règles

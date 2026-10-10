@@ -4,7 +4,8 @@ import { OTHER_TYPES, isLibraryQuestion, isVariantLabel, type GraphNode, type La
 import { questionOfNode } from '../../core/references';
 import { previewText } from '../../plugin-api';
 import { nodeKind, questionType } from '../../registry';
-import { getGraph, scopeOf, setQuestionLabel, useEditorEnv, useStore, useT } from '../../app/store';
+import { getGraph, scopeOf, setQuestionLabel, useStore, useT } from '../../app/store';
+import { usePluginEnv } from './usePluginEnv';
 import { Badge, cn } from '../../ui-kit';
 import { useDiagram } from './DiagramContext';
 
@@ -15,7 +16,7 @@ export const NodeView = memo(function NodeView({ data, selected }: NodeProps & {
   const { graph, issuesByNode } = useDiagram();
   const node = useStore((s) => getGraph(s.ws, graph)?.nodes.find((n) => n.id === data.nodeId));
   const isStart = useStore((s) => getGraph(s.ws, graph)?.start === data.nodeId);
-  const env = useEditorEnv();
+  const env = usePluginEnv();
   const t = useT();
   const focus = useStore((s) => s.focusRequest);
   const editing = focus?.kind === 'label' && focus.id === data.nodeId && node?.kind === 'question';
@@ -27,9 +28,8 @@ export const NodeView = memo(function NodeView({ data, selected }: NodeProps & {
     <>
       {isStart && <Badge tone="indigo">{t('node.start')}</Badge>}
       {question?.required && <Badge tone="slate" title={typeof question.required === 'string' ? question.required : undefined}>{typeof question.required === 'string' ? '* ?' : '*'}</Badge>}
-      {question && OTHER_TYPES.includes(question.type) && 'other' in question && question.other && <Badge>+ autre</Badge>}
+      {question && OTHER_TYPES.includes(question.type) && 'other' in question && question.other && <Badge>{t('node.badgeOther')}</Badge>}
       {isLibraryQuestion(node) && <Badge tone="amber">bib.</Badge>}
-      {question && 'source' in question && question.source && <Badge tone="emerald">{`<${question.source.from}>`}</Badge>}
       {issues.some((i) => i.code === 'missingTranslation') && <Badge tone="amber">trad.</Badge>}
       {issues.some((i) => i.code !== 'missingTranslation') && (
         <Badge tone={issues.some((i) => i.severity === 'error') ? 'rose' : 'amber'} title={issues.map((i) => i.code).join(', ')}>

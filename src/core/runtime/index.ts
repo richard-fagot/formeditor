@@ -6,3 +6,4 @@ export {
   start, next, back, goTo, setAnswer, currentStep, prune, projectedSteps, summaryEntries, progress,
   type Session, type SummaryEntry,
 } from './session';
+export { choiceOptions, type ResolvedOption } from './options';

@@ -13,6 +13,7 @@ export const DEFAULT_MESSAGES: Record<string, LocalizedText> = {
   decimals: { fr: 'Au plus {0} décimales.', en: 'At most {0} decimals.' },
   minSelected: { fr: 'Choisissez au moins {0} réponses.', en: 'Select at least {0} answers.' },
   maxSelected: { fr: 'Choisissez au plus {0} réponses.', en: 'Select at most {0} answers.' },
+  option: { fr: "Cette réponse n'est plus proposée.", en: 'This answer is no longer available.' },
   otherDetail: { fr: 'Précisez votre réponse.', en: 'Please specify.' },
   minOccurrences: { fr: 'Au moins {0} élément(s).', en: 'At least {0} item(s).' },
   maxOccurrences: { fr: 'Au plus {0} élément(s).', en: 'At most {0} item(s).' },

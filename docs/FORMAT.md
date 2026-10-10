@@ -138,7 +138,8 @@ texte. La précision est accessible dans les expressions par la clé `<cle>_othe
 `source: { "from": "<liste>", "label"?: "<expr>", "value"?: "<expr>" }` : les options proviennent
 d'une liste (réponse précédente ou variable système). `label` et `value` sont évaluées sur chaque
 élément (l'élément est le contexte : `date & ' — ' & nature`). Les options dynamiques suivent les
-options statiques.
+options statiques ; leurs valeurs sont converties en chaînes, et les doublons, valeurs vides et `other` sont écartés.
+Implémentation de référence : `choiceOptions` (`src/core/runtime`).
 
 ### 5.4 Structure
 

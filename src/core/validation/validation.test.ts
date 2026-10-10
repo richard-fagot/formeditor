@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { exampleWorkspace } from '../../../tests/reference/example';
 import type { Question, Workspace } from '../model';
-import { checkWorkspace, describeIssue, validateAnswer, type Issue } from './index';
+import { checkWorkspace, describeIssue, messageParams, validateAnswer, type Issue } from './index';
 
 const env = { today: '2026-10-10' };
 const params = (q: Question, value: unknown, ctx: Record<string, unknown> = {}, other?: string) =>
@@ -30,7 +30,7 @@ describe('validateAnswer', () => {
     expect(params({ ...n, numberKind: 'real', decimals: 1 }, 1.25, { sys: { max: 10 } })).toEqual([':decimals']);
   });
   it('choix multiple et « Autre »', () => {
-    const m: Question = { id: 'm', key: 'm', label: { fr: 'M' }, type: 'multiple', options: [], minSelected: 2, other: { detailRequired: true } };
+    const m: Question = { id: 'm', key: 'm', label: { fr: 'M' }, type: 'multiple', options: [{ value: 'a', label: { fr: 'A' } }], minSelected: 2, other: { detailRequired: true } };
     expect(params(m, ['a'])).toEqual([':minSelected']);
     expect(params(m, ['a', 'other'])).toEqual([':otherDetail']);
     expect(params(m, ['a', 'other'], {}, 'précision')).toEqual([]);
@@ -117,5 +117,39 @@ describe('checkWorkspace', () => {
     const issue: Issue = { code: 'unknownReference', severity: 'error', owner: { kind: 'questionnaire', id: 'q' }, params: { ref: 'x' } };
     expect(describeIssue(issue, 'fr')).toContain('x');
     expect(describeIssue(issue, 'en')).toContain('x');
+  });
+});
+
+describe('options visibles et messages paramétrables', () => {
+  const choice = {
+    id: 'c', key: 'c', label: { fr: 'c' }, type: 'single', required: true,
+    options: [{ value: 'a', label: { fr: 'A' } }, { value: 'b', label: { fr: 'B' }, when: 'sys.x = 1' }],
+    source: { from: 'sys.l' }, other: {},
+  } as Question;
+  it('refuse une valeur qui n’est plus parmi les options visibles (statiques, dynamiques, « Autre »)', () => {
+    const ctx = { sys: { x: 2, l: ['d'] } };
+    expect(validateAnswer(choice, 'a', ctx)).toEqual([]);
+    expect(validateAnswer(choice, 'd', ctx)).toEqual([]);
+    expect(validateAnswer(choice, 'other', ctx, {}, 'précision')).toEqual([]);
+    expect(validateAnswer(choice, 'b', ctx).map((e) => e.param)).toEqual(['option']);
+    expect(validateAnswer(choice, 'b', { sys: { x: 1 } })).toEqual([]);
+    const multiple = { ...choice, type: 'multiple' } as Question;
+    expect(validateAnswer(multiple, ['a', 'b'], ctx).map((e) => e.param)).toEqual(['option']);
+  });
+  it('liste les paramètres dont le message est personnalisable, selon la question', () => {
+    expect(messageParams({ id: 't', key: 't', label: {}, type: 'text', maxLength: 3 } as Question)).toEqual(['required', 'maxLength']);
+    expect(messageParams({ ...choice, other: { detailRequired: true } } as Question)).toEqual(['required', 'option', 'otherDetail']);
+    expect(messageParams({ id: 'd', key: 'd', label: {}, type: 'date' } as Question)).toEqual(['required', 'format']);
+    expect(messageParams({ id: 's', key: 's', label: {}, type: 'structure', fields: [], repeat: { min: 1 } } as Question)).toEqual(['required', 'minOccurrences']);
+  });
+  it('applique contraintes libres et messages d’un champ de structure', () => {
+    const s = {
+      id: 's', key: 'v', label: { fr: 'v' }, type: 'structure', fields: [{
+        id: 'f', key: 'age', label: { fr: 'âge' }, type: 'number', min: 0, messages: { min: { fr: 'Âge positif' } },
+        constraints: [{ rule: 'age < 150', message: { fr: 'Trop vieux' } }],
+      }],
+    } as Question;
+    expect(validateAnswer(s, { age: -1 }, {}).map((e) => [e.path, e.message.fr])).toEqual([['v.age', 'Âge positif']]);
+    expect(validateAnswer(s, { age: 200 }, {}).map((e) => [e.path, e.message.fr])).toEqual([['v.age', 'Trop vieux']]);
   });
 });

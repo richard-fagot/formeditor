@@ -63,7 +63,7 @@ export function Preview({ questionnaireId }: { questionnaireId: string }) {
                 {q.required === true && <span className="text-rose-500"> *</span>}
               </label>
               {q.help && <p className="text-sm text-slate-500">{env.label(q.help)}</p>}
-              <plugin.Field question={q} value={value} other={other} errors={errorMap} env={env} inputId={`f-${step.id}`}
+              <plugin.Field key={step.id} question={q} value={value} other={other} errors={errorMap} env={env} inputId={`f-${step.id}`}
                 onChange={(v, o) => update({ session: setAnswer(input, session, v, v === OTHER_VALUE || (Array.isArray(v) && v.includes(OTHER_VALUE)) ? o : undefined) })} />
               {(errorMap[''] ?? []).map((m, i) => <p key={i} className="text-sm text-rose-600" role="alert">{m}</p>)}
             </div>

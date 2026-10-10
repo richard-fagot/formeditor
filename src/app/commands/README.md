@@ -20,11 +20,12 @@ Catalogue unique des actions utilisateur (spec §4.4). Palette, menus et raccour
 - `edit-commands.ts` : `edge.moveUp` / `edge.moveDown` (Alt+↑ / Alt+↓, arête sélectionnée), `edge.create`
   (glisser sur le logigramme), `questionnaire.properties`, `questionnaire.setTitle` / `rename` / `setDescription`,
   `project.rename`.
-- `nav-commands.ts` : flèches, annuler/rétablir, ajuster la vue, logigramme ↔ prévisualisation.
+- `library-commands.ts` : jeux de libellés (`labelSet.addBoolean`, `labelSet.addTristate`, `labelSet.delete` avec l'id).
+- `nav-commands.ts` : flèches, annuler/rétablir (portée `global` : actifs hors du logigramme, pas pendant une saisie ; onglet Bibliothèque → historique `library`), ajuster la vue, logigramme ↔ prévisualisation.
 - `example.ts` : exemple embarqué ; `files.ts` : téléchargement et sélection de fichiers.
 
 ## Tests
-`commands.test.ts` (onglets, langues, rang et suppression d'arête, propriétés du questionnaire).
+`commands.test.ts` (jeux de libellés, onglets, langues, rang et suppression d'arête, propriétés du questionnaire).
 
 ## Ajouter une action
 Ajouter un objet `Command` dans le fichier adéquat, la clé de libellé dans `app/i18n/messages.ts`.

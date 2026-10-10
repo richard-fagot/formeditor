@@ -1,6 +1,7 @@
 import { OTHER_VALUE, type BooleanQuestion, type LabelSet, type LocalizedText } from '../../../core/model';
 import { tr, previewText, type EditorEnv, type QuestionTypePlugin } from '../../../plugin-api';
 import { Checkbox, Field, Input, Select } from '../../../ui-kit';
+import { LabelEditor } from '../../../ui/expression-editor';
 
 const T = {
   name: { fr: 'Booléen', en: 'Boolean' },
@@ -9,6 +10,7 @@ const T = {
   other: { fr: 'Option « Autre (préciser) »', en: '“Other (specify)” option' },
   otherLabel: { fr: 'Autre (préciser)', en: 'Other (specify)' },
   detailRequired: { fr: 'Précision obligatoire', en: 'Detail required' },
+  optionLabel: { fr: "Libellé de l'option", en: 'Option label' },
 };
 /** Libellés par défaut, destinés à l'utilisateur final. */
 const YES: LocalizedText = { fr: 'Oui', en: 'Yes' };
@@ -24,7 +26,11 @@ export const booleanType: QuestionTypePlugin<BooleanQuestion> = {
   type: 'boolean',
   name: T.name,
   shortcut: 'b',
-  create: (base) => ({ ...base, type: 'boolean' }),
+  create: (base, previous) => ({
+    ...base,
+    type: 'boolean',
+    ...(previous && 'other' in previous && previous.other ? { other: previous.other } : {}),
+  }),
   Preview: ({ question, env }) => {
     const l = labels(question, env.ws);
     const text = (t: LocalizedText) => previewText(t, env);
@@ -42,11 +48,17 @@ export const booleanType: QuestionTypePlugin<BooleanQuestion> = {
       </Field>
       <Checkbox label={tr(T.other, env.uiLang)} checked={!!question.other} onChange={(e) => update({ other: e.target.checked ? {} : undefined })} />
       {question.other && (
-        <Checkbox
-          label={tr(T.detailRequired, env.uiLang)}
-          checked={!!question.other.detailRequired}
-          onChange={(e) => update({ other: { ...question.other, detailRequired: e.target.checked || undefined } })}
-        />
+        <div className="space-y-2 border-l-2 border-slate-100 pl-3">
+          <Field label={tr(T.optionLabel, env.uiLang)}>
+            <LabelEditor value={question.other.label} placeholder={tr(T.otherLabel, env.contentLang)}
+              onChange={(label) => update({ other: { ...question.other, label: label && Object.keys(label).length ? label : undefined } })} />
+          </Field>
+          <Checkbox
+            label={tr(T.detailRequired, env.uiLang)}
+            checked={!!question.other.detailRequired}
+            onChange={(e) => update({ other: { ...question.other, detailRequired: e.target.checked || undefined } })}
+          />
+        </div>
       )}
     </div>
   ),
@@ -62,7 +74,7 @@ export const booleanType: QuestionTypePlugin<BooleanQuestion> = {
             <span className="text-slate-800">{label}</span>
           </label>
         ))}
-        {value === OTHER_VALUE && <Input autoFocus value={other ?? ''} onChange={(e) => onChange(OTHER_VALUE, e.target.value)} />}
+        {value === OTHER_VALUE && <Input autoFocus aria-label={env.label(question.other?.label ?? T.otherLabel)} value={other ?? ''} onChange={(e) => onChange(OTHER_VALUE, e.target.value)} />}
       </div>
     );
   },
