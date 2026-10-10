@@ -22,7 +22,8 @@
           "fr": "La date ne peut pas être dans le futur.",
           "en": "The date cannot be in the future."
         }
-      }
+      },
+      "defaultExpr": "$today()"
     },
     {
       "id": "lq_telephone",
@@ -71,6 +72,57 @@
         },
         {
           "kind": "question",
+          "id": "bn_coordonnees",
+          "key": "coordonnees",
+          "label": {
+            "fr": "Coordonnées de {nom}",
+            "en": "{nom}'s contact details"
+          },
+          "description": "Structure non répétable : la réponse est un objet { adresse, code_postal, ville }.",
+          "type": "structure",
+          "required": true,
+          "fields": [
+            {
+              "id": "bf_adresse",
+              "key": "adresse",
+              "label": {
+                "fr": "Adresse",
+                "en": "Address"
+              },
+              "type": "text",
+              "required": true
+            },
+            {
+              "id": "bf_code_postal",
+              "key": "code_postal",
+              "label": {
+                "fr": "Code postal",
+                "en": "Postcode"
+              },
+              "type": "text",
+              "required": true,
+              "pattern": "^[0-9]{5}$",
+              "messages": {
+                "pattern": {
+                  "fr": "Code postal à 5 chiffres.",
+                  "en": "5-digit postcode."
+                }
+              }
+            },
+            {
+              "id": "bf_ville",
+              "key": "ville",
+              "label": {
+                "fr": "Ville",
+                "en": "City"
+              },
+              "type": "text",
+              "required": true
+            }
+          ]
+        },
+        {
+          "kind": "question",
           "id": "bn_assurance_connue",
           "key": "assurance_connue",
           "label": {
@@ -89,24 +141,41 @@
             "fr": "Compagnie d'assurance du tiers",
             "en": "Third party insurer"
           },
+          "help": {
+            "fr": "Celle qui couvre {nom} ({coordonnees.ville}) pour le sinistre du {date_sinistre}.",
+            "en": "The one covering {nom} ({coordonnees.ville}) for the claim of {date_sinistre}."
+          },
           "type": "text",
           "required": true
         },
         {
           "kind": "exit",
           "id": "bx_identifie",
-          "name": "identifie"
+          "name": "identifie",
+          "label": {
+            "fr": "Assureur du tiers connu",
+            "en": "Third party insurer known"
+          }
         },
         {
           "kind": "exit",
           "id": "bx_non_identifie",
-          "name": "non_identifie"
+          "name": "non_identifie",
+          "label": {
+            "fr": "Assureur du tiers inconnu",
+            "en": "Third party insurer unknown"
+          }
         }
       ],
       "edges": [
         {
-          "id": "be_nom_assurance",
+          "id": "be_nom_coordonnees",
           "from": "bn_nom",
+          "to": "bn_coordonnees"
+        },
+        {
+          "id": "be_coordonnees_assurance",
+          "from": "bn_coordonnees",
           "to": "bn_assurance_connue"
         },
         {
@@ -144,6 +213,19 @@
       "unknown": {
         "fr": "Ne sait pas",
         "en": "Don't know"
+      }
+    },
+    {
+      "id": "ls_confirmation",
+      "key": "confirmation",
+      "kind": "boolean",
+      "yes": {
+        "fr": "Oui, je confirme",
+        "en": "Yes, I confirm"
+      },
+      "no": {
+        "fr": "Non, je corrige",
+        "en": "No, I want to correct it"
       }
     }
   ]

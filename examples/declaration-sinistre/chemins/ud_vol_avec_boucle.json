@@ -4,28 +4,107 @@
   "scenario": "sc_ud_2_sinistres",
   "today": "2026-10-10",
   "answers": [
-    { "step": "n_type", "value": "vol" },
-    { "step": "n_date", "value": "2026-09-01" },
-    { "step": "n_lien", "value": "S-101" },
-    { "step": "n_montant", "value": 8000 },
-    { "step": "n_tiers", "value": true },
-    { "step": "n_bloc_tiers/bn_nom", "value": "Dupont" },
-    { "step": "n_bloc_tiers/bn_assurance_connue", "value": true },
-    { "step": "n_bloc_tiers/bn_compagnie", "value": "Mutuelle du Centre" },
-    { "step": "n_circonstances", "value": "Effraction pendant la nuit, porte forcée." },
-    { "step": "n_canaux", "value": ["email", "telephone"] },
-    { "step": "n_tel", "value": "06 12 34 56 78" },
-    { "step": "n_confirmation", "value": false },
-    { "step": "n_type", "value": "degat_eaux" },
-    { "step": "n_confirmation", "value": true }
+    {
+      "step": "n_type",
+      "value": "vol"
+    },
+    {
+      "step": "n_date",
+      "value": "2026-09-01"
+    },
+    {
+      "step": "n_lien",
+      "value": "S-101"
+    },
+    {
+      "step": "n_montant",
+      "value": 8000
+    },
+    {
+      "step": "n_tiers",
+      "value": true
+    },
+    {
+      "step": "n_bloc_tiers/bn_nom",
+      "value": "Dupont"
+    },
+    {
+      "step": "n_bloc_tiers/bn_coordonnees",
+      "value": {
+        "adresse": "12 rue des Lilas",
+        "code_postal": "69003",
+        "ville": "Lyon"
+      }
+    },
+    {
+      "step": "n_bloc_tiers/bn_assurance_connue",
+      "value": true
+    },
+    {
+      "step": "n_bloc_tiers/bn_compagnie",
+      "value": "Mutuelle du Centre"
+    },
+    {
+      "step": "n_circonstances",
+      "value": "Effraction pendant la nuit, porte forcée."
+    },
+    {
+      "step": "n_canaux",
+      "value": [
+        "email",
+        "telephone"
+      ]
+    },
+    {
+      "step": "n_tel",
+      "value": "06 12 34 56 78"
+    },
+    {
+      "step": "n_confirmation",
+      "value": false
+    },
+    {
+      "step": "n_type",
+      "value": "degat_eaux"
+    },
+    {
+      "step": "n_confirmation",
+      "value": true
+    }
   ],
   "path": [
-    "n_intro", "n_type", "n_date", "n_lien", "n_montant", "n_expertise", "n_tiers",
-    "n_bloc_tiers/bn_nom", "n_bloc_tiers/bn_assurance_connue", "n_bloc_tiers/bn_compagnie",
-    "n_circonstances", "n_canaux", "n_tel", "n_synthese", "n_confirmation",
-    "n_type", "n_date", "n_lien", "n_montant", "n_expertise", "n_tiers",
-    "n_bloc_tiers/bn_nom", "n_bloc_tiers/bn_assurance_connue", "n_bloc_tiers/bn_compagnie",
-    "n_circonstances", "n_canaux", "n_tel", "n_synthese", "n_confirmation", "n_fin"
+    "n_intro",
+    "n_type",
+    "n_date",
+    "n_lien",
+    "n_montant",
+    "n_expertise",
+    "n_tiers",
+    "n_bloc_tiers/bn_nom",
+    "n_bloc_tiers/bn_coordonnees",
+    "n_bloc_tiers/bn_assurance_connue",
+    "n_bloc_tiers/bn_compagnie",
+    "n_circonstances",
+    "n_canaux",
+    "n_tel",
+    "n_synthese",
+    "n_confirmation",
+    "n_type",
+    "n_date",
+    "n_lien",
+    "n_montant",
+    "n_expertise",
+    "n_tiers",
+    "n_bloc_tiers/bn_nom",
+    "n_bloc_tiers/bn_coordonnees",
+    "n_bloc_tiers/bn_assurance_connue",
+    "n_bloc_tiers/bn_compagnie",
+    "n_circonstances",
+    "n_canaux",
+    "n_tel",
+    "n_synthese",
+    "n_confirmation",
+    "n_fin"
   ],
   "outcome": "submitted"
 }

@@ -15,7 +15,8 @@ sérialisation, import/export unitaire et bundle. Dépend uniquement de `core/mo
 
 ## Schémas
 `schemas/*.schema.json` sont des **livrables** pour l'équipe de dev ; ils sont la source de vérité
-(édités à la main). `common.schema.json` : définitions partagées (`question`, `params_<type>`, `node`, `edge`…).
+(édités à la main). `common.schema.json` : définitions partagées (`id` sans `/`, `langCode`, `question`, `params_<type>`, `node`, `edge`…).
+Le sens de chaque propriété (navigation, validation, expressions) est dans `docs/FORMAT.md`.
 
 ## Invariants
 - Changement du format → schéma + entrée dans `MIGRATIONS` + `FORMAT_VERSION` + `docs/FORMAT.md` + exemple.
