@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "library.schema.json",
+  "title": "Bibliothèque",
+  "type": "object",
+  "required": [
+    "formatVersion",
+    "kind",
+    "questions",
+    "blocks",
+    "labelSets"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "formatVersion": {
+      "$ref": "common.schema.json#/$defs/formatVersion"
+    },
+    "kind": {
+      "const": "library"
+    },
+    "questions": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/question"
+      }
+    },
+    "blocks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "key",
+          "title",
+          "start",
+          "nodes",
+          "edges"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "key": {
+            "$ref": "common.schema.json#/$defs/key"
+          },
+          "title": {
+            "$ref": "common.schema.json#/$defs/localizedText"
+          },
+          "description": {
+            "type": "string"
+          },
+          "start": {
+            "type": "string"
+          },
+          "nodes": {
+            "type": "array",
+            "items": {
+              "$ref": "common.schema.json#/$defs/node"
+            }
+          },
+          "edges": {
+            "type": "array",
+            "items": {
+              "$ref": "common.schema.json#/$defs/edge"
+            }
+          }
+        }
+      }
+    },
+    "labelSets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "key",
+          "kind",
+          "yes",
+          "no"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "key": {
+            "$ref": "common.schema.json#/$defs/key"
+          },
+          "kind": {
+            "enum": [
+              "boolean",
+              "tristate"
+            ]
+          },
+          "yes": {
+            "$ref": "common.schema.json#/$defs/localizedText"
+          },
+          "no": {
+            "$ref": "common.schema.json#/$defs/localizedText"
+          },
+          "unknown": {
+            "$ref": "common.schema.json#/$defs/localizedText"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,7 +1,25 @@
 # format
 
-Sérialisation, JSON Schema, migrations, import/export, bundle.
+Fichiers JSON : schémas, validation (Ajv, JSON Schema 2020-12), migrations (`formatVersion`),
+sérialisation, import/export unitaire et bundle. Dépend uniquement de `core/model`.
 
-- **Dépend de** : core/model
-- **API** : voir `index.ts`.
-- **État** : squelette (phase 1).
+## API
+- `SCHEMAS`, `validateDocument(doc) → string[]`, `documentKind(doc)`.
+- `migrate(doc, migrations?, target?)`, `MIGRATIONS` (vide en v1).
+- `serialize(doc)` : JSON indenté 2 espaces, ordre des clés conservé, `\n` final.
+- `newWorkspace(name, lang)`, `emptyLibrary()`, `toBundle(ws)`.
+- `exportFiles(ws) → FileContent[]` (`projet.json`, `bibliotheque.json`, `<q>.json`, `<q>.layout.json`, `bloc_<cle>.layout.json`).
+- `exportBundle(ws) → string`.
+- `importFiles(files, current?) → { workspace?, errors }` : bundle ou fichiers unitaires ; sans `projet.json`,
+  les fichiers sont fusionnés dans `current`. Un fichier invalide → rien n'est chargé.
+
+## Schémas
+`schemas/*.schema.json` sont des **livrables** pour l'équipe de dev ; ils sont la source de vérité
+(édités à la main). `common.schema.json` : définitions partagées (`question`, `params_<type>`, `node`, `edge`…).
+
+## Invariants
+- Changement du format → schéma + entrée dans `MIGRATIONS` + `FORMAT_VERSION` + `docs/FORMAT.md` + exemple.
+- L'aller-retour import/export de l'exemple est identique à l'octet près (`tests/reference/format.test.ts`).
+
+## Tests
+`format.test.ts` (unitaires) ; `tests/reference/format.test.ts` (exemple).

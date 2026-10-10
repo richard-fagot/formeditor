@@ -1,0 +1,755 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "common.schema.json",
+  "title": "Définitions communes",
+  "$defs": {
+    "expression": {
+      "type": "string",
+      "description": "Expression JSONata écrite avec les clés lisibles (docs/FORMAT.md)."
+    },
+    "localizedText": {
+      "type": "object",
+      "description": "Texte multilingue : une entrée par code de langue.",
+      "propertyNames": {
+        "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]+)?$"
+      },
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "label": {
+      "description": "Libellé interpolable ({cle}) : texte multilingue ou variantes conditionnelles.",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/localizedText"
+        },
+        {
+          "type": "object",
+          "required": [
+            "variants",
+            "otherwise"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "variants": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "when",
+                  "text"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "when": {
+                    "$ref": "#/$defs/expression"
+                  },
+                  "text": {
+                    "$ref": "#/$defs/localizedText"
+                  }
+                }
+              }
+            },
+            "otherwise": {
+              "$ref": "#/$defs/localizedText"
+            }
+          }
+        }
+      ]
+    },
+    "key": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$",
+      "description": "Clé lisible snake_case."
+    },
+    "numberBound": {
+      "oneOf": [
+        {
+          "type": "number"
+        },
+        {
+          "$ref": "#/$defs/expression"
+        }
+      ]
+    },
+    "dateBound": {
+      "type": "string",
+      "description": "Date ISO littérale (AAAA-MM-JJ) ou expression."
+    },
+    "option": {
+      "type": "object",
+      "required": [
+        "value",
+        "label"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "type": "string",
+          "not": {
+            "const": "other"
+          }
+        },
+        "label": {
+          "$ref": "#/$defs/label"
+        },
+        "when": {
+          "$ref": "#/$defs/expression"
+        }
+      }
+    },
+    "otherOption": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "$ref": "#/$defs/label"
+        },
+        "detailRequired": {
+          "type": "boolean"
+        }
+      }
+    },
+    "dynamicSource": {
+      "type": "object",
+      "required": [
+        "from"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "from": {
+          "$ref": "#/$defs/expression"
+        },
+        "label": {
+          "$ref": "#/$defs/expression"
+        },
+        "value": {
+          "$ref": "#/$defs/expression"
+        }
+      }
+    },
+    "question": {
+      "description": "Question de la bibliothèque.",
+      "allOf": [
+        {
+          "$ref": "#/$defs/questionCore"
+        }
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "text",
+            "date",
+            "number",
+            "single",
+            "multiple",
+            "boolean",
+            "tristate",
+            "structure"
+          ]
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "structureField": {
+      "description": "Champ de structure : question de tout type sauf structure, avec condition d'affichage `when` (évaluée dans l'occurrence).",
+      "allOf": [
+        {
+          "$ref": "#/$defs/questionCore"
+        }
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "text",
+            "date",
+            "number",
+            "single",
+            "multiple",
+            "boolean",
+            "tristate"
+          ]
+        },
+        "when": {
+          "$ref": "#/$defs/expression"
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "node": {
+      "oneOf": [
+        {
+          "description": "Question locale (portée par le nœud).",
+          "allOf": [
+            {
+              "$ref": "#/$defs/questionCore"
+            }
+          ],
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "question"
+            }
+          },
+          "not": {
+            "required": [
+              "ref"
+            ]
+          },
+          "unevaluatedProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "kind",
+            "id",
+            "ref"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "question"
+            },
+            "ref": {
+              "type": "string"
+            },
+            "label": {
+              "$ref": "#/$defs/label"
+            }
+          },
+          "description": "Question de la bibliothèque, par référence ; libellé surchargeable."
+        },
+        {
+          "type": "object",
+          "required": [
+            "kind",
+            "id",
+            "ref",
+            "alias"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "block"
+            },
+            "ref": {
+              "type": "string"
+            },
+            "alias": {
+              "$ref": "#/$defs/key"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "kind",
+            "id",
+            "text"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "info"
+            },
+            "title": {
+              "$ref": "#/$defs/label"
+            },
+            "text": {
+              "$ref": "#/$defs/label"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "kind",
+            "id"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "summary"
+            },
+            "title": {
+              "$ref": "#/$defs/label"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "kind",
+            "id",
+            "message"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "end"
+            },
+            "title": {
+              "$ref": "#/$defs/label"
+            },
+            "message": {
+              "$ref": "#/$defs/label"
+            },
+            "outcome": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "kind",
+            "id",
+            "name"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "exit"
+            },
+            "name": {
+              "$ref": "#/$defs/key"
+            },
+            "label": {
+              "$ref": "#/$defs/localizedText"
+            }
+          }
+        }
+      ]
+    },
+    "edge": {
+      "type": "object",
+      "required": [
+        "id",
+        "from",
+        "to"
+      ],
+      "additionalProperties": false,
+      "description": "Arête. Les arêtes sortant d'un même nœud sont évaluées dans l'ordre du tableau ; celle sans condition est le « sinon ».",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "from": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        },
+        "when": {
+          "$ref": "#/$defs/expression"
+        },
+        "exit": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    },
+    "formatVersion": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "params_text": {
+      "type": "object",
+      "properties": {
+        "multiline": {
+          "type": "boolean"
+        },
+        "minLength": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maxLength": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "pattern": {
+          "type": "string"
+        }
+      },
+      "required": []
+    },
+    "params_date": {
+      "type": "object",
+      "properties": {
+        "min": {
+          "$ref": "#/$defs/dateBound"
+        },
+        "max": {
+          "$ref": "#/$defs/dateBound"
+        }
+      },
+      "required": []
+    },
+    "params_number": {
+      "type": "object",
+      "properties": {
+        "numberKind": {
+          "enum": [
+            "real",
+            "natural",
+            "integer"
+          ]
+        },
+        "min": {
+          "$ref": "#/$defs/numberBound"
+        },
+        "max": {
+          "$ref": "#/$defs/numberBound"
+        },
+        "decimals": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unit": {
+          "$ref": "#/$defs/localizedText"
+        }
+      },
+      "required": []
+    },
+    "params_single": {
+      "type": "object",
+      "properties": {
+        "options": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/option"
+          }
+        },
+        "other": {
+          "$ref": "#/$defs/otherOption"
+        },
+        "source": {
+          "$ref": "#/$defs/dynamicSource"
+        }
+      },
+      "required": [
+        "options"
+      ]
+    },
+    "params_multiple": {
+      "type": "object",
+      "properties": {
+        "options": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/option"
+          }
+        },
+        "other": {
+          "$ref": "#/$defs/otherOption"
+        },
+        "source": {
+          "$ref": "#/$defs/dynamicSource"
+        },
+        "minSelected": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maxSelected": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "options"
+      ]
+    },
+    "params_boolean": {
+      "type": "object",
+      "properties": {
+        "labelSet": {
+          "type": "string"
+        },
+        "other": {
+          "$ref": "#/$defs/otherOption"
+        }
+      },
+      "required": []
+    },
+    "params_tristate": {
+      "type": "object",
+      "properties": {
+        "labelSet": {
+          "type": "string"
+        },
+        "other": {
+          "$ref": "#/$defs/otherOption"
+        }
+      },
+      "required": []
+    },
+    "params_structure": {
+      "type": "object",
+      "properties": {
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/structureField"
+          }
+        },
+        "repeat": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "min": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "max": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "addLabel": {
+              "$ref": "#/$defs/localizedText"
+            }
+          }
+        }
+      },
+      "required": [
+        "fields"
+      ]
+    },
+    "questionCore": {
+      "description": "Propriétés communes à toutes les questions, puis paramètres propres au type (params_<type>).",
+      "type": "object",
+      "required": [
+        "id",
+        "key",
+        "label",
+        "type"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "key": {
+          "$ref": "#/$defs/key"
+        },
+        "label": {
+          "$ref": "#/$defs/label"
+        },
+        "description": {
+          "type": "string"
+        },
+        "help": {
+          "$ref": "#/$defs/label"
+        },
+        "placeholder": {
+          "$ref": "#/$defs/label"
+        },
+        "required": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "$ref": "#/$defs/expression"
+            }
+          ]
+        },
+        "default": {},
+        "defaultExpr": {
+          "$ref": "#/$defs/expression"
+        },
+        "messages": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/localizedText"
+          }
+        },
+        "constraints": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "rule"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "rule": {
+                "$ref": "#/$defs/expression"
+              },
+              "message": {
+                "$ref": "#/$defs/localizedText"
+              }
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "text"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/params_text"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "date"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/params_date"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "number"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/params_number"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "single"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/params_single"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "multiple"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/params_multiple"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "boolean"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/params_boolean"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "tristate"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/params_tristate"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "structure"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/params_structure"
+          }
+        }
+      ]
+    }
+  }
+}

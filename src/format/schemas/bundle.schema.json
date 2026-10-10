@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "bundle.schema.json",
+  "title": "Bundle : projet complet en un fichier",
+  "type": "object",
+  "required": [
+    "formatVersion",
+    "kind",
+    "project",
+    "library",
+    "questionnaires",
+    "layouts"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "formatVersion": {
+      "$ref": "common.schema.json#/$defs/formatVersion"
+    },
+    "kind": {
+      "const": "bundle"
+    },
+    "project": {
+      "$ref": "project.schema.json"
+    },
+    "library": {
+      "$ref": "library.schema.json"
+    },
+    "questionnaires": {
+      "type": "array",
+      "items": {
+        "$ref": "questionnaire.schema.json"
+      }
+    },
+    "layouts": {
+      "type": "array",
+      "items": {
+        "$ref": "layout.schema.json"
+      }
+    }
+  }
+}

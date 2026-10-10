@@ -1,0 +1,150 @@
+{
+  "formatVersion": 1,
+  "kind": "library",
+  "questions": [
+    {
+      "id": "lq_date_sinistre",
+      "key": "date_sinistre",
+      "label": {
+        "fr": "Date du sinistre",
+        "en": "Date of the claim"
+      },
+      "type": "date",
+      "required": true,
+      "min": "sys.date_effet_contrat",
+      "max": "$today()",
+      "messages": {
+        "min": {
+          "fr": "Le sinistre est antérieur à la date d'effet du contrat.",
+          "en": "The claim predates the contract."
+        },
+        "max": {
+          "fr": "La date ne peut pas être dans le futur.",
+          "en": "The date cannot be in the future."
+        }
+      }
+    },
+    {
+      "id": "lq_telephone",
+      "key": "telephone",
+      "label": {
+        "fr": "Numéro de téléphone",
+        "en": "Phone number"
+      },
+      "type": "text",
+      "required": true,
+      "pattern": "^0[1-9]( ?[0-9]{2}){4}$",
+      "placeholder": {
+        "fr": "06 12 34 56 78",
+        "en": "06 12 34 56 78"
+      },
+      "messages": {
+        "pattern": {
+          "fr": "Numéro à 10 chiffres attendu.",
+          "en": "10-digit number expected."
+        }
+      }
+    }
+  ],
+  "blocks": [
+    {
+      "id": "blk_identite_tiers",
+      "key": "identite_tiers",
+      "title": {
+        "fr": "Identité du tiers",
+        "en": "Third party identity"
+      },
+      "description": "Identifie un tiers impliqué et son assureur.",
+      "start": "bn_nom",
+      "nodes": [
+        {
+          "kind": "question",
+          "id": "bn_nom",
+          "key": "nom",
+          "label": {
+            "fr": "Nom du tiers",
+            "en": "Third party name"
+          },
+          "type": "text",
+          "required": true,
+          "maxLength": 100
+        },
+        {
+          "kind": "question",
+          "id": "bn_assurance_connue",
+          "key": "assurance_connue",
+          "label": {
+            "fr": "Connaissez-vous l'assureur de {nom} ?",
+            "en": "Do you know {nom}'s insurer?"
+          },
+          "type": "tristate",
+          "required": true,
+          "labelSet": "ls_oui_non_nsp"
+        },
+        {
+          "kind": "question",
+          "id": "bn_compagnie",
+          "key": "compagnie",
+          "label": {
+            "fr": "Compagnie d'assurance du tiers",
+            "en": "Third party insurer"
+          },
+          "type": "text",
+          "required": true
+        },
+        {
+          "kind": "exit",
+          "id": "bx_identifie",
+          "name": "identifie"
+        },
+        {
+          "kind": "exit",
+          "id": "bx_non_identifie",
+          "name": "non_identifie"
+        }
+      ],
+      "edges": [
+        {
+          "id": "be_nom_assurance",
+          "from": "bn_nom",
+          "to": "bn_assurance_connue"
+        },
+        {
+          "id": "be_assurance_compagnie",
+          "from": "bn_assurance_connue",
+          "to": "bn_compagnie",
+          "when": "assurance_connue = true"
+        },
+        {
+          "id": "be_assurance_sortie",
+          "from": "bn_assurance_connue",
+          "to": "bx_non_identifie"
+        },
+        {
+          "id": "be_compagnie_sortie",
+          "from": "bn_compagnie",
+          "to": "bx_identifie"
+        }
+      ]
+    }
+  ],
+  "labelSets": [
+    {
+      "id": "ls_oui_non_nsp",
+      "key": "oui_non_nsp",
+      "kind": "tristate",
+      "yes": {
+        "fr": "Oui",
+        "en": "Yes"
+      },
+      "no": {
+        "fr": "Non",
+        "en": "No"
+      },
+      "unknown": {
+        "fr": "Ne sait pas",
+        "en": "Don't know"
+      }
+    }
+  ]
+}

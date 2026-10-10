@@ -1,0 +1,130 @@
+{
+  "formatVersion": 1,
+  "kind": "project",
+  "id": "p_sinistres",
+  "name": "Déclarations de sinistre",
+  "description": "Projet d'exemple : sert de documentation vivante et de jeu de test.",
+  "languages": [
+    "fr",
+    "en"
+  ],
+  "defaultLanguage": "fr",
+  "systemState": [
+    {
+      "name": "nom_assure",
+      "type": "text",
+      "description": "Nom affiché de l'assuré connecté.",
+      "example": "Mme Durand"
+    },
+    {
+      "name": "type_adherent",
+      "type": "enum",
+      "description": "Catégorie de l'adhérent.",
+      "values": [
+        "ud",
+        "amicale",
+        "particulier"
+      ],
+      "example": "ud"
+    },
+    {
+      "name": "contrat_actif",
+      "type": "boolean",
+      "description": "Le contrat est-il en vigueur ?",
+      "example": true
+    },
+    {
+      "name": "date_effet_contrat",
+      "type": "date",
+      "description": "Date d'effet du contrat.",
+      "example": "2020-01-01"
+    },
+    {
+      "name": "plafond_expertise",
+      "type": "number",
+      "description": "Montant au-delà duquel un expert est missionné (€).",
+      "example": 5000
+    },
+    {
+      "name": "sinistres",
+      "type": "list",
+      "description": "Sinistres déjà déclarés par l'adhérent.",
+      "fields": [
+        {
+          "name": "id",
+          "type": "text"
+        },
+        {
+          "name": "date",
+          "type": "date"
+        },
+        {
+          "name": "nature",
+          "type": "text"
+        }
+      ],
+      "example": [
+        {
+          "id": "S-001",
+          "date": "2025-03-12",
+          "nature": "Dégât des eaux"
+        }
+      ]
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "sc_ud_2_sinistres",
+      "name": "UD avec 2 sinistres",
+      "values": {
+        "nom_assure": "UD du Rhône",
+        "type_adherent": "ud",
+        "contrat_actif": true,
+        "date_effet_contrat": "2018-01-01",
+        "plafond_expertise": 5000,
+        "sinistres": [
+          {
+            "id": "S-101",
+            "date": "2025-02-03",
+            "nature": "Vol"
+          },
+          {
+            "id": "S-102",
+            "date": "2026-05-20",
+            "nature": "Dégât des eaux"
+          }
+        ]
+      }
+    },
+    {
+      "id": "sc_amicale_sans_sinistre",
+      "name": "Amicale sans sinistre",
+      "values": {
+        "nom_assure": "Amicale de Lyon",
+        "type_adherent": "amicale",
+        "contrat_actif": true,
+        "date_effet_contrat": "2022-06-01",
+        "plafond_expertise": 3000,
+        "sinistres": []
+      }
+    },
+    {
+      "id": "sc_contrat_resilie",
+      "name": "Contrat résilié",
+      "values": {
+        "nom_assure": "M. Martin",
+        "type_adherent": "particulier",
+        "contrat_actif": false,
+        "date_effet_contrat": "2015-01-01",
+        "plafond_expertise": 5000,
+        "sinistres": []
+      }
+    }
+  ],
+  "questionnaires": [
+    {
+      "id": "q_declaration",
+      "file": "declaration_sinistre.json"
+    }
+  ]
+}
