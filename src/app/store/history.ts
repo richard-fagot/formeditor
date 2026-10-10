@@ -6,10 +6,14 @@ import type { Layout, Library, Project, Questionnaire, QuestionnaireEntry, Works
  */
 export type Scope = `q:${string}` | 'library' | 'project';
 
-export type Snapshot =
+export type Snapshot = (
   | { scope: `q:${string}`; questionnaire?: Questionnaire; layout?: Layout; entry?: QuestionnaireEntry }
   | { scope: 'library'; library: Library; layouts: Layout[] }
-  | { scope: 'project'; project: Project };
+  | { scope: 'project'; project: Project }
+) & {
+  /** Transaction multi-portées (renommage propagé) : les points de même `tx` en tête s'annulent ensemble. */
+  tx?: number;
+};
 
 export interface ScopeHistory {
   past: Snapshot[];

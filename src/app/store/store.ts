@@ -62,6 +62,11 @@ export interface AppState {
 export interface AppActions {
   /** Modifie le projet dans une portée d'historique. `key` regroupe les frappes successives. */
   edit(scope: Scope, recipe: (ws: Workspace) => Workspace | void, key?: string): void;
+  /**
+   * Modification qui touche plusieurs portées (renommage propagé) : un point d'historique dans chaque portée
+   * modifiée, liés ; annuler ou rétablir dans l'une le fait dans toutes celles où ce point est en tête.
+   */
+  transact(scopes: Scope[], recipe: (ws: Workspace) => Workspace | void): void;
   undo(scope: Scope): void;
   redo(scope: Scope): void;
   /** Point d'historique sans modification (avant un glisser de nœuds). */
@@ -124,27 +129,25 @@ export const useStore = create<Store>()(
         s.dirty = true;
       });
     },
-    undo(scope) {
-      const h = get().history[scope];
-      const prev = h?.past.at(-1);
-      if (!h || !prev) return;
-      const current = takeSnapshot(get().ws, scope);
+    transact(scopes, recipe) {
+      const before = scopes.map((sc) => takeSnapshot(get().ws, sc));
+      const tx = ++txCounter;
       set((s) => {
-        restoreSnapshot(s.ws as Workspace, prev);
-        s.history[scope] = { past: h.past.slice(0, -1), future: [...h.future, current] };
+        const result = recipe(s.ws as Workspace);
+        if (result) s.ws = result;
+        before.forEach((snap, i) => {
+          const sc = scopes[i]!;
+          if (JSON.stringify(snap) === JSON.stringify(takeSnapshot(s.ws as Workspace, sc))) return;
+          s.history[sc] = record(s.history[sc] ?? { past: [], future: [] }, { ...snap, tx });
+        });
         s.dirty = true;
       });
     },
+    undo(scope) {
+      set((s) => void travel(s as AppState, scope, 'past'));
+    },
     redo(scope) {
-      const h = get().history[scope];
-      const nextSnap = h?.future.at(-1);
-      if (!h || !nextSnap) return;
-      const current = takeSnapshot(get().ws, scope);
-      set((s) => {
-        restoreSnapshot(s.ws as Workspace, nextSnap);
-        s.history[scope] = { past: [...h.past, current], future: h.future.slice(0, -1) };
-        s.dirty = true;
-      });
+      set((s) => void travel(s as AppState, scope, 'future'));
     },
     checkpoint(scope) {
       const before = takeSnapshot(get().ws, scope);
@@ -200,6 +203,29 @@ export const useStore = create<Store>()(
     },
   })),
 );
+
+let txCounter = 0;
+
+/**
+ * Annule (`from = 'past'`) ou rétablit (`'future'`) le dernier point de `scope` ; s'il appartient à une transaction,
+ * fait de même dans chaque portée où un point de cette transaction est en tête.
+ */
+function travel(s: AppState, scope: Scope, from: 'past' | 'future'): void {
+  const top = s.history[scope]?.[from].at(-1);
+  if (!top) return;
+  const scopes = top.tx === undefined
+    ? [scope]
+    : (Object.keys(s.history) as Scope[]).filter((sc) => s.history[sc]![from].at(-1)?.tx === top.tx);
+  for (const sc of scopes) {
+    const h = s.history[sc]!;
+    const snap = h[from].at(-1)!;
+    const current = { ...takeSnapshot(s.ws, sc), tx: snap.tx };
+    restoreSnapshot(s.ws, snap);
+    const to = from === 'past' ? 'future' : 'past';
+    s.history[sc] = { ...h, [from]: h[from].slice(0, -1), [to]: [...h[to], current], lastKey: undefined } as ScopeHistory;
+  }
+  s.dirty = true;
+}
 
 /** Portée d'historique d'un graphe édité. */
 export function scopeOf(ref: GraphRef | undefined): Scope {

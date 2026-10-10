@@ -13,16 +13,15 @@ const previewed = () => {
   return q && st().view[q.id] === 'preview' ? q : undefined;
 };
 
-/** Renommage propagé : point d'historique dans chaque portée réécrite (questionnaires, bibliothèque), puis le projet. */
+/**
+ * Renommage propagé : une transaction sur le projet, la bibliothèque et chaque questionnaire réécrit
+ * (un seul Ctrl+Z, depuis n'importe laquelle de ces portées, annule l'ensemble).
+ */
 function propagate(rename: (ws: Workspace) => Workspace) {
   const ws = st().ws;
   const out = rename(ws);
   if (out === ws) return;
-  ws.questionnaires.forEach((q, i) => {
-    if (JSON.stringify(q) !== JSON.stringify(out.questionnaires[i])) st().checkpoint(`q:${q.id}`);
-  });
-  if (JSON.stringify(ws.library) !== JSON.stringify(out.library)) st().checkpoint('library');
-  st().edit('project', () => out);
+  st().transact(['project', 'library', ...ws.questionnaires.map((q) => `q:${q.id}` as const)], () => out);
 }
 
 /** Dictionnaire de l'état du système, scénarios, panneaux de la prévisualisation. */
