@@ -1,7 +1,14 @@
 # ui/properties
 
-Cadre du panneau de propriétés ; le contenu vient des plugins.
+Cadre du panneau de propriétés de l'objet sélectionné (nœud ou arête). Le contenu propre à chaque type
+vient des plugins (`registry`). Dépend de `app/store`, `registry`, `core`, `ui-kit`, `ui/expression-editor`.
 
-- **Dépend de** : app, registry
-- **API** : voir `index.ts`.
-- **État** : squelette (phase 1).
+## Composants
+- `PropertiesPanel({ graph })` : fournit la portée des références à l'éditeur d'expression (`ExpressionEnvProvider`).
+- `QuestionProperties` : intitulé (clé dérivée), clé (renommage propagé, `KeyInput`), type, obligatoire
+  (booléen ou expression), aide, texte indicatif, paramètres du type (plugin), contraintes libres,
+  messages d'erreur par contrainte, description.
+- `EdgeProperties` : condition (vide = « sinon »), rang (monter/descendre), sortie de bloc, suppression.
+- Autres nœuds : `plugin.Properties` du type de nœud ; question de bibliothèque : seul l'intitulé est surchargeable.
+
+Les modifications passent par `store.edit` avec une clé de regroupement `nœud:champ` (frappes regroupées dans l'historique).

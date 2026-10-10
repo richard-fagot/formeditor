@@ -127,3 +127,6 @@ export type Question =
 export const OTHER_VALUE = 'other';
 /** Valeur « ne sait pas » d'un tri-state. */
 export const UNKNOWN_VALUE = 'unknown';
+
+/** Types qui acceptent l'option « Autre (préciser) ». */
+export const OTHER_TYPES: readonly QuestionType[] = ['single', 'multiple', 'boolean', 'tristate'];

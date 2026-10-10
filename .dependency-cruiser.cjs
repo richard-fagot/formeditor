@@ -1,5 +1,5 @@
 // Règles d'architecture (spec §8.2). Vérifiées par `npm run deps` dans `npm run check`.
-const MODULE = '(core/[^/]+|app/[^/]+|ui/[^/]+|plugins/[^/]+/[^/]+|format|registry|ui-kit)';
+const MODULE = '(core/[^/]+|app/[^/]+|ui/[^/]+|plugins/[^/]+/[^/]+|format|registry|ui-kit|plugin-api)';
 
 module.exports = {
   forbidden: [
@@ -68,6 +68,13 @@ module.exports = {
       severity: 'error',
       from: { path: '^src/', pathNot: '^src/(registry|plugins)/' },
       to: { path: '^src/plugins/' },
+    },
+    {
+      name: 'plugin-api-contrat',
+      comment: 'Le contrat des plugins ne dépend que du modèle.',
+      severity: 'error',
+      from: { path: '^src/plugin-api/' },
+      to: { path: '^src/', pathNot: '^src/(plugin-api|core/model)/' },
     },
     {
       name: 'ui-kit-generique',

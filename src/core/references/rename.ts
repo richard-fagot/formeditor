@@ -74,7 +74,7 @@ function applyRules(ws: Workspace, rules: Rule[], newName: (path: string[]) => s
 
 /** Renomme une clé (question, champ, alias, variable système) et propage dans toutes les expressions. */
 export function renameKey(ws: Workspace, target: RenameTarget, newKey: string): Workspace {
-  const next = structuredClone(ws);
+  const next: Workspace = JSON.parse(JSON.stringify(ws));
   if (target.kind === 'system') {
     const v = next.project.systemState.find((x) => x.name === target.name);
     if (!v || target.name === newKey) return ws;
