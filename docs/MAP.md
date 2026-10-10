@@ -26,9 +26,9 @@ La section « Modules » est générée par `npm run map` ; le reste est rédig�
 | `app/persistence` | Sauvegarde automatique IndexedDB. | — | — | 1 |
 | `app/shortcuts` | Liaisons clavier configurables vers les commandes. | — | — | 1 |
 | `app/store` | État applicatif : projet, onglets, sélection, annuler/rétablir. | — | — | 1 |
-| `core/expressions` | Analyse, évaluation, extraction des références, interpolation des libellés. Adaptateur JSONata isolé ici. | — | — | 1 |
+| `core/expressions` | Analyse, évaluation, extraction des références, interpolation des libellés. **Seul module qui importe | compile, checkSyntax, evaluate, evaluateStrict, evaluateCondition, EvalContext, EvalEnv, ExpressionSyntaxError, extractReferences, renameReference, type RefPath, parseTemplate, interpolate, formatValue, templateExpressions, templateReferences, renameInTemplate, resolveLabel, pickText, type LangChoice, todayIso, addDays, daysBetween, age | core/model, jsonata | 7 |
 | `core/model` | Types du domaine (projet, questionnaire, nœud, arête, question, bloc, variable, scénario) et quelques | * (./text), * (./question), * (./node), * (./graph), * (./documents), * (./keys) | — | 8 |
-| `core/references` | Résolution des clés et espaces de noms, index des usages, renommage propagé. | — | — | 1 |
+| `core/references` | Résolution des clés et espaces de noms, index des usages, renommage propagé. Dépend de `core/model`, `core/expressions`. | mapWorkspace, mapGraph, mapQuestion, collectExpressions, Owner, ExprLocation, ExprMapper, FoundExpression, questionnaireScope, blockScope, blockHosts, structureScope, resolvePath, questionOfNode, type Scope, type RefInfo, type RefKind, renameKey, type RenameTarget, findUsages | core/expressions, core/model | 6 |
 | `core/runtime` | Moteur de parcours : arêtes, boucles, répétitions, historique, retour arrière. | — | — | 1 |
 | `core/validation` | Contraintes de champs et vérifications de graphe (spec §4.6). | — | — | 1 |
 | `format` | Fichiers JSON : schémas, validation (Ajv, JSON Schema 2020-12), migrations (`formatVersion`), | SCHEMAS, validateDocument, documentKind, type DocumentKind, migrate, MIGRATIONS, type Migrations, serialize, newWorkspace, emptyLibrary, toBundle, exportBundle, exportFiles, importFiles, PROJECT_FILE, LIBRARY_FILE, type FileContent, type ImportResult | ajv, core/model | 7 |
