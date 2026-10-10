@@ -11,7 +11,8 @@ Dépend de `core/model`, `core/expressions`.
   `setAnswer(input, s, value, other?)`, `currentStep(input, s)`.
 - `summaryEntries(input, s)` : réponses du parcours effectif avant la page courante.
 - `progress(input, s)` : progression indicative (0..1).
-- `buildContext(input, answers, stepId?)` : contexte d'évaluation (réponses + `sys` + clés du bloc sans préfixe).
+- `buildContext(input, answers, stepId?)` : contexte d'évaluation (réponses + `sys` + clés du bloc sans préfixe ;
+  les valeurs `null` sont retirées en profondeur, `answers` garde `null`).
 - `successor`, `chooseEdge`, `firstStep`, `prune`, `projectedSteps`, `getAnswer`, `withAnswer`, `otherPath`.
 
 ## Règles

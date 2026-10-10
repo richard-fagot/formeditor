@@ -121,7 +121,8 @@ la réponse en cours est accessible par sa clé.
 | `tristate` | `true` / `false` / `"unknown"` | `labelSet?` (défaut « Oui / Non / Ne sait pas »), `other?` |
 | `structure` | objet (ou tableau d'objets si répétable) | `fields[]`, `repeat?` |
 
-Une question facultative laissée vide a pour réponse `null`.
+Une question facultative laissée vide a pour réponse `null` (dans les réponses et le chemin). Dans les
+expressions, une réponse `null` est absente : `$exists(cle)` est faux, `cle` vaut « rien » (§6).
 
 ### 5.1 Options
 
@@ -169,7 +170,7 @@ Opérateurs utiles :
 | Comparaisons (nombres, dates ISO) | `<`, `<=`, `>`, `>=` |
 | ET / OU / NON | `and`, `or`, `$not(…)` |
 | Contient (choix multiple, liste) | `'telephone' in canaux_contact` |
-| Est renseigné | `$exists(cle)` |
+| Est renseigné (réponse non vide ; une réponse `null` est retirée du contexte) | `$exists(cle)` |
 | Dénombrement | `$count(canaux_contact)`, `$count(victimes)` |
 | Filtrage d'une liste d'objets | `sys.sinistres[nature = 'Vol']`, `$count(victimes[hospitalise])` |
 
