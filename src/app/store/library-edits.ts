@@ -51,10 +51,19 @@ export function placeNode(ws: Workspace, graphId: string, nodeId: string, p: { x
   layoutOf(ws, graphId).nodes[nodeId] = { x: Math.round(p.x), y: Math.round(p.y) };
 }
 
-/** Déplace une question locale dans la bibliothèque ; le nœud devient une référence (même clé). */
+/** Une question locale peut-elle aller dans la bibliothèque (clé encore libre parmi ses questions) ? */
+export function canMoveToLibrary(ws: Workspace, ref: GraphRef, nodeId: string): boolean {
+  const node = getGraph(ws, ref)?.nodes.find((n) => n.id === nodeId);
+  return !!node && node.kind === 'question' && !('ref' in node) && !ws.library.questions.some((q) => q.key === node.key);
+}
+
+/**
+ * Déplace une question locale dans la bibliothèque ; le nœud devient une référence (même clé, donc expressions
+ * inchangées). Refusé si la clé est déjà prise dans la bibliothèque (clés uniques dans la bibliothèque).
+ */
 export function moveToLibrary(ws: Workspace, ref: GraphRef, nodeId: string): string | undefined {
   const node = getGraph(ws, ref)?.nodes.find((n) => n.id === nodeId);
-  if (!node || node.kind !== 'question' || 'ref' in node) return undefined;
+  if (!node || node.kind !== 'question' || 'ref' in node || !canMoveToLibrary(ws, ref, nodeId)) return undefined;
   const { kind: _kind, ...rest } = JSON.parse(JSON.stringify(node)) as typeof node;
   const id = newId('lq');
   ws.library.questions.push({ ...rest, id } as Question);

@@ -16,10 +16,10 @@ Dépend de `core`, `format`, `app/i18n`, `plugin-api` (utilitaires).
 - Questionnaire (`questionnaire-edits.ts`) : `renameQuestionnaire` (clé + fichier `<clé>.json` du projet),
   `canRenameQuestionnaire`, `questionnaireKeys`, `patchQuestionnaire` (titre, description).
 - Bibliothèque (`library-edits.ts`) : `addLibraryQuestion`, `addBlock`, `deleteLibraryItem`, `referenceNode` (nœud
-  référence ; alias libre pour un bloc ; pas de bloc dans un bloc), `placeNode`, `moveToLibrary` (question locale →
-  bibliothèque, même clé), `setLibraryQuestionLabel`, `renameExit` (suit dans les arêtes des instances), type `LibraryItem`.
-- `groupIntoBlock(ws, ref, ids, title)` (`group.ts`) : regroupe une sélection en bloc ; entrée = départ ou cible de la
-  première arête entrante ; une sortie par cible extérieure ; références de l'hôte préfixées par l'alias (`qualifyKeys`).
+  référence ; alias libre pour un bloc ; pas de bloc dans un bloc), `placeNode`, `moveToLibrary` / `canMoveToLibrary` (question
+  locale → bibliothèque, même clé ; refus si la clé y est déjà prise), `setLibraryQuestionLabel`, `renameExit` (suit dans les arêtes des instances), type `LibraryItem`.
+- `groupIntoBlock(ws, ref, ids, title)` (`group.ts`) : regroupe une sélection en bloc ; entrée unique = départ ou cible
+  des arêtes entrantes (`groupEntries` ; plusieurs entrées → refus) ; une sortie par cible extérieure ; références de l'hôte préfixées par l'alias (`qualifyKeys`).
 - État d'interface : `libraryItem` (élément affiché dans l'onglet Bibliothèque), `libraryPanel` (panneau latéral),
   palette en mode `commands` | `connect` | `library`. `activeGraphRef` : questionnaire actif, ou bloc affiché dans la bibliothèque.
 - `setQuestionLabel` : change l'intitulé et, si la clé était dérivée de l'ancien, la redérive et propage.

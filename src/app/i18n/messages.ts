@@ -134,6 +134,8 @@ export const MESSAGES = {
   'palette.libraryPlaceholder': { fr: 'Insérer une question ou un bloc…', en: 'Insert a question or a block…' },
   'view.libraryPanel': { fr: 'Afficher / masquer le panneau Bibliothèque', en: 'Show / hide the library panel' },
   'node.libraryBadge': { fr: 'Référence à la bibliothèque', en: 'Library reference' },
+  'group.refused': { fr: 'Regroupement en bloc impossible', en: 'Cannot group into a block' },
+  'group.multipleEntries': { fr: 'La sélection a plusieurs entrées ({list}) ; un bloc n’a qu’un départ. Sélectionner des nœuds atteints par une seule entrée.', en: 'The selection has several entries ({list}); a block has a single start. Select nodes reached through a single entry.' },
   'node.group': { fr: 'Grouper la sélection en bloc', en: 'Group selection into a block' },
   'node.toLibrary': { fr: 'Placer la question dans la bibliothèque', en: 'Move the question to the library' },
   'node.openInLibrary': { fr: 'Ouvrir dans la bibliothèque', en: 'Open in library' },

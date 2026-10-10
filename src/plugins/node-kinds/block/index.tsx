@@ -11,6 +11,13 @@ const T = {
   exit: { fr: 'sortie', en: 'exit' },
 };
 
+/** Nom affiché des autres nœuds d'un bloc (page d'information, synthèse, fin). */
+const KINDS: Record<string, { fr: string; en: string }> = {
+  info: { fr: 'Information', en: 'Information' },
+  summary: { fr: 'Synthèse', en: 'Summary' },
+  end: { fr: 'Fin', en: 'End' },
+};
+
 /** Forme d'une instance : titre du bloc, alias ; dépliable en lecture seule (questions et sorties du bloc). */
 function BlockShape({ node, env, badges }: ShapeProps<BlockNode>) {
   const [open, setOpen] = useState(false);
@@ -35,7 +42,7 @@ function BlockShape({ node, env, badges }: ShapeProps<BlockNode>) {
             const q = questionOfNode(env.ws, n);
             if (q) return <li key={n.id} className="truncate">{previewText(q.label, env) || '…'} <span className="font-mono text-[10px] text-slate-400">{node.alias}.{q.key}</span></li>;
             if (n.kind === 'exit') return <li key={n.id} className="font-mono text-amber-700">→ {tr(T.exit, env.uiLang)} {n.name}</li>;
-            return <li key={n.id} className="italic text-slate-400">{n.kind}</li>;
+            return <li key={n.id} className="italic text-slate-400">{KINDS[n.kind] ? tr(KINDS[n.kind]!, env.uiLang) : n.kind}</li>;
           })}
         </ol>
       )}

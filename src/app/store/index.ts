@@ -7,9 +7,9 @@ export {
 } from './graph';
 export { setQuestionLabel } from './question-edits';
 export {
-  addLibraryQuestion, addBlock, deleteLibraryItem, referenceNode, placeNode, moveToLibrary, setLibraryQuestionLabel, renameExit,
+  addLibraryQuestion, addBlock, deleteLibraryItem, referenceNode, placeNode, moveToLibrary, canMoveToLibrary, setLibraryQuestionLabel, renameExit,
   type LibraryItem,
 } from './library-edits';
-export { groupIntoBlock } from './group';
+export { groupIntoBlock, groupEntries } from './group';
 export { questionnaireKeys, canRenameQuestionnaire, renameQuestionnaire, patchQuestionnaire } from './questionnaire-edits';
 export { useT, useEditorEnv, activeGraphRef, activeQuestionnaire } from './hooks';

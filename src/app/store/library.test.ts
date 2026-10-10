@@ -4,7 +4,7 @@ import { checkWorkspace } from '../../core/validation';
 import { start, next, setAnswer, currentStep } from '../../core/runtime';
 import type { BlockNode, Questionnaire, Workspace } from '../../core/model';
 import {
-  addBlock, addLibraryQuestion, blankWorkspace, deleteLibraryItem, groupIntoBlock, insertNode, moveToLibrary,
+  addBlock, addLibraryQuestion, blankWorkspace, canMoveToLibrary, deleteLibraryItem, groupEntries, groupIntoBlock, insertNode, moveToLibrary,
   referenceNode, renameExit, setLibraryQuestionLabel, type GraphRef,
 } from './index';
 
@@ -48,6 +48,11 @@ describe('éléments de bibliothèque', () => {
     expect(Q(ws).nodes.find((n) => n.id === node.id)).toEqual({ kind: 'question', id: node.id, ref: id });
     expect(ws.library.questions.find((q) => q.id === id)).toMatchObject({ key, id });
     expect(checkWorkspace(ws).length).toBe(before);
+    // Clé déjà prise dans la bibliothèque : refusé.
+    const other = Q(ws).nodes.find((n) => n.kind === 'question' && !('ref' in n))!;
+    ws.library.questions.push({ id: 'x', key: (other as { key: string }).key, label: {}, type: 'text' });
+    expect(canMoveToLibrary(ws, ref(ws), other.id)).toBe(false);
+    expect(moveToLibrary(ws, ref(ws), other.id)).toBeUndefined();
   });
 
   it('change l’intitulé d’une question de bibliothèque et redérive la clé si elle était dérivée', () => {
@@ -119,6 +124,16 @@ describe('regroupement d’une sélection en bloc', () => {
     // Mêmes nœuds visités dans le même ordre (les ids des pages du bloc sont préfixés par l'instance).
     expect(walk(res.ws, ['x', 'y', 'z'])).toEqual(walk(before, ['x', 'y', 'z']));
     expect(walk(res.ws, ['x', 'stop'])).toEqual(walk(before, ['x', 'stop']));
+  });
+
+  it('refuse une sélection à plusieurs entrées (le parcours changerait)', () => {
+    const ws = chain();
+    // a → b → c, plus un saut a → c : la sélection { b, c } a deux entrées.
+    Q(ws).edges.push({ id: 'e_a_c', from: 'a', to: 'c', when: "a = 'saut'" });
+    expect(groupEntries(ws, ref(ws), ['b', 'c']).sort()).toEqual(['b', 'c']);
+    expect(groupIntoBlock(ws, ref(ws), ['b', 'c'], { fr: 'X' })).toBeUndefined();
+    expect(ws.library.blocks).toEqual([]);
+    expect(groupEntries(ws, ref(ws), ['a', 'b'])).toEqual(['a']);
   });
 
   it('refuse une sélection vide ou qui contient une instance de bloc', () => {

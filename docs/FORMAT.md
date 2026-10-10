@@ -64,7 +64,7 @@ Un questionnaire (et un bloc) est un graphe : `start` (id du nœud de départ), 
 | `info` | Page de texte sans saisie. | `title?`, `text`. |
 | `summary` | Récapitulatif des réponses du parcours effectif jusqu'ici. | `title?`. |
 | `end` | Fin de parcours. | `title?`, `message`, `outcome?` (issue métier libre : `submitted`, `ineligible`…). |
-| `exit` | Sortie nommée d'un bloc (dans un bloc uniquement). | `name`. |
+| `exit` | Sortie nommée d'un bloc (dans un bloc uniquement). | `name` (clé `snake_case`, visée par `exit` des arêtes de l'instance), `label?` (texte multilingue facultatif, pour le lecteur ; sans effet sur le parcours). |
 
 ### 4.2 Arêtes
 

@@ -16,7 +16,7 @@ Dépend de `app/store`, `app/commands` (liaison tracée à la souris : `edge.cre
   problèmes) ; contenu délégué au plugin du type de nœud (`registry.nodeKind`) ; édition en place de
   l'intitulé (double-clic, Entrée, `focusRequest`) avec dérivation de la clé (`setQuestionLabel`).
 - Instance de bloc : une poignée de sortie par sortie nommée du bloc ; une liaison tirée depuis une poignée porte
-  `exit` (arête `sourceHandle` = `exit`). Sans sortie : poignée unique.
+  `exit` (arête `sourceHandle` = `exit` ; sortie inconnue → première poignée, l'arête reste visible). Sans sortie : poignée unique.
 - Dépôt d'un élément de bibliothèque : inséré à la position du curseur (`screenToFlowPosition`).
 - `EdgeView` : condition abrégée, rang si plusieurs arêtes sortent du même nœud, « sinon », sortie de bloc.
 - Le conteneur porte `data-graph-focus` : les raccourcis à une lettre agissent s'il a le focus (ou si le focus est

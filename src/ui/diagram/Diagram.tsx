@@ -47,19 +47,24 @@ function DiagramInner({ graph, issues }: { graph: GraphRef; issues: Issue[] }) {
       })),
     [g?.nodes, layout, selection.nodes],
   );
-  const edges: RFEdge[] = useMemo(
-    () =>
-      (g?.edges ?? []).map((e) => ({
+  const blocks = useStore((s) => s.ws.library.blocks);
+  const edges: RFEdge[] = useMemo(() => {
+    // Sortie inconnue (renommée, supprimée) : l'arête part de la poignée par défaut, reste visible et corrigeable.
+    const exitsOf = (nodeId: string) => {
+      const n = g?.nodes.find((x) => x.id === nodeId);
+      const b = n?.kind === 'block' ? blocks.find((x) => x.id === n.ref) : undefined;
+      return b?.nodes.flatMap((x) => (x.kind === 'exit' ? [x.name] : [])) ?? [];
+    };
+    return (g?.edges ?? []).map((e) => ({
         id: e.id,
         source: e.from,
         target: e.to,
-        sourceHandle: e.exit ?? null,
+        sourceHandle: e.exit && exitsOf(e.from).includes(e.exit) ? e.exit : null,
         type: 'condition',
         selected: selection.edge === e.id,
         markerEnd: { type: MarkerType.ArrowClosed, color: selection.edge === e.id ? '#6366f1' : '#94a3b8' },
-      })),
-    [g?.edges, selection.edge],
-  );
+      }));
+  }, [g?.edges, g?.nodes, blocks, selection.edge]);
 
   const issuesByNode = useMemo(() => {
     const m = new Map<string, Issue[]>();

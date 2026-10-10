@@ -1,7 +1,7 @@
 import { newId, uniqueKey, type GraphNode } from '../../core/model';
 import { nodeKind } from '../../registry';
 import {
-  activeGraphRef, addBlock, addLibraryQuestion, deleteLibraryItem, getGraph, groupIntoBlock, insertNode, moveToLibrary, placeNode,
+  activeGraphRef, addBlock, canMoveToLibrary, addLibraryQuestion, deleteLibraryItem, getGraph, groupEntries, groupIntoBlock, insertNode, moveToLibrary, placeNode,
   referenceNode, scopeOf, useStore, type GraphRef, type LibraryItem,
 } from '../store';
 import { makeTranslate } from '../i18n';
@@ -86,6 +86,14 @@ export function libraryItemCommands(): Command[] {
       run: () => {
         const r = ref()!;
         const ids = st().selection.nodes;
+        const entries = groupEntries(st().ws, r, ids);
+        if (entries.length > 1) {
+          const tt = t();
+          const g = getGraph(st().ws, r)!;
+          const name = (id: string) => { const n = g.nodes.find((x) => x.id === id); return n && 'key' in n ? String(n.key) : id; };
+          st().set((s) => void (s.notice = { title: tt('group.refused'), lines: [tt('group.multipleEntries', { list: entries.map(name).join(', ') })] }));
+          return;
+        }
         const title = { [st().contentLang]: t()('library.newBlockTitle') };
         const res = groupIntoBlock(JSON.parse(JSON.stringify(st().ws)), r, ids, title);
         if (!res) return;
@@ -97,7 +105,7 @@ export function libraryItemCommands(): Command[] {
     },
     {
       id: 'node.toLibrary', label: 'node.toLibrary', keys: [], scope: 'graph',
-      enabled: () => { const n = selected(); return !!n && n.kind === 'question' && !('ref' in n); },
+      enabled: () => { const n = selected(); return !!n && canMoveToLibrary(st().ws, ref()!, n.id); },
       run: () => {
         const r = ref()!;
         const id = selected()!.id;

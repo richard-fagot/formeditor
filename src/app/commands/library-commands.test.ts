@@ -69,10 +69,28 @@ describe('bibliothèque et blocs par commandes', () => {
     expect(getGraph(st().ws, { kind: 'block', id: blk.id })!.nodes).toHaveLength(1);
   });
 
-  it('relie une sortie nommée d’une instance (poignée de sortie)', () => {
+  it('relie une sortie nommée d’une instance de bloc (poignée de sortie)', () => {
+    runCommand('library.newBlock');
+    runCommand('node.newQuestion');
+    runCommand('node.newExit');
+    const blk = st().ws.library.blocks[0]!;
+    const exit = blk.nodes.find((n) => n.kind === 'exit')! as { name: string };
+    runCommand('tab.show', `q:${qid}`);
+    runCommand('library.insertItem', { kind: 'block', id: blk.id, position: { x: 0, y: 300 } });
+    const inst = q().nodes.at(-1)!;
+    expect(inst.kind).toBe('block');
     const graph = { kind: 'questionnaire' as const, id: qid };
-    runCommand('edge.create', { graph, from: 'b', to: 'a', exit: 'suite' });
-    expect(q().edges.at(-1)).toMatchObject({ from: 'b', to: 'a', exit: 'suite' });
+    runCommand('edge.create', { graph, from: inst.id, to: 'a', exit: exit.name });
+    expect(q().edges.at(-1)).toMatchObject({ from: inst.id, to: 'a', exit: exit.name });
+  });
+
+  it('refuse de grouper une sélection à plusieurs entrées, avec un message', () => {
+    const graph = { kind: 'questionnaire' as const, id: qid };
+    st().edit(`q:${qid}`, (ws) => void insertNode(ws, graph, node('c'), 'a'));
+    st().select({ graph, nodes: ['b', 'c'] });
+    runCommand('node.group');
+    expect(st().ws.library.blocks).toHaveLength(0);
+    expect(st().notice?.lines[0]).toContain('plusieurs entrées');
   });
 
   it('place une question locale dans la bibliothèque et l’ouvre', () => {

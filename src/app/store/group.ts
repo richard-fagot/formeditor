@@ -6,12 +6,22 @@ import { addBlock } from './library-edits';
 /** Nom de sortie proposé selon la cible, quand elle n'a pas de clé. */
 const KIND_NAMES: Record<string, string> = { end: 'fin', info: 'information', summary: 'synthese' };
 
+/** Nœuds d'entrée d'une sélection : départ du graphe s'il est sélectionné, cibles des arêtes venues de l'extérieur. */
+export function groupEntries(ws: Workspace, ref: GraphRef, ids: string[]): string[] {
+  const g = getGraph(ws, ref);
+  if (!g) return [];
+  const inside = new Set(ids);
+  const entries = g.edges.filter((e) => !inside.has(e.from) && inside.has(e.to)).map((e) => e.to);
+  return [...new Set([...(inside.has(g.start) ? [g.start] : []), ...entries])];
+}
+
 /**
  * Regroupe des nœuds d'un questionnaire dans un nouveau bloc de la bibliothèque (spec §4.3).
- * - Entrée du bloc : le départ du questionnaire s'il est sélectionné, sinon la cible de la première arête entrante.
+ * - Entrée unique (`groupEntries`) : le départ du questionnaire s'il est sélectionné, sinon la cible des arêtes
+ *   entrantes. Une sélection à plusieurs entrées est refusée (le bloc n'a qu'un départ : le parcours changerait).
  * - Une sortie nommée par cible extérieure (nommée d'après sa clé) ; l'hôte relie chaque sortie à sa cible.
  * - Les arêtes entrantes visent l'instance ; les références de l'hôte aux clés déplacées sont préfixées par l'alias.
- * Renvoie le nouveau projet, ou `undefined` si la sélection est vide ou contient une instance de bloc ou une sortie.
+ * Renvoie le nouveau projet, ou `undefined` si la sélection est vide, a plusieurs entrées, ou contient une instance de bloc ou une sortie.
  */
 export function groupIntoBlock(ws: Workspace, ref: GraphRef, ids: string[], title: LocalizedText) {
   const g = getGraph(ws, ref);
@@ -19,12 +29,13 @@ export function groupIntoBlock(ws: Workspace, ref: GraphRef, ids: string[], titl
   const moved = g.nodes.filter((n) => ids.includes(n.id));
   if (!moved.length || moved.some((n) => n.kind === 'block' || n.kind === 'exit')) return undefined;
   const inside = new Set(moved.map((n) => n.id));
+  const entries = groupEntries(ws, ref, [...inside]);
+  if (entries.length > 1) return undefined;
   const movedKeys = moved.flatMap((n) => questionOfNode(ws, n)?.key ?? []);
 
   const blockId = addBlock(ws, title);
   const block = ws.library.blocks.find((b) => b.id === blockId)!;
-  const firstIn = g.edges.find((e) => !inside.has(e.from) && inside.has(e.to));
-  block.start = inside.has(g.start) ? g.start : (firstIn?.to ?? moved[0]!.id);
+  block.start = entries[0] ?? moved[0]!.id;
   block.nodes = moved;
 
   const remaining = g.nodes.filter((n) => !inside.has(n.id));
