@@ -19,7 +19,7 @@ export function patchVariable(name: string, field: string, recipe: (v: SystemVar
 }
 
 /** Une variable du dictionnaire : nom, type, description, valeurs (énumération), schéma (liste), exemple. */
-export function VariableCard({ variable: v, names }: { variable: SystemVariable; names: string[] }) {
+export function VariableCard({ variable: v, names, problems }: { variable: SystemVariable; names: string[]; problems: string[] }) {
   const t = useT();
   const ws = useStore((s) => s.ws);
   const focus = useStore((s) => s.focusRequest);
@@ -52,6 +52,7 @@ export function VariableCard({ variable: v, names }: { variable: SystemVariable;
           </Button>
         </div>
       </div>
+      {problems.map((p, i) => <p key={i} className="text-xs text-rose-600" role="alert">{p}</p>)}
       <Field label={t('system.description')}>
         <Input value={v.description ?? ''} onChange={(e) => patchVariable(v.name, 'description', (x) => {
           if (e.target.value) x.description = e.target.value;
@@ -90,8 +91,11 @@ function FieldsEditor({ variable: v }: { variable: SystemVariable }) {
       <div className="space-y-1.5">
         {!fields.length && <p className="text-xs text-slate-400">{t('system.noField')}</p>}
         {fields.map((f, i) => (
-          <div key={i} className="flex items-center gap-2">
-            <Input className="w-40 font-mono" value={f.name} onChange={(e) => patch(i, { name: e.target.value.trim() })} aria-label={t('system.name')} />
+          <div key={i} className="flex items-start gap-2">
+            <div className="w-44 shrink-0" title={t('system.fieldHint')}>
+              <KeyInput value={f.name} taken={fields.map((x) => x.name).filter((n) => n !== f.name)} invalidText={t('system.nameInvalid')}
+                onCommit={(next) => runCommand('system.renameField', { variable: v.name, field: f.name, next })} />
+            </div>
             <Select className="w-36" value={f.type} onChange={(e) => patch(i, { type: e.target.value as VariableType })} aria-label={t('system.type')}>
               {VAR_TYPES.filter((x) => x !== 'list' && x !== 'enum').map((x) => <option key={x} value={x}>{t(`vartype.${x}`)}</option>)}
             </Select>

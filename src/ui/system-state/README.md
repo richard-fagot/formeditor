@@ -12,7 +12,8 @@ Dépend de `app/commands`, `app/store`, `core/model`, `core/references` (usages)
 
 ## Fichiers
 - `VariableCard.tsx` : nom (renommage propagé : commande `system.renameVariable`), type (`setVariableType`),
-  description, valeurs d'une énumération (une par ligne), schéma d'une liste (champs de types simples),
+  description, valeurs d'une énumération (une par ligne), schéma d'une liste (champs de types simples ; nom validé
+  par `KeyInput`, renommage propagé : `system.renameField`), problèmes du dictionnaire (`checkWorkspace`, propriétaire `system`),
   valeur d'exemple, nombre d'usages (`findUsages`), suppression (`system.deleteVariable`).
 - `ScenarioCard.tsx` : nom, description, valeurs ; dupliquer (`scenario.add` avec l'id), supprimer (`scenario.delete`).
 

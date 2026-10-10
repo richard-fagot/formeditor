@@ -1,4 +1,6 @@
+import { useMemo } from 'react';
 import { Plus } from 'lucide-react';
+import { checkWorkspace, describeIssue } from '../../core/validation';
 import { runCommand } from '../../app/commands';
 import { useStore, useT } from '../../app/store';
 import { Button } from '../../ui-kit';
@@ -9,7 +11,12 @@ import { VariableCard } from './VariableCard';
 export function SystemState() {
   const t = useT();
   const project = useStore((s) => s.ws.project);
+  const ws = useStore((s) => s.ws);
+  const uiLang = useStore((s) => s.uiLang);
   const names = project.systemState.map((v) => v.name);
+  // Problèmes du dictionnaire (noms invalides ou en double), affichés sur la variable concernée.
+  const issues = useMemo(() => checkWorkspace(ws).filter((i) => i.owner.kind === 'system'), [ws]);
+  const problemsOf = (name: string) => issues.filter((i) => i.owner.id === name).map((i) => describeIssue(i, uiLang));
   return (
     <div className="h-full overflow-y-auto bg-slate-50" data-testid="system-state">
       <div className="mx-auto grid max-w-6xl gap-8 p-6 xl:grid-cols-[3fr_2fr]">
@@ -22,7 +29,7 @@ export function SystemState() {
           </div>
           <p className="text-sm text-slate-500">{t('system.hint')}</p>
           {!names.length && <p className="text-sm text-slate-400">{t('system.empty')}</p>}
-          {project.systemState.map((v) => <VariableCard key={v.name} variable={v} names={names} />)}
+          {project.systemState.map((v, i) => <VariableCard key={`${i}:${v.name}`} variable={v} names={names} problems={problemsOf(v.name)} />)}
         </section>
         <section className="space-y-4">
           <div className="flex items-center gap-2">

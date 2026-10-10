@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { Bug, ChevronLeft, ChevronRight, Database, RotateCcw, Undo2 } from 'lucide-react';
 import { OTHER_VALUE } from '../../core/model';
-import { back, buildContext, currentStep, getAnswer, next, otherPath, progress, resume, setAnswer, start, type Session } from '../../core/runtime';
+import { back, buildContext, currentStep, getAnswer, next, otherPath, progress, resume, setAnswer, start, type RuntimeInput, type Session } from '../../core/runtime';
 import { validateAnswer } from '../../core/validation';
 import { nodeKind, questionType } from '../../registry';
 import { runCommand } from '../../app/commands';
@@ -64,6 +64,17 @@ export function Preview({ questionnaireId }: { questionnaireId: string }) {
   );
 }
 
+/** Erreurs de validation de la réponse à la page courante d'une session. */
+function errorsAt(input: RuntimeInput, s: Session) {
+  const step = currentStep(input, s);
+  const q = step.question;
+  if (!q || !step.answerPath) return [];
+  const value = getAnswer(s.answers, step.answerPath);
+  const other = getAnswer(s.answers, otherPath(step.answerPath)) as string | undefined;
+  const ctx = buildContext(input, s.answers, step.id);
+  return validateAnswer(q, value, { ...ctx, ...(value === null ? {} : { [q.key]: value }) }, input.env, other);
+}
+
 /** Page courante, progression, précédent / suivant (et retour à la synthèse après une modification). */
 function Wizard({ questionnaireId, preview }: { questionnaireId: string; preview: ReturnType<typeof usePreview> }) {
   const t = useT();
@@ -75,8 +86,7 @@ function Wizard({ questionnaireId, preview }: { questionnaireId: string; preview
   const plugin = q ? questionType(q.type) : undefined;
   const value = step.answerPath ? getAnswer(session.answers, step.answerPath) : undefined;
   const other = step.answerPath ? (getAnswer(session.answers, otherPath(step.answerPath)) as string | undefined) : undefined;
-  const ctx = buildContext(input, session.answers, step.id);
-  const check = () => (q ? validateAnswer(q, value, { ...ctx, ...(value === null ? {} : { [q.key]: value }) }, input.env, other) : []);
+  const check = () => errorsAt(input, session);
   const errors = state?.attempted ? check() : [];
   const errorMap: Record<string, string[]> = {};
   for (const e of errors) (errorMap[e.path] ??= []).push(env.label(e.message));
@@ -85,10 +95,11 @@ function Wizard({ questionnaireId, preview }: { questionnaireId: string; preview
   const returnTo = state?.returnTo && state.returnTo !== step.id && session.history.includes(state.returnTo) ? state.returnTo : undefined;
 
   /** Avance (validation d'abord) ; `move` calcule la nouvelle session. */
-  const advance = (move: (s: Session) => Session) => {
+  const advance = (move: (s: Session) => Session, revalidate = false) => {
     if (check().length) return update({ attempted: true, session });
     const s = move(session);
-    update({ session: s, attempted: false, ...(s.history.at(-1) === state?.returnTo ? { returnTo: undefined } : {}) });
+    // Retour à la synthèse arrêté sur une page déjà répondue mais devenue invalide : erreurs affichées.
+    update({ session: s, attempted: revalidate && errorsAt(input, s).length > 0, ...(s.history.at(-1) === state?.returnTo ? { returnTo: undefined } : {}) });
   };
   const select = () => useStore.getState().select({ graph: { kind: 'questionnaire', id: questionnaireId }, nodes: [hostNodeId] });
   const Page = nodeKind(step.node.kind).Page;
@@ -123,7 +134,7 @@ function Wizard({ questionnaireId, preview }: { questionnaireId: string; preview
           </Button>
           <div className="flex gap-2">
             {returnTo && !isEnd && (
-              <Button data-testid="preview-back-to-summary" onClick={() => advance((s) => resume(input, s, returnTo))}>
+              <Button data-testid="preview-back-to-summary" onClick={() => advance((s) => resume(input, s, returnTo, (x) => !errorsAt(input, x).length), true)}>
                 <Undo2 className="size-4" />{t('preview.backToSummary')}
               </Button>
             )}

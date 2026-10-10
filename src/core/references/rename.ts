@@ -1,5 +1,5 @@
-import { renameInTemplate, renameReference } from '../expressions';
-import { OTHER_VALUE, type Graph, type Question, type Workspace } from '../model';
+import { extractReferences, renameInTemplate, renameReference } from '../expressions';
+import { isValidKey, OTHER_VALUE, type Graph, type Question, type Workspace } from '../model';
 import { mapWorkspace, type ExprLocation, type Owner } from './visit';
 import { questionOfNode } from './scope';
 
@@ -7,7 +7,9 @@ import { questionOfNode } from './scope';
 export type RenameTarget =
   | { kind: 'question'; owner: Owner; nodeId: string; fieldId?: string }
   | { kind: 'alias'; questionnaireId: string; nodeId: string }
-  | { kind: 'system'; name: string };
+  | { kind: 'system'; name: string }
+  /** Champ d'une variable système de type liste d'objets. */
+  | { kind: 'systemField'; variable: string; field: string };
 
 interface Rule {
   owner: Owner;
@@ -91,6 +93,7 @@ export function renameKey(ws: Workspace, target: RenameTarget, newKey: string): 
     ];
     return applyRules(next, all.map((owner) => ({ owner, path: ['sys', target.name] })), () => newKey);
   }
+  if (target.kind === 'systemField') return renameSystemField(ws, next, target.variable, target.field, newKey);
   if (target.kind === 'alias') {
     const node = next.questionnaires.find((q) => q.id === target.questionnaireId)?.nodes.find((n) => n.id === target.nodeId);
     if (node?.kind !== 'block' || node.alias === newKey) return ws;
@@ -132,4 +135,31 @@ export function qualifyKeys(ws: Workspace, owner: Owner, keys: string[], alias: 
   const next: Workspace = JSON.parse(JSON.stringify(ws));
   const rules: Rule[] = keys.flatMap((k) => [{ owner, path: [k] }, { owner, path: [`${k}_${OTHER_VALUE}`] }]);
   return applyRules(next, rules, (p) => `${alias}.${p[0]}`);
+}
+
+/** Renomme la propriété `old` de chaque objet d'une liste (valeur d'exemple, valeurs de scénario). */
+function renameInItems(list: unknown, old: string, key: string): unknown {
+  if (!Array.isArray(list)) return list;
+  return list.map((item) => (item && typeof item === 'object' && !Array.isArray(item)
+    ? Object.fromEntries(Object.entries(item).map(([k, v]) => [k === old ? key : k, v]))
+    : item));
+}
+
+/**
+ * Champ d'une liste système : `sys.<variable>.<champ>` dans les expressions, noms relatifs des sources
+ * dont `from` est cette liste, valeur d'exemple et scénarios. Nom invalide ou pris : projet inchangé.
+ */
+function renameSystemField(ws: Workspace, next: Workspace, variable: string, old: string, key: string): Workspace {
+  const v = next.project.systemState.find((x) => x.name === variable);
+  const f = v?.fields?.find((x) => x.name === old);
+  if (!v || !f || old === key || !isValidKey(key) || v.fields!.some((x) => x.name === key)) return ws;
+  f.name = key;
+  if (v.example !== undefined) v.example = renameInItems(v.example, old, key);
+  for (const s of next.project.scenarios) if (variable in s.values) s.values[variable] = renameInItems(s.values[variable], old, key);
+  const fromList = (src?: string) => !!src && extractReferences(src).some((r) => r.length === 2 && r[0] === 'sys' && r[1] === variable);
+  return mapWorkspace(next, (text, kind, loc) => {
+    const path = loc.relative ? (fromList(loc.source) ? [old] : undefined) : ['sys', variable, old];
+    if (!path) return text;
+    return kind === 'expr' ? renameReference(text, path, key) : renameInTemplate(text, path, key);
+  });
 }

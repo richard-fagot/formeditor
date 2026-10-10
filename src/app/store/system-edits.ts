@@ -25,6 +25,11 @@ export function renameVariable(ws: Workspace, name: string, next: string): Works
   return renameKey(ws, { kind: 'system', name }, next);
 }
 
+/** Renomme un champ d'une liste d'objets (expressions, sources, exemple, scénarios) ; nom invalide ou pris : inchangé. */
+export function renameListField(ws: Workspace, variable: string, field: string, next: string): Workspace {
+  return renameKey(ws, { kind: 'systemField', variable, field }, next);
+}
+
 /** Change le type d'une variable : `values` pour une énumération, `fields` pour une liste ; exemple remis à zéro. */
 export function setVariableType(ws: Workspace, name: string, type: VariableType) {
   const v = vars(ws).find((x) => x.name === name);

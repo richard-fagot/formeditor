@@ -20,7 +20,7 @@ Dépend de `core`, `format`, `app/i18n`, `plugin-api` (utilitaires).
   locale → bibliothèque, même clé ; refus si la clé y est déjà prise), `setLibraryQuestionLabel`, `renameExit` (suit dans les arêtes des instances), type `LibraryItem`.
 - `groupIntoBlock(ws, ref, ids, title)` (`group.ts`) : regroupe une sélection en bloc ; entrée unique = départ ou cible
   des arêtes entrantes (`groupEntries` ; plusieurs entrées → refus) ; une sortie par cible extérieure ; références de l'hôte préfixées par l'alias (`qualifyKeys`).
-- État du système (`system-edits.ts`) : `addVariable`, `deleteVariable` (aussi dans les scénarios), `renameVariable`
+- État du système (`system-edits.ts`) : `addVariable`, `deleteVariable` (aussi dans les scénarios), `renameVariable`, `renameListField`
   (`renameKey` cible `system` ; nom invalide ou pris → inchangé), `setVariableType`, `addScenario` (nom rendu unique), `deleteScenario`,
   `valueError` (écart d'une valeur au type déclaré), `exampleSystemState`, `scenarioOf`, `systemStateOf` (état d'une prévisualisation).
 - État d'interface : `previewPanels` (panneaux état du système / débogage), `libraryItem` (élément affiché dans l'onglet Bibliothèque), `libraryPanel` (panneau latéral),

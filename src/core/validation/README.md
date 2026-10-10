@@ -21,6 +21,9 @@ Dépend de `core/model`, `core/expressions`, `core/references`, `core/runtime` (
 `missingTranslation`, `libraryMissing`, `missingStart`.
 
 ## Choix
+- Dictionnaire de l'état du système : noms de variables et de champs de liste invalides / en double → `invalidKey` /
+  `duplicateKey` avec le propriétaire `{ kind: 'system', id: <variable> }`. Expressions relatives d'une source dont
+  `from` est une liste système à champs déclarés : nom inconnu → `unknownReference` (`sys.x.nom`).
 - `missingStart` n'est pas signalé sur un graphe vide (questionnaire neuf) ; le premier nœud ajouté devient le départ (`app/store`).
 - `notGuaranteed` ignore les références testées par `$exists(…)` et, dans une variante de libellé, celles
   déjà présentes dans la condition de la variante.

@@ -13,7 +13,7 @@ Dépend de `core`, `registry`, `app/store`, `app/commands`, `ui-kit`, `ui/system
   « Suivant » valide la réponse (`core/validation`) ; les erreurs s'affichent après une tentative.
   Un clic sur la page sélectionne le nœud dans le logigramme.
 - `Summary.tsx` : récapitulatif (`summaryEntries`) ; un clic sur une réponse ramène à la question (`goTo`)
-  et mémorise la synthèse (`returnTo`) ; « Revenir à la synthèse » appelle `resume` après validation.
+  et mémorise la synthèse (`returnTo`) ; « Revenir à la synthèse » appelle `resume` après validation, en revalidant chaque page repassée.
 - `SystemPanel.tsx` : scénario nommé, édition libre (`PreviewState.sys`, la session est conservée :
   réévaluation immédiate), rétablir les valeurs du scénario, enregistrer comme scénario (`preview.saveScenario`).
 - `DebugPanel.tsx` : chemin parcouru, conditions des arêtes sortantes de la page courante (`edgeTrace`), valeurs courantes.

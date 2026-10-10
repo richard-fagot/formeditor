@@ -55,9 +55,10 @@ export function goTo(s: Session, stepId: string): Session {
 
 /**
  * Après une modification depuis une synthèse : avance sur les pages déjà vues et répondues, jusqu'à
- * `target` (la synthèse), une page nouvelle sur le chemin, une question sans réponse, une fin ou un blocage.
+ * `target` (la synthèse), une page nouvelle sur le chemin, une question sans réponse, une fin, un blocage,
+ * ou une page que `accept` refuse (revalidation de la réponse par l'appelant, `core/validation`).
  */
-export function resume(input: RuntimeInput, s: Session, target: string): Session {
+export function resume(input: RuntimeInput, s: Session, target: string, accept: (s: Session) => boolean = () => true): Session {
   let cur = s;
   for (let i = 0; i < 500; i++) {
     const n = next(input, cur);
@@ -67,6 +68,7 @@ export function resume(input: RuntimeInput, s: Session, target: string): Session
     if (step.id === target || step.node.kind === 'end') return cur;
     if (!s.history.includes(step.id)) return cur;
     if (step.answerPath && getAnswer(cur.answers, step.answerPath) === undefined) return cur;
+    if (!accept(cur)) return cur;
   }
   return cur;
 }

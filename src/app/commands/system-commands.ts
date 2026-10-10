@@ -1,7 +1,8 @@
+import type { Workspace } from '../../core/model';
 import { makeTranslate } from '../i18n';
 import {
   activeQuestionnaire, addScenario, addVariable, deleteScenario, deleteVariable, exampleSystemState, renameVariable,
-  scenarioOf, systemStateOf, useStore,
+  renameListField, scenarioOf, systemStateOf, useStore,
 } from '../store';
 import type { Command } from './types';
 
@@ -12,10 +13,10 @@ const previewed = () => {
   return q && st().view[q.id] === 'preview' ? q : undefined;
 };
 
-/** Renomme une variable : point d'historique dans chaque portée réécrite (questionnaires, bibliothèque), puis le projet. */
-function renameVar(name: string, next: string) {
+/** Renommage propagé : point d'historique dans chaque portée réécrite (questionnaires, bibliothèque), puis le projet. */
+function propagate(rename: (ws: Workspace) => Workspace) {
   const ws = st().ws;
-  const out = renameVariable(ws, name, next);
+  const out = rename(ws);
   if (out === ws) return;
   ws.questionnaires.forEach((q, i) => {
     if (JSON.stringify(q) !== JSON.stringify(out.questionnaires[i])) st().checkpoint(`q:${q.id}`);
@@ -45,7 +46,17 @@ export function systemCommands(): Command[] {
       id: 'system.renameVariable', label: 'system.renameVariable', keys: [], scope: 'global', hidden: true,
       run: (arg) => {
         const a = arg as { name?: unknown; next?: unknown } | undefined;
-        if (typeof a?.name === 'string' && typeof a.next === 'string') renameVar(a.name, a.next);
+        if (typeof a?.name === 'string' && typeof a.next === 'string') propagate((ws) => renameVariable(ws, a.name as string, a.next as string));
+      },
+    },
+    {
+      // `arg` : `{ variable, field, next }` (champ d'une liste d'objets).
+      id: 'system.renameField', label: 'system.renameField', keys: [], scope: 'global', hidden: true,
+      run: (arg) => {
+        const a = arg as { variable?: unknown; field?: unknown; next?: unknown } | undefined;
+        if (typeof a?.variable === 'string' && typeof a.field === 'string' && typeof a.next === 'string') {
+          propagate((ws) => renameListField(ws, a.variable as string, a.field as string, a.next as string));
+        }
       },
     },
     {

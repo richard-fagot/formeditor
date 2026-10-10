@@ -11,7 +11,7 @@ Dépend de `core/model`, `core/expressions`.
   `setAnswer(input, s, value, other?)`, `currentStep(input, s)`.
 - `summaryEntries(input, s)` : réponses du parcours effectif avant la page courante.
 - `resume(input, s, target)` : après un retour depuis une synthèse, avance sur les pages déjà vues et répondues
-  jusqu'à `target`, une page nouvelle, une question sans réponse, une fin ou un blocage.
+  jusqu'à `target`, une page nouvelle, une question sans réponse, une page refusée par `accept` (revalidation), une fin ou un blocage.
 - `edgeTrace(input, answers, stepId)` : arêtes sortantes évaluées dans l'ordre (`true` / `false` / `else` / `error`)
   et arête retenue (débogage).
 - `progress(input, s)` : progression indicative (0..1).

@@ -10,7 +10,8 @@ Résolution des clés et espaces de noms, index des usages, renommage propagé. 
   `resolvePath(scope, path)` ; une variable système porte `type`, `description` et `values` (énumération) pour l'autocomplétion ; `questionOfNode(ws, node)` (question effective, libellé surchargé), `blockHosts`.
 - `findUsages(ws, path)`.
 - `renameKey(ws, target, newKey)` : `target` = question (`owner` + `nodeId`, `fieldId` pour un champ),
-  alias d'instance de bloc, ou variable système (scénarios compris). Renvoie un nouveau `Workspace`.
+  alias d'instance de bloc, variable système (scénarios compris), ou champ d'une liste système (`systemField` :
+  `sys.x.champ`, noms relatifs des sources dont `from` est `sys.x`, exemple et scénarios ; nom invalide ou pris → inchangé). Renvoie un nouveau `Workspace`.
 - `qualifyKeys(ws, owner, keys, alias)` : préfixe par `alias.` les références à `keys` (et `cle_other`) dans les
   expressions de `owner` (questions déplacées dans un bloc instancié sous cet alias).
 

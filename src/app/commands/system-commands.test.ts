@@ -32,6 +32,16 @@ describe('commandes de l’état du système', () => {
     expect(JSON.stringify(st().ws.questionnaires)).toContain('sys.plafond_expertise');
   });
 
+  it('renomme un champ de liste (source, scénarios) ; un nom invalide est refusé', () => {
+    runCommand('system.renameField', { variable: 'sinistres', field: 'nature', next: 'Nature Bad' });
+    expect(st().ws.project.systemState.find((v) => v.name === 'sinistres')!.fields!.map((f) => f.name)).toContain('nature');
+    runCommand('system.renameField', { variable: 'sinistres', field: 'nature', next: 'categorie' });
+    expect(JSON.stringify(st().ws.questionnaires)).toContain("date & ' — ' & categorie");
+    expect(JSON.stringify(st().ws.project.scenarios)).not.toContain('"nature"');
+    st().undo(`q:${qid}`);
+    expect(JSON.stringify(st().ws.questionnaires)).toContain("date & ' — ' & nature");
+  });
+
   it('crée, duplique et supprime des scénarios', () => {
     const n = st().ws.project.scenarios.length;
     runCommand('scenario.add');

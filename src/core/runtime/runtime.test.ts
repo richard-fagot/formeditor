@@ -161,4 +161,19 @@ describe('retour à la synthèse après modification', () => {
     expect(currentStep(inp, s).id).toBe('sum');
     expect(summaryEntries(inp, s).map((x) => x.stepId)).toEqual(['a', 'b']);
   });
+  it('efface la réponse d’une question sortie du chemin', () => {
+    let s = next(inp, setAnswer(inp, start(inp), 'b'));
+    s = next(inp, setAnswer(inp, s, 'z'));
+    expect(s.answers.b).toBe('z');
+    s = resume(inp, setAnswer(inp, goTo(s, 'a'), 'x'), 'sum');
+    expect(currentStep(inp, s).id).toBe('sum');
+    expect(s.answers.b).toBeUndefined();
+  });
+  it('s’arrête sur une page déjà répondue que `accept` refuse (revalidation)', () => {
+    let s = next(inp, setAnswer(inp, start(inp), 'b'));
+    s = next(inp, setAnswer(inp, s, 'z'));
+    const refuseB = (x: typeof s) => x.history.at(-1) !== 'b';
+    s = resume(inp, goTo(s, 'a'), 'sum', refuseB);
+    expect(currentStep(inp, s).id).toBe('b');
+  });
 });

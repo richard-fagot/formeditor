@@ -166,6 +166,8 @@ export const MESSAGES = {
   'system.empty': { fr: 'Aucune variable.', en: 'No variable.' },
   'system.addVariable': { fr: 'Nouvelle variable de l’état du système', en: 'New system state variable' },
   'system.deleteVariable': { fr: 'Supprimer la variable', en: 'Delete variable' },
+  'system.renameField': { fr: 'Renommer le champ de liste', en: 'Rename list field' },
+  'system.fieldHint': { fr: 'Renommer met à jour les expressions (sources comprises), l’exemple et les scénarios.', en: 'Renaming updates expressions (sources included), the example and scenarios.' },
   'system.renameVariable': { fr: 'Renommer la variable', en: 'Rename variable' },
   'system.name': { fr: 'Nom', en: 'Name' },
   'system.nameHint': { fr: 'Renommer met à jour les expressions et les scénarios.', en: 'Renaming updates expressions and scenarios.' },
