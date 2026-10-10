@@ -7,6 +7,7 @@ describe('langues des contenus', () => {
     expect(isLanguageCode('en')).toBe(true);
     expect(isLanguageCode('pt-BR')).toBe(true);
     expect(isLanguageCode('Anglais')).toBe(false);
+    expect(isLanguageCode('zh-Hant-TW')).toBe(false);
     expect(addLanguage(ws, ' en ')).toBe(true);
     expect(addLanguage(ws, 'en')).toBe(false);
     expect(addLanguage(ws, 'x y')).toBe(false);

@@ -82,6 +82,11 @@ describe('checkWorkspace', () => {
   it('vérifie les noms placés dans un filtre d’une liste système', () => {
     const w = mutate((x) => void (decl(x).edges.find((e) => e.id === 'e_date_victimes')!.when = "$count(sys.sinistres[natur = 'Vol']) > 0"));
     expect(checkWorkspace(w).find((i) => i.code === 'unknownReference' && i.edgeId === 'e_date_victimes')?.params.ref).toBe('sys.sinistres.natur');
+    // Clé de question dans un filtre : `$$.cle` suggéré.
+    const v = mutate((x) => void (decl(x).edges.find((e) => e.id === 'e_date_victimes')!.when = 'sys.sinistres[nature = type_sinistre]'));
+    const found = checkWorkspace(v).find((i) => i.edgeId === 'e_date_victimes' && i.code === 'unknownFilterReference');
+    expect(found?.params).toEqual({ ref: 'sys.sinistres.type_sinistre', key: 'type_sinistre' });
+    expect(describeIssue(found!, 'fr')).toContain('$$.type_sinistre');
   });
   it('dictionnaire : nom de variable ou de champ de liste invalide ou en double ; référence relative inconnue', () => {
     const w = mutate((x) => {

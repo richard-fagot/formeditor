@@ -8,7 +8,8 @@ JSONata** (1.8, synchrone). Dépend de `core/model`.
 - `checkSyntax(expr)` → `{ message, position }` ou `undefined` ; `compile` (avec cache).
 - `extractReferences(expr)` → chemins racines (`[['tiers','nom'], ['sys','plafond']]`). Un nom dans le filtre d'une
   étape de tête prolonge le chemin filtré (`sys.x[champ > 1]` → `['sys','x','champ']`) ; les étapes après la première
-  non nommée et les filtres d'une expression non nommée (`(a)[b]`) sont relatifs : ignorés.
+  non nommée et les filtres d'une expression non nommée (`(a)[b]`) sont relatifs : ignorés. `$$.cle` est une référence
+  racine (`['cle']`), jamais prolongée par un filtre. `filterReferences(expr)` : références issues d'un filtre (avec le nom en cause).
 - `renameReference(expr, path, newName)` : renomme le dernier segment de `path` dans les chemins racines qui commencent par `path` (filtres compris).
 - Gabarits : `parseTemplate`, `interpolate`, `templateExpressions`, `templateReferences`, `renameInTemplate`, `formatValue`.
 - `resolveLabel(label, {lang, defaultLang}, ctx, env?)` : variante → langue (repli langue par défaut) → interpolation ; `pickText`.

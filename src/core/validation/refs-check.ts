@@ -1,4 +1,4 @@
-import { checkSyntax, extractReferences, templateExpressions, templateReferences, type RefPath } from '../expressions';
+import { checkSyntax, extractReferences, filterReferences, templateExpressions, templateReferences, type RefPath } from '../expressions';
 import { OTHER_VALUE, type Graph, type Question, type Workspace } from '../model';
 import {
   blockHosts, blockScope, collectExpressions, questionnaireScope, questionOfNode, resolvePath, structureScope,
@@ -64,7 +64,13 @@ export function checkReferences(ws: Workspace): Issue[] {
     }
     const scopes = scopesFor(f);
     const unknown = refsOf(f).filter((r) => scopes.some((s) => !resolvePath(s, r)));
-    for (const r of new Set(unknown.map((x) => x.join('.')))) out.push(issue('unknownReference', f.loc.owner, where, { ref: r }));
+    // Nom d'un filtre qui est une clé de question : suggérer `$$.cle` (racine du contexte).
+    const fromFilter = new Map(exprs.flatMap(filterReferences).map((x) => [x.path.join('.'), x.name]));
+    for (const r of new Set(unknown.map((x) => x.join('.')))) {
+      const key = fromFilter.get(r);
+      const known = key !== undefined && scopes.every((s) => resolvePath(s, [key]));
+      out.push(known ? issue('unknownFilterReference', f.loc.owner, where, { ref: r, key: key! }) : issue('unknownReference', f.loc.owner, where, { ref: r }));
+    }
     if (unknown.length) continue;
     out.push(...checkGuaranteed(ws, f, scopes[0]!, guaranteed, graphs));
   }

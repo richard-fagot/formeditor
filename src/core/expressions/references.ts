@@ -11,24 +11,30 @@ interface NameStep {
 type AstNode = { type: string; steps?: AstNode[] } & Record<string, unknown>;
 
 /** Parcourt l'AST et appelle `visit` pour chaque chemin racine (suite de noms en tête de chemin). */
-function walk(node: unknown, visit: (steps: NameStep[]) => void, skipExists = false): void {
+/** `filterStart` : indice du premier nom pris dans un filtre (chemin prolongé par un filtre). */
+/** `absolute` : chemin `$$.…`, jamais prolongé par le chemin filtré qui l'entoure. */
+type Visit = (steps: NameStep[], filterStart?: number, absolute?: boolean) => void;
+
+function walk(node: unknown, visit: Visit, skipExists = false): void {
   if (Array.isArray(node)) return node.forEach((n) => walk(n, visit, skipExists));
   if (!node || typeof node !== 'object') return;
   const n = node as AstNode;
   if (skipExists && n.type === 'function' && (n.procedure as { value?: string } | undefined)?.value === 'exists') return;
   if (n.type === 'path' && n.steps) {
     const lead: NameStep[] = [];
-    for (const s of n.steps) {
+    // `$$.cle` : racine du contexte (utile dans un filtre, où un nom nu désigne un champ de l'élément).
+    const fromRoot = n.steps[0]?.type === 'variable' && n.steps[0].value === '$' && n.steps.length > 1;
+    for (const s of fromRoot ? n.steps.slice(1) : n.steps) {
       if (s.type !== 'name') break;
       lead.push(s as unknown as NameStep);
     }
-    if (lead.length) visit(lead);
+    if (lead.length) visit(lead, undefined, fromRoot);
     // Les étapes suivantes sont relatives : seule une première étape non nommée est racine.
     else if (n.steps[0]) walk(n.steps[0], visit, skipExists);
     // Un nom dans un filtre d'une étape de tête prolonge le chemin filtré : `sys.x[champ > 1]` → `sys.x.champ`.
     lead.forEach((step, i) => {
       for (const stage of ((step as unknown as AstNode).stages as AstNode[] | undefined) ?? []) {
-        if (stage.type === 'filter') walk(stage.expr, (inner) => visit([...lead.slice(0, i + 1), ...inner]), skipExists);
+        if (stage.type === 'filter') walk(stage.expr, (inner, f, abs) => (abs ? visit(inner, f, abs) : visit([...lead.slice(0, i + 1), ...inner], i + 1)), skipExists);
       }
     });
     return;
@@ -50,6 +56,13 @@ export function extractReferences(expr: string, options: { skipExists?: boolean 
   const refs: RefPath[] = [];
   walk(ast(expr), (steps) => refs.push(steps.map((s) => s.value)), options.skipExists);
   return refs;
+}
+
+/** Références issues d'un filtre (`sys.x[cle > 1]` → `{ path: ['sys','x','cle'], name: 'cle' }`). */
+export function filterReferences(expr: string): { path: RefPath; name: string }[] {
+  const out: { path: RefPath; name: string }[] = [];
+  walk(ast(expr), (steps, f) => f !== undefined && out.push({ path: steps.map((s) => s.value), name: steps[f]!.value }));
+  return out;
 }
 
 /**

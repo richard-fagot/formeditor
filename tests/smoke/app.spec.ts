@@ -413,6 +413,9 @@ test('langues, traductions manquantes, raccourci personnalisé, mise en page aut
   await page.getByTestId('diagram').focus();
   await page.keyboard.press('l');
   await expect.poll(() => page.locator('.react-flow__node').first().getAttribute('style')).not.toBe(before);
+  await page.getByTestId('diagram').focus();
+  await page.keyboard.press('Control+z');
+  await expect.poll(() => page.locator('.react-flow__node').first().getAttribute('style')).toBe(before);
 
   // Vue côte à côte avec un second questionnaire.
   await page.getByRole('button', { name: 'Nouveau questionnaire', exact: true }).click();

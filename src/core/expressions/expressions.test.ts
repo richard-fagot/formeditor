@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  checkSyntax, evaluate, evaluateCondition, extractReferences, renameReference,
+  checkSyntax, evaluate, evaluateCondition, extractReferences, filterReferences, renameReference,
   interpolate, templateReferences, renameInTemplate, resolveLabel, formatValue,
 } from './index';
 
@@ -47,6 +47,9 @@ describe('références', () => {
       .toEqual([['victimes', 'nom'], ['victimes', 'hospitalise'], ['sys', 'plafond'], ['tiers', 'nom']]);
     expect(extractReferences('sys.x[champ > 1 and a.b = 2][autre]')).toEqual([['sys', 'x'], ['sys', 'x', 'champ'], ['sys', 'x', 'a', 'b'], ['sys', 'x', 'autre']]);
     expect(extractReferences('(sys.x)[champ]')).toEqual([['sys', 'x']]);
+    expect(extractReferences('sys.x[nature = $$.type_sinistre]')).toEqual([['sys', 'x'], ['sys', 'x', 'nature'], ['type_sinistre']]);
+    expect(renameReference('sys.x[nature = $$.type_sinistre]', ['type_sinistre'], 'type')).toBe('sys.x[nature = $$.type]');
+    expect(filterReferences('sys.x[champ > 1].autre and a.b')).toEqual([{ path: ['sys', 'x', 'champ'], name: 'champ' }]);
     expect(extractReferences("'t' in canaux ? a : b")).toEqual([['canaux'], ['a'], ['b']]);
     expect(extractReferences('temoins[0].nom')).toEqual([['temoins', 'nom']]);
     expect(extractReferences('a = ')).toEqual([]);

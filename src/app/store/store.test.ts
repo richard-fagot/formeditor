@@ -48,3 +48,35 @@ describe('historique par questionnaire', () => {
     expect(ws.project.questionnaires.find((e) => e.id === q1)!.file).toBe('questionnaire.json');
   });
 });
+
+describe('modification propagée hors de sa portée', () => {
+  it('renommer une question de bibliothèque : un seul Ctrl+Z (bibliothèque ou questionnaire) rétablit tout', async () => {
+    const { exampleWorkspace } = await import('../../../tests/reference/example');
+    const { renameKey } = await import('../../core/references');
+    const { setLibraryQuestionLabel } = await import('./index');
+    const ws = exampleWorkspace();
+    ws.questionnaires[0]!.edges[0]!.when = "date_sinistre > '2020-01-01'";
+    useStore.getState().loadWorkspace(ws);
+    const before = JSON.stringify(ws);
+    const qid = ws.questionnaires[0]!.id;
+    const owner = { kind: 'libraryQuestion' as const, id: 'lq_date_sinistre' };
+    useStore.getState().edit('library', (w) => renameKey(w, { kind: 'question', owner, nodeId: 'lq_date_sinistre' }, 'date_evenement'), 'k');
+    expect(JSON.stringify(useStore.getState().ws.questionnaires)).toContain('date_evenement');
+    useStore.getState().undo('library');
+    expect(JSON.stringify(useStore.getState().ws) === before).toBe(true);
+    useStore.getState().redo(`q:${qid}`);
+    expect(JSON.stringify(useStore.getState().ws.library)).toContain('date_evenement');
+    useStore.getState().undo(`q:${qid}`);
+    expect(JSON.stringify(useStore.getState().ws) === before).toBe(true);
+    // Clé redérivée de l'intitulé.
+    useStore.getState().edit('library', (w) => setLibraryQuestionLabel(w, 'lq_date_sinistre', { fr: 'Date du décès' }, 'fr'), 'label');
+    expect(JSON.stringify(useStore.getState().ws.questionnaires)).toContain('date_deces');
+    useStore.getState().undo('library');
+    expect(JSON.stringify(useStore.getState().ws) === before).toBe(true);
+    // Question d'un bloc, vue chez l'hôte sous `tiers.nom`.
+    useStore.getState().edit('library', (w) => renameKey(w, { kind: 'question', owner: { kind: 'block', id: 'blk_identite_tiers' }, nodeId: 'bn_nom' }, 'nom_tiers'));
+    expect(JSON.stringify(useStore.getState().ws.questionnaires)).toContain('tiers.nom_tiers');
+    useStore.getState().undo('library');
+    expect(JSON.stringify(useStore.getState().ws) === before).toBe(true);
+  });
+});

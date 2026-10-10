@@ -23,8 +23,8 @@ Catalogue unique des actions utilisateur (spec §4.4). Palette, menus et raccour
 - `library-commands.ts` : jeux de libellés (`labelSet.addBoolean`, `labelSet.addTristate`, `labelSet.delete` avec l'id).
 - `library-item-commands.ts` : `library.newQuestion`, `library.newBlock`, `library.show` / `library.delete` (`arg` = `{ kind, id }`),
   `library.insert` (I : palette en mode bibliothèque), `library.insertItem` (`{ kind, id, graph?, position? }` : à la suite de
-  la sélection, ou à la position d'un dépôt), `view.libraryPanel`, `node.group` (Ctrl+G, questionnaire seulement ; point
-  d'historique aussi dans `library`), `node.toLibrary`, `node.openInLibrary`, `node.newExit` (bloc seulement).
+  la sélection, ou à la position d'un dépôt), `view.libraryPanel`, `node.group` (Ctrl+G, questionnaire seulement ;
+  transaction questionnaire + bibliothèque via `edit`), `node.toLibrary`, `node.openInLibrary`, `node.newExit` (bloc seulement).
 - Les commandes du graphe agissent sur le graphe actif (`activeGraphRef`) : questionnaire, ou bloc affiché dans l'onglet Bibliothèque.
 - `system-commands.ts` : `system.addVariable` (ouvre l'onglet, focus sur le nom), `system.deleteVariable`, `system.renameVariable`, `system.renameField`
   (`{ name, next }` ; transaction `transact` : un seul Ctrl+Z annule tout le renommage), `scenario.add` (sans paramètre : valeurs d'exemple ; avec un id :

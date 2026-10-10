@@ -127,11 +127,18 @@ export const useStore = create<Store>()(
     previewPanels: { system: true, debug: false },
 
     edit(scope, recipe, key) {
-      const before = takeSnapshot(get().ws, scope);
+      const ws = get().ws;
+      const before = takeSnapshot(ws, scope);
       set((s) => {
         const result = recipe(s.ws as Workspace);
         if (result) s.ws = result;
-        s.history[scope] = record(s.history[scope] ?? { past: [], future: [] }, before, key);
+      });
+      // Modification propagée hors de sa portée (renommage d'une clé visible ailleurs…) : transaction.
+      const spill = changedScopes(ws, get().ws).filter((sc) => sc !== scope);
+      const tx = spill.length ? ++txCounter : undefined;
+      set((s) => {
+        s.history[scope] = record(s.history[scope] ?? { past: [], future: [] }, tx ? { ...before, tx } : before, tx ? undefined : key);
+        for (const sc of spill) s.history[sc] = record(s.history[sc] ?? { past: [], future: [] }, { ...takeSnapshot(ws, sc), tx });
         s.dirty = true;
       });
     },
@@ -211,6 +218,18 @@ export const useStore = create<Store>()(
 );
 
 let txCounter = 0;
+
+/** Portées dont le contenu diffère entre deux états du projet (références d'abord, contenu ensuite). */
+export function changedScopes(a: Workspace, b: Workspace): Scope[] {
+  if (a === b) return [];
+  const ids = [...new Set([...a.questionnaires, ...b.questionnaires].map((q) => q.id))];
+  const scopes: Scope[] = ['project', 'library', ...ids.map((id) => `q:${id}` as const)];
+  return scopes.filter((sc) => {
+    const x = takeSnapshot(a, sc) as unknown as Record<string, unknown>;
+    const y = takeSnapshot(b, sc) as unknown as Record<string, unknown>;
+    return Object.keys({ ...x, ...y }).some((k) => x[k] !== y[k] && JSON.stringify(x[k]) !== JSON.stringify(y[k]));
+  });
+}
 
 /**
  * Annule (`from = 'past'`) ou rétablit (`'future'`) le dernier point de `scope` ; s'il appartient à une transaction,
