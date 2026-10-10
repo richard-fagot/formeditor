@@ -5,7 +5,7 @@ Dépend de `app/store`, `app/commands` (liaison tracée à la souris : `edge.cre
 `registry`, `core`, `ui-kit`, `ui/properties` (`usePluginEnv` : environnement de l'éditeur + `questionType` du registre).
 
 ## API
-- `Diagram({ graph, issues })`.
+- `Diagram({ graph, issues, readOnly? })` ; `readOnly` (vue côte à côte) : ni sélection, ni glisser, ni liaison, ni dépôt, pas de focus.
 - `ProblemsPanel({ graph, issues })` : vérifications du §4.6 du graphe, repliable ; clic = sélection.
 - `LIBRARY_MIME` : type des données glissées depuis le panneau de la bibliothèque (`{ kind, id }`).
 
@@ -23,4 +23,6 @@ Dépend de `app/store`, `app/commands` (liaison tracée à la souris : `edge.cre
   sur un bouton hors dialogue, cf. `app/shortcuts`).
   Il le prend à l'ouverture d'un graphe (nouveau questionnaire, changement d'onglet), sauf saisie en cours.
 - Graphe vide : invitation « Ajouter une question » (commande `node.newQuestion`, raccourci affiché).
+- Mise en page automatique (`autoLayout.ts` : `computeLayout`, ELK.js `elk.bundled.js`, couches de haut en bas ;
+  `useAutoLayout` : réagit à `layoutRequest`, tailles mesurées par React Flow, un point d'historique, vue ajustée). Test : `autoLayout.test.ts`.
 - Suppression par la commande (touche Suppr), jamais par React Flow (`deleteKeyCode=null`).

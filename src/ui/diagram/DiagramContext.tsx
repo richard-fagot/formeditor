@@ -6,6 +6,8 @@ import type { GraphRef } from '../../app/store';
 export interface DiagramInfo {
   graph: GraphRef;
   issuesByNode: Map<string, Issue[]>;
+  /** Logigramme en lecture seule (vue côte à côte). */
+  readOnly?: boolean;
 }
 
 export const DiagramContext = createContext<DiagramInfo | null>(null);

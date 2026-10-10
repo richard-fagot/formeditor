@@ -8,7 +8,7 @@ const MAX = 32;
 
 /** Arête : condition en abrégé, rang si plusieurs arêtes sortent du même nœud, « sinon ». */
 export const EdgeView = memo(function EdgeView(props: EdgeProps) {
-  const { graph } = useDiagram();
+  const { graph, readOnly } = useDiagram();
   const t = useT();
   const edge = useStore((s) => getGraph(s.ws, graph)?.edges.find((e) => e.id === props.id));
   const siblings = useStore((s) => getGraph(s.ws, graph)?.edges.filter((e) => e.from === edge?.from && e.exit === edge?.exit).map((e) => e.id).join() ?? '');
@@ -30,7 +30,7 @@ export const EdgeView = memo(function EdgeView(props: EdgeProps) {
               props.selected ? 'border-indigo-400 text-indigo-700' : 'border-slate-200 text-slate-600',
               !edge.when && 'italic text-slate-400',
             )}
-            onClick={() => useStore.getState().select({ graph, nodes: [], edge: edge.id })}
+            onClick={() => !readOnly && useStore.getState().select({ graph, nodes: [], edge: edge.id })}
             title={edge.when}
           >
             {edge.exit && <span className="mr-1 text-amber-600">{edge.exit}</span>}
