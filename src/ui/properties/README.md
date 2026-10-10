@@ -7,7 +7,7 @@ vient des plugins (`registry`). Dépend de `app/store`, `registry`, `core`, `ui-
 - `PropertiesPanel({ graph })` : fournit la portée des références à l'éditeur d'expression (`ExpressionEnvProvider`).
 - `QuestionnaireProperties` : titre multilingue, clé (= nom du fichier, unique, `KeyInput`), description.
 - `QuestionProperties` : intitulé (clé dérivée), clé (renommage propagé, `KeyInput`), type, obligatoire
-  (booléen ou expression), valeur par défaut littérale (`DefaultValueInput`) et calculée (`defaultExpr`), aide, texte indicatif, paramètres du type (plugin), contraintes libres,
+  (booléen ou expression), valeur par défaut littérale (`DefaultValueInput`) et calculée (`defaultExpr`), aide, texte indicatif, paramètres du type (plugin, avec `renameField` pour les champs de structure), contraintes libres,
   messages d'erreur par contrainte, description.
 - `EdgeProperties` : condition (vide = « sinon »), rang (`edge.moveUp`/`moveDown`), sortie de bloc, suppression (`node.delete`).
 - Autres nœuds : `plugin.Properties` du type de nœud ; question de bibliothèque : seul l'intitulé est surchargeable.

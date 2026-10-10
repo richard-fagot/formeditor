@@ -27,9 +27,8 @@ export const NodeView = memo(function NodeView({ data, selected }: NodeProps & {
     <>
       {isStart && <Badge tone="indigo">{t('node.start')}</Badge>}
       {question?.required && <Badge tone="slate" title={typeof question.required === 'string' ? question.required : undefined}>{typeof question.required === 'string' ? '* ?' : '*'}</Badge>}
-      {question && OTHER_TYPES.includes(question.type) && 'other' in question && question.other && <Badge>+ autre</Badge>}
+      {question && OTHER_TYPES.includes(question.type) && 'other' in question && question.other && <Badge>{t('node.badgeOther')}</Badge>}
       {isLibraryQuestion(node) && <Badge tone="amber">bib.</Badge>}
-      {question && 'source' in question && question.source && <Badge tone="emerald">{`<${question.source.from}>`}</Badge>}
       {issues.some((i) => i.code === 'missingTranslation') && <Badge tone="amber">trad.</Badge>}
       {issues.some((i) => i.code !== 'missingTranslation') && (
         <Badge tone={issues.some((i) => i.severity === 'error') ? 'rose' : 'amber'} title={issues.map((i) => i.code).join(', ')}>

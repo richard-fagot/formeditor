@@ -41,10 +41,10 @@ carte à jour, fusion dans `main`, push.
 - [x] Résumé de démo écrit, puis attendre la validation
 
 ## Phase 6 — Types restants
-- [ ] Date, nombre
-- [ ] Choix unique et multiple, option « Autre », sources dynamiques, options conditionnées
-- [ ] Tri-state et jeux de libellés
-- [ ] Structure (répétable, bouton « Ajouter »)
+- [x] Date, nombre
+- [x] Choix unique et multiple, option « Autre », sources dynamiques, options conditionnées
+- [x] Tri-state et jeux de libellés
+- [x] Structure (répétable, bouton « Ajouter »)
 
 ## Phase 7 — Bibliothèque et blocs
 - [ ] Questions et blocs référencés, surcharge locale du libellé

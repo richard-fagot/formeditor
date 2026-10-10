@@ -4,6 +4,7 @@ import { navCommands } from './nav-commands';
 import { projectCommands } from './project-commands';
 import { shellCommands } from './shell-commands';
 import { editCommands } from './edit-commands';
+import { libraryCommands } from './library-commands';
 import type { Command } from './types';
 
 export { type Command, labelOf } from './types';
@@ -13,7 +14,7 @@ let catalog: Command[] | undefined;
 
 /** Toutes les commandes (construites une fois). */
 export function commands(): Command[] {
-  catalog ??= [...projectCommands(), ...shellCommands(), ...graphCommands(), ...editCommands(), ...navCommands()];
+  catalog ??= [...projectCommands(), ...shellCommands(), ...graphCommands(), ...editCommands(), ...libraryCommands(), ...navCommands()];
   return catalog;
 }
 

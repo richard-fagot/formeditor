@@ -23,7 +23,14 @@ export function QuestionProperties({ graph, node }: { graph: GraphRef; node: Loc
     edit(`${node.id}:${field}`, (ws) => updateNode(ws, graph, node.id, (n) => ({ ...n, ...patch }) as typeof n));
   const taken = usedKeys(env.ws, getGraph(env.ws, graph)!).filter((k) => k !== q.key);
   const owner = { kind: graph.kind, id: graph.id } as const;
-  const messageParams = ['required', ...CONSTRAINT_PARAMS.filter((p) => (q as unknown as Record<string, unknown>)[p] !== undefined)];
+  const messageParams = [
+    'required',
+    ...CONSTRAINT_PARAMS.filter((p) => (q as unknown as Record<string, unknown>)[p] !== undefined),
+    ...(q.type === 'date' ? ['format'] : []),
+    ...('other' in q && q.other?.detailRequired ? ['otherDetail'] : []),
+    ...(q.type === 'structure' && q.repeat?.min !== undefined ? ['minOccurrences'] : []),
+    ...(q.type === 'structure' && q.repeat?.max !== undefined ? ['maxOccurrences'] : []),
+  ];
 
   return (
     <>
@@ -64,7 +71,7 @@ export function QuestionProperties({ graph, node }: { graph: GraphRef; node: Loc
         <Field label={t('props.help')}>
           <LabelEditor value={q.help} onChange={(help) => update({ help })} />
         </Field>
-        {q.type !== 'boolean' && q.type !== 'tristate' && (
+        {(q.type === 'text' || q.type === 'number') && (
           <Field label={t('props.placeholder')}>
             <LabelEditor value={q.placeholder} onChange={(placeholder) => update({ placeholder })} />
           </Field>
@@ -72,7 +79,8 @@ export function QuestionProperties({ graph, node }: { graph: GraphRef; node: Loc
       </Section>
       {plugin && (
         <Section title={plugin.name[env.uiLang] ?? plugin.name.fr}>
-          <plugin.Properties question={q} update={(patch) => update(patch)} env={env} />
+          <plugin.Properties question={q} update={(patch) => update(patch)} env={env}
+            renameField={(fieldId, k) => edit(`${node.id}:${fieldId}:key`, (ws) => renameKey(ws, { kind: 'question', owner, nodeId: node.id, fieldId }, k))} />
         </Section>
       )}
       <Section title={t('props.constraints')} actions={

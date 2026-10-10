@@ -2,7 +2,12 @@
 import type { GraphNode, NodeKind, Question, QuestionType } from '../core/model';
 import type { NodeKindPlugin, QuestionTypePlugin } from '../plugin-api';
 import { textType } from '../plugins/question-types/text';
+import { dateType } from '../plugins/question-types/date';
+import { numberType } from '../plugins/question-types/number';
+import { singleType, multipleType } from '../plugins/question-types/choice';
 import { booleanType } from '../plugins/question-types/boolean';
+import { tristateType } from '../plugins/question-types/tristate';
+import { structureType } from '../plugins/question-types/structure';
 import { questionKind } from '../plugins/node-kinds/question';
 import { infoKind } from '../plugins/node-kinds/info';
 import { summaryKind } from '../plugins/node-kinds/summary';
@@ -11,7 +16,9 @@ import { blockKind } from '../plugins/node-kinds/block';
 import { exitKind } from '../plugins/node-kinds/exit';
 
 /** Types de questions disponibles, dans l'ordre d'affichage. */
-export const QUESTION_TYPE_PLUGINS = [textType, booleanType] as unknown as QuestionTypePlugin<Question>[];
+export const QUESTION_TYPE_PLUGINS = [
+  textType, dateType, numberType, singleType, multipleType, booleanType, tristateType, structureType,
+] as unknown as QuestionTypePlugin<Question>[];
 
 export const NODE_KIND_PLUGINS = [questionKind, infoKind, summaryKind, endKind, blockKind, exitKind] as unknown as NodeKindPlugin<GraphNode>[];
 

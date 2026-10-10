@@ -62,3 +62,20 @@ describe('commandes ajoutées au catalogue', () => {
     expect(st().ws.questionnaires[0]!.description).toBeUndefined();
   });
 });
+
+describe('jeux de libellés (bibliothèque)', () => {
+  beforeEach(() => st().loadWorkspace(blankWorkspace()));
+  it('crée un jeu booléen ou tri-state, puis le supprime ; annulable dans l’historique de la bibliothèque', () => {
+    expect(runCommand('labelSet.addTristate')).toBe(true);
+    expect(runCommand('labelSet.addBoolean')).toBe(true);
+    const [tri, bool] = st().ws.library.labelSets;
+    expect(tri).toMatchObject({ kind: 'tristate', key: 'oui_non_ne_sait_pas', yes: { fr: 'Oui' }, unknown: { fr: 'Ne sait pas' } });
+    expect(bool).toMatchObject({ kind: 'boolean', key: 'oui_non' });
+    expect(bool!.unknown).toBeUndefined();
+    expect(st().activeTab).toBe('library');
+    runCommand('labelSet.delete', tri!.id);
+    expect(st().ws.library.labelSets.map((l) => l.id)).toEqual([bool!.id]);
+    runCommand('edit.undo');
+    expect(st().ws.library.labelSets).toHaveLength(2);
+  });
+});

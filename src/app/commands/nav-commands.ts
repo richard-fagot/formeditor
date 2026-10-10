@@ -25,7 +25,8 @@ function navigate(dir: 'down' | 'up' | 'left' | 'right') {
   if (target) st().select({ graph: r, nodes: [target] });
 }
 
-const scope = () => scopeOf(activeGraphRef(st()));
+/** Historique visé : onglet Bibliothèque, sinon le graphe actif. */
+const scope = () => (st().activeTab === 'library' ? 'library' : scopeOf(activeGraphRef(st())));
 
 export function navCommands(): Command[] {
   return [

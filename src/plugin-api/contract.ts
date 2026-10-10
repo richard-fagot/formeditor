@@ -10,6 +10,15 @@ export interface EditorEnv {
   languages: LangCode[];
   contentLang: LangCode;
   defaultLang: LangCode;
+  /** Plugin d'un type de question (fourni par le registre ; sert aux champs d'une structure). */
+  questionType(type: QuestionType): QuestionTypePlugin | undefined;
+}
+
+/** Option d'un choix résolue dans le contexte : libellé statique ou texte calculé (source dynamique). */
+export interface ResolvedOption {
+  value: string;
+  label: Label | string;
+  dynamic?: true;
 }
 
 /** Environnement de rendu de la prévisualisation. */
@@ -22,6 +31,10 @@ export interface RenderEnv extends EditorEnv {
   evaluate(expr: string, extra?: Record<string, unknown>): unknown;
   /** Évalue une condition dans le contexte courant. */
   condition(expr: string, extra?: Record<string, unknown>): boolean;
+  /** Options visibles d'un choix : statiques dont la condition est vraie, puis source dynamique. */
+  options(q: Question): ResolvedOption[];
+  /** Environnement dont le contexte est enrichi (occurrence d'une structure : clés sœurs sans préfixe). */
+  scoped(extra: Record<string, unknown>): RenderEnv;
 }
 
 /** Propriétés communes à toutes les questions, conservées lors d'un changement de type. */
@@ -31,6 +44,8 @@ export interface QuestionPropertiesProps<Q extends Question = Question> {
   question: Q;
   update(patch: Partial<Q>): void;
   env: EditorEnv;
+  /** Renomme la clé d'un champ de structure en propageant le renommage aux expressions. */
+  renameField?(fieldId: string, key: string): void;
 }
 
 export interface FieldProps<Q extends Question = Question> {
