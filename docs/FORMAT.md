@@ -110,6 +110,16 @@ multilingue) ; sans message, un message par défaut est généré. `constraints[
 libres : `{ "rule": "<expression booléenne vraie si valide>", "message"?: {…} }`. Dans une règle,
 la réponse en cours est accessible par sa clé.
 
+Deux règles de validation complètent les paramètres (implémentation de référence : `validateAnswer`, `src/core/validation`) :
+
+- **Choix hors des options visibles** : une réponse de `single` ou `multiple` dont une valeur n'est pas
+  parmi les options visibles au moment de la validation (options statiques dont `when` est vraie, source
+  dynamique, `other` si « Autre » est activé) est refusée, avec le paramètre de message `option`
+  (`messages.option`). Une option devenue invisible ne permet donc plus de valider la question.
+- **Structure répétable facultative** : `repeat.min` ne s'applique pas à une structure répétable
+  facultative laissée vide (aucune occurrence saisie). Il s'applique si la question est obligatoire
+  ou dès qu'une occurrence est saisie.
+
 | `type` | Valeur de la réponse | Paramètres |
 | --- | --- | --- |
 | `text` | chaîne | `multiline?`, `minLength?`, `maxLength?`, `pattern?` (expression régulière JavaScript) |
