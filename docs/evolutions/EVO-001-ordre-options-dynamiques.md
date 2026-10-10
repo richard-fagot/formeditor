@@ -1,6 +1,6 @@
 # EVO-001 — Options dynamiques placées librement parmi les options
 
-Statut : à arbitrer
+Statut : en cours
 
 ## Besoin
 
@@ -73,8 +73,8 @@ puis « Un tiers ».
 - Quand une entrée dynamique porte une condition fausse, alors aucune de ses valeurs n'est affichée.
 - Quand la source est une liste d'objets (ex. sinistres avec date et nature), alors les expressions
   de libellé et de valeur s'appliquent à chaque objet, à la position de l'entrée.
-- Quand une question booléenne ou tri-state contient une entrée dynamique, alors l'ordre saisi
-  est respecté de la même façon.
+- ~~Quand une question booléenne ou tri-state contient une entrée dynamique, alors l'ordre saisi
+  est respecté de la même façon.~~ Abandonné (arbitrage A, voir Analyse).
 - Quand je saisis une option statique dont le libellé commence par `<`, alors elle reste une option
   statique.
 - Quand une réponse désigne une valeur dynamique qui a disparu, alors le parcours ne peut pas être
@@ -171,5 +171,6 @@ actuel, conservé sans autre traitement.
 
 ### Décision
 
-Statut « à arbitrer » sur le point 1 (booléen / tri-state). Les points 2 et 3 seront reportés dans
-`docs/DECISIONS.md` au démarrage de la réalisation.
+Point 1 arbitré le 2026-10-10 : **option A** retenue. L'évolution porte sur le choix unique et le choix
+multiple. Booléen et tri-state restent inchangés, et le critère « booléen ou tri-state » est abandonné.
+Les choix des points 2 et 3 sont reportés dans `docs/DECISIONS.md`.
