@@ -64,7 +64,7 @@ Un questionnaire (et un bloc) est un graphe : `start` (id du nœud de départ), 
 | `info` | Page de texte sans saisie. | `title?`, `text`. |
 | `summary` | Récapitulatif des réponses du parcours effectif jusqu'ici. | `title?`. |
 | `end` | Fin de parcours. | `title?`, `message`, `outcome?` (issue métier libre : `submitted`, `ineligible`…). |
-| `exit` | Sortie nommée d'un bloc (dans un bloc uniquement). | `name`. |
+| `exit` | Sortie nommée d'un bloc (dans un bloc uniquement). | `name` (clé `snake_case`, visée par `exit` des arêtes de l'instance), `label?` (texte multilingue facultatif, pour le lecteur ; sans effet sur le parcours). |
 
 ### 4.2 Arêtes
 
@@ -109,6 +109,16 @@ Propriétés communes : `id`, `key`, `label`, `type`, `description?`, `help?`, `
 multilingue) ; sans message, un message par défaut est généré. `constraints[]` ajoute des règles
 libres : `{ "rule": "<expression booléenne vraie si valide>", "message"?: {…} }`. Dans une règle,
 la réponse en cours est accessible par sa clé.
+
+Deux règles de validation complètent les paramètres (implémentation de référence : `validateAnswer`, `src/core/validation`) :
+
+- **Choix hors des options visibles** : une réponse de `single` ou `multiple` dont une valeur n'est pas
+  parmi les options visibles au moment de la validation (options statiques dont `when` est vraie, source
+  dynamique, `other` si « Autre » est activé) est refusée, avec le paramètre de message `option`
+  (`messages.option`). Une option devenue invisible ne permet donc plus de valider la question.
+- **Structure répétable facultative** : `repeat.min` ne s'applique pas à une structure répétable
+  facultative laissée vide (aucune occurrence saisie). Il s'applique si la question est obligatoire
+  ou dès qu'une occurrence est saisie.
 
 | `type` | Valeur de la réponse | Paramètres |
 | --- | --- | --- |

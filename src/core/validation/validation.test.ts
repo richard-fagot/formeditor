@@ -43,7 +43,9 @@ describe('validateAnswer', () => {
         { id: 'b', key: 'j', label: { fr: 'J' }, type: 'number', required: true, when: 'h = true' },
       ],
     };
-    expect(params(s, [])).toEqual([':minOccurrences']);
+    // Facultative laissée vide (`[]`) : `repeat.min` ne s'applique pas ; obligatoire : il s'applique.
+    expect(params(s, [])).toEqual([]);
+    expect(params({ ...s, required: true }, [])).toEqual([':minOccurrences']);
     expect(params(s, [{ h: false }, { h: true }])).toEqual(['v[1].j:required']);
     expect(params(s, [{ h: false }, { h: false }, { h: false }])).toEqual([':maxOccurrences']);
   });

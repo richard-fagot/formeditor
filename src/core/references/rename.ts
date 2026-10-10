@@ -123,3 +123,13 @@ export function renameKey(ws: Workspace, target: RenameTarget, newKey: string): 
   ]);
   return applyRules(next, rules, (p) => (p.at(-1) === old ? newKey : `${newKey}_${OTHER_VALUE}`));
 }
+
+/**
+ * Préfixe par `alias` les références aux clés `keys` dans les expressions de `owner` (questions déplacées
+ * dans un bloc instancié sous cet alias). Les précisions « Autre » (`cle_other`) suivent.
+ */
+export function qualifyKeys(ws: Workspace, owner: Owner, keys: string[], alias: string): Workspace {
+  const next: Workspace = JSON.parse(JSON.stringify(ws));
+  const rules: Rule[] = keys.flatMap((k) => [{ owner, path: [k] }, { owner, path: [`${k}_${OTHER_VALUE}`] }]);
+  return applyRules(next, rules, (p) => `${alias}.${p[0]}`);
+}

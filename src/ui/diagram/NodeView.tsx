@@ -5,7 +5,7 @@ import { questionOfNode } from '../../core/references';
 import { previewText } from '../../plugin-api';
 import { nodeKind, questionType } from '../../registry';
 import { getGraph, scopeOf, setQuestionLabel, useStore, useT } from '../../app/store';
-import { usePluginEnv } from './usePluginEnv';
+import { usePluginEnv } from '../properties';
 import { Badge, cn } from '../../ui-kit';
 import { useDiagram } from './DiagramContext';
 
@@ -29,7 +29,7 @@ export const NodeView = memo(function NodeView({ data, selected }: NodeProps & {
       {isStart && <Badge tone="indigo">{t('node.start')}</Badge>}
       {question?.required && <Badge tone="slate" title={typeof question.required === 'string' ? question.required : undefined}>{typeof question.required === 'string' ? '* ?' : '*'}</Badge>}
       {question && OTHER_TYPES.includes(question.type) && 'other' in question && question.other && <Badge>{t('node.badgeOther')}</Badge>}
-      {isLibraryQuestion(node) && <Badge tone="amber">bib.</Badge>}
+      {(isLibraryQuestion(node) || node.kind === 'block') && <Badge tone="amber" title={t('node.libraryBadge')}>bib.</Badge>}
       {issues.some((i) => i.code === 'missingTranslation') && <Badge tone="amber">trad.</Badge>}
       {issues.some((i) => i.code !== 'missingTranslation') && (
         <Badge tone={issues.some((i) => i.severity === 'error') ? 'rose' : 'amber'} title={issues.map((i) => i.code).join(', ')}>
@@ -39,6 +39,8 @@ export const NodeView = memo(function NodeView({ data, selected }: NodeProps & {
     </>
   );
   const Shape = plugin.Shape;
+  const block = node.kind === 'block' ? env.ws.library.blocks.find((b) => b.id === node.ref) : undefined;
+  const exits = block?.nodes.flatMap((n) => (n.kind === 'exit' ? [n.name] : [])) ?? [];
   return (
     <div
       className={cn(
@@ -53,10 +55,25 @@ export const NodeView = memo(function NodeView({ data, selected }: NodeProps & {
       ) : (
         <Shape node={node} env={env} question={question} typePlugin={question ? questionType(question.type) : undefined} badges={badges} />
       )}
-      <Handle type="source" position={Position.Bottom} className="!size-2 !border-slate-400 !bg-white" />
+      {exits.length ? <ExitHandles exits={exits} /> : <Handle type="source" position={Position.Bottom} className="!size-2 !border-slate-400 !bg-white" />}
     </div>
   );
 });
+
+/** Une poignée par sortie nommée d'un bloc : la liaison tirée depuis une poignée porte le nom de la sortie. */
+function ExitHandles({ exits }: { exits: string[] }) {
+  return (
+    <>
+      <div className="mt-1 flex justify-around gap-1 font-mono text-[9px] text-amber-700">
+        {exits.map((x) => <span key={x} className="truncate">{x}</span>)}
+      </div>
+      {exits.map((x, i) => (
+        <Handle key={x} id={x} type="source" position={Position.Bottom} title={x}
+          style={{ left: `${((i + 0.5) / exits.length) * 100}%` }} className="!size-2.5 !border-amber-500 !bg-amber-100" />
+      ))}
+    </>
+  );
+}
 
 /** Édition en place de l'intitulé : Entrée valide, Échap annule ; la clé est dérivée automatiquement. */
 function InlineLabel({ node, label, lang }: { node: GraphNode; label: Label; lang: string }) {

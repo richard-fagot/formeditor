@@ -10,7 +10,7 @@ import type { Command } from './types';
 
 const st = () => useStore.getState();
 const t = () => makeTranslate(st().uiLang);
-const ref = () => (st().activeTab.startsWith('q:') ? activeGraphRef(st()) : undefined);
+const ref = () => activeGraphRef(st());
 const graph = () => {
   const r = ref();
   return r ? getGraph(st().ws, r) : undefined;
@@ -19,14 +19,18 @@ const selectedNode = () => {
   const id = st().selection.nodes.length === 1 ? st().selection.nodes[0] : undefined;
   return id ? graph()?.nodes.find((n) => n.id === id) : undefined;
 };
-const inDiagram = () => !!ref() && (st().view[ref()!.id] ?? 'diagram') === 'diagram';
+/** Un logigramme est affiché : questionnaire en vue logigramme, ou bloc de la bibliothèque. */
+export const inDiagram = () => {
+  const r = ref();
+  return !!r && (r.kind === 'block' || (st().view[r.id] ?? 'diagram') === 'diagram');
+};
 
 function edit(r: GraphRef, recipe: Parameters<ReturnType<typeof st>['edit']>[1]) {
   st().edit(scopeOf(r), recipe);
 }
 
 /** Crée un nœud après la sélection ; une branche porte une condition à saisir. */
-function createAfter(make: (id: string) => GraphNode, branch = false) {
+export function createAfter(make: (id: string) => GraphNode, branch = false, focusLabel = true) {
   const r = ref();
   if (!r) return;
   const after = selectedNode()?.id;
@@ -51,7 +55,7 @@ function createAfter(make: (id: string) => GraphNode, branch = false) {
       return;
     }
   }
-  st().requestFocus('label', node.id);
+  if (focusLabel) st().requestFocus('label', node.id);
 }
 
 function newQuestion(id: string): GraphNode {

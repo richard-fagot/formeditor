@@ -21,11 +21,17 @@ Catalogue unique des actions utilisateur (spec §4.4). Palette, menus et raccour
   (glisser sur le logigramme), `questionnaire.properties`, `questionnaire.setTitle` / `rename` / `setDescription`,
   `project.rename`.
 - `library-commands.ts` : jeux de libellés (`labelSet.addBoolean`, `labelSet.addTristate`, `labelSet.delete` avec l'id).
+- `library-item-commands.ts` : `library.newQuestion`, `library.newBlock`, `library.show` / `library.delete` (`arg` = `{ kind, id }`),
+  `library.insert` (I : palette en mode bibliothèque), `library.insertItem` (`{ kind, id, graph?, position? }` : à la suite de
+  la sélection, ou à la position d'un dépôt), `view.libraryPanel`, `node.group` (Ctrl+G, questionnaire seulement ; point
+  d'historique aussi dans `library`), `node.toLibrary`, `node.openInLibrary`, `node.newExit` (bloc seulement).
+- Les commandes du graphe agissent sur le graphe actif (`activeGraphRef`) : questionnaire, ou bloc affiché dans l'onglet Bibliothèque.
 - `nav-commands.ts` : flèches, annuler/rétablir (portée `global` : actifs hors du logigramme, pas pendant une saisie ; onglet Bibliothèque → historique `library`), ajuster la vue, logigramme ↔ prévisualisation.
 - `example.ts` : exemple embarqué ; `files.ts` : téléchargement et sélection de fichiers.
 
 ## Tests
-`commands.test.ts` (jeux de libellés, onglets, langues, rang et suppression d'arête, propriétés du questionnaire).
+`commands.test.ts` (jeux de libellés, onglets, langues, rang et suppression d'arête, propriétés du questionnaire) ;
+`library-commands.test.ts` (insertion, dépôt, regroupement et annulation, édition d'un bloc, sortie nommée, question vers la bibliothèque).
 
 ## Ajouter une action
 Ajouter un objet `Command` dans le fichier adéquat, la clé de libellé dans `app/i18n/messages.ts`.

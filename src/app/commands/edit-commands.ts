@@ -6,7 +6,7 @@ import {
 import type { Command } from './types';
 
 const st = () => useStore.getState();
-const ref = () => (st().activeTab.startsWith('q:') ? activeGraphRef(st()) : undefined);
+const ref = () => activeGraphRef(st());
 
 /** Arête sélectionnée, son rang parmi les arêtes sortantes de son origine et leur nombre. */
 function selectedEdge() {
@@ -43,12 +43,12 @@ export function editCommands(): Command[] {
       enabled: () => { const s = selectedEdge(); return !!s && s.rank < s.count - 1; }, run: () => moveSelectedEdge(1),
     },
     {
-      // Liaison tracée à la souris sur un logigramme (`arg` = { graph?, from, to } ; graphe actif par défaut).
+      // Liaison tracée à la souris (`arg` = { graph?, from, to, exit? } ; graphe actif par défaut ; `exit` : sortie de bloc).
       id: 'edge.create', label: 'node.connect', keys: [], scope: 'graph', hidden: true,
       run: (arg) => {
-        const { graph, from, to } = (arg ?? {}) as { graph?: GraphRef; from?: string; to?: string };
+        const { graph, from, to, exit } = (arg ?? {}) as { graph?: GraphRef; from?: string; to?: string; exit?: string };
         const r = graph ?? ref();
-        if (r && from && to) st().edit(scopeOf(r), (ws) => void connect(ws, r, from, to));
+        if (r && from && to) st().edit(scopeOf(r), (ws) => void connect(ws, r, from, to, undefined, exit || undefined));
       },
     },
     {

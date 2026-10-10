@@ -13,7 +13,7 @@ Liaisons clavier (tinykeys) vers les commandes de `app/commands`.
 - Pendant une saisie (champ, CodeMirror) : seules les commandes `allowInInput` (Ctrl+K, Ctrl+S…).
 - Commandes `scope: 'graph'` (raccourcis à une lettre, flèches) : si le focus est dans un élément
   `[data-graph-focus]` (le logigramme), nulle part, ou sur un élément non saisissable hors dialogue (bouton du
-  panneau des problèmes, de la barre…) pendant que l'onglet actif est un questionnaire en vue logigramme.
+  panneau des problèmes, de la barre…) pendant qu'un logigramme est affiché (questionnaire en vue logigramme, ou bloc dans l'onglet Bibliothèque).
 - Entrée / Espace sur un bouton, lien ou onglet focalisé hors logigramme : l'élément est activé, aucune commande.
 - Palette ouverte : aucun raccourci.
 - Plusieurs commandes sur une même touche : la dernière disponible l'emporte, sinon la précédente.

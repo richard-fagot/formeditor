@@ -6,5 +6,10 @@ export {
   usedKeys, freshKey, NODE_SPACING, type GraphRef,
 } from './graph';
 export { setQuestionLabel } from './question-edits';
+export {
+  addLibraryQuestion, addBlock, deleteLibraryItem, referenceNode, placeNode, moveToLibrary, canMoveToLibrary, setLibraryQuestionLabel, renameExit,
+  type LibraryItem,
+} from './library-edits';
+export { groupIntoBlock, groupEntries } from './group';
 export { questionnaireKeys, canRenameQuestionnaire, renameQuestionnaire, patchQuestionnaire } from './questionnaire-edits';
 export { useT, useEditorEnv, activeGraphRef, activeQuestionnaire } from './hooks';

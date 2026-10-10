@@ -41,11 +41,12 @@ export function EdgeProperties({ graph, g, edge }: { graph: GraphRef; g: Graph; 
           onSubmit={() => (document.querySelector('[data-graph-focus]') as HTMLElement | null)?.focus()}
         />
       </Field>
-      {exits.length > 0 && (
-        <Field label="exit">
+      {(exits.length > 0 || !!edge.exit) && (
+        <Field label={t('props.exit')}>
           <Select value={edge.exit ?? ''} onChange={(e) => patchEdge(edge.id, { exit: e.target.value || undefined })}>
-            <option value="">*</option>
+            <option value="">{t('props.exitAny')}</option>
             {exits.map((x) => <option key={x}>{x}</option>)}
+            {edge.exit && !exits.includes(edge.exit) && <option value={edge.exit}>{edge.exit} (?)</option>}
           </Select>
         </Field>
       )}

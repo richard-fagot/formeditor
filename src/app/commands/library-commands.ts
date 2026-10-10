@@ -28,6 +28,7 @@ function addLabelSet(kind: LabelSet['kind']) {
     });
   });
   st().openTab('library');
+  st().set((s) => void (s.libraryItem = undefined));
 }
 
 /** Bibliothèque : jeux de libellés (création, suppression). La saisie des libellés passe par `store.edit`. */

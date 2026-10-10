@@ -14,6 +14,9 @@ import { NodeView, type NodeData } from './NodeView';
 import { EdgeView } from './EdgeView';
 
 const nodeTypes = { graphNode: NodeView };
+
+/** Type MIME des éléments de bibliothèque glissés sur le logigramme (`{ kind, id }`). */
+export const LIBRARY_MIME = 'application/x-questionnaire-library';
 const edgeTypes = { condition: EdgeView };
 
 /** Logigramme d'un graphe (questionnaire ou bloc) : React Flow piloté par le store. */
@@ -44,18 +47,24 @@ function DiagramInner({ graph, issues }: { graph: GraphRef; issues: Issue[] }) {
       })),
     [g?.nodes, layout, selection.nodes],
   );
-  const edges: RFEdge[] = useMemo(
-    () =>
-      (g?.edges ?? []).map((e) => ({
+  const blocks = useStore((s) => s.ws.library.blocks);
+  const edges: RFEdge[] = useMemo(() => {
+    // Sortie inconnue (renommée, supprimée) : l'arête part de la poignée par défaut, reste visible et corrigeable.
+    const exitsOf = (nodeId: string) => {
+      const n = g?.nodes.find((x) => x.id === nodeId);
+      const b = n?.kind === 'block' ? blocks.find((x) => x.id === n.ref) : undefined;
+      return b?.nodes.flatMap((x) => (x.kind === 'exit' ? [x.name] : [])) ?? [];
+    };
+    return (g?.edges ?? []).map((e) => ({
         id: e.id,
         source: e.from,
         target: e.to,
+        sourceHandle: e.exit && exitsOf(e.from).includes(e.exit) ? e.exit : null,
         type: 'condition',
         selected: selection.edge === e.id,
         markerEnd: { type: MarkerType.ArrowClosed, color: selection.edge === e.id ? '#6366f1' : '#94a3b8' },
-      })),
-    [g?.edges, selection.edge],
-  );
+      }));
+  }, [g?.edges, g?.nodes, blocks, selection.edge]);
 
   const issuesByNode = useMemo(() => {
     const m = new Map<string, Issue[]>();
@@ -112,7 +121,21 @@ function DiagramInner({ graph, issues }: { graph: GraphRef; issues: Issue[] }) {
 
   return (
     <DiagramContext.Provider value={{ graph, issuesByNode }}>
-      <div ref={container} tabIndex={0} data-graph-focus data-testid="diagram" className="relative h-full w-full outline-none">
+      <div ref={container} tabIndex={0} data-graph-focus data-testid="diagram" className="relative h-full w-full outline-none"
+        onDragOver={(e) => {
+          if (e.dataTransfer.types.includes(LIBRARY_MIME)) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'copy';
+          }
+        }}
+        onDrop={(e) => {
+          const raw = e.dataTransfer.getData(LIBRARY_MIME);
+          if (!raw) return;
+          e.preventDefault();
+          const position = rf.screenToFlowPosition({ x: e.clientX, y: e.clientY });
+          runCommand('library.insertItem', { ...(JSON.parse(raw) as object), graph, position });
+          focusGraph();
+        }}>
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -130,7 +153,7 @@ function DiagramInner({ graph, issues }: { graph: GraphRef; issues: Issue[] }) {
             focusGraph();
           }}
           onNodeDoubleClick={(_, n) => useStore.getState().requestFocus('label', n.id)}
-          onConnect={(c) => c.source && c.target && runCommand('edge.create', { graph, from: c.source, to: c.target })}
+          onConnect={(c) => c.source && c.target && runCommand('edge.create', { graph, from: c.source, to: c.target, exit: c.sourceHandle ?? undefined })}
           deleteKeyCode={null}
           selectionKeyCode="Shift"
           multiSelectionKeyCode="Shift"

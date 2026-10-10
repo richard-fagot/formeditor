@@ -6,11 +6,12 @@ import type { Session } from '../../core/runtime';
 import { newWorkspace } from '../../format';
 import { record, restoreSnapshot, takeSnapshot, type Scope, type ScopeHistory } from './history';
 import type { GraphRef } from './graph';
+import type { LibraryItem } from './library-edits';
 
 enableMapSet();
 
 export type TabId = `q:${string}` | 'library' | 'system';
-export type PaletteMode = 'commands' | 'connect';
+export type PaletteMode = 'commands' | 'connect' | 'library';
 
 export interface Selection {
   graph?: GraphRef;
@@ -48,6 +49,10 @@ export interface AppState {
   notice?: { title: string; lines: string[] };
   /** Demande d'ajustement de la vue du logigramme (compteur). */
   fitRequest: number;
+  /** Élément affiché dans l'onglet Bibliothèque (sans : jeux de libellés). */
+  libraryItem?: LibraryItem;
+  /** Panneau latéral de la bibliothèque à côté du logigramme (glisser-déposer). */
+  libraryPanel: boolean;
 }
 
 export interface AppActions {
@@ -70,7 +75,7 @@ export interface AppActions {
 
 export type Store = AppState & AppActions;
 
-function initialState(ws: Workspace): Pick<AppState, 'ws' | 'tabs' | 'activeTab' | 'view' | 'selection' | 'history' | 'preview' | 'contentLang' | 'dirty'> {
+function initialState(ws: Workspace): Pick<AppState, 'ws' | 'tabs' | 'activeTab' | 'view' | 'selection' | 'history' | 'preview' | 'contentLang' | 'dirty' | 'libraryItem'> {
   const tabs: TabId[] = ws.questionnaires.map((q) => `q:${q.id}` as const);
   return {
     ws,
@@ -82,6 +87,7 @@ function initialState(ws: Workspace): Pick<AppState, 'ws' | 'tabs' | 'activeTab'
     preview: {},
     contentLang: ws.project.defaultLanguage,
     dirty: false,
+    libraryItem: undefined,
   };
 }
 
@@ -102,6 +108,7 @@ export const useStore = create<Store>()(
     keymap: {},
     problemsOpen: true,
     fitRequest: 0,
+    libraryPanel: true,
 
     edit(scope, recipe, key) {
       const before = takeSnapshot(get().ws, scope);
