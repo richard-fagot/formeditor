@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  checkSyntax, evaluate, evaluateCondition, extractReferences, renameReference,
+  checkSyntax, evaluate, evaluateCondition, extractReferences, filterReferences, renameReference,
   interpolate, templateReferences, renameInTemplate, resolveLabel, formatValue,
 } from './index';
 
@@ -42,9 +42,14 @@ describe('évaluation', () => {
 });
 
 describe('références', () => {
-  it('extrait les chemins racines, sans les noms relatifs des filtres', () => {
+  it('extrait les chemins racines ; un nom dans un filtre prolonge le chemin filtré', () => {
     expect(extractReferences("$count(victimes[hospitalise].nom) > 0 and sys.plafond = 1 and tiers.nom = 'x'"))
-      .toEqual([['victimes', 'nom'], ['sys', 'plafond'], ['tiers', 'nom']]);
+      .toEqual([['victimes', 'nom'], ['victimes', 'hospitalise'], ['sys', 'plafond'], ['tiers', 'nom']]);
+    expect(extractReferences('sys.x[champ > 1 and a.b = 2][autre]')).toEqual([['sys', 'x'], ['sys', 'x', 'champ'], ['sys', 'x', 'a', 'b'], ['sys', 'x', 'autre']]);
+    expect(extractReferences('(sys.x)[champ]')).toEqual([['sys', 'x']]);
+    expect(extractReferences('sys.x[nature = $$.type_sinistre]')).toEqual([['sys', 'x'], ['sys', 'x', 'nature'], ['type_sinistre']]);
+    expect(renameReference('sys.x[nature = $$.type_sinistre]', ['type_sinistre'], 'type')).toBe('sys.x[nature = $$.type]');
+    expect(filterReferences('sys.x[champ > 1].autre and a.b')).toEqual([{ path: ['sys', 'x', 'champ'], name: 'champ' }]);
     expect(extractReferences("'t' in canaux ? a : b")).toEqual([['canaux'], ['a'], ['b']]);
     expect(extractReferences('temoins[0].nom')).toEqual([['temoins', 'nom']]);
     expect(extractReferences('a = ')).toEqual([]);
@@ -56,6 +61,12 @@ describe('références', () => {
     expect(renameReference('tiers.nom & victimes[nom = "x"].nom', ['tiers', 'nom'], 'nom_famille'))
       .toBe('tiers.nom_famille & victimes[nom = "x"].nom');
     expect(renameReference('a = ', ['a'], 'b')).toBe('a = ');
+  });
+  it('renomme un nom placé dans un filtre, une seule fois par occurrence', () => {
+    expect(renameReference('$count(sys.x[champ > 1 and champ < 5].champ)', ['sys', 'x', 'champ'], 'c2'))
+      .toBe('$count(sys.x[c2 > 1 and c2 < 5].c2)');
+    expect(renameReference('sys.x[champ > 1][a = 2]', ['sys', 'x'], 'y')).toBe('sys.y[champ > 1][a = 2]');
+    expect(renameReference('victimes[nom = "x"].nom', ['tiers', 'nom'], 'z')).toBe('victimes[nom = "x"].nom');
   });
 });
 

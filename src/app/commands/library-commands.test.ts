@@ -43,7 +43,7 @@ describe('bibliothèque et blocs par commandes', () => {
     expect(st().ws.layouts.find((l) => l.graph === qid)!.nodes[inst.id]).toEqual({ x: 500, y: 40 });
   });
 
-  it('groupe la sélection en bloc (Ctrl+G), annulable dans le questionnaire et dans la bibliothèque', () => {
+  it('groupe la sélection en bloc (Ctrl+G) ; un seul Ctrl+Z, du questionnaire ou de la bibliothèque, annule tout', () => {
     st().select({ graph: { kind: 'questionnaire', id: qid }, nodes: ['a'] });
     expect(command('node.group')!.keys).toEqual(['$mod+g']);
     expect(runCommand('node.group')).toBe(true);
@@ -51,8 +51,10 @@ describe('bibliothèque et blocs par commandes', () => {
     expect(q().nodes.map((n) => n.kind)).toEqual(['question', 'block']);
     st().undo(`q:${qid}`);
     expect(q().nodes.map((n) => n.id)).toEqual(['a', 'b']);
-    st().undo('library');
     expect(st().ws.library.blocks).toHaveLength(0);
+    st().redo('library');
+    expect(st().ws.library.blocks).toHaveLength(1);
+    expect(q().nodes.map((n) => n.kind)).toEqual(['question', 'block']);
   });
 
   it('édite un bloc dans l’onglet Bibliothèque : question, sortie, graphe actif', () => {
@@ -97,6 +99,10 @@ describe('bibliothèque et blocs par commandes', () => {
     st().select({ graph: { kind: 'questionnaire', id: qid }, nodes: ['a'] });
     runCommand('node.toLibrary');
     expect(q().nodes[0]).toMatchObject({ id: 'a', ref: st().ws.library.questions[0]!.id });
+    st().undo('library');
+    expect(q().nodes[0]).toMatchObject({ id: 'a', key: 'a' });
+    expect(st().ws.library.questions).toHaveLength(0);
+    st().redo(`q:${qid}`);
     runCommand('node.openInLibrary');
     expect(st().libraryItem).toEqual({ kind: 'question', id: st().ws.library.questions[0]!.id });
   });

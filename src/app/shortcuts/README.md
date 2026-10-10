@@ -5,7 +5,9 @@ Liaisons clavier (tinykeys) vers les commandes de `app/commands`.
 ## API
 - `bindShortcuts(window)` → désinstallation. À relancer quand `store.keymap` change.
 - `keysOf(command)` : raccourcis personnalisés (`store.keymap[id]`) sinon par défaut.
-- `formatKey('$mod+k')` → `Ctrl+K`.
+- `formatKey('$mod+k')` → `Ctrl+K` (`KeyI` → `I`).
+- `comboOf(event)` : combinaison tinykeys d'une frappe (écran des raccourcis ; avec Alt, touche physique `KeyX`).
+- `normalizeKey(key)` : forme comparable (doublons). Tests : `format.test.ts`.
 - `isTyping(el, { dialog? })` : saisie en cours (champ, CodeMirror, contenteditable ; avec `dialog`, tout élément
   d'une boîte de dialogue). Seule détection de saisie de l'application.
 

@@ -10,7 +10,7 @@ import type { LibraryItem } from './library-edits';
 
 enableMapSet();
 
-export type TabId = `q:${string}` | 'library' | 'system';
+export type TabId = `q:${string}` | 'library' | 'system' | 'settings';
 export type PaletteMode = 'commands' | 'connect' | 'library';
 
 export interface Selection {
@@ -51,6 +51,10 @@ export interface AppState {
   notice?: { title: string; lines: string[] };
   /** Demande d'ajustement de la vue du logigramme (compteur). */
   fitRequest: number;
+  /** Demande de mise en page automatique du logigramme affiché (compteur). */
+  layoutRequest: number;
+  /** Vue côte à côte : questionnaire affiché, en lecture, à droite du logigramme actif. */
+  compare?: string;
   /** Élément affiché dans l'onglet Bibliothèque (sans : jeux de libellés). */
   libraryItem?: LibraryItem;
   /** Panneau latéral de la bibliothèque à côté du logigramme (glisser-déposer). */
@@ -62,6 +66,11 @@ export interface AppState {
 export interface AppActions {
   /** Modifie le projet dans une portée d'historique. `key` regroupe les frappes successives. */
   edit(scope: Scope, recipe: (ws: Workspace) => Workspace | void, key?: string): void;
+  /**
+   * Modification qui touche plusieurs portées (renommage propagé) : un point d'historique dans chaque portée
+   * modifiée, liés ; annuler ou rétablir dans l'une le fait dans toutes celles où ce point est en tête.
+   */
+  transact(scopes: Scope[], recipe: (ws: Workspace) => Workspace | void): void;
   undo(scope: Scope): void;
   redo(scope: Scope): void;
   /** Point d'historique sans modification (avant un glisser de nœuds). */
@@ -79,7 +88,7 @@ export interface AppActions {
 
 export type Store = AppState & AppActions;
 
-function initialState(ws: Workspace): Pick<AppState, 'ws' | 'tabs' | 'activeTab' | 'view' | 'selection' | 'history' | 'preview' | 'contentLang' | 'dirty' | 'libraryItem'> {
+function initialState(ws: Workspace): Pick<AppState, 'ws' | 'tabs' | 'activeTab' | 'view' | 'selection' | 'history' | 'preview' | 'contentLang' | 'dirty' | 'libraryItem' | 'compare'> {
   const tabs: TabId[] = ws.questionnaires.map((q) => `q:${q.id}` as const);
   return {
     ws,
@@ -92,6 +101,7 @@ function initialState(ws: Workspace): Pick<AppState, 'ws' | 'tabs' | 'activeTab'
     contentLang: ws.project.defaultLanguage,
     dirty: false,
     libraryItem: undefined,
+    compare: undefined,
   };
 }
 
@@ -112,39 +122,48 @@ export const useStore = create<Store>()(
     keymap: {},
     problemsOpen: true,
     fitRequest: 0,
+    layoutRequest: 0,
     libraryPanel: true,
     previewPanels: { system: true, debug: false },
 
     edit(scope, recipe, key) {
-      const before = takeSnapshot(get().ws, scope);
+      const ws = get().ws;
+      const before = takeSnapshot(ws, scope);
       set((s) => {
         const result = recipe(s.ws as Workspace);
         if (result) s.ws = result;
-        s.history[scope] = record(s.history[scope] ?? { past: [], future: [] }, before, key);
+      });
+      // Rien de changé : aucun point d'historique (le `future` est conservé).
+      const changed = changedScopes(ws, get().ws);
+      if (!changed.length) return;
+      // Modification propagée hors de sa portée (renommage d'une clé visible ailleurs…) : transaction.
+      const spill = changed.filter((sc) => sc !== scope);
+      const tx = spill.length ? ++txCounter : undefined;
+      set((s) => {
+        s.history[scope] = record(s.history[scope] ?? { past: [], future: [] }, tx ? { ...before, tx } : before, tx ? undefined : key);
+        for (const sc of spill) s.history[sc] = record(s.history[sc] ?? { past: [], future: [] }, { ...takeSnapshot(ws, sc), tx });
+        s.dirty = true;
+      });
+    },
+    transact(scopes, recipe) {
+      const before = scopes.map((sc) => takeSnapshot(get().ws, sc));
+      const tx = ++txCounter;
+      set((s) => {
+        const result = recipe(s.ws as Workspace);
+        if (result) s.ws = result;
+        before.forEach((snap, i) => {
+          const sc = scopes[i]!;
+          if (JSON.stringify(snap) === JSON.stringify(takeSnapshot(s.ws as Workspace, sc))) return;
+          s.history[sc] = record(s.history[sc] ?? { past: [], future: [] }, { ...snap, tx });
+        });
         s.dirty = true;
       });
     },
     undo(scope) {
-      const h = get().history[scope];
-      const prev = h?.past.at(-1);
-      if (!h || !prev) return;
-      const current = takeSnapshot(get().ws, scope);
-      set((s) => {
-        restoreSnapshot(s.ws as Workspace, prev);
-        s.history[scope] = { past: h.past.slice(0, -1), future: [...h.future, current] };
-        s.dirty = true;
-      });
+      set((s) => void travel(s as AppState, scope, 'past'));
     },
     redo(scope) {
-      const h = get().history[scope];
-      const nextSnap = h?.future.at(-1);
-      if (!h || !nextSnap) return;
-      const current = takeSnapshot(get().ws, scope);
-      set((s) => {
-        restoreSnapshot(s.ws as Workspace, nextSnap);
-        s.history[scope] = { past: [...h.past, current], future: h.future.slice(0, -1) };
-        s.dirty = true;
-      });
+      set((s) => void travel(s as AppState, scope, 'future'));
     },
     checkpoint(scope) {
       const before = takeSnapshot(get().ws, scope);
@@ -200,6 +219,58 @@ export const useStore = create<Store>()(
     },
   })),
 );
+
+let txCounter = 0;
+
+/** Portées dont le contenu diffère entre deux états du projet (références d'abord, contenu ensuite). */
+export function changedScopes(a: Workspace, b: Workspace): Scope[] {
+  if (a === b) return [];
+  const ids = [...new Set([...a.questionnaires, ...b.questionnaires].map((q) => q.id))];
+  const scopes: Scope[] = ['project', 'library', ...ids.map((id) => `q:${id}` as const)];
+  return scopes.filter((sc) => {
+    const x = takeSnapshot(a, sc) as unknown as Record<string, unknown>;
+    const y = takeSnapshot(b, sc) as unknown as Record<string, unknown>;
+    return Object.keys({ ...x, ...y }).some((k) => x[k] !== y[k] && JSON.stringify(x[k]) !== JSON.stringify(y[k]));
+  });
+}
+
+/**
+ * Annule (`from = 'past'`) ou rétablit (`'future'`) le dernier point de `scope` ; s'il appartient à une transaction,
+ * fait de même dans chaque portée où un point de cette transaction est en tête.
+ */
+function travel(s: AppState, scope: Scope, from: 'past' | 'future'): void {
+  const top = s.history[scope]?.[from].at(-1);
+  if (!top) return;
+  const ids = new Set(s.ws.questionnaires.map((q) => q.id));
+  const scopes = top.tx === undefined
+    ? [scope]
+    : (Object.keys(s.history) as Scope[]).filter((sc) => s.history[sc]![from].at(-1)?.tx === top.tx);
+  for (const sc of scopes) {
+    const h = s.history[sc]!;
+    const snap = h[from].at(-1)!;
+    const current = { ...takeSnapshot(s.ws, sc), tx: snap.tx };
+    restoreSnapshot(s.ws, snap);
+    const to = from === 'past' ? 'future' : 'past';
+    s.history[sc] = { ...h, [from]: h[from].slice(0, -1), [to]: [...h[to], current], lastKey: undefined } as ScopeHistory;
+  }
+  syncTabs(s, ids);
+  s.dirty = true;
+}
+
+/**
+ * Après annuler / rétablir : ferme les onglets des questionnaires disparus (création annulée), rouvre ceux
+ * qui réapparaissent (création rétablie) ; sélection et vue côte à côte suivent.
+ */
+function syncTabs(s: AppState, before: Set<string>): void {
+  const now = new Set(s.ws.questionnaires.map((q) => q.id));
+  const gone = (tab: TabId) => tab.startsWith('q:') && !now.has(tab.slice(2));
+  const i = s.tabs.indexOf(s.activeTab);
+  s.tabs = s.tabs.filter((tab) => !gone(tab));
+  for (const id of now) if (!before.has(id) && !s.tabs.includes(`q:${id}`)) s.tabs.push(`q:${id}`);
+  if (!s.tabs.includes(s.activeTab)) s.activeTab = s.tabs[Math.max(0, Math.min(i, s.tabs.length) - 1)] ?? 'library';
+  if (s.selection.graph?.kind === 'questionnaire' && !now.has(s.selection.graph.id)) s.selection = { nodes: [] };
+  if (s.compare && !now.has(s.compare)) s.compare = undefined;
+}
 
 /** Portée d'historique d'un graphe édité. */
 export function scopeOf(ref: GraphRef | undefined): Scope {

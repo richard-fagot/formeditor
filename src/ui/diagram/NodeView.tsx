@@ -13,13 +13,13 @@ export type NodeData = { nodeId: string };
 
 /** Nœud du logigramme : cadre, poignées, contenu délégué au plugin du type de nœud, édition en place. */
 export const NodeView = memo(function NodeView({ data, selected }: NodeProps & { data: NodeData }) {
-  const { graph, issuesByNode } = useDiagram();
+  const { graph, issuesByNode, readOnly } = useDiagram();
   const node = useStore((s) => getGraph(s.ws, graph)?.nodes.find((n) => n.id === data.nodeId));
   const isStart = useStore((s) => getGraph(s.ws, graph)?.start === data.nodeId);
   const env = usePluginEnv();
   const t = useT();
   const focus = useStore((s) => s.focusRequest);
-  const editing = focus?.kind === 'label' && focus.id === data.nodeId && node?.kind === 'question';
+  const editing = !readOnly && focus?.kind === 'label' && focus.id === data.nodeId && node?.kind === 'question';
   if (!node) return null;
   const plugin = nodeKind(node.kind);
   const question = questionOfNode(env.ws, node);

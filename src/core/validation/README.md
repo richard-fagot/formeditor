@@ -16,7 +16,7 @@ Dépend de `core/model`, `core/expressions`, `core/references`, `core/runtime` (
 - `checkGraph`, `guaranteedBefore` (analyse « posée sur tous les chemins »).
 
 ## Vérifications (codes)
-`invalidExpression`, `unknownReference`, `duplicateKey`, `invalidKey`, `unreachable`, `deadEnd`,
+`invalidExpression`, `unknownReference`, `unknownFilterReference` (clé de question nue dans un filtre : `$$.cle` suggéré), `duplicateKey`, `invalidKey`, `unreachable`, `deadEnd`,
 `exitNotConnected`, `unknownExit`, `loopWithoutExit`, `noElse`, `multipleElse`, `notGuaranteed`,
 `missingTranslation`, `libraryMissing`, `missingStart`.
 

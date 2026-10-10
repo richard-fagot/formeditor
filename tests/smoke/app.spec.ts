@@ -91,7 +91,7 @@ test('propriétés du questionnaire sans sélection : clé modifiable', async ({
 test('nouveau questionnaire : première question au clavier puis à la souris, sans « départ introuvable »', async ({ page }) => {
   const errors = await open(page);
   // Le focus reste sur le bouton « + » après le clic : N doit malgré tout créer la question.
-  await page.getByRole('button', { name: 'Nouveau questionnaire' }).click();
+  await page.getByRole('button', { name: 'Nouveau questionnaire', exact: true }).click();
   await expect(page.getByTestId('diagram-empty')).toBeVisible();
   await expect(page.getByText('Nœud de départ introuvable')).toHaveCount(0);
   await page.keyboard.press('n');
@@ -103,7 +103,7 @@ test('nouveau questionnaire : première question au clavier puis à la souris, s
   await expect(page.getByTestId('diagram-empty')).toHaveCount(0);
 
   // Second questionnaire neuf : bouton de l'état vide.
-  await page.getByRole('button', { name: 'Nouveau questionnaire' }).click();
+  await page.getByRole('button', { name: 'Nouveau questionnaire', exact: true }).click();
   await page.getByTestId('diagram-empty').getByRole('button').click();
   await expect(page.locator('.react-flow__node')).toHaveCount(1);
   expect(errors).toEqual([]);
@@ -365,5 +365,65 @@ test('dictionnaire de l’état du système, panneaux de la prévisualisation, r
   await page.getByTestId('preview-back-to-summary').click();
   await expect(summary).toContainText('Vol constaté au local le soir même.');
   await expect(page.getByTestId('debug-panel')).toContainText('circonstances');
+  expect(errors).toEqual([]);
+});
+
+test('langues, traductions manquantes, raccourci personnalisé, mise en page auto, vue côte à côte', async ({ page }) => {
+  const errors = await open(page);
+  await page.keyboard.press('Control+k');
+  await page.keyboard.type('exemple');
+  await page.keyboard.press('Enter');
+  await expect(page.locator('.react-flow__node').first()).toBeVisible();
+
+  // Changement de langue en prévisualisation.
+  await page.getByTestId('view-preview').click();
+  const preview = page.getByTestId('preview');
+  await expect(preview).toContainText('Bonjour');
+  await page.getByTestId('preview-lang').selectOption('en');
+  await expect(preview).toContainText('Hello');
+
+  // Paramètres : nouvelle langue, traductions manquantes, repli signalé dans la prévisualisation.
+  await page.getByTestId('open-settings').click();
+  await page.getByLabel('Code (ex. en, de, pt-BR)').fill('de');
+  await page.getByRole('button', { name: 'Ajouter une langue' }).click();
+  await expect(page.getByTestId('language-de')).toBeVisible();
+  await expect(page.getByTestId('settings-translations').getByRole('listitem').first()).toContainText('de');
+  await page.getByRole('tab', { name: /Déclaration/ }).click();
+  await page.getByTestId('preview-lang').selectOption('de');
+  await expect(page.getByTestId('preview-missing-translations')).toContainText('de');
+  await expect(preview).toContainText('Bonjour');
+
+  // Raccourci personnalisé : Q pour « Nouvelle question à la suite ».
+  await page.getByTestId('open-settings').click();
+  const row = page.getByTestId('shortcut-node.newQuestion');
+  await row.getByRole('button', { name: /Ajouter un raccourci/ }).click();
+  await page.keyboard.press('q');
+  await expect(row).toContainText('Q');
+  await page.getByRole('tab', { name: /Déclaration/ }).click();
+  await page.getByTestId('view-diagram').click();
+  const count = await page.locator('.react-flow__node').count();
+  await page.locator('.react-flow__node').first().click();
+  await page.keyboard.press('q');
+  await expect(page.getByLabel('intitulé')).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.react-flow__node')).toHaveCount(count + 1);
+
+  // Mise en page automatique (L), annulable.
+  const before = await page.locator('.react-flow__node').first().getAttribute('style');
+  await page.getByTestId('diagram').focus();
+  await page.keyboard.press('l');
+  await expect.poll(() => page.locator('.react-flow__node').first().getAttribute('style')).not.toBe(before);
+  await page.getByTestId('diagram').focus();
+  await page.keyboard.press('Control+z');
+  await expect.poll(() => page.locator('.react-flow__node').first().getAttribute('style')).toBe(before);
+
+  // Vue côte à côte avec un second questionnaire.
+  await page.getByRole('button', { name: 'Nouveau questionnaire', exact: true }).click();
+  await page.getByRole('tab', { name: /Déclaration/ }).click();
+  await page.getByTestId('toggle-compare').click();
+  await expect(page.getByTestId('compare-pane')).toBeVisible();
+  await expect(page.getByTestId('diagram-compare')).toBeVisible();
+  await page.getByRole('button', { name: 'Fermer la vue côte à côte' }).click();
+  await expect(page.getByTestId('compare-pane')).toHaveCount(0);
   expect(errors).toEqual([]);
 });

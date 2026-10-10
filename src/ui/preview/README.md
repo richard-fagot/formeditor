@@ -8,7 +8,8 @@ Dépend de `core`, `registry`, `app/store`, `app/commands`, `ui-kit`, `ui/system
 - `usePreview.ts` : état par questionnaire dans `store.preview[id]` (session, scénario, état du système édité,
   langue, `returnTo`) ; l'état du système vient de `systemStateOf` (`app/store`). `makeRenderEnv` construit
   l'environnement de rendu des plugins (libellés résolus, `options` via `choiceOptions`, `scoped`).
-- `Preview.tsx` : barre (langue, recommencer, bascule des panneaux : commandes `preview.toggleSystem`,
+- `Preview.tsx` : barre (langue : commande `preview.lang` ; nombre de textes non traduits dans la langue affichée, montrés
+  dans la langue par défaut ; recommencer, bascule des panneaux : commandes `preview.toggleSystem`,
   `preview.toggleDebug`), `Wizard` (progression, page, précédent / suivant, « Revenir à la synthèse »), panneau latéral.
   « Suivant » valide la réponse (`core/validation`) ; les erreurs s'affichent après une tentative.
   Un clic sur la page sélectionne le nœud dans le logigramme.

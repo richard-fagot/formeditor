@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { BookOpen } from 'lucide-react';
+import { BookOpen, Columns2, Network } from 'lucide-react';
 import { checkWorkspace } from '../../core/validation';
 import { useStore, useT, type GraphRef } from '../../app/store';
 import { runCommand } from '../../app/commands';
@@ -8,6 +8,7 @@ import { Diagram, ProblemsPanel } from '../diagram';
 import { PropertiesPanel } from '../properties';
 import { Preview } from '../preview';
 import { LibraryPanel } from '../library';
+import { ComparePane } from './ComparePane';
 
 /** Onglet de questionnaire : sous-onglets Logigramme / Prévisualisation. */
 export function QuestionnaireView({ id }: { id: string }) {
@@ -15,6 +16,8 @@ export function QuestionnaireView({ id }: { id: string }) {
   const ws = useStore((s) => s.ws);
   const view = useStore((s) => s.view[id] ?? 'diagram');
   const panel = useStore((s) => s.libraryPanel);
+  const compare = useStore((s) => (s.compare && s.compare !== id && s.ws.questionnaires.some((q) => q.id === s.compare) ? s.compare : undefined));
+  const canCompare = useStore((s) => s.ws.questionnaires.length > 1);
   const graph: GraphRef = useMemo(() => ({ kind: 'questionnaire', id }), [id]);
   const issues = useMemo(() => checkWorkspace(ws).filter((i) => i.owner.kind === 'questionnaire' && i.owner.id === id), [ws, id]);
   const sub = (v: 'diagram' | 'preview', label: string) => (
@@ -30,8 +33,22 @@ export function QuestionnaireView({ id }: { id: string }) {
         {sub('diagram', t('view.diagram'))}
         {sub('preview', t('view.preview'))}
         {view === 'diagram' && (
+          <button type="button" data-testid="auto-layout" title={t('view.layout')}
+            className="ml-auto flex items-center gap-1 rounded px-2 py-1 text-xs text-slate-500 hover:bg-slate-100"
+            onClick={() => runCommand('view.layout')}>
+            <Network className="size-3.5" />{t('view.layout')}
+          </button>
+        )}
+        {view === 'diagram' && canCompare && (
+          <button type="button" data-testid="toggle-compare" title={t('view.compare')} aria-pressed={!!compare}
+            className={cn('flex items-center gap-1 rounded px-2 py-1 text-xs', compare ? 'bg-indigo-50 text-indigo-700' : 'text-slate-500 hover:bg-slate-100')}
+            onClick={() => runCommand('view.compare')}>
+            <Columns2 className="size-3.5" />{t('view.compare')}
+          </button>
+        )}
+        {view === 'diagram' && (
           <button type="button" data-testid="toggle-library-panel" title={t('view.libraryPanel')}
-            className={cn('ml-auto flex items-center gap-1 rounded px-2 py-1 text-xs', panel ? 'bg-amber-50 text-amber-800' : 'text-slate-500 hover:bg-slate-100')}
+            className={cn('flex items-center gap-1 rounded px-2 py-1 text-xs', panel ? 'bg-amber-50 text-amber-800' : 'text-slate-500 hover:bg-slate-100')}
             onClick={() => runCommand('view.libraryPanel')}>
             <BookOpen className="size-3.5" />{t('tab.library')}
           </button>
@@ -39,11 +56,12 @@ export function QuestionnaireView({ id }: { id: string }) {
       </div>
       {view === 'diagram' ? (
         <div className="flex min-h-0 flex-1">
-          {panel && <LibraryPanel graph={graph} />}
+          {panel && !compare && <LibraryPanel graph={graph} />}
           <div className="flex min-w-0 flex-1 flex-col">
             <div className="min-h-0 flex-1"><Diagram graph={graph} issues={issues} /></div>
             <ProblemsPanel graph={graph} issues={issues} />
           </div>
+          {compare && <ComparePane activeId={id} compareId={compare} />}
           <aside className="w-96 shrink-0 border-l border-slate-200 bg-white"><PropertiesPanel graph={graph} /></aside>
         </div>
       ) : (

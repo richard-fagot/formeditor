@@ -1,4 +1,4 @@
-import { BookOpen, Database, Plus, X } from 'lucide-react';
+import { BookOpen, Database, Plus, Settings, X } from 'lucide-react';
 import { runCommand } from '../../app/commands';
 import { useStore, useT, type TabId } from '../../app/store';
 import { cn } from '../../ui-kit';
@@ -13,6 +13,7 @@ export function Tabs() {
   const label = (tab: TabId) => {
     if (tab === 'library') return t('tab.library');
     if (tab === 'system') return t('tab.system');
+    if (tab === 'settings') return t('tab.settings');
     const q = ws.questionnaires.find((x) => `q:${x.id}` === tab);
     return q ? (q.title[lang] ?? q.title[ws.project.defaultLanguage] ?? q.key) : tab;
   };
@@ -26,6 +27,7 @@ export function Tabs() {
           onClick={() => runCommand('tab.show', tab)}>
           {tab === 'library' && <BookOpen className="size-3.5" />}
           {tab === 'system' && <Database className="size-3.5" />}
+          {tab === 'settings' && <Settings className="size-3.5" />}
           <span className="max-w-48 truncate">{label(tab)}</span>
           <button type="button" aria-label={t('questionnaire.close')} className="rounded p-0.5 opacity-0 hover:bg-slate-200 group-hover:opacity-100"
             onClick={(e) => { e.stopPropagation(); runCommand('tab.close', tab); }}>

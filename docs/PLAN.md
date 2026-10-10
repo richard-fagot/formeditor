@@ -59,9 +59,9 @@ carte à jour, fusion dans `main`, push.
 - [x] Attendre la validation
 
 ## Phase 9 — i18n, paramètres, finitions
-- [ ] Langues des contenus, traductions manquantes, changement de langue en prévisualisation
-- [ ] Écran de paramétrage des raccourcis
-- [ ] Vue côte à côte, mise en page automatique ELK
+- [x] Langues des contenus, traductions manquantes, changement de langue en prévisualisation
+- [x] Écran de paramétrage des raccourcis
+- [x] Vue côte à côte, mise en page automatique ELK
 
 ## Phase 10 — Livraison à l'équipe de dev
 - [ ] `docs/FORMAT.md` relu et complet, schémas, exemple à jour

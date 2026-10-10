@@ -1,4 +1,4 @@
-import { Command, Download, FileJson, FilePlus2, FolderOpen, Sparkles } from 'lucide-react';
+import { Command, Download, FileJson, FilePlus2, FolderOpen, Settings, Sparkles } from 'lucide-react';
 import { UI_LANGUAGES } from '../../app/i18n';
 import { runCommand } from '../../app/commands';
 import { useStore, useT } from '../../app/store';
@@ -41,6 +41,9 @@ export function TopBar() {
           onChange={(e) => runCommand('lang.ui', e.target.value)}>
           {UI_LANGUAGES.map((l) => <option key={l}>{l}</option>)}
         </Select>
+        <Button size="sm" variant="ghost" onClick={() => runCommand('tab.settings')} title={t('tab.settings')} aria-label={t('tab.settings')} data-testid="open-settings">
+          <Settings className="size-3.5" />
+        </Button>
         <Button size="sm" onClick={() => runCommand('palette.open')} data-testid="palette-button">
           <Command className="size-3.5" />{t('palette.open')}<Kbd>Ctrl+K</Kbd>
         </Button>

@@ -188,6 +188,12 @@ Opérateurs utiles :
 | Dénombrement | `$count(canaux_contact)`, `$count(victimes)` |
 | Filtrage d'une liste d'objets | `sys.sinistres[nature = 'Vol']`, `$count(victimes[hospitalise])` |
 
+**Noms dans un filtre.** Entre crochets, un nom nu désigne un champ de l'élément filtré (sens JSONata) :
+dans `sys.sinistres[nature = 'Vol']`, `nature` est `sys.sinistres.nature`. Pour comparer à une réponse
+ou à une autre valeur du contexte, partir de la racine avec `$$` : `sys.sinistres[nature = $$.type_sinistre]`.
+L'outil vérifie ces noms (champ inconnu signalé ; une clé de question écrite nue dans un filtre est signalée
+avec la suggestion `$$.cle`) et les suit au renommage. `$$.cle` équivaut à `cle` hors d'un filtre.
+
 Fonctions ajoutées par l'outil (à fournir par l'implémentation cible) :
 
 | Fonction | Résultat |

@@ -97,8 +97,7 @@ export function libraryItemCommands(): Command[] {
         const title = { [st().contentLang]: t()('library.newBlockTitle') };
         const res = groupIntoBlock(JSON.parse(JSON.stringify(st().ws)), r, ids, title);
         if (!res) return;
-        // Le bloc créé est aussi annulable depuis l'onglet Bibliothèque.
-        st().checkpoint('library');
+        // Le bloc créé touche aussi la bibliothèque : `edit` en fait une transaction (annulable depuis l'un ou l'autre onglet).
         st().edit(scopeOf(r), () => res.ws);
         st().select({ graph: r, nodes: [res.instanceId] });
       },
@@ -109,7 +108,6 @@ export function libraryItemCommands(): Command[] {
       run: () => {
         const r = ref()!;
         const id = selected()!.id;
-        st().checkpoint('library');
         st().edit(scopeOf(r), (ws) => void moveToLibrary(ws, r, id));
       },
     },

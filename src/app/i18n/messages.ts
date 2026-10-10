@@ -1,5 +1,8 @@
+import { SETTINGS_MESSAGES } from './messages-settings';
+
 /** Dictionnaire de l'interface de l'outil (français par défaut). `{x}` : paramètre. */
 export const MESSAGES = {
+  ...SETTINGS_MESSAGES,
   'app.title': { fr: 'Éditeur de questionnaires', en: 'Questionnaire editor' },
   'project.new': { fr: 'Nouveau projet', en: 'New project' },
   'project.open': { fr: 'Ouvrir / importer…', en: 'Open / import…' },

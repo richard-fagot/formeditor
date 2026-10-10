@@ -17,3 +17,4 @@ export {
   exampleSystemState, scenarioOf, systemStateOf,
 } from './system-edits';
 export { useT, useEditorEnv, activeGraphRef, activeQuestionnaire } from './hooks';
+export { isLanguageCode, addLanguage, removeLanguage, setDefaultLanguage } from './language-edits';

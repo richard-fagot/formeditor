@@ -10,6 +10,7 @@ import { formatKey, isTyping } from '../../app/shortcuts';
 import { getGraph, layoutOf, scopeOf, useStore, useT, type GraphRef } from '../../app/store';
 import { Button, Kbd } from '../../ui-kit';
 import { DiagramContext } from './DiagramContext';
+import { useAutoLayout } from './useAutoLayout';
 import { NodeView, type NodeData } from './NodeView';
 import { EdgeView } from './EdgeView';
 
@@ -19,16 +20,23 @@ const nodeTypes = { graphNode: NodeView };
 export const LIBRARY_MIME = 'application/x-questionnaire-library';
 const edgeTypes = { condition: EdgeView };
 
+interface DiagramProps {
+  graph: GraphRef;
+  issues: Issue[];
+  /** Lecture seule (vue côte à côte) : ni sélection, ni déplacement, ni liaison, ni dépôt ; ne prend pas le focus. */
+  readOnly?: boolean;
+}
+
 /** Logigramme d'un graphe (questionnaire ou bloc) : React Flow piloté par le store. */
-export function Diagram({ graph, issues }: { graph: GraphRef; issues: Issue[] }) {
+export function Diagram(props: DiagramProps) {
   return (
     <ReactFlowProvider>
-      <DiagramInner graph={graph} issues={issues} />
+      <DiagramInner {...props} />
     </ReactFlowProvider>
   );
 }
 
-function DiagramInner({ graph, issues }: { graph: GraphRef; issues: Issue[] }) {
+function DiagramInner({ graph, issues, readOnly }: DiagramProps) {
   const g = useStore((s) => getGraph(s.ws, graph));
   const layout = useStore((s) => s.ws.layouts.find((l) => l.graph === graph.id));
   const selection = useStore((s) => s.selection);
@@ -43,9 +51,9 @@ function DiagramInner({ graph, issues }: { graph: GraphRef; issues: Issue[] }) {
         type: 'graphNode',
         position: layout?.nodes[n.id] ?? { x: 0, y: 0 },
         data: { nodeId: n.id },
-        selected: selection.nodes.includes(n.id),
+        selected: !readOnly && selection.nodes.includes(n.id),
       })),
-    [g?.nodes, layout, selection.nodes],
+    [g?.nodes, layout, selection.nodes, readOnly],
   );
   const blocks = useStore((s) => s.ws.library.blocks);
   const edges: RFEdge[] = useMemo(() => {
@@ -61,10 +69,10 @@ function DiagramInner({ graph, issues }: { graph: GraphRef; issues: Issue[] }) {
         target: e.to,
         sourceHandle: e.exit && exitsOf(e.from).includes(e.exit) ? e.exit : null,
         type: 'condition',
-        selected: selection.edge === e.id,
-        markerEnd: { type: MarkerType.ArrowClosed, color: selection.edge === e.id ? '#6366f1' : '#94a3b8' },
+        selected: !readOnly && selection.edge === e.id,
+        markerEnd: { type: MarkerType.ArrowClosed, color: !readOnly && selection.edge === e.id ? '#6366f1' : '#94a3b8' },
       }));
-  }, [g?.edges, g?.nodes, blocks, selection.edge]);
+  }, [g?.edges, g?.nodes, blocks, selection.edge, readOnly]);
 
   const issuesByNode = useMemo(() => {
     const m = new Map<string, Issue[]>();
@@ -96,9 +104,11 @@ function DiagramInner({ graph, issues }: { graph: GraphRef; issues: Issue[] }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fitRequest, graph.id]);
 
+  useAutoLayout(graph, readOnly);
+
   // Garde le nœud sélectionné visible (navigation au clavier, création chaînée).
   useEffect(() => {
-    const id = selection.nodes.length === 1 ? selection.nodes[0] : undefined;
+    const id = !readOnly && selection.nodes.length === 1 ? selection.nodes[0] : undefined;
     const p = id ? layout?.nodes[id] : undefined;
     const box = container.current?.getBoundingClientRect();
     if (!p || !box) return;
@@ -115,22 +125,23 @@ function DiagramInner({ graph, issues }: { graph: GraphRef; issues: Issue[] }) {
   // À l'ouverture d'un graphe (nouveau questionnaire, changement d'onglet), le logigramme prend le focus
   // pour que les raccourcis à une lettre (N…) agissent aussitôt, sauf si une saisie est en cours.
   useEffect(() => {
-    if (!isTyping(document.activeElement, { dialog: true })) focusGraph();
+    if (!readOnly && !isTyping(document.activeElement, { dialog: true })) focusGraph();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [graph.id]);
 
   return (
-    <DiagramContext.Provider value={{ graph, issuesByNode }}>
-      <div ref={container} tabIndex={0} data-graph-focus data-testid="diagram" className="relative h-full w-full outline-none"
+    <DiagramContext.Provider value={{ graph, issuesByNode, readOnly }}>
+      <div ref={container} tabIndex={readOnly ? undefined : 0} data-graph-focus={readOnly ? undefined : ''} data-testid={readOnly ? 'diagram-compare' : 'diagram'}
+        className="relative h-full w-full outline-none"
         onDragOver={(e) => {
-          if (e.dataTransfer.types.includes(LIBRARY_MIME)) {
+          if (!readOnly && e.dataTransfer.types.includes(LIBRARY_MIME)) {
             e.preventDefault();
             e.dataTransfer.dropEffect = 'copy';
           }
         }}
         onDrop={(e) => {
           const raw = e.dataTransfer.getData(LIBRARY_MIME);
-          if (!raw) return;
+          if (!raw || readOnly) return;
           e.preventDefault();
           const position = rf.screenToFlowPosition({ x: e.clientX, y: e.clientY });
           runCommand('library.insertItem', { ...(JSON.parse(raw) as object), graph, position });
@@ -141,19 +152,22 @@ function DiagramInner({ graph, issues }: { graph: GraphRef; issues: Issue[] }) {
           edges={edges}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
-          onNodesChange={onNodesChange}
-          onNodeDragStart={() => useStore.getState().checkpoint(scopeOf(graph))}
-          onNodeClick={focusGraph}
-          onEdgeClick={(_, e) => {
-            useStore.getState().select({ graph, nodes: [], edge: e.id });
-            focusGraph();
-          }}
-          onPaneClick={() => {
-            useStore.getState().select({ graph, nodes: [] });
-            focusGraph();
-          }}
-          onNodeDoubleClick={(_, n) => useStore.getState().requestFocus('label', n.id)}
-          onConnect={(c) => c.source && c.target && runCommand('edge.create', { graph, from: c.source, to: c.target, exit: c.sourceHandle ?? undefined })}
+          {...(readOnly ? { nodesDraggable: false, nodesConnectable: false, elementsSelectable: false } : {
+            onNodesChange,
+            onNodeDragStart: () => useStore.getState().checkpoint(scopeOf(graph)),
+            onNodeClick: focusGraph,
+            onEdgeClick: (_: unknown, e: RFEdge) => {
+              useStore.getState().select({ graph, nodes: [], edge: e.id });
+              focusGraph();
+            },
+            onPaneClick: () => {
+              useStore.getState().select({ graph, nodes: [] });
+              focusGraph();
+            },
+            onNodeDoubleClick: (_: unknown, n: RFNode) => useStore.getState().requestFocus('label', n.id),
+            onConnect: (c: { source: string | null; target: string | null; sourceHandle?: string | null }) =>
+              c.source && c.target && runCommand('edge.create', { graph, from: c.source, to: c.target, exit: c.sourceHandle ?? undefined }),
+          })}
           deleteKeyCode={null}
           selectionKeyCode="Shift"
           multiSelectionKeyCode="Shift"
@@ -164,7 +178,7 @@ function DiagramInner({ graph, issues }: { graph: GraphRef; issues: Issue[] }) {
           <Background gap={20} color="#e2e8f0" />
           <Controls showInteractive={false} />
         </ReactFlow>
-        {g && g.nodes.length === 0 && <EmptyHint />}
+        {g && g.nodes.length === 0 && !readOnly && <EmptyHint />}
       </div>
     </DiagramContext.Provider>
   );
