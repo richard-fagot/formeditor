@@ -80,3 +80,18 @@ describe('modification propagée hors de sa portée', () => {
     expect(JSON.stringify(useStore.getState().ws) === before).toBe(true);
   });
 });
+
+describe('annuler la création d’un bloc', () => {
+  it('vide la sélection et l’élément affiché qui désignaient le bloc disparu', async () => {
+    const { addBlock } = await import('./index');
+    useStore.getState().loadWorkspace(blankWorkspace());
+    let id = '';
+    useStore.getState().edit('library', (ws) => void (id = addBlock(ws, { fr: 'Bloc' })));
+    useStore.setState({ activeTab: 'library', libraryItem: { kind: 'block', id }, selection: { graph: { kind: 'block', id }, nodes: [] } });
+    useStore.getState().undo('library');
+    const s = useStore.getState();
+    expect(s.ws.library.blocks).toEqual([]);
+    expect(s.libraryItem).toBeUndefined();
+    expect(s.selection.graph).toBeUndefined();
+  });
+});
