@@ -6,7 +6,7 @@ import {
 import '@xyflow/react/dist/style.css';
 import type { Issue } from '../../core/validation';
 import { command, runCommand } from '../../app/commands';
-import { formatKey, keysOf } from '../../app/shortcuts';
+import { formatKey, isTyping } from '../../app/shortcuts';
 import { getGraph, layoutOf, scopeOf, useStore, useT, type GraphRef } from '../../app/store';
 import { Button, Kbd } from '../../ui-kit';
 import { DiagramContext } from './DiagramContext';
@@ -106,9 +106,7 @@ function DiagramInner({ graph, issues }: { graph: GraphRef; issues: Issue[] }) {
   // À l'ouverture d'un graphe (nouveau questionnaire, changement d'onglet), le logigramme prend le focus
   // pour que les raccourcis à une lettre (N…) agissent aussitôt, sauf si une saisie est en cours.
   useEffect(() => {
-    const el = document.activeElement as HTMLElement | null;
-    const typing = !!el && (el.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName) || !!el.closest('.cm-editor, [role=dialog]'));
-    if (!typing) focusGraph();
+    if (!isTyping(document.activeElement, { dialog: true })) focusGraph();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [graph.id]);
 
@@ -152,7 +150,8 @@ function DiagramInner({ graph, issues }: { graph: GraphRef; issues: Issue[] }) {
 /** Invitation affichée sur un graphe vide : la première question, à la souris ou par N. */
 function EmptyHint() {
   const t = useT();
-  const key = keysOf(command('node.newQuestion')!)[0];
+  const custom = useStore((s) => s.keymap['node.newQuestion']);
+  const key = (custom ?? command('node.newQuestion')?.keys ?? [])[0];
   return (
     <div className="pointer-events-none absolute inset-0 flex items-center justify-center" data-testid="diagram-empty">
       <div className="pointer-events-auto flex flex-col items-center gap-2 rounded-lg border border-dashed border-slate-300 bg-white/90 px-6 py-4 text-sm text-slate-500">

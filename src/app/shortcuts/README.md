@@ -6,10 +6,14 @@ Liaisons clavier (tinykeys) vers les commandes de `app/commands`.
 - `bindShortcuts(window)` → désinstallation. À relancer quand `store.keymap` change.
 - `keysOf(command)` : raccourcis personnalisés (`store.keymap[id]`) sinon par défaut.
 - `formatKey('$mod+k')` → `Ctrl+K`.
+- `isTyping(el, { dialog? })` : saisie en cours (champ, CodeMirror, contenteditable ; avec `dialog`, tout élément
+  d'une boîte de dialogue). Seule détection de saisie de l'application.
 
 ## Règles
 - Pendant une saisie (champ, CodeMirror) : seules les commandes `allowInInput` (Ctrl+K, Ctrl+S…).
-- Commandes `scope: 'graph'` (raccourcis à une lettre, flèches) : seulement si le focus est dans un élément
-  `[data-graph-focus]` (le logigramme) ou nulle part.
+- Commandes `scope: 'graph'` (raccourcis à une lettre, flèches) : si le focus est dans un élément
+  `[data-graph-focus]` (le logigramme), nulle part, ou sur un élément non saisissable hors dialogue (bouton du
+  panneau des problèmes, de la barre…) pendant que l'onglet actif est un questionnaire en vue logigramme.
+- Entrée / Espace sur un bouton, lien ou onglet focalisé hors logigramme : l'élément est activé, aucune commande.
 - Palette ouverte : aucun raccourci.
 - Plusieurs commandes sur une même touche : la dernière disponible l'emporte, sinon la précédente.

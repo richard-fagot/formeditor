@@ -108,3 +108,38 @@ test('nouveau questionnaire : première question au clavier puis à la souris, s
   await expect(page.locator('.react-flow__node')).toHaveCount(1);
   expect(errors).toEqual([]);
 });
+
+test('clic sur un problème : les raccourcis du logigramme agissent, Entrée active toujours le bouton', async ({ page }) => {
+  const errors = await open(page);
+  await page.getByTestId('diagram').click({ position: { x: 30, y: 30 } });
+  for (const label of ['Première', 'Seconde']) {
+    await page.keyboard.press('n');
+    await expect(page.getByLabel('intitulé')).toBeFocused();
+    await page.keyboard.type(label);
+    await page.keyboard.press('Enter');
+  }
+  const nodes = page.locator('.react-flow__node');
+  await expect(nodes).toHaveCount(2);
+  const rows = page.getByTestId('problems').locator('li button');
+
+  // Clic sur un problème (le focus reste sur la ligne) puis Suppr : le nœud concerné disparaît.
+  await rows.first().click();
+  await expect(rows.first()).toBeFocused();
+  await page.keyboard.press('Delete');
+  await expect(nodes).toHaveCount(1);
+
+  // Clic sur un problème puis N : une question est créée.
+  await rows.first().click();
+  await page.keyboard.press('n');
+  await expect(nodes).toHaveCount(2);
+  await expect(page.getByLabel('intitulé')).toBeFocused();
+  await page.keyboard.press('Escape');
+
+  // Entrée sur le bouton qui replie le panneau : le panneau se replie, aucune édition d'intitulé.
+  const toggle = page.getByTestId('problems').locator('> button');
+  await toggle.focus();
+  await page.keyboard.press('Enter');
+  await expect(rows).toHaveCount(0);
+  await expect(page.getByLabel('intitulé')).toHaveCount(0);
+  expect(errors).toEqual([]);
+});
