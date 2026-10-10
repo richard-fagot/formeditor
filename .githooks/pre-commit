@@ -1,0 +1,3 @@
+#!/bin/sh
+# Partie rapide du harnais : typage + Vitest.
+npm run typecheck && npm test
