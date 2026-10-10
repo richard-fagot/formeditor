@@ -16,8 +16,8 @@ sans cérémonie. Préférer la solution la plus simple qui respecte la spec.
 - Points d'arrêt obligatoires : fin de la phase 5 (démo n°1) et fin de la phase 8 (démo n°2).
   Y écrire un court résumé de ce qui est faisable dans l'outil, puis attendre.
 - Si une librairie de la pile (spec §8.1) bloque : passer à l'alternative indiquée, le noter dans DECISIONS.md.
-- Pare-feu : seuls npm, GitHub, Anthropic et VS Code sont joignables. Ne jamais contourner un blocage
-  réseau ; si un paquet est inaccessible, choisir une alternative et le noter.
+- Outil système manquant : l'installer (`sudo apt-get install -y …`) et l'ajouter au Dockerfile
+  (`.devcontainer/Dockerfile`) pour qu'il survive à une reconstruction.
 
 ## Avant de modifier du code
 
@@ -40,8 +40,14 @@ sans cérémonie. Préférer la solution la plus simple qui respecte la spec.
 - Tests de référence sur le questionnaire d'exemple : schéma, aller-retour import/export, chemin attendu par scénario.
   Un changement de comportement voulu met à jour le fichier attendu, jamais l'inverse en silence.
 - Hook pre-commit (typage + Vitest). Ne jamais utiliser `--no-verify`.
-- Playwright : épingler `@playwright/test` à la version de `cat /etc/playwright-version` (navigateurs déjà
-  installés dans l'image, `PLAYWRIGHT_BROWSERS_PATH=/ms-playwright`). Ne pas lancer `playwright install`.
+- Playwright : après l'ajout de `@playwright/test`, lancer `npx playwright install chromium firefox`
+  (les dépendances système sont déjà dans l'image). Si Firefox ne s'installe pas sur cette architecture,
+  limiter les projets Playwright à Chromium et le noter dans DECISIONS.md.
+
+## Environnement
+
+- État du conteneur : `bash .devcontainer/verifier.sh`.
+- Si `docs/spec.md` est absent, s'arrêter et le signaler : c'est la seule source fonctionnelle.
 
 ## Invariants
 

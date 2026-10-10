@@ -1,0 +1,37 @@
+{
+  "name": "Éditeur de questionnaires",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "args": {
+      "TZ": "Europe/Paris",
+      "CLAUDE_CODE_VERSION": "latest"
+    }
+  },
+  "remoteUser": "node",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=delegated",
+  "workspaceFolder": "/workspace",
+  "mounts": [
+    // Historique bash, configuration Claude Code (connexion, réglages) et navigateurs Playwright
+    // conservés entre deux reconstructions
+    "source=qe-bashhistory-${devcontainerId},target=/commandhistory,type=volume",
+    "source=qe-claude-config-${devcontainerId},target=/home/node/.claude,type=volume",
+    "source=qe-playwright-${devcontainerId},target=/home/node/.cache/ms-playwright,type=volume"
+  ],
+  "containerEnv": {
+    "CLAUDE_CONFIG_DIR": "/home/node/.claude",
+    "NODE_OPTIONS": "--max-old-space-size=4096"
+  },
+  // Les volumes sont créés au nom de root : on les rend à node, puis on installe le projet s'il existe déjà
+  "postCreateCommand": "sudo chown -R node:node /home/node/.claude /home/node/.cache /commandhistory && if [ -f package-lock.json ]; then npm ci && npx --no-install playwright install chromium firefox || true; fi",
+  "postStartCommand": "bash .devcontainer/verifier.sh",
+  // Serveur de développement Vite
+  "forwardPorts": [5173],
+  "customizations": {
+    "vscode": {
+      "extensions": ["anthropic.claude-code", "vitest.explorer"],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  }
+}

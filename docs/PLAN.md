@@ -5,7 +5,7 @@ carte à jour, fusion dans `main`, push.
 
 ## Phase 1 — Socle
 - [ ] Vite + vite-plugin-singlefile, TypeScript strict, React
-- [ ] Vitest, Playwright (version de /etc/playwright-version), dependency-cruiser (règles spec §8.2)
+- [ ] Vitest, Playwright (+ `npx playwright install chromium firefox`), dependency-cruiser (règles spec §8.2)
 - [ ] `npm run check` et hook pre-commit (typage + Vitest)
 - [ ] Squelette des modules du §8.2, chacun avec `index.ts` et `README.md`
 - [ ] `docs/MAP.md` + script `npm run map`
