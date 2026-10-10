@@ -5,6 +5,7 @@ import { useStore, useT } from '../../app/store';
 import { Button, Dialog } from '../../ui-kit';
 import { Library } from '../library';
 import { SystemState } from '../system-state';
+import { Settings } from '../settings';
 import { Palette } from './Palette';
 import { QuestionnaireView } from './QuestionnaireView';
 import { Tabs } from './Tabs';
@@ -38,6 +39,7 @@ export function App() {
         {active.startsWith('q:') && <QuestionnaireView key={active} id={active.slice(2)} />}
         {active === 'library' && <Library />}
         {active === 'system' && <SystemState />}
+        {active === 'settings' && <Settings />}
       </main>
       <Palette />
       <Dialog open={!!notice} onOpenChange={() => useStore.getState().set((s) => void (s.notice = undefined))} title={notice?.title ?? ''} description={notice?.title}>

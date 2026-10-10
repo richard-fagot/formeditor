@@ -1,8 +1,8 @@
-import type { ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { Bug, ChevronLeft, ChevronRight, Database, RotateCcw, Undo2 } from 'lucide-react';
 import { OTHER_VALUE } from '../../core/model';
 import { back, buildContext, currentStep, getAnswer, next, otherPath, progress, resume, setAnswer, start, type RuntimeInput, type Session } from '../../core/runtime';
-import { validateAnswer } from '../../core/validation';
+import { checkWorkspace, validateAnswer } from '../../core/validation';
 import { nodeKind, questionType } from '../../registry';
 import { runCommand } from '../../app/commands';
 import { useStore, useT } from '../../app/store';
@@ -29,10 +29,11 @@ export function Preview({ questionnaireId }: { questionnaireId: string }) {
       <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 bg-white px-4 py-2 text-sm">
         <label className="flex items-center gap-2 text-slate-500">
           {t('preview.language')}
-          <Select className="w-20" value={lang} onChange={(e) => update({ lang: e.target.value })}>
+          <Select className="w-20" data-testid="preview-lang" value={lang} onChange={(e) => runCommand('preview.lang', e.target.value)}>
             {ws.project.languages.map((l) => <option key={l}>{l}</option>)}
           </Select>
         </label>
+        <MissingTranslations questionnaireId={questionnaireId} lang={lang} />
         <Button size="sm" variant="ghost" onClick={() => update({ session: start(input), attempted: false, returnTo: undefined })}>
           <RotateCcw className="size-3.5" />{t('preview.restart')}
         </Button>
@@ -61,6 +62,23 @@ export function Preview({ questionnaireId }: { questionnaireId: string }) {
         )}
       </div>
     </div>
+  );
+}
+
+/** Textes du questionnaire (et des éléments de bibliothèque qu'il utilise) non traduits dans la langue affichée. */
+function MissingTranslations({ questionnaireId, lang }: { questionnaireId: string; lang: string }) {
+  const t = useT();
+  const ws = useStore((s) => s.ws);
+  const n = useMemo(() => {
+    const q = ws.questionnaires.find((x) => x.id === questionnaireId);
+    const used = new Set([questionnaireId, ...(q?.nodes ?? []).flatMap((x) => ('ref' in x && typeof x.ref === 'string' ? [x.ref] : []))]);
+    return checkWorkspace(ws).filter((i) => i.code === 'missingTranslation' && used.has(i.owner.id) && i.params.lang?.split(', ').includes(lang)).length;
+  }, [ws, questionnaireId, lang]);
+  if (!n) return null;
+  return (
+    <span className="rounded bg-amber-50 px-2 py-0.5 text-xs text-amber-800" data-testid="preview-missing-translations">
+      {t('preview.missingTranslations', { n, lang, fallback: ws.project.defaultLanguage })}
+    </span>
   );
 }
 

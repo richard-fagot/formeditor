@@ -26,6 +26,10 @@ Dépend de `core`, `format`, `app/i18n`, `plugin-api` (utilitaires).
   `valueError` (écart d'une valeur au type déclaré), `exampleSystemState`, `scenarioOf`, `systemStateOf` (état d'une prévisualisation).
 - État d'interface : `previewPanels` (panneaux état du système / débogage), `libraryItem` (élément affiché dans l'onglet Bibliothèque), `libraryPanel` (panneau latéral),
   palette en mode `commands` | `connect` | `library`. `activeGraphRef` : questionnaire actif, ou bloc affiché dans la bibliothèque.
+- Langues des contenus (`language-edits.ts`) : `isLanguageCode`, `addLanguage`, `removeLanguage` (jamais la langue par défaut ;
+  les textes saisis restent), `setDefaultLanguage`.
+- Affichage : `layoutRequest` (compteur : mise en page automatique demandée au logigramme affiché), `compare` (vue côte à côte :
+  questionnaire affiché en lecture seule à droite), onglet `settings`.
 - `setQuestionLabel` : change l'intitulé et, si la clé était dérivée de l'ancien, la redérive et propage.
 - Hooks : `useT()`, `useEditorEnv()` (environnement de l'éditeur sans `questionType`, ajouté par `ui/*` via `usePluginEnv`), `activeGraphRef`, `activeQuestionnaire`.
 
@@ -35,5 +39,5 @@ Dépend de `core`, `format`, `app/i18n`, `plugin-api` (utilitaires).
 
 ## Tests
 `store.test.ts` (historique par questionnaire, regroupement, renommage d'un questionnaire) ;
-`system.test.ts` (dictionnaire, scénarios, contrôle des valeurs) ;
+`system.test.ts` (dictionnaire, scénarios, contrôle des valeurs) ; `language.test.ts` (langues des contenus) ;
 `library.test.ts` (éléments de bibliothèque, références, regroupement en bloc : structure, requalification, parcours inchangé).

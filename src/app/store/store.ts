@@ -10,7 +10,7 @@ import type { LibraryItem } from './library-edits';
 
 enableMapSet();
 
-export type TabId = `q:${string}` | 'library' | 'system';
+export type TabId = `q:${string}` | 'library' | 'system' | 'settings';
 export type PaletteMode = 'commands' | 'connect' | 'library';
 
 export interface Selection {
@@ -51,6 +51,10 @@ export interface AppState {
   notice?: { title: string; lines: string[] };
   /** Demande d'ajustement de la vue du logigramme (compteur). */
   fitRequest: number;
+  /** Demande de mise en page automatique du logigramme affiché (compteur). */
+  layoutRequest: number;
+  /** Vue côte à côte : questionnaire affiché, en lecture, à droite du logigramme actif. */
+  compare?: string;
   /** Élément affiché dans l'onglet Bibliothèque (sans : jeux de libellés). */
   libraryItem?: LibraryItem;
   /** Panneau latéral de la bibliothèque à côté du logigramme (glisser-déposer). */
@@ -84,7 +88,7 @@ export interface AppActions {
 
 export type Store = AppState & AppActions;
 
-function initialState(ws: Workspace): Pick<AppState, 'ws' | 'tabs' | 'activeTab' | 'view' | 'selection' | 'history' | 'preview' | 'contentLang' | 'dirty' | 'libraryItem'> {
+function initialState(ws: Workspace): Pick<AppState, 'ws' | 'tabs' | 'activeTab' | 'view' | 'selection' | 'history' | 'preview' | 'contentLang' | 'dirty' | 'libraryItem' | 'compare'> {
   const tabs: TabId[] = ws.questionnaires.map((q) => `q:${q.id}` as const);
   return {
     ws,
@@ -97,6 +101,7 @@ function initialState(ws: Workspace): Pick<AppState, 'ws' | 'tabs' | 'activeTab'
     contentLang: ws.project.defaultLanguage,
     dirty: false,
     libraryItem: undefined,
+    compare: undefined,
   };
 }
 
@@ -117,6 +122,7 @@ export const useStore = create<Store>()(
     keymap: {},
     problemsOpen: true,
     fitRequest: 0,
+    layoutRequest: 0,
     libraryPanel: true,
     previewPanels: { system: true, debug: false },
 
