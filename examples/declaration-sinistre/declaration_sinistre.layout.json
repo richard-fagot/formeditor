@@ -1,0 +1,75 @@
+{
+  "formatVersion": 1,
+  "kind": "layout",
+  "graph": "q_declaration",
+  "nodes": {
+    "n_intro": {
+      "x": 0,
+      "y": 0
+    },
+    "n_fin_resilie": {
+      "x": 320,
+      "y": 0
+    },
+    "n_type": {
+      "x": 0,
+      "y": 160
+    },
+    "n_date": {
+      "x": 0,
+      "y": 320
+    },
+    "n_lien": {
+      "x": 320,
+      "y": 400
+    },
+    "n_victimes": {
+      "x": 0,
+      "y": 520
+    },
+    "n_montant": {
+      "x": 0,
+      "y": 700
+    },
+    "n_expertise": {
+      "x": 320,
+      "y": 780
+    },
+    "n_tiers": {
+      "x": 0,
+      "y": 880
+    },
+    "n_bloc_tiers": {
+      "x": 320,
+      "y": 960
+    },
+    "n_tiers_inconnu": {
+      "x": 640,
+      "y": 1040
+    },
+    "n_circonstances": {
+      "x": 0,
+      "y": 1120
+    },
+    "n_canaux": {
+      "x": 0,
+      "y": 1280
+    },
+    "n_tel": {
+      "x": 320,
+      "y": 1360
+    },
+    "n_synthese": {
+      "x": 0,
+      "y": 1460
+    },
+    "n_confirmation": {
+      "x": 0,
+      "y": 1600
+    },
+    "n_fin": {
+      "x": 0,
+      "y": 1760
+    }
+  }
+}

@@ -16,6 +16,9 @@
     "prepare": "git config core.hooksPath .githooks"
   },
   "dependencies": {
+    "ajv": "^8.20.0",
+    "idb-keyval": "^6.3.0",
+    "jsonata": "^1.8.9",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"
   },

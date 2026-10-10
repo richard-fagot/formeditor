@@ -27,11 +27,11 @@ La section « Modules » est générée par `npm run map` ; le reste est rédig�
 | `app/shortcuts` | Liaisons clavier configurables vers les commandes. | — | — | 1 |
 | `app/store` | État applicatif : projet, onglets, sélection, annuler/rétablir. | — | — | 1 |
 | `core/expressions` | Analyse, évaluation, extraction des références, interpolation des libellés. Adaptateur JSONata isolé ici. | — | — | 1 |
-| `core/model` | Types du domaine (projet, questionnaire, nœud, arête, question, bloc, variable, scénario). Aucun import externe. | — | — | 1 |
+| `core/model` | Types du domaine (projet, questionnaire, nœud, arête, question, bloc, variable, scénario) et quelques | * (./text), * (./question), * (./node), * (./graph), * (./documents), * (./keys) | — | 8 |
 | `core/references` | Résolution des clés et espaces de noms, index des usages, renommage propagé. | — | — | 1 |
 | `core/runtime` | Moteur de parcours : arêtes, boucles, répétitions, historique, retour arrière. | — | — | 1 |
 | `core/validation` | Contraintes de champs et vérifications de graphe (spec §4.6). | — | — | 1 |
-| `format` | Sérialisation, JSON Schema, migrations, import/export, bundle. | — | — | 1 |
+| `format` | Fichiers JSON : schémas, validation (Ajv, JSON Schema 2020-12), migrations (`formatVersion`), | SCHEMAS, validateDocument, documentKind, type DocumentKind, migrate, MIGRATIONS, type Migrations, serialize, newWorkspace, emptyLibrary, toBundle, exportBundle, exportFiles, importFiles, PROJECT_FILE, LIBRARY_FILE, type FileContent, type ImportResult | ajv, core/model | 7 |
 | `registry` | Enregistrement des plugins ; seul point de connaissance de la liste des types. | — | — | 1 |
 | `ui-kit` | Composants graphiques génériques (Tailwind + Radix). | — | — | 1 |
 | `ui/diagram` | Intégration de React Flow, mise en page auto. Délègue le rendu des nœuds au registre. | — | — | 1 |

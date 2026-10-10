@@ -1,0 +1,497 @@
+{
+  "formatVersion": 1,
+  "kind": "questionnaire",
+  "id": "q_declaration",
+  "key": "declaration_sinistre",
+  "title": {
+    "fr": "Déclaration de sinistre",
+    "en": "Claim declaration"
+  },
+  "description": "Déclaration d'un sinistre par un adhérent connecté.",
+  "start": "n_intro",
+  "nodes": [
+    {
+      "kind": "info",
+      "id": "n_intro",
+      "title": {
+        "fr": "Déclarer un sinistre",
+        "en": "Declare a claim"
+      },
+      "text": {
+        "fr": "Bonjour {sys.nom_assure}, ce questionnaire prend environ cinq minutes.",
+        "en": "Hello {sys.nom_assure}, this form takes about five minutes."
+      }
+    },
+    {
+      "kind": "end",
+      "id": "n_fin_resilie",
+      "title": {
+        "fr": "Contrat inactif",
+        "en": "Inactive contract"
+      },
+      "message": {
+        "fr": "Votre contrat n'est plus en vigueur : contactez votre conseiller.",
+        "en": "Your contract is no longer active: please contact your advisor."
+      },
+      "outcome": "ineligible"
+    },
+    {
+      "kind": "question",
+      "id": "n_type",
+      "key": "type_sinistre",
+      "label": {
+        "fr": "Quel type de sinistre déclarez-vous ?",
+        "en": "What type of claim are you declaring?"
+      },
+      "type": "single",
+      "required": true,
+      "options": [
+        {
+          "value": "degat_eaux",
+          "label": {
+            "fr": "Dégât des eaux",
+            "en": "Water damage"
+          }
+        },
+        {
+          "value": "vol",
+          "label": {
+            "fr": "Vol",
+            "en": "Theft"
+          }
+        },
+        {
+          "value": "accident",
+          "label": {
+            "fr": "Accident corporel",
+            "en": "Bodily injury"
+          }
+        },
+        {
+          "value": "bris_materiel",
+          "label": {
+            "fr": "Bris de matériel associatif",
+            "en": "Association equipment damage"
+          },
+          "when": "sys.type_adherent in ['ud', 'amicale']"
+        }
+      ],
+      "other": {
+        "label": {
+          "fr": "Autre (préciser)",
+          "en": "Other (specify)"
+        },
+        "detailRequired": true
+      }
+    },
+    {
+      "kind": "question",
+      "id": "n_date",
+      "ref": "lq_date_sinistre"
+    },
+    {
+      "kind": "question",
+      "id": "n_lien",
+      "key": "sinistre_lie",
+      "label": {
+        "fr": "Ce sinistre est-il lié à un sinistre déjà déclaré ?",
+        "en": "Is this claim related to a previous one?"
+      },
+      "type": "single",
+      "required": true,
+      "options": [
+        {
+          "value": "aucun",
+          "label": {
+            "fr": "Non, aucun",
+            "en": "No"
+          }
+        }
+      ],
+      "source": {
+        "from": "sys.sinistres",
+        "label": "date & ' — ' & nature",
+        "value": "id"
+      }
+    },
+    {
+      "kind": "question",
+      "id": "n_victimes",
+      "key": "victimes",
+      "label": {
+        "fr": "Personnes blessées",
+        "en": "Injured people"
+      },
+      "type": "structure",
+      "required": true,
+      "repeat": {
+        "min": 1,
+        "max": 10,
+        "addLabel": {
+          "fr": "Ajouter une victime",
+          "en": "Add a victim"
+        }
+      },
+      "fields": [
+        {
+          "id": "f_prenom",
+          "key": "prenom",
+          "label": {
+            "fr": "Prénom",
+            "en": "First name"
+          },
+          "type": "text",
+          "required": true
+        },
+        {
+          "id": "f_nom",
+          "key": "nom",
+          "label": {
+            "fr": "Nom",
+            "en": "Last name"
+          },
+          "type": "text",
+          "required": true
+        },
+        {
+          "id": "f_naissance",
+          "key": "date_naissance",
+          "label": {
+            "fr": "Date de naissance de {prenom}",
+            "en": "{prenom}'s date of birth"
+          },
+          "type": "date",
+          "max": "$today()"
+        },
+        {
+          "id": "f_hospitalise",
+          "key": "hospitalise",
+          "label": {
+            "fr": "Hospitalisé ?",
+            "en": "Hospitalised?"
+          },
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "id": "f_duree",
+          "key": "duree_hospitalisation",
+          "label": {
+            "fr": "Durée d'hospitalisation",
+            "en": "Length of stay"
+          },
+          "type": "number",
+          "numberKind": "natural",
+          "unit": {
+            "fr": "jours",
+            "en": "days"
+          },
+          "when": "hospitalise = true"
+        }
+      ]
+    },
+    {
+      "kind": "question",
+      "id": "n_montant",
+      "key": "montant_estime",
+      "label": {
+        "variants": [
+          {
+            "when": "type_sinistre = 'vol'",
+            "text": {
+              "fr": "Valeur estimée des biens volés",
+              "en": "Estimated value of stolen goods"
+            }
+          }
+        ],
+        "otherwise": {
+          "fr": "Montant estimé des dommages",
+          "en": "Estimated amount of damage"
+        }
+      },
+      "type": "number",
+      "required": true,
+      "numberKind": "real",
+      "min": 0,
+      "decimals": 2,
+      "unit": {
+        "fr": "€",
+        "en": "€"
+      }
+    },
+    {
+      "kind": "info",
+      "id": "n_expertise",
+      "title": {
+        "fr": "Expertise",
+        "en": "Expert assessment"
+      },
+      "text": {
+        "fr": "Au-delà de {sys.plafond_expertise} €, un expert vous contactera sous 48 heures.",
+        "en": "Above {sys.plafond_expertise} €, an expert will contact you within 48 hours."
+      }
+    },
+    {
+      "kind": "question",
+      "id": "n_tiers",
+      "key": "tiers_implique",
+      "label": {
+        "fr": "Un tiers est-il impliqué ?",
+        "en": "Is a third party involved?"
+      },
+      "type": "boolean",
+      "required": true
+    },
+    {
+      "kind": "block",
+      "id": "n_bloc_tiers",
+      "ref": "blk_identite_tiers",
+      "alias": "tiers"
+    },
+    {
+      "kind": "info",
+      "id": "n_tiers_inconnu",
+      "text": {
+        "fr": "Sans l'assureur de {tiers.nom}, le recours sera plus long.",
+        "en": "Without {tiers.nom}'s insurer, recovery will take longer."
+      }
+    },
+    {
+      "kind": "question",
+      "id": "n_circonstances",
+      "key": "circonstances",
+      "label": {
+        "fr": "Décrivez les circonstances",
+        "en": "Describe the circumstances"
+      },
+      "help": {
+        "fr": "Lieu, heure, déroulement.",
+        "en": "Place, time, sequence of events."
+      },
+      "type": "text",
+      "required": true,
+      "multiline": true,
+      "minLength": 20,
+      "maxLength": 2000
+    },
+    {
+      "kind": "question",
+      "id": "n_canaux",
+      "key": "canaux_contact",
+      "label": {
+        "fr": "Comment souhaitez-vous être recontacté ?",
+        "en": "How would you like to be contacted?"
+      },
+      "type": "multiple",
+      "required": true,
+      "minSelected": 1,
+      "options": [
+        {
+          "value": "email",
+          "label": {
+            "fr": "Courriel",
+            "en": "Email"
+          }
+        },
+        {
+          "value": "telephone",
+          "label": {
+            "fr": "Téléphone",
+            "en": "Phone"
+          }
+        },
+        {
+          "value": "courrier",
+          "label": {
+            "fr": "Courrier",
+            "en": "Mail"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "question",
+      "id": "n_tel",
+      "ref": "lq_telephone",
+      "label": {
+        "fr": "Numéro où vous joindre",
+        "en": "Number to reach you"
+      }
+    },
+    {
+      "kind": "summary",
+      "id": "n_synthese",
+      "title": {
+        "fr": "Récapitulatif",
+        "en": "Summary"
+      }
+    },
+    {
+      "kind": "question",
+      "id": "n_confirmation",
+      "key": "confirmation",
+      "label": {
+        "fr": "Ces informations sont-elles exactes ?",
+        "en": "Is this information correct?"
+      },
+      "type": "boolean",
+      "required": true
+    },
+    {
+      "kind": "end",
+      "id": "n_fin",
+      "title": {
+        "fr": "Déclaration enregistrée",
+        "en": "Claim registered"
+      },
+      "message": {
+        "variants": [
+          {
+            "when": "tiers_implique = true and $exists(tiers.compagnie)",
+            "text": {
+              "fr": "Merci. Nous engageons un recours auprès de {tiers.compagnie}.",
+              "en": "Thank you. We will claim against {tiers.compagnie}."
+            }
+          }
+        ],
+        "otherwise": {
+          "fr": "Merci, votre déclaration est enregistrée.",
+          "en": "Thank you, your claim is registered."
+        }
+      },
+      "outcome": "submitted"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e_intro_resilie",
+      "from": "n_intro",
+      "to": "n_fin_resilie",
+      "when": "sys.contrat_actif = false"
+    },
+    {
+      "id": "e_intro_type",
+      "from": "n_intro",
+      "to": "n_type"
+    },
+    {
+      "id": "e_type_date",
+      "from": "n_type",
+      "to": "n_date"
+    },
+    {
+      "id": "e_date_lien",
+      "from": "n_date",
+      "to": "n_lien",
+      "when": "$count(sys.sinistres) > 0"
+    },
+    {
+      "id": "e_date_victimes",
+      "from": "n_date",
+      "to": "n_victimes",
+      "when": "type_sinistre = 'accident'"
+    },
+    {
+      "id": "e_date_montant",
+      "from": "n_date",
+      "to": "n_montant"
+    },
+    {
+      "id": "e_lien_victimes",
+      "from": "n_lien",
+      "to": "n_victimes",
+      "when": "type_sinistre = 'accident'"
+    },
+    {
+      "id": "e_lien_montant",
+      "from": "n_lien",
+      "to": "n_montant"
+    },
+    {
+      "id": "e_victimes_montant",
+      "from": "n_victimes",
+      "to": "n_montant"
+    },
+    {
+      "id": "e_montant_expertise",
+      "from": "n_montant",
+      "to": "n_expertise",
+      "when": "montant_estime > sys.plafond_expertise"
+    },
+    {
+      "id": "e_montant_tiers",
+      "from": "n_montant",
+      "to": "n_tiers"
+    },
+    {
+      "id": "e_expertise_tiers",
+      "from": "n_expertise",
+      "to": "n_tiers"
+    },
+    {
+      "id": "e_tiers_bloc",
+      "from": "n_tiers",
+      "to": "n_bloc_tiers",
+      "when": "tiers_implique = true"
+    },
+    {
+      "id": "e_tiers_circonstances",
+      "from": "n_tiers",
+      "to": "n_circonstances"
+    },
+    {
+      "id": "e_bloc_identifie",
+      "from": "n_bloc_tiers",
+      "to": "n_circonstances",
+      "exit": "identifie"
+    },
+    {
+      "id": "e_bloc_non_identifie",
+      "from": "n_bloc_tiers",
+      "to": "n_tiers_inconnu",
+      "exit": "non_identifie"
+    },
+    {
+      "id": "e_inconnu_circonstances",
+      "from": "n_tiers_inconnu",
+      "to": "n_circonstances"
+    },
+    {
+      "id": "e_circonstances_canaux",
+      "from": "n_circonstances",
+      "to": "n_canaux"
+    },
+    {
+      "id": "e_canaux_tel",
+      "from": "n_canaux",
+      "to": "n_tel",
+      "when": "'telephone' in canaux_contact"
+    },
+    {
+      "id": "e_canaux_synthese",
+      "from": "n_canaux",
+      "to": "n_synthese"
+    },
+    {
+      "id": "e_tel_synthese",
+      "from": "n_tel",
+      "to": "n_synthese"
+    },
+    {
+      "id": "e_synthese_confirmation",
+      "from": "n_synthese",
+      "to": "n_confirmation"
+    },
+    {
+      "id": "e_confirmation_retour",
+      "from": "n_confirmation",
+      "to": "n_type",
+      "when": "confirmation = false"
+    },
+    {
+      "id": "e_confirmation_fin",
+      "from": "n_confirmation",
+      "to": "n_fin"
+    }
+  ]
+}

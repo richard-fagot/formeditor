@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "project.schema.json",
+  "title": "Projet",
+  "type": "object",
+  "required": [
+    "formatVersion",
+    "kind",
+    "id",
+    "name",
+    "languages",
+    "defaultLanguage",
+    "systemState",
+    "scenarios",
+    "questionnaires"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "variable": {
+      "type": "object",
+      "required": [
+        "name",
+        "type"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "$ref": "common.schema.json#/$defs/key"
+        },
+        "type": {
+          "enum": [
+            "text",
+            "number",
+            "date",
+            "boolean",
+            "enum",
+            "list"
+          ]
+        },
+        "description": {
+          "type": "string"
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/variable"
+          }
+        },
+        "example": {}
+      }
+    }
+  },
+  "properties": {
+    "formatVersion": {
+      "$ref": "common.schema.json#/$defs/formatVersion"
+    },
+    "kind": {
+      "const": "project"
+    },
+    "id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "languages": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "defaultLanguage": {
+      "type": "string"
+    },
+    "systemState": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/variable"
+      }
+    },
+    "scenarios": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "values"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "values": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "questionnaires": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "file"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "file": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

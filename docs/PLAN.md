@@ -12,12 +12,12 @@ carte à jour, fusion dans `main`, push.
 - [x] Test de fumée : `dist/index.html` s'ouvre en `file://` dans Firefox et Chromium
 
 ## Phase 2 — Modèle, format et exemple
-- [ ] Types du domaine (`core/model`)
-- [ ] JSON Schema des fichiers (projet, bibliothèque, questionnaire, layout), validation Ajv
-- [ ] Sérialisation, bundle, migrations (`formatVersion`)
-- [ ] Questionnaire d'exemple « déclaration de sinistre » + 2 ou 3 scénarios d'état du système
-- [ ] `docs/FORMAT.md` (modèle, navigation, grammaire des expressions, interpolation, exemples)
-- [ ] Tests de référence : schéma + aller-retour à l'identique
+- [x] Types du domaine (`core/model`)
+- [x] JSON Schema des fichiers (projet, bibliothèque, questionnaire, layout), validation Ajv
+- [x] Sérialisation, bundle, migrations (`formatVersion`)
+- [x] Questionnaire d'exemple « déclaration de sinistre » + 2 ou 3 scénarios d'état du système
+- [x] `docs/FORMAT.md` (modèle, navigation, grammaire des expressions, interpolation, exemples)
+- [x] Tests de référence : schéma + aller-retour à l'identique
 
 ## Phase 3 — Expressions et références
 - [ ] Évaluation JSONata isolée dans `core/expressions`

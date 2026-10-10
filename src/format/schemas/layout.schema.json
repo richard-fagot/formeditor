@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "layout.schema.json",
+  "title": "Mise en page d'un graphe (outil seulement)",
+  "type": "object",
+  "required": [
+    "formatVersion",
+    "kind",
+    "graph",
+    "nodes"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "formatVersion": {
+      "$ref": "common.schema.json#/$defs/formatVersion"
+    },
+    "kind": {
+      "const": "layout"
+    },
+    "graph": {
+      "type": "string"
+    },
+    "nodes": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "x",
+          "y"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "x": {
+            "type": "number"
+          },
+          "y": {
+            "type": "number"
+          },
+          "collapsed": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  }
+}
