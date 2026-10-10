@@ -46,6 +46,9 @@ describe('validateAnswer', () => {
     // Facultative laissée vide (`[]`) : `repeat.min` ne s'applique pas ; obligatoire : il s'applique.
     expect(params(s, [])).toEqual([]);
     expect(params({ ...s, required: true }, [])).toEqual([':minOccurrences']);
+    // Obligatoire sans `repeat.min` : la liste vide est une réponse manquante.
+    expect(params({ ...s, required: true, repeat: {} }, [])).toEqual([':required']);
+    expect(params({ ...s, required: true, repeat: { max: 2 } }, [{ h: false }])).toEqual([]);
     expect(params(s, [{ h: false }, { h: true }])).toEqual(['v[1].j:required']);
     expect(params(s, [{ h: false }, { h: false }, { h: false }])).toEqual([':maxOccurrences']);
   });

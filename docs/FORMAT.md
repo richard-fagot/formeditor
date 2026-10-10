@@ -118,7 +118,8 @@ Deux règles de validation complètent les paramètres (implémentation de réf�
   (`messages.option`). Une option devenue invisible ne permet donc plus de valider la question.
 - **Structure répétable facultative** : `repeat.min` ne s'applique pas à une structure répétable
   facultative laissée vide (aucune occurrence saisie). Il s'applique si la question est obligatoire
-  ou dès qu'une occurrence est saisie.
+  ou dès qu'une occurrence est saisie. Une structure répétable obligatoire sans `repeat.min` (ou avec
+  `min: 0`) laissée vide (`[]`) est refusée avec le paramètre `required`.
 
 | `type` | Valeur de la réponse | Paramètres |
 | --- | --- | --- |

@@ -38,8 +38,9 @@ export function validateAnswer(
     errors.push({ path, param, message: q.messages?.[param] ?? defaultMessage(param, arg) });
 
   const required = typeof q.required === 'string' ? evaluateCondition(q.required, ctx, env) : q.required === true;
-  // Liste vide d'une structure répétable : vide si facultative ; si obligatoire, `repeat.min` s'applique.
-  const repeatList = required && q.type === 'structure' && q.repeat && Array.isArray(value);
+  // Liste vide d'une structure répétable : vide si facultative ; si obligatoire, `repeat.min` (≥ 1) s'applique,
+  // et sans minimum la liste vide est une réponse manquante (`required`).
+  const repeatList = required && q.type === 'structure' && !!q.repeat?.min && Array.isArray(value);
   if (isEmpty(value) && !repeatList) {
     if (required) fail('required');
     return errors;
