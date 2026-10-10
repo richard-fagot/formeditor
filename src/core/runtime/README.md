@@ -1,6 +1,6 @@
 # core/runtime
 
-Moteur de parcours : implémentation de référence de la navigation (docs/FORMAT.md §4). Pur, immuable.
+Moteur de parcours : implémentation de référence de la navigation (docs/FORMAT.md §11). Pur, immuable.
 Dépend de `core/model`, `core/expressions`.
 
 ## API

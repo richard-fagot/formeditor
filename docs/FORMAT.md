@@ -60,8 +60,9 @@ Squelette d'un questionnaire :
 
 ## 2. Identifiants et clés
 
-- **`id`** : identifiant technique, stable, opaque, sans `/` (le `/` est réservé aux étapes de bloc,
-  §11.3). Il sert aux liens structurels : arêtes (`from`, `to`), départ (`start`), références de
+- **`id`** : identifiant technique, stable, opaque. Les id des nœuds, arêtes, questions et champs de
+  structure ne contiennent pas de `/` (réservé aux étapes de bloc, §11.3 ; imposé par le schéma) ; les
+  autres id (projet, questionnaire, bloc, jeu de libellés, scénario) ne sont pas contraints. Il sert aux liens structurels : arêtes (`from`, `to`), départ (`start`), références de
   bibliothèque (`ref`, `labelSet`), mise en page. **Jamais** dans une expression.
   Les id sont uniques dans leur graphe ; un nœud question local a le même id que sa question.
 - **`key`** : clé lisible en `snake_case` (`^[a-z][a-z0-9_]*$`). C'est elle qu'on écrit dans les
@@ -172,7 +173,7 @@ le contexte de la page affichée (§10.2). Exemples : `Bonjour {sys.nom_assure}`
 | `info` | Texte sans saisie. | `title?`, `text`. | oui |
 | `summary` | Récapitulatif des réponses (§11.6). | `title?`. | oui |
 | `end` | Fin de parcours. | `title?`, `message`, `outcome?` (issue métier libre : `submitted`, `ineligible`…). | oui (dernière) |
-| `exit` | Sortie nommée d'un bloc, **dans un bloc uniquement**. | `name` (clé, visée par `exit` des arêtes de l'instance), `label?` (texte pour le lecteur, sans effet). | non |
+| `exit` | Sortie nommée d'un bloc, **dans un bloc uniquement** (règle non vérifiée, §11.3). | `name` (clé, visée par `exit` des arêtes de l'instance), `label?` (texte pour le lecteur, sans effet). | non |
 
 Question locale (le nœud porte la question) et question de bibliothèque :
 
@@ -306,7 +307,8 @@ Le contexte de validation est celui de la page (§10.2) où la réponse en cours
 3. **Paramètres du type** :
    - `text` : `minLength`, `maxLength` (en caractères) ; `pattern` (expression régulière JavaScript, sans
      ancrage implicite ni drapeau ; un motif invalide est ignoré).
-   - `date` : date de calendrier valide `AAAA-MM-JJ` sinon `format` (et rien d'autre) ; puis `min`, `max`.
+   - `date` : date de calendrier valide `AAAA-MM-JJ`, sinon erreur `format` et les bornes ne sont pas
+     vérifiées (les règles libres de l'étape 5 le sont toujours) ; puis `min`, `max`.
      Une borne qui a la forme `AAAA-MM-JJ` est littérale, sinon c'est une expression ; une borne dont
      l'évaluation ne donne pas une chaîne est ignorée. Comparaison de chaînes ISO.
    - `number` : `numberKind` (`natural` : entier ≥ 0 ; `integer` : entier) ; `min`, `max` (nombre, ou
@@ -466,7 +468,10 @@ Un bloc (`library.blocks[]`) est un sous-graphe avec `start`, des questions et d
   aux arêtes sortant de l'instance dont `exit` vaut le `name` de la sortie atteinte **ou** qui n'ont pas
   d'`exit` (valables pour toute sortie). Leurs conditions sont évaluées dans le contexte de l'**hôte**
   (réponses du bloc via `alias.cle`).
-- Un bloc ne contient pas d'instance de bloc. Un même bloc peut être instancié plusieurs fois, avec des
+- Un bloc ne contient pas d'instance de bloc, et un nœud `exit` n'apparaît que dans un bloc. Ces deux
+  règles ne sont imposées ni par le schéma ni par les vérifications du §13 : l'éditeur ne permet pas de
+  produire autre chose, mais un fichier écrit à la main pourrait les enfreindre, et le comportement est
+  alors indéfini (le moteur cible peut refuser le fichier). Un même bloc peut être instancié plusieurs fois, avec des
   alias différents ; chaque instance a ses propres réponses.
 
 ```json
@@ -486,7 +491,9 @@ Un bloc (`library.blocks[]`) est un sous-graphe avec `start`, des questions et d
 Après chaque « Suivant », le moteur calcule le **chemin projeté** : depuis `start`, il suit les arêtes
 avec les réponses connues tant que les pages question ont une réponse (`null` compte comme réponse).
 À la première page question **sans** réponse, il ajoute toutes les pages encore atteignables depuis
-elle en ignorant les conditions (sans repasser par le chemin déjà projeté). Les réponses (et précisions
+elle en ignorant les conditions (sans repasser par le chemin déjà projeté). La projection s'arrête aussi
+lorsqu'elle atteint une page déjà projetée (boucle refermée, par exemple `confirmation = false` qui
+renvoie au début) ou une page sans arête applicable (fin, blocage). Les réponses (et précisions
 « Autre ») des questions absentes de cet ensemble sont **effacées**.
 
 Ainsi, après un retour arrière où l'on change `type_sinistre` de `accident` à `vol`, la réponse

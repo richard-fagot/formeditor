@@ -19,7 +19,7 @@ function onItem(expr: string | undefined, item: unknown, env: EvalEnv): unknown 
 
 /**
  * Options d'un choix dans un contexte : options statiques dont la condition est vraie (ou absente),
- * puis options de la source dynamique (docs/FORMAT.md §5.3). Doublons, valeurs vides et `other` écartés.
+ * puis options de la source dynamique (docs/FORMAT.md §7.5). Doublons, valeurs vides et `other` écartés.
  */
 export function choiceOptions(q: SingleChoiceQuestion | MultipleChoiceQuestion, ctx: EvalContext, env: EvalEnv = {}): ResolvedOption[] {
   const out: ResolvedOption[] = q.options

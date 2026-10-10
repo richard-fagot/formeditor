@@ -45,6 +45,7 @@ describe('validateDocument', () => {
     expect(validateDocument({ ...ws.project, languages: ['fr', 'Français'] }).length).toBeGreaterThan(0);
     expect(validateDocument({ ...ws.project, defaultLanguage: 'FR' }).length).toBeGreaterThan(0);
     expect(validateDocument({ ...minimalQuestionnaire(), title: { fr_FR: 'Test' } }).length).toBeGreaterThan(0);
+    expect(validateDocument({ ...ws.project, languages: ['fr', 'fr'] }).length).toBeGreaterThan(0);
     expect(validateDocument({ ...ws.project, languages: ['fr', 'pt-BR'] })).toEqual([]);
   });
   it('refuse un document sans kind', () => {
