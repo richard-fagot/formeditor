@@ -3,12 +3,13 @@ import { isLibraryQuestion, isLocalQuestion, type GraphNode } from '../../core/m
 import { blockScope, questionnaireScope } from '../../core/references';
 import { nodeKind } from '../../registry';
 import { runCommand } from '../../app/commands';
-import { getGraph, useStore, useT, type GraphRef } from '../../app/store';
-import { Button, Field, Section } from '../../ui-kit';
-import { ExpressionEnvProvider, LabelEditor } from '../expression-editor';
+import { getGraph, renameExit, scopeOf, useStore, useT, type GraphRef } from '../../app/store';
+import { Button, Section } from '../../ui-kit';
+import { ExpressionEnvProvider } from '../expression-editor';
 import { EdgeProperties } from './EdgeProperties';
 import { QuestionProperties } from './QuestionProperties';
 import { QuestionnaireProperties } from './QuestionnaireProperties';
+import { BlockInstanceProperties, LibraryQuestionProperties } from './ReferenceProperties';
 import { useGraphEdit } from './useGraphEdit';
 import { usePluginEnv } from './usePluginEnv';
 
@@ -45,17 +46,17 @@ function NodeProperties({ graph, node, isStart }: { graph: GraphRef; node: Graph
   return (
     <div key={node.id}>
       {isLocalQuestion(node) && <QuestionProperties graph={graph} node={node} />}
-      {isLibraryQuestion(node) && (
-        <Section title={t('props.question')}>
-          <p className="text-xs text-amber-700">{t('props.library')}</p>
-          <Field label={t('props.label')}>
-            <LabelEditor value={node.label} onChange={(label) => patchNode(node.id, { label })} />
-          </Field>
-        </Section>
-      )}
-      {node.kind !== 'question' && plugin.Properties && (
+      {isLibraryQuestion(node) && <LibraryQuestionProperties graph={graph} node={node} />}
+      {node.kind === 'block' && <BlockInstanceProperties graph={graph} node={node} />}
+      {node.kind !== 'question' && node.kind !== 'block' && plugin.Properties && (
         <Section title={plugin.name[env.uiLang] ?? plugin.name.fr}>
-          <plugin.Properties node={node} env={env} update={(patch) => patchNode(node.id, patch)} />
+          <plugin.Properties node={node} env={env} update={(patch) => {
+            // Renommer une sortie renomme aussi les arêtes des instances du bloc qui la visent.
+            const name = (patch as { name?: string }).name;
+            if (node.kind === 'exit' && name !== undefined && graph.kind === 'block') {
+              useStore.getState().edit(scopeOf(graph), (ws) => renameExit(ws, graph.id, node.id, name), `${node.id}:name`);
+            } else patchNode(node.id, patch);
+          }} />
         </Section>
       )}
       {!isStart && (

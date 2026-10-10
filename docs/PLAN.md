@@ -47,9 +47,9 @@ carte à jour, fusion dans `main`, push.
 - [x] Structure (répétable, bouton « Ajouter »)
 
 ## Phase 7 — Bibliothèque et blocs
-- [ ] Questions et blocs référencés, surcharge locale du libellé
-- [ ] Blocs : sorties nommées, alias, accès libre aux questions de l'hôte
-- [ ] Insertion par palette et glisser-déposer, regroupement d'une sélection en bloc
+- [x] Questions et blocs référencés, surcharge locale du libellé
+- [x] Blocs : sorties nommées, alias, accès libre aux questions de l'hôte
+- [x] Insertion par palette et glisser-déposer, regroupement d'une sélection en bloc
 
 ## Phase 8 — Prévisualisation complète → DÉMO 2 (arrêt)
 - [ ] Écran du dictionnaire de l'état du système (§4.5) : nom, type, description, valeur d'exemple ; autocomplétion des expressions

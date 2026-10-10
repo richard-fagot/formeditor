@@ -42,9 +42,9 @@ export function EdgeProperties({ graph, g, edge }: { graph: GraphRef; g: Graph; 
         />
       </Field>
       {exits.length > 0 && (
-        <Field label="exit">
+        <Field label={t('props.exit')}>
           <Select value={edge.exit ?? ''} onChange={(e) => patchEdge(edge.id, { exit: e.target.value || undefined })}>
-            <option value="">*</option>
+            <option value="">{t('props.exitAny')}</option>
             {exits.map((x) => <option key={x}>{x}</option>)}
           </Select>
         </Field>

@@ -8,10 +8,10 @@ Cadre de l'application. Dépend de `app/*`, `ui/*`, `ui-kit`.
 - `TopBar` : nom du projet, nouveau / ouvrir / exemple / exporter (bundle, fichiers), langue du contenu,
   langue de l'interface, indicateur « modifications non exportées », bouton de palette.
 - `Tabs` : questionnaires ouverts (fermer, rouvrir), nouveau questionnaire, bibliothèque (`ui/library`), état du système.
-- `QuestionnaireView` : sous-onglets Logigramme / Prévisualisation ; graphe + panneau Problèmes à gauche,
-  propriétés à droite.
-- `Palette` (cmdk) : commandes disponibles + recherche de nœud ; mode « relier » (commande E).
-- `ProblemsPanel` : vérifications du §4.6 du questionnaire ; clic = sélection.
+- `QuestionnaireView` : sous-onglets Logigramme / Prévisualisation ; panneau latéral de la bibliothèque
+  (`ui/library`, affiché / masqué par `view.libraryPanel`), graphe + panneau Problèmes (`ui/diagram`), propriétés à droite.
+- `Palette` (cmdk) : commandes disponibles, insertion depuis la bibliothèque (« Insérer : … ») et recherche de nœud ;
+  mode « relier » (commande E) ; mode « bibliothèque » (commande I : questions et blocs seulement).
 
 Tous les boutons, sélecteurs (langues), onglets (afficher, fermer, rouvrir) et le nom du projet appellent
 des commandes (`runCommand`) : aucune action n'est câblée en dehors du catalogue. Restent hors catalogue,

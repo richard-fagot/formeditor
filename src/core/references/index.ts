@@ -5,5 +5,5 @@ export {
   questionnaireScope, blockScope, blockHosts, structureScope, resolvePath, questionOfNode,
   type Scope, type RefInfo, type RefKind,
 } from './scope';
-export { renameKey, type RenameTarget } from './rename';
+export { renameKey, qualifyKeys, type RenameTarget } from './rename';
 export { findUsages } from './usages';

@@ -10,9 +10,11 @@ export function useT() {
   return useMemo(() => makeTranslate(lang), [lang]);
 }
 
-/** Graphe de l'onglet actif (questionnaire). */
+/** Graphe édité dans l'onglet actif : questionnaire, ou bloc affiché dans l'onglet Bibliothèque. */
 export function activeGraphRef(s: Store): GraphRef | undefined {
-  return s.activeTab.startsWith('q:') ? { kind: 'questionnaire', id: s.activeTab.slice(2) } : s.selection.graph;
+  if (s.activeTab.startsWith('q:')) return { kind: 'questionnaire', id: s.activeTab.slice(2) };
+  if (s.activeTab === 'library' && s.libraryItem?.kind === 'block') return { kind: 'block', id: s.libraryItem.id };
+  return undefined;
 }
 
 export function activeQuestionnaire(s: Store): Questionnaire | undefined {

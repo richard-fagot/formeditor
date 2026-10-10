@@ -15,6 +15,13 @@ Dépend de `core`, `format`, `app/i18n`, `plugin-api` (utilitaires).
   `duplicateNodes`, `getGraph`, `layoutOf`, `usedKeys`, `freshKey`.
 - Questionnaire (`questionnaire-edits.ts`) : `renameQuestionnaire` (clé + fichier `<clé>.json` du projet),
   `canRenameQuestionnaire`, `questionnaireKeys`, `patchQuestionnaire` (titre, description).
+- Bibliothèque (`library-edits.ts`) : `addLibraryQuestion`, `addBlock`, `deleteLibraryItem`, `referenceNode` (nœud
+  référence ; alias libre pour un bloc ; pas de bloc dans un bloc), `placeNode`, `moveToLibrary` (question locale →
+  bibliothèque, même clé), `setLibraryQuestionLabel`, `renameExit` (suit dans les arêtes des instances), type `LibraryItem`.
+- `groupIntoBlock(ws, ref, ids, title)` (`group.ts`) : regroupe une sélection en bloc ; entrée = départ ou cible de la
+  première arête entrante ; une sortie par cible extérieure ; références de l'hôte préfixées par l'alias (`qualifyKeys`).
+- État d'interface : `libraryItem` (élément affiché dans l'onglet Bibliothèque), `libraryPanel` (panneau latéral),
+  palette en mode `commands` | `connect` | `library`. `activeGraphRef` : questionnaire actif, ou bloc affiché dans la bibliothèque.
 - `setQuestionLabel` : change l'intitulé et, si la clé était dérivée de l'ancien, la redérive et propage.
 - Hooks : `useT()`, `useEditorEnv()` (environnement de l'éditeur sans `questionType`, ajouté par `ui/*` via `usePluginEnv`), `activeGraphRef`, `activeQuestionnaire`.
 
@@ -23,4 +30,5 @@ Dépend de `core`, `format`, `app/i18n`, `plugin-api` (utilitaires).
 - Les fonctions de `core` reçoivent parfois un brouillon immer : elles clonent en JSON, jamais avec `structuredClone`.
 
 ## Tests
-`store.test.ts` (historique par questionnaire, regroupement, renommage d'un questionnaire).
+`store.test.ts` (historique par questionnaire, regroupement, renommage d'un questionnaire) ;
+`library.test.ts` (éléments de bibliothèque, références, regroupement en bloc : structure, requalification, parcours inchangé).

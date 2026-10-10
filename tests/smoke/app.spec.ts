@@ -244,3 +244,69 @@ test('types au clavier, saisie rapide des options, champs de structure, jeu de l
   await expect(page.getByTestId('label-sets').locator('input')).toHaveCount(0);
   expect(errors).toEqual([]);
 });
+
+test('bibliothèque : glisser une question, insérer un bloc (I), déplier, grouper (Ctrl+G), éditer le bloc', async ({ page }) => {
+  const errors = await open(page);
+  await page.keyboard.press('Control+k');
+  await page.keyboard.type('exemple');
+  await page.keyboard.press('Enter');
+  const nodes = page.locator('.react-flow__node');
+  await expect(nodes.first()).toBeVisible();
+  const count = await nodes.count();
+
+  // Glisser une question de la bibliothèque sur le logigramme.
+  const panel = page.getByTestId('library-panel');
+  await panel.getByLabel('Filtrer la bibliothèque…').fill('telephone');
+  await panel.getByTestId('library-item').first().dragTo(page.getByTestId('diagram'), { targetPosition: { x: 80, y: 80 } });
+  await expect(nodes).toHaveCount(count + 1);
+  await expect(nodes.filter({ hasText: 'telephone' })).toHaveCount(2);
+
+  // Surcharge locale de l'intitulé, puis retour à celui de la bibliothèque.
+  const props = page.getByTestId('properties');
+  const label = props.locator('input, textarea').first();
+  const original = await label.inputValue();
+  await label.fill('Téléphone portable');
+  await expect(nodes.filter({ hasText: 'Téléphone portable' })).toHaveCount(1);
+  await expect(props).toContainText('Intitulé surchargé localement.');
+  await props.getByRole('button', { name: 'Reprendre l’intitulé de la bibliothèque' }).click();
+  await expect(nodes.filter({ hasText: 'Téléphone portable' })).toHaveCount(0);
+  await expect(label).toHaveValue(original);
+
+  // Insérer un bloc par la palette (I) : nouvelle instance avec un alias libre.
+  await page.getByTestId('diagram').focus();
+  await page.keyboard.press('i');
+  await expect(page.getByPlaceholder('Insérer une question ou un bloc…')).toBeFocused();
+  await page.keyboard.type('identite_tiers');
+  await page.keyboard.press('Enter');
+  await expect(nodes).toHaveCount(count + 2);
+  const instance = nodes.filter({ hasText: 'identite_tiers' });
+  await expect(instance).toHaveCount(1);
+  await expect(page.getByLabel('Alias')).toHaveValue('identite_tiers');
+
+  // Déplier l'instance en lecture seule.
+  await instance.getByTestId('block-expand').click();
+  await expect(instance.getByTestId('block-content')).toContainText('identite_tiers.nom');
+
+  // Grouper la question déposée (reliée à l'instance insérée à sa suite) : bloc avec une sortie.
+  await nodes.filter({ hasText: 'telephone' }).last().click();
+  await page.keyboard.press('Control+g');
+  await expect(nodes.filter({ hasText: 'Nouveau bloc' })).toHaveCount(1);
+
+  // Le bloc créé s'édite dans l'onglet Bibliothèque : ajouter une sortie au clavier (palette).
+  await page.getByLabel('Alias').focus();
+  await page.getByRole('button', { name: 'Ouvrir dans la bibliothèque' }).click();
+  await expect(page.getByTestId('block-view')).toBeVisible();
+  await expect(page.getByTestId('block-view').locator('.react-flow__node')).toHaveCount(2);
+  await expect(page.getByTestId('block-view').locator('.react-flow__node').filter({ hasText: 'Sortie' })).toContainText('identite_tiers');
+  await page.getByTestId('block-view').getByTestId('diagram').click({ position: { x: 20, y: 20 } });
+  await page.keyboard.press('Control+k');
+  await page.keyboard.type('Nouvelle sortie de bloc');
+  await page.keyboard.press('Enter');
+  await expect(page.getByTestId('block-view').locator('.react-flow__node')).toHaveCount(3);
+
+  // Question de bibliothèque : propriétés complètes dans l'onglet Bibliothèque, usages listés.
+  await page.getByTestId('library-entry').filter({ hasText: 'telephone' }).click();
+  await expect(page.getByTestId('library-question')).toContainText('Utilisé dans');
+  await expect(page.getByTestId('library-question').getByLabel('Clé', { exact: true })).toHaveValue('telephone');
+  expect(errors).toEqual([]);
+});

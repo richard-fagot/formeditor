@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { exampleWorkspace } from '../../../tests/reference/example';
 import type { Questionnaire, Workspace } from '../model';
-import { blockScope, collectExpressions, findUsages, questionnaireScope, renameKey, resolvePath } from './index';
+import { blockScope, collectExpressions, findUsages, qualifyKeys, questionnaireScope, renameKey, resolvePath } from './index';
 
 const ws = exampleWorkspace();
 const decl = (w: Workspace) => w.questionnaires[0]!;
@@ -78,5 +78,18 @@ describe('renommage propagé', () => {
     const w = renameKey(ws, { kind: 'question', owner: Q, nodeId: 'n_canaux' }, 'canaux');
     const diff = JSON.stringify(w).length - JSON.stringify(ws).length;
     expect(diff).toBe(-'_contact'.length * 2);
+  });
+});
+
+describe('qualification de clés (regroupement en bloc)', () => {
+  it('préfixe par l’alias les références du propriétaire, précisions « Autre » comprises', () => {
+    const out = qualifyKeys(ws, Q, ['type_sinistre'], 'decl');
+    expect(edge(decl(out), 'e_date_victimes').when).toBe("decl.type_sinistre = 'accident'");
+    const before = collectExpressions(ws).filter((f) => f.loc.owner.kind === 'questionnaire' && /type_sinistre_other/.test(f.text));
+    const after = collectExpressions(out).filter((f) => f.loc.owner.kind === 'questionnaire' && /decl\.type_sinistre_other/.test(f.text));
+    expect(after.length).toBe(before.length);
+    // Les blocs et questions de bibliothèque ne sont pas touchés.
+    expect(out.library).toEqual(ws.library);
+    expect(ws).toEqual(exampleWorkspace());
   });
 });
