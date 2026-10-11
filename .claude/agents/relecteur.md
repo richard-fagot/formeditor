@@ -18,6 +18,9 @@ On te donne une ou plusieurs phases de `docs/PLAN.md`. Pour chacune :
 4. Lance `npm run check` et rapporte le résultat exact.
 5. Vérifie que `docs/MAP.md` et les `README.md` des modules touchés décrivent le code actuel.
 6. Vérifie les règles de `CLAUDE.md` (architecture, invariants, format JSON ↔ schéma ↔ FORMAT.md).
+7. Vérifie que `docs/GUIDE.md` décrit fidèlement les actions touchées, sur **l'ensemble des changements
+   depuis le début de la branche** (`git diff main...`), pas seulement sur le dernier tour de correction :
+   chemins (raccourci, palette, souris, nom exact des champs et boutons), préconditions, effets.
 
 Bash ne sert qu'à lancer des commandes de lecture et `npm run check`. N'écris, ne modifie,
 ne commite rien.
@@ -34,4 +37,4 @@ npm run check : vert | rouge (détail)
 ```
 
 Bloquant = fonctionnalité absente ou fausse, harnais rouge. Majeur = fonctionnalité partielle,
-test qui ne teste rien. Mineur = documentation, carte, détail. Pas d'avis de style.
+test qui ne teste rien, guide qui ne décrit pas fidèlement une action existante (écart bloquant pour la fusion). Mineur = documentation, carte, détail. Pas d'avis de style.

@@ -54,6 +54,8 @@ sans cérémonie. Préférer la solution la plus simple qui respecte la spec.
 - Changement du format JSON → schéma, migration (`formatVersion`), `docs/FORMAT.md` et exemple mis à jour.
 - Toute action utilisateur passe par le catalogue de commandes (`app/commands`), donc par la palette et les raccourcis.
 - Tout texte destiné à l'utilisateur final est multilingue.
+- `docs/GUIDE.md` : toute action ajoutée, modifiée ou supprimée met à jour le guide (entrée, balise `[cmd: …]`,
+  `npm run guide` pour l'index des raccourcis). `npm run check` contrôle la cohérence avec le catalogue de commandes.
 
 ## Git
 
@@ -69,6 +71,7 @@ sans cérémonie. Préférer la solution la plus simple qui respecte la spec.
 | `npm test` | Vitest |
 | `npm run check` | Harnais complet |
 | `npm run map` | Régénère la partie factuelle de `docs/MAP.md` |
+| `npm run guide` | Régénère l'index des raccourcis de `docs/GUIDE.md` |
 | `npm run build` | Produit `dist/index.html` (fichier unique) |
 
 ## Orchestration par sous-agents
@@ -92,6 +95,8 @@ Une demande par fichier : `docs/evolutions/EVO-NNN-titre.md`, avec une ligne `St
 2. Mettre à jour `docs/spec.md` (le § concerné) pour qu'elle décrive le nouveau comportement.
 3. Confier la réalisation au sous-agent `realisateur`, avec la spec mise à jour et les critères
    d'acceptation ; un test couvre chaque critère.
-4. Faire relire par `relecteur`, corriger si besoin.
-5. Fusionner, statut « fait » avec la date.
+4. Mettre à jour le guide (`docs/GUIDE.md`) pour les actions touchées, et sa date « jusqu'à EVO-NNN »
+   (fait par le `realisateur` dans le même commit que le changement de comportement).
+5. Faire relire par `relecteur` (guide compris), corriger si besoin.
+6. Fusionner, statut « fait » avec la date.
 Si une demande contredit la spec sans que ce soit explicitement voulu, demander avant de coder.

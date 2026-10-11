@@ -43,4 +43,5 @@ Catalogue unique des actions utilisateur (spec §4.4). Palette, menus et raccour
 `library-commands.test.ts` (insertion, dépôt, regroupement et annulation, édition d'un bloc, sortie nommée, question vers la bibliothèque).
 
 ## Ajouter une action
-Ajouter un objet `Command` dans le fichier adéquat, la clé de libellé dans `app/i18n/messages.ts`.
+Ajouter un objet `Command` dans le fichier adéquat, la clé de libellé dans `app/i18n/messages.ts`, puis l’entrée balisée
+`[cmd: id]` dans `docs/GUIDE.md` et `npm run guide` (index des raccourcis) : sinon `npm run check` échoue.

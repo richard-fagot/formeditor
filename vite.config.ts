@@ -6,7 +6,7 @@ import { viteSingleFile } from 'vite-plugin-singlefile';
 export default defineConfig({
   plugins: [react(), tailwindcss(), viteSingleFile()],
   test: {
-    include: ['src/**/*.test.ts', 'tests/reference/**/*.test.ts'],
+    include: ['src/**/*.test.ts', 'tests/reference/**/*.test.ts', 'scripts/**/*.test.ts'],
     passWithNoTests: true,
   },
 });

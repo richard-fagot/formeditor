@@ -12,7 +12,9 @@
     "deps": "depcruise src --config .dependency-cruiser.cjs",
     "smoke": "playwright test",
     "map": "node scripts/map.mjs",
-    "check": "npm run typecheck && npm test && npm run deps && npm run build && npm run smoke",
+    "guide": "node scripts/guide.mjs",
+    "guide:check": "node scripts/guide.mjs --check",
+    "check": "npm run typecheck && npm test && npm run deps && npm run guide:check && npm run build && npm run smoke",
     "prepare": "git config core.hooksPath .githooks"
   },
   "dependencies": {
