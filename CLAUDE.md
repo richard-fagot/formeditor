@@ -71,6 +71,7 @@ sans cérémonie. Préférer la solution la plus simple qui respecte la spec.
 | `npm test` | Vitest |
 | `npm run check` | Harnais complet |
 | `npm run map` | Régénère la partie factuelle de `docs/MAP.md` |
+| `npm run guide` | Régénère l'index des raccourcis de `docs/GUIDE.md` |
 | `npm run build` | Produit `dist/index.html` (fichier unique) |
 
 ## Orchestration par sous-agents
