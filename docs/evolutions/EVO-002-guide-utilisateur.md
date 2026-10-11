@@ -1,6 +1,6 @@
 # EVO-002 — Guide utilisateur : catalogue des actions
 
-Statut : à faire
+Statut : en cours
 
 ## Besoin
 

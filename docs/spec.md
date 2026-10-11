@@ -345,6 +345,7 @@ Objectif : pour une évolution ou une correction, une IA lit d'abord une carte d
 - **Génération partielle** : un script produit la partie factuelle de la carte (modules, exports, graphe de dépendances). La partie rédigée (matrice, invariants) est mise à jour en fin de phase.
 - **Pas d'ADR.** `docs/DECISIONS.md` : une ligne par choix notable (date, choix, raison).
 - Fichiers courts (≤ 200 lignes visés), un concept par fichier, noms explicites.
+- **`docs/GUIDE.md`** : guide utilisateur, catalogue concis des actions (une entrée par action : verbe à l'infinitif, tous les chemins — raccourci, palette, souris, panneau —, préconditions et effets non évidents ; balise `[cmd: identifiant]` pour chaque action du catalogue de commandes). Il suffit seul à répondre aux questions « comment faire… ? » sans accès au code. Son **index des raccourcis** est généré depuis le catalogue de commandes par `npm run guide`. Un **contrôle** intégré à `npm run check` échoue si une commande n'a pas d'entrée balisée, si une balise ne correspond à aucune commande, ou si l'index est périmé. Toute action ajoutée, modifiée ou supprimée met à jour le guide.
 
 ### 8.4 Harnais de non-régression
 
@@ -354,6 +355,7 @@ Une seule commande, `npm run check`, dit si quelque chose est cassé. Elle encha
 - **Vitest** : tests unitaires de `core` et `format`, écrits avant le code ;
 - **tests de référence** sur le questionnaire d'exemple : validation par le schéma, aller-retour import/export à l'identique, et pour chaque scénario un chemin de parcours attendu stocké dans un fichier ;
 - **dependency-cruiser** : règles du §8.2 ;
+- **contrôle du guide** (`docs/GUIDE.md` ↔ catalogue de commandes, voir §8.3) ;
 - **build** du fichier unique ;
 - **test de fumée Playwright** sur `dist/index.html` ouvert en `file://`, dans Firefox et Chromium : ouvrir, créer deux questions au clavier, relier, prévisualiser, exporter.
 

@@ -12,6 +12,8 @@ Règles :
 - Travailler sans poser de questions ; ambiguïté → option la plus simple compatible avec la spec,
   notée en une ligne dans `docs/DECISIONS.md`.
 - Ne cocher une case que si elle est réalisée complètement et testée.
+- Tout changement de comportement visible, y compris pendant une correction demandée par le relecteur,
+  met à jour `docs/GUIDE.md` dans le même commit (entrée, balise `[cmd: …]`, `npm run guide`).
 - Terminer avec `npm run check` vert, `npm run map` exécuté, README des modules touchés à jour,
   commits Conventional Commits sur la branche de la phase. Ne pas fusionner dans `main` :
   c'est la session principale qui fusionne après relecture.
