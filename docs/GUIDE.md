@@ -38,7 +38,7 @@ Mis à jour le 2026-10-11 — jusqu'à EVO-002
 - **Comprendre un import refusé** — Un seul fichier invalide et rien n'est chargé : la boîte « Import impossible »
   liste les erreurs par fichier. Les fichiers d'une ancienne version du format sont migrés automatiquement.
 - **Importer un questionnaire dans le projet ouvert** — « Ouvrir / importer… » avec seulement son `<clé>.json` (et son
-  `.layout.json`) : il est ajouté (ou remplace celui de même identifiant) et s'ouvre dans un onglet. `[cmd: project.open]`
+  `.layout.json`) : il est ajouté et s'ouvre dans un onglet, ou remplace celui de même identifiant (sans ouvrir d'onglet). `[cmd: project.open]`
 - **Remplacer la bibliothèque** — Importer seul un `bibliotheque.json` : il remplace toute la bibliothèque du projet.
 - **Ouvrir l'exemple « déclaration de sinistre »** — Icône étincelles de la barre de projet (info-bulle « Ouvrir l’exemple
   « déclaration de sinistre » ») ou palette. Remplace le projet ouvert (confirmation si non exporté). `[cmd: project.example]`
@@ -73,7 +73,7 @@ Mis à jour le 2026-10-11 — jusqu'à EVO-002
 - **Ouvrir la palette de commandes** — `Ctrl+K` (même pendant une saisie) ou bouton « Palette de commandes ». Taper une partie
   du libellé, `↑` `↓` puis `Entrée`. Elle ne liste que les actions possibles dans le contexte. `[cmd: palette.open]`
 - **Trouver un nœud par sa clé ou son intitulé** — Palette (`Ctrl+K`), taper la clé ou un mot de l'intitulé : le groupe
-  « Nœuds » liste les nœuds du graphe affiché ; `Entrée` le sélectionne et le centre.
+  « Nœuds » liste les nœuds du graphe affiché ; `Entrée` le sélectionne (la vue se recentre s'il est hors écran).
 - **Passer du logigramme à la prévisualisation** — `P` (logigramme) ou sous-onglets « Logigramme » / « Prévisualisation »
   sous la barre d'onglets. Chaque questionnaire garde sa vue. `[cmd: view.toggle]`
 - **Comparer deux questionnaires côte à côte** — Bouton « Vue côte à côte » de la barre du logigramme (au moins deux
@@ -382,7 +382,7 @@ Concerne le choix unique et le choix multiple. Le booléen et le tri-state n'ont
 - **Saisir les traductions** — Chaque texte multilingue a une ligne par langue, préfixée du code ; un code orange signale
   une traduction manquante. La langue du contenu est la première ligne.
 - **Changer la langue du contenu** — Première liste de la barre de projet (« Langue du contenu ») ou palette « Langue du
-  contenu suivante » : langue saisie en premier et affichée sur le logigramme. `[cmd: lang.content]`
+  contenu suivante » (proposée si le projet a au moins deux langues) : langue saisie en premier et affichée sur le logigramme. `[cmd: lang.content]`
 - **Changer la langue de l'interface** — Seconde liste de la barre de projet (« Langue de l’interface » : fr, en) ou palette. `[cmd: lang.ui]`
 - **Lister les traductions manquantes** — « Paramètres », section « Traductions manquantes », filtre « Langue » ; un clic
   ouvre l'objet concerné. Sur le logigramme : badge « trad. ».

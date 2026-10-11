@@ -1,6 +1,6 @@
 # EVO-002 — Guide utilisateur : catalogue des actions
 
-Statut : en cours
+Statut : fait 2026-10-11
 
 ## Besoin
 
@@ -164,3 +164,5 @@ Constatées en construisant le guide (2026-10-11), sans correction. Chacune peut
     sans avertissement.
 14. **Actions fréquentes sans raccourci par défaut** : « Définir comme départ », « Placer la question dans la bibliothèque »,
     « Nouvelle sortie de bloc », « Vue côte à côte » (palette seulement).
+15. **Libellés dynamiques figés dans l'index généré** : « Langue du contenu suivante (actuelle : fr) » et « Langue de
+    l'interface suivante (actuelle : fr) » ; un libellé sans la partie variable serait plus juste (relecture EVO-002).
