@@ -130,3 +130,37 @@ Les actions hors catalogue restent sous la responsabilité du processus (ci-dess
 - La section « Ce que l'outil ne fait pas » existe, même courte.
 - `CLAUDE.md`, les sous-agents `relecteur` et `realisateur`, et la spec §8.3 sont mis à jour.
 - Dans la grille du `relecteur`, un écart entre le guide et l'application est classé « majeur ».
+
+## Anomalies relevées
+
+Constatées en construisant le guide (2026-10-11), sans correction. Chacune peut devenir une évolution.
+
+1. **Aucune action pour supprimer un questionnaire** (ni pour le dupliquer). Le texte « Supprimer le questionnaire »
+   existe dans le dictionnaire de l'interface mais n'est relié à aucune commande.
+2. **Actions de la prévisualisation hors catalogue de commandes** : « Suivant », « Précédent », « Recommencer »,
+   « Revenir à la synthèse », « Rétablir les valeurs du scénario », choix du scénario. Ni palette ni raccourci, contrairement
+   à l'invariant « toute action utilisateur passe par le catalogue de commandes ».
+3. **Copier / coller de nœuds entre questionnaires absent**, alors que la spec §4.3 le prévoit.
+4. **« Éditer l’intitulé » (`Entrée`, double-clic) est disponible sur tous les nœuds mais n'agit que sur les questions** :
+   sur une page d'information, de synthèse, de fin, une instance ou une sortie, rien ne se passe.
+5. **Historique d'annulation limité à 500 étapes par historique** (spec §4.3 : « illimité ») et perdu au rechargement de la page.
+6. **`Ctrl+Tab` / `Ctrl+Shift+Tab` (défauts de la spec §4.4)** sont en général réservés par Firefox et Chrome au changement
+   d'onglet du navigateur et n'atteignent pas la page (à confirmer à la main ; les tests Playwright ne passent pas par le
+   navigateur). `Alt+→` / `Alt+←` fonctionnent.
+7. **Libellés de commandes en double** dans l'écran des raccourcis et l'index : `tab.open` et `tab.show` (« Rouvrir un
+   questionnaire fermé », alors que `tab.show` affiche n'importe quel onglet) ; `node.connect`, `node.connectTo` et
+   `edge.create` (« Relier à un nœud… ») ; `tab.library` et `library.show` (« Bibliothèque »).
+8. **Boutons à icône sans info-bulle** : monter / descendre / dupliquer / supprimer une entrée d'options et un champ de
+   structure, retrait d'une variante (libellé accessible « × »), retrait d'un champ de liste d'objets. L'utilisateur
+   doit deviner leur rôle. La croix de fermeture d'un onglet n'apparaît qu'au survol.
+9. **`C` sur un nœud sélectionné** ouvre la condition de la première arête **entrante** du nœud, ce qui n'est pas évident
+   (on s'attend plutôt aux arêtes sortantes).
+10. **Suppression d'un élément de bibliothèque sans confirmation ni avertissement** alors qu'il est utilisé : les références
+    deviennent « Élément de bibliothèque introuvable » (annulable par `Ctrl+Z` dans l'onglet Bibliothèque seulement).
+11. **`Ctrl+Z` dépend de l'onglet affiché** : une modification du projet (nom, langue, variable) ne s'annule pas depuis un
+    onglet de questionnaire ; il faut aller dans « État du système » ou « Paramètres ».
+12. **La palette n'affiche que le premier raccourci** d'une commande (ex. `Ctrl+Shift+Z` pour « Rétablir », pas `Ctrl+Y`).
+13. **Changer le type d'une question efface sa valeur par défaut** (« Valeur par défaut » et « Valeur par défaut calculée »),
+    sans avertissement.
+14. **Actions fréquentes sans raccourci par défaut** : « Définir comme départ », « Placer la question dans la bibliothèque »,
+    « Nouvelle sortie de bloc », « Vue côte à côte » (palette seulement).

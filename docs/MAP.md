@@ -14,6 +14,9 @@ La section « Modules » est générée par `npm run map` ; le reste est rédig�
 - `src/ui-kit`, `src/ui/*` : interface React.
 - `tests/reference` : tests de référence sur l'exemple ; `tests/smoke` : Playwright sur `dist/index.html`.
 - `examples/` : projet d'exemple « déclaration de sinistre » et chemins attendus.
+- `docs/GUIDE.md` : guide utilisateur (une entrée par action, balise `[cmd: id]` par commande du catalogue). `scripts/guide/` :
+  `npm run guide` régénère son index des raccourcis depuis `app/commands` ; `npm run guide:check` (dans `npm run check`) et
+  `scripts/guide/guide.test.ts` échouent si une commande n'est pas balisée, si une balise est inconnue ou si l'index est périmé.
 
 ## Modules
 
@@ -69,7 +72,8 @@ La section « Modules » est générée par `npm run map` ; le reste est rédig�
 | Modifier la navigation | `core/runtime`, `tests/reference` (chemins attendus), `docs/FORMAT.md` |
 | Modifier la grammaire des expressions | `core/expressions`, `core/references`, `ui/expression-editor`, `docs/FORMAT.md` |
 | Ajouter une vérification (§4.6) | `core/validation` |
-| Changer un raccourci ou ajouter une action | `app/commands`, `app/shortcuts` (écran de paramétrage : `ui/settings`) |
+| Changer un raccourci ou ajouter une action | `app/commands`, `app/shortcuts` (écran de paramétrage : `ui/settings`), puis `npm run guide` et l'entrée balisée de `docs/GUIDE.md` |
+| Ajouter, modifier ou supprimer une action (tout comportement visible) | mettre à jour `docs/GUIDE.md` dans le même commit (entrée, libellés exacts ; `npm run guide` si une commande change) |
 | Langues des contenus, traductions manquantes | `app/store` (`language-edits.ts`), `app/commands` (`settings-commands.ts`), `ui/settings`, `core/validation` (`missingTranslation`) |
 | Mise en page automatique, vue côte à côte | `ui/diagram` (`autoLayout.ts`, `useAutoLayout.ts`, `readOnly`), `ui/shell` (`ComparePane`), `app/commands` (`view.layout`, `view.compare`) |
 | Faire évoluer le format | `core/model`, `format` (schéma + migration), `docs/FORMAT.md`, `examples/` |
@@ -92,5 +96,6 @@ La section « Modules » est générée par `npm run map` ; le reste est rédig�
 - Import d'un autre module uniquement par son `index.ts` (dependency-cruiser).
 - Changement du format JSON → schéma + migration (`formatVersion`) + `docs/FORMAT.md` + exemple.
 - Toute action utilisateur passe par `app/commands` (palette, raccourcis).
+- Toute action ajoutée, modifiée ou supprimée met à jour `docs/GUIDE.md` (contrôlé par `npm run guide:check` pour les commandes).
 - Tout texte destiné à l'utilisateur final est multilingue (`LocalizedText`).
 - Un changement de comportement voulu met à jour les fichiers attendus de `tests/reference`, jamais l'inverse en silence.
