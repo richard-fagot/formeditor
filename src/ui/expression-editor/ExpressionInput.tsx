@@ -9,6 +9,7 @@ import { resolvePath } from '../../core/references';
 import { cn } from '../../ui-kit';
 import { useExpressionEnv } from './context';
 import { completeReferences } from './completion';
+import { systemHover } from './hover';
 import { jsonataHighlight, jsonataLanguage } from './language';
 
 const MESSAGES = {
@@ -17,7 +18,8 @@ const MESSAGES = {
 
 /**
  * Saisie d'une expression JSONata : coloration, autocomplétion des clés et variables,
- * validation en direct (syntaxe, références inconnues). Une seule ligne ; Entrée valide.
+ * validation en direct (syntaxe, références inconnues), survol d'une variable `sys.…` (libellé, description).
+ * Une seule ligne ; Entrée valide.
  */
 export function ExpressionInput({
   value, onChange, placeholder, autoFocus, id, className, onSubmit,
@@ -74,6 +76,7 @@ export function ExpressionInput({
           jsonataLanguage,
           jsonataHighlight,
           autocompletion({ override: [completeReferences(() => envRef.current.scope)], activateOnTyping: true }),
+          systemHover(() => envRef.current.scope),
           lint,
           cmPlaceholder(placeholder ?? ''),
           EditorView.updateListener.of((u) => u.docChanged && onChangeRef.current(u.state.doc.toString())),

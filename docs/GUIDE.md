@@ -1,5 +1,5 @@
 # Guide utilisateur — Éditeur de questionnaires
-Mis à jour le 2026-10-12 — jusqu'à EVO-004
+Mis à jour le 2026-10-12 — jusqu'à EVO-005
 
 ## Mode d'emploi du guide
 
@@ -16,12 +16,16 @@ Mis à jour le 2026-10-12 — jusqu'à EVO-004
 - **Nœud** : question, page d'information, page de synthèse, fin, instance de bloc (ou sortie, dans un bloc).
 - **Départ** : nœud par lequel commence le parcours (badge « Départ »). Le premier nœud créé l'est d'office.
 - **Arête** : liaison d'un nœud vers un autre, avec une condition facultative et un rang ; sans condition, c'est le « sinon ».
+  Elle peut porter un **libellé** de lecture (« Ayant droit adhérent »), affiché à la place de la condition.
 - **Rang** : ordre d'évaluation des arêtes qui sortent d'un même nœud ; la première condition vraie l'emporte.
 - **Clé** : nom lisible d'une question en snake_case (`date_sinistre`), utilisé dans les expressions.
 - **Bibliothèque** : questions, blocs et jeux de libellés réutilisables du projet, utilisés par référence (pas de copie).
 - **Bloc** : sous-graphe de la bibliothèque avec un départ et des **sorties** nommées ; placé dans un questionnaire, c'est une **instance** avec un **alias** (`tiers.nom`).
 - **Jeu de libellés** : libellés d'un booléen (« Oui / Non ») ou d'un tri-state (« Oui / Non / Ne sait pas »).
-- **État du système** : variables fournies par le logiciel hôte (`sys.profil`), déclarées dans un dictionnaire.
+- **État du système** : variables fournies par le logiciel hôte (`sys.profil`), déclarées dans un dictionnaire ; chacune
+  peut porter un **libellé** de lecture (« Profil de l'utilisateur connecté »).
+- **Libellé (de lecture)** : nom court, en une seule langue, destiné au concepteur et à l'équipe de dev ; jamais montré à
+  l'utilisateur final, sans effet sur le parcours, jamais écrit dans une expression.
 - **Scénario** : jeu de valeurs nommé de l'état du système, pour la prévisualisation.
 - **Référence** : nom qui désigne une réponse, un sous-champ ou une variable (`victimes.nom`, `sys.sinistres`).
 - **Expression** : formule JSONata écrite en texte ; une **condition** est une expression qui doit valoir `true`.
@@ -144,12 +148,19 @@ Mis à jour le 2026-10-12 — jusqu'à EVO-004
   branche conditionnée ». Une nouvelle question est reliée par une arête placée avant le « sinon », et le curseur est dans
   le champ « Condition » de l'arête : taper la condition (ex. `type_sinistre = 'vol'`), puis `Entrée`. `[cmd: node.newBranch]`
 - **Sélectionner une arête** — Clic sur l'arête ou sur son étiquette. Le panneau de droite affiche « Arête » : « De », « Vers »,
-  « Condition », rang.
+  « Libellé », « Condition », rang.
+- **Donner un libellé à une arête** — Sélectionner l'arête, taper dans le champ « Libellé » (au-dessus de « Condition ») :
+  texte libre sur une ligne, une seule langue (ex. « Ayant droit adhérent », « Sinon »). Possible avec ou sans condition,
+  y compris pour une arête de sortie de bloc. Le logigramme l'affiche **à la place** de la condition ; la condition reste
+  lisible au survol de l'étiquette. Vider le champ retire le libellé (la condition s'affiche de nouveau). Saisie et
+  effacement s'annulent par `Ctrl+Z` une fois sorti du champ (ou palette « Annuler »). Le libellé ne change rien au parcours et n'apparaît jamais dans le wizard.
 - **Modifier la condition d'une arête** — Sélectionner l'arête puis `C` (logigramme), ou taper dans le champ « Condition ».
   Avec un nœud sélectionné, `C` ouvre la condition de la première arête qui **arrive** sur ce nœud. `Entrée` rend le focus
   au logigramme. Vider le champ fait de l'arête un « sinon ». `[cmd: edge.editCondition]`
 - **Lire l'étiquette d'une arête** — Condition abrégée (32 caractères) ; « sinon » en italique pour une arête sans condition ;
   « ? » pour une condition encore vide ; « 2. » : rang quand plusieurs arêtes sortent du nœud ; nom de sortie pour un bloc.
+  Avec un libellé : le libellé (police normale) au lieu de la condition, tronqué par « … » s'il est trop long ; au survol,
+  le libellé complet puis la condition (ou « sinon »). Une arête seule sans condition n'a d'étiquette que si elle a un libellé.
 - **Changer l'ordre d'évaluation des arêtes** — Sélectionner l'arête puis `Alt+↑` / `Alt+↓` (logigramme), boutons « Évaluer
   plus tôt » / « Évaluer plus tard » du panneau, ou palette. Le rang est rappelé sous « Condition » (« Rang 1 sur 3 »). `[cmd: edge.moveUp]` `[cmd: edge.moveDown]`
 - **Supprimer une arête** — Sélectionner l'arête puis `Suppr`, ou bouton « Supprimer » du panneau de l'arête. `[cmd: node.delete]`
@@ -287,6 +298,13 @@ Concerne le choix unique et le choix multiple. Le booléen et le tri-state n'ont
   d'affichage »…) tiennent sur une ligne. L'autocomplétion propose clés et variables en tapant (`Ctrl+Espace` pour
   l'ouvrir) ; `$` propose les fonctions. Erreur de syntaxe soulignée en rouge, référence inconnue signalée
   (« Référence inconnue : … »). `Échap` quitte le champ.
+- **Retrouver une variable par son libellé** — Dans l'autocomplétion, le libellé d'une variable de l'état du système (ou
+  d'un champ de liste) est affiché à côté de la clé et de son type. Taper un mot du libellé (casse et accents ignorés :
+  « connecte » trouve « Profil connecté ») propose la variable ; la choisir insère toujours la **clé** (`sys.profil`).
+  Les clés qui commencent par le texte tapé sont proposées en premier.
+- **Lire le libellé d'une variable dans une expression** — Survoler une référence `sys.…` (champ de liste compris,
+  `sys.sinistres.nature`) : une infobulle donne la clé, le libellé et la description. Rien ne s'affiche si la variable n'a
+  ni libellé ni description.
 - **Désigner une valeur** — `cle` : réponse du questionnaire ; `structure.champ` : sous-champ ; `victimes[0].nom` : occurrence
   (à partir de 0) ; `sys.variable`, `sys.liste.champ` : état du système ; `alias.cle` : question d'une instance de bloc ;
   `cle_other` : précision « Autre » ; `$$.cle` : réponse lue depuis la racine (dans un filtre).
@@ -372,6 +390,11 @@ Concerne le choix unique et le choix multiple. Le booléen et le tri-state n'ont
   système » (ou palette) : variable `variable` de type texte, nom en édition. `[cmd: system.addVariable]`
 - **Renommer une variable** — Champ « Nom » (snake_case, unique), validé en quittant le champ ou par `Entrée`. Met à jour
   expressions et scénarios ; un seul `Ctrl+Z` annule tout. `[cmd: system.renameVariable]`
+- **Donner un libellé à une variable** — Champ « Libellé », à côté du « Nom » sur la carte de la variable : texte libre sur
+  une ligne, une seule langue (ex. « Profil connecté »). Pour une liste d'objets, chaque champ du « Schéma des objets de la
+  liste » a aussi sa saisie « Libellé ». Le libellé apparaît dans l'autocomplétion des expressions, au survol de `sys.…`,
+  dans l'éditeur de scénarios et le panneau « État du système » de la prévisualisation, en face de la valeur. On écrit
+  toujours la clé dans les expressions. Vider le champ retire le libellé ; saisie et effacement s'annulent par `Ctrl+Z` une fois sorti du champ (ou palette « Annuler »).
 - **Typer une variable** — Liste « Type » : Texte, Nombre, Date, Booléen, Énumération (« Valeurs possibles (une par ligne) »),
   Liste d’objets (« Schéma des objets de la liste », bouton « Ajouter un champ »). Puis « Description », « Valeur d’exemple »
   (JSON pour une liste d'objets).

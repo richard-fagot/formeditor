@@ -18,7 +18,10 @@ Dépend de `app/store`, `app/commands` (liaison tracée à la souris : `edge.cre
 - Instance de bloc : une poignée de sortie par sortie nommée du bloc ; une liaison tirée depuis une poignée porte
   `exit` (arête `sourceHandle` = `exit` ; sortie inconnue → première poignée, l'arête reste visible). Sans sortie : poignée unique.
 - Dépôt d'un élément de bibliothèque : inséré à la position du curseur (`screenToFlowPosition`).
-- `EdgeView` : condition abrégée, rang si plusieurs arêtes sortent du même nœud, « sinon », sortie de bloc.
+- `EdgeView` : condition abrégée, rang si plusieurs arêtes sortent du même nœud, « sinon », sortie de bloc. Libellé
+  `caption` (EVO-005) : affiché à la place de la condition (`span[data-edge-caption]`, police normale), tronqué en CSS
+  (« … ») ; pastille aussi pour une arête seule libellée ; `title` = libellé puis condition (ou « sinon »).
+  La pastille garde `data-edge-label` (filtre de l'export d'image).
 - Le conteneur porte `data-graph-focus` : les raccourcis à une lettre agissent s'il a le focus (ou si le focus est
   sur un bouton hors dialogue, cf. `app/shortcuts`).
   Il le prend à l'ouverture d'un graphe (nouveau questionnaire, changement d'onglet), sauf saisie en cours.

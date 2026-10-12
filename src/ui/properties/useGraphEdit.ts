@@ -8,7 +8,7 @@ export function useGraphEdit(graph: GraphRef) {
     edit,
     patchNode: (nodeId: string, patch: Partial<GraphNode>, field = Object.keys(patch).join()) =>
       edit(`${nodeId}:${field}`, (ws) => updateNode(ws, graph, nodeId, patch)),
-    patchEdge: (edgeId: string, patch: { when?: string; exit?: string }) =>
+    patchEdge: (edgeId: string, patch: { when?: string; exit?: string; caption?: string }) =>
       edit(`${edgeId}:${Object.keys(patch).join()}`, (ws) => {
         const e = getGraph(ws, graph)?.edges.find((x) => x.id === edgeId);
         if (!e) return;

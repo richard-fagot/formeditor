@@ -4,7 +4,10 @@ Saisie d'expressions JSONata et de libellés multilingues. Dépend de `core/expr
 
 ## API
 - `ExpressionInput` : CodeMirror 6 sur une ligne ; coloration (`language.ts`), autocomplétion des clés de
-  la portée et des fonctions (`completion.ts`), diagnostics en direct (syntaxe, référence inconnue).
+  la portée et des fonctions (`completion.ts` : clé par préfixe **ou** libellé `caption` contenant le mot tapé, casse et
+  accents ignorés, clés d'abord, filtrage maison `filter: false` ; libellé en `detail`, description en `info`),
+  infobulle au survol d'une référence `sys.…` (`hover.ts` : clé, libellé, description ; rien sans l'un ni l'autre),
+  diagnostics en direct (syntaxe, référence inconnue).
   Entrée → `onSubmit`, Échap → quitte le champ.
 - `LabelEditor` : libellé multilingue (une saisie par langue) avec variantes conditionnelles `{variants, otherwise}`.
 - `ConstraintsEditor` : contraintes libres (règle + message) et messages des contraintes intégrées ;
@@ -13,5 +16,10 @@ Saisie d'expressions JSONata et de libellés multilingues. Dépend de `core/expr
   par le panneau de propriétés.
 
 ## Pièges
+- Le motif du mot tapé est Unicode (`\p{L}`, drapeau `u`) pour reconnaître « connecté » ; pas de `validFor` :
+  la source est rappelée à chaque frappe (CodeMirror ne refiltre pas, `filter: false`).
 - La valeur est synchronisée depuis les props seulement si elle diffère du document (pas de boucle).
 - Utilisable par les plugins (décision DECISIONS.md).
+
+## Tests
+`completion.test.ts` (autocomplétion et repérage de la référence survolée).

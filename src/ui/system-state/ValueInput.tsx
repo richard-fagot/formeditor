@@ -100,6 +100,7 @@ export function SystemValuesEditor({ variables, values, onChange, idPrefix }: {
         <div key={v.name} className="space-y-1">
           <label htmlFor={`${idPrefix}-${v.name}`} className="flex items-baseline gap-2 text-xs">
             <span className="font-mono font-medium text-slate-700">sys.{v.name}</span>
+            {v.caption && <span className="text-slate-600" data-variable-caption>{v.caption}</span>}
             <span className="text-slate-400">{v.type}</span>
           </label>
           <ValueInput id={`${idPrefix}-${v.name}`} variable={v} value={values[v.name]} onChange={(x) => onChange(v.name, x)} />

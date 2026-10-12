@@ -18,7 +18,14 @@ export function patchVariable(name: string, field: string, recipe: (v: SystemVar
   }, `sys:${name}:${field}`);
 }
 
-/** Une variable du dictionnaire : nom, type, description, valeurs (énumération), schéma (liste), exemple. */
+/** Libellé saisi (une ligne) ; vide : propriété retirée. */
+function setCaption(x: SystemVariable, text: string) {
+  const caption = text.replace(/[\r\n]+/g, ' ');
+  if (caption) x.caption = caption;
+  else delete x.caption;
+}
+
+/** Une variable du dictionnaire : nom, libellé, type, description, valeurs (énumération), schéma (liste), exemple. */
 export function VariableCard({ variable: v, names, problems }: { variable: SystemVariable; names: string[]; problems: string[] }) {
   const t = useT();
   const ws = useStore((s) => s.ws);
@@ -39,6 +46,9 @@ export function VariableCard({ variable: v, names, problems }: { variable: Syste
         <Field label={t('system.name')} hint={t('system.nameHint')} className="min-w-0 flex-1">
           <KeyInput value={v.name} taken={names.filter((n) => n !== v.name)} invalidText={t('system.nameInvalid')}
             onCommit={(next) => runCommand('system.renameVariable', { name: v.name, next })} />
+        </Field>
+        <Field label={t('system.caption')} hint={t('system.captionHint')} className="min-w-0 flex-1">
+          <Input data-testid="variable-caption" value={v.caption ?? ''} onChange={(e) => patchVariable(v.name, 'caption', (x) => setCaption(x, e.target.value))} />
         </Field>
         <Field label={t('system.type')} className="w-44">
           <Select value={v.type} onChange={(e) => useStore.getState().edit('project', (draft) => setVariableType(draft, v.name, e.target.value as VariableType))}>
@@ -75,7 +85,7 @@ export function VariableCard({ variable: v, names, problems }: { variable: Syste
   );
 }
 
-/** Schéma des objets d'une liste : un champ par ligne (nom, type simple, description). */
+/** Schéma des objets d'une liste : un champ par ligne (nom, type simple, libellé, description). */
 function FieldsEditor({ variable: v }: { variable: SystemVariable }) {
   const t = useT();
   const fields = v.fields ?? [];
@@ -96,6 +106,8 @@ function FieldsEditor({ variable: v }: { variable: SystemVariable }) {
               <KeyInput value={f.name} taken={fields.map((x) => x.name).filter((n) => n !== f.name)} invalidText={t('system.nameInvalid')}
                 onCommit={(next) => runCommand('system.renameField', { variable: v.name, field: f.name, next })} />
             </div>
+            <Input className="w-44 shrink-0" value={f.caption ?? ''} placeholder={t('system.caption')} aria-label={t('system.caption')} title={t('system.captionHint')}
+              onChange={(e) => patchVariable(v.name, `field${i}:caption`, (x) => { const g = x.fields?.[i]; if (g) setCaption(g, e.target.value); })} />
             <Select className="w-36" value={f.type} onChange={(e) => patch(i, { type: e.target.value as VariableType })} aria-label={t('system.type')}>
               {VAR_TYPES.filter((x) => x !== 'list' && x !== 'enum').map((x) => <option key={x} value={x}>{t(`vartype.${x}`)}</option>)}
             </Select>
