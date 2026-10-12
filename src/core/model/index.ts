@@ -6,3 +6,4 @@ export * from './graph';
 export * from './documents';
 export * from './keys';
 export * from './fragment';
+export * from './instance';

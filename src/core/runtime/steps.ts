@@ -1,4 +1,4 @@
-import { isLibraryQuestion, type Fragment, type FragmentNode, type Graph, type GraphNode, type Question, type Workspace } from '../model';
+import { instanceQuestion, isLibraryQuestion, type Fragment, type FragmentNode, type Graph, type GraphNode, type Question, type Workspace } from '../model';
 import type { EvalEnv } from '../expressions';
 
 /** Entrée du moteur : projet, questionnaire joué, état du système, environnement d'évaluation. */
@@ -42,7 +42,7 @@ export function effectiveQuestion(ws: Workspace, node: GraphNode): Question | un
     return q as Question;
   }
   const q = ws.library.questions.find((x) => x.id === node.ref);
-  return q && node.label ? { ...q, label: node.label } : q;
+  return q && instanceQuestion(q, node);
 }
 
 export function resolveStep(input: RuntimeInput, id: string): Step | undefined {

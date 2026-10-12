@@ -11,6 +11,8 @@ export interface LibraryQuestionNode {
   /** Id de la question dans la bibliothèque. */
   ref: string;
   label?: Label;
+  /** Structure (EVO-009) : clés des champs masqués dans cette instance ; absent = tous affichés. */
+  hiddenFields?: string[];
   description?: string;
 }
 

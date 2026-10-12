@@ -1,4 +1,4 @@
-# Format des questionnaires — version 7
+# Format des questionnaires — version 8
 
 Ce document décrit le format JSON produit par l'éditeur de questionnaires. Il s'adresse à l'équipe
 de développement (et à l'IA qui l'assiste) chargée de construire le moteur cible et les formulaires
@@ -34,7 +34,7 @@ libellés et interpolation — 6. Nœuds — 7. Questions — 8. Réponses — 9
 | `<clé>.layout.json`, `fragment_<clé>.layout.json` | `layout` | Positions des nœuds dans l'éditeur. | **non** (à ignorer) |
 | `<projet>.bundle.json` | `bundle` | `project`, `library`, `questionnaires[]`, `layouts[]` dans un seul fichier. | oui (même contenu) |
 
-- Chaque fichier (et le bundle) porte `formatVersion` (entier, actuellement `7`) et `kind`.
+- Chaque fichier (et le bundle) porte `formatVersion` (entier, actuellement `8`) et `kind`.
 - L'outil migre automatiquement à l'ouverture un fichier d'une version antérieure ; il refuse un fichier
   d'une version plus récente. Un moteur cible peut refuser toute version qu'il ne connaît pas.
 - Tout élément (projet, questionnaire, nœud, arête, question, fragment, variable, scénario, jeu de libellés)
@@ -179,7 +179,7 @@ le contexte de la page affichée (§10.2). Exemples : `Bonjour {sys.nom_assure}`
 
 | `kind` | Rôle | Propriétés (outre `id`, `description?`) | Page affichée |
 | --- | --- | --- | --- |
-| `question` | Saisie d'une réponse. | Question locale (§7) **ou** `ref` (id d'une question de bibliothèque) + `label?` qui surcharge son intitulé. | oui |
+| `question` | Saisie d'une réponse. | Question locale (§7) **ou** `ref` (id d'une question de bibliothèque) + `label?` qui surcharge son intitulé + `hiddenFields?` (structure : champs masqués, version 8). | oui |
 | `fragment` | Appel d'un fragment de bibliothèque, par référence (version 7, ex-`block`). | `ref` (id du fragment), `alias` (clé : préfixe des clés du fragment vues de l'appelant). | non : on entre dans le fragment |
 | `info` | Texte sans saisie. | `title?`, `text`. | oui |
 | `summary` | Récapitulatif des réponses (§11.6). | `title?`. | oui |
@@ -196,6 +196,22 @@ Question locale (le nœud porte la question) et question de bibliothèque :
 
 Pour une question de bibliothèque, la clé, le type, les contraintes et tout le reste sont ceux de la
 bibliothèque ; seul l'intitulé (`label`) peut être surchargé.
+
+**Champs masqués** (`hiddenFields`, version 8) : sur un nœud qui référence une question `structure`, liste des
+**clés** des champs masqués dans cette instance (sans doublon) ; absente = tous les champs affichés. La question
+effective de l'instance est la définition de la bibliothèque **sans** ces champs, dans l'ordre de la bibliothèque :
+
+- un champ masqué n'est ni présenté, ni validé, ni exigé (même `required`), et n'a pas de réponse ;
+- une clé de `hiddenFields` qui ne désigne aucun champ de la définition est ignorée ; un champ ajouté plus tard
+  à la définition est affiché ;
+- si aucun champ ne resterait affiché, `hiddenFields` est ignorée (tous les champs affichés) ;
+- sur une question qui n'est pas une structure, `hiddenFields` est sans effet.
+
+L'export conserve la référence et `hiddenFields` : le moteur cible résout l'instance par cette règle.
+
+```json
+{ "kind": "question", "id": "n_rappel", "ref": "lq_identite", "hiddenFields": ["civilite", "date_naissance", "adresse", "telephone"] }
+```
 
 ## 7. Questions
 
@@ -321,6 +337,8 @@ statiques. La migration 1 → 2 place cette `source` en dernière entrée de `op
 - La précision « Autre » d'un champ est rangée dans l'occurrence : `{ "canal": "other", "canal_other": "…" }` ;
   de même le groupe de la sélection d'un choix : `{ "lien": "conjoint", "lien_group": "SC" }`, et le marqueur
   « Ne sais pas » : `{ "age": null, "age_nsp": true }`.
+- Une instance d'une structure de bibliothèque peut masquer des champs (`hiddenFields`, version 8, §6) : ils sont
+  absents de la question effective (ni présentés, ni exigés, ni dans la réponse).
 
 ### 7.7 « Ne sais pas » (version 5, tous types sauf `structure`)
 
@@ -684,7 +702,7 @@ lieu d'afficher la fin. La réponse n'est pas effacée : l'utilisateur la corrig
 
 ## 12. Bibliothèque (`bibliotheque.json`)
 
-- `questions[]` : questions réutilisables (§7), référencées par `{ "kind": "question", "id", "ref" }`.
+- `questions[]` : questions réutilisables (§7), référencées par `{ "kind": "question", "id", "ref", "label"?, "hiddenFields"? }` (§6).
   Leur clé est vue sans préfixe dans le graphe qui les référence (questionnaire, ou fragment puis `alias.cle`).
 - `fragments[]` (version 7) : `{ id, key, title, description?, entry?, nodes, edges }` (§11.3) ; nœuds : questions
   (locales ou de bibliothèque), `info`, `summary`, `fragment` (appel d'un autre fragment), `exit` ; pas de `start`
@@ -709,6 +727,7 @@ en contenir : le moteur cible peut les vérifier à son tour.
 | `loopWithoutExit` | Boucle dont aucune arête ne sort. |
 | `exitNotConnected`, `unknownExit`, `implicitExitNotConnected` | Sortie nommée d'un fragment non raccordée ; arête visant une sortie inexistante ; sorties implicites sans arête sans `exit`. |
 | `fragmentEntry`, `fragmentNoExit`, `fragmentCycle`, `unusedFragment`, `endInFragment` | Fragment sans entrée unique (et sans `entry`) ; sans sortie ; cycle d'appels ; appelé nulle part ; contenant une fin. |
+| `hiddenField` | Référence à un champ masqué (`hiddenFields`) d'une instance de structure du graphe (`identite.telephone`, `alias.identite.telephone` chez l'appelant d'un fragment) : il ne sera jamais renseigné. Les références internes à la définition (champ frère) ne sont pas signalées. |
 | `expectedKeyMissing` | Clé attendue par un fragment (référence hors de ses propres clés) absente chez un appelant : signalée dans cet appelant, sur le nœud fragment. |
 | `libraryMissing` | Question, fragment ou jeu de libellés de bibliothèque introuvable. |
 | `missingTranslation` | Texte sans traduction dans une langue du projet (libellés de groupe et `dontKnow.label` compris). |
@@ -718,7 +737,7 @@ L'exemple fourni ne produit aucun problème.
 
 ## 14. Exemple commenté
 
-`examples/declaration-sinistre/` : déclaration d'un sinistre par un adhérent connecté (langues `fr`, `en`), et demande de remboursement (`demande_remboursement.json`, version 7).
+`examples/declaration-sinistre/` : déclaration d'un sinistre par un adhérent connecté (langues `fr`, `en`), et demande de remboursement (`demande_remboursement.json`, version 7 ; champs masqués, version 8).
 
 | Fonctionnalité | Où |
 | --- | --- |
@@ -742,6 +761,7 @@ L'exemple fourni ne produit aucun problème.
 | « Ne sais pas » (version 5) : nombre obligatoire avec minimum et libellé traduit ; choix multiple obligatoire avec « Autre » et libellé par défaut ; `montant_estime.nsp` dans une arête | `n_montant`, `n_canaux`, `e_montant_expertise` ; chemin `amicale_ne_sais_pas.json` |
 | Libellés de lecture `caption` (version 4) : arête conditionnée, « sinon », arête de sortie nommée ; variable et champ de liste | `e_qualite_ayant_droit`, `e_qualite_montant`, `e_bloc_non_identifie` ; `sys.type_adherent`, `sys.sinistres` (`nature`) |
 | Mail, téléphone, adresse, civilité (version 6) : structure de bibliothèque non utilisée par le questionnaire (civilité obligatoire, téléphone mobile, adresse à vérifier) | `lq_souscripteur` (bibliothèque) |
+| Champs masqués (version 8) : structure `identite` (7 champs, tous obligatoires) réduite à nom, prénom, mail dans une instance ; `{identite.mail}` dans la fin | `q_remboursement` : `n_rappel` → `lq_identite`, `n_fin_remboursement` ; chemins `remboursement_*.json` |
 
 Après la date, on demande le lien avec un sinistre existant s'il y en a un d'antérieur, puis on va aux
 victimes (accident) ou au montant :
@@ -796,7 +816,7 @@ doit égaler `path`, toutes les réponses doivent avoir été consommées et l'i
 
 Toute évolution incompatible incrémente `formatVersion` et s'accompagne d'une migration dans l'outil,
 des schémas, de ce document et de l'exemple. Les ajouts compatibles (nouvelle propriété facultative)
-sont documentés ici. Version actuelle : **7**.
+sont documentés ici. Version actuelle : **8**.
 
 | Version | Changement | Migration |
 | --- | --- | --- |
@@ -806,3 +826,4 @@ sont documentés ici. Version actuelle : **7**.
 | 5 | Option « Ne sais pas » `dontKnow` (toute question sauf structure), réponse `<clé>_nsp`, groupe réservé `NSP`, référence `cle.nsp`, mot réservé `nsp` (EVO-006). | Aucune transformation (propriété absente = désactivée) ; seul `formatVersion` change. |
 | 6 | Types `email`, `phone`, `address`, `civility` et leurs paramètres, réponse `<clé>_pays`, référence `cle.pays`, contrôles intégrés `email`, `phone`, `lineType`, `address`, `postalCode` (EVO-007). | Aucune transformation (un document antérieur n'utilise pas ces types) ; seul `formatVersion` change. |
 | 7 | Fragments de questionnaire (EVO-008) : `library.blocks` → `library.fragments` (`entry?`, sans `start`), nœud `block` → `fragment`, sorties implicites (nœuds sans arête sortante), départ possible sur un nœud fragment, imbrication. | Chaque bloc devient un fragment (mêmes id, clé, titre, nœuds, arêtes, sorties nommées ; `start` devient `entry` seulement s'il n'est pas l'unique nœud sans arête entrante) ; chaque nœud `block` devient `fragment`. Navigation inchangée pour un projet antérieur, sauf un nœud de bloc sans arête sortante (impasse déjà signalée en v6) : il arrêtait le parcours, il reprend désormais sur les arêtes sortantes du nœud fragment chez l'appelant. |
+| 8 | Champs masqués `hiddenFields` (clés) d'une instance d'une structure de bibliothèque ; code de vérification `hiddenField` (EVO-009). | Aucune transformation (propriété absente = tous les champs affichés) ; seul `formatVersion` change. |

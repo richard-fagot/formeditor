@@ -368,15 +368,11 @@ describe('migration 6 → 7 (EVO-008 : fragments de questionnaire)', () => {
     return bundle;
   };
 
-  it('le format courant est la version 7', () => {
-    expect(FORMAT_VERSION).toBe(7);
-  });
-
   it('un projet version 6 se charge : blocs → fragments, instances → nœuds fragment, départ → entrée si nécessaire', () => {
     const back = importFiles([{ name: 'ancien.bundle.json', text: JSON.stringify(v6Bundle()) }]);
     expect(back.errors).toEqual([]);
     const ws = back.workspace!;
-    expect(ws.library.formatVersion).toBe(7);
+    expect(ws.library.formatVersion).toBe(FORMAT_VERSION);
     expect(JSON.stringify(ws)).not.toContain('"block"');
     expect(ws.library.fragments.map((f) => [f.id, f.entry])).toEqual([['b1', undefined], ['b2', 'b']]);
     expect(ws.library.fragments[0]).not.toHaveProperty('start');
@@ -412,6 +408,52 @@ describe('migration 6 → 7 (EVO-008 : fragments de questionnaire)', () => {
       expect(back.workspace!.library.fragments).toEqual(ws.library.fragments);
       expect(back.workspace!.questionnaires).toEqual(ws.questionnaires);
       expect(back.workspace!.layouts).toEqual(ws.layouts);
+    }
+  });
+});
+
+describe('champs masqués d’une instance (EVO-009, version 8)', () => {
+  const v7 = () => {
+    const ws = newWorkspace('p', 'fr');
+    ws.library.questions.push({ id: 'lq_id', key: 'identite', label: { fr: 'Identité' }, type: 'structure', fields: [
+      { id: 'f1', key: 'nom', label: { fr: 'Nom' }, type: 'text' }, { id: 'f2', key: 'mail', label: { fr: 'Mail' }, type: 'email' },
+    ] });
+    ws.questionnaires.push({ formatVersion: 7, kind: 'questionnaire', id: 'q', key: 'q', title: { fr: 'Q' }, start: 'n', nodes: [{ kind: 'question', id: 'n', ref: 'lq_id' }], edges: [] });
+    const bundle = JSON.parse(exportBundle(ws));
+    bundle.formatVersion = 7;
+    bundle.library.formatVersion = 7;
+    bundle.project.formatVersion = 7;
+    return bundle;
+  };
+
+  it('le format courant est la version 8', () => {
+    expect(FORMAT_VERSION).toBe(8);
+  });
+
+  it('un projet version 7 se charge sans erreur, instances sans champ masqué', () => {
+    const back = importFiles([{ name: 'ancien.bundle.json', text: JSON.stringify(v7()) }]);
+    expect(back.errors).toEqual([]);
+    expect(back.workspace!.library.formatVersion).toBe(8);
+    expect(back.workspace!.questionnaires[0]!.nodes[0]).toEqual({ kind: 'question', id: 'n', ref: 'lq_id' });
+  });
+
+  it('schéma : `hiddenFields` (liste de clés) accepté sur une référence, refusé ailleurs ou mal formé', () => {
+    const ws = importFiles([{ name: 'p.bundle.json', text: JSON.stringify(v7()) }]).workspace!;
+    const q = JSON.parse(JSON.stringify(ws.questionnaires[0]));
+    q.nodes[0].hiddenFields = ['mail'];
+    expect(validateDocument(q)).toEqual([]);
+    expect(validateDocument({ ...q, nodes: [{ ...q.nodes[0], hiddenFields: ['Mail'] }] }).length).toBeGreaterThan(0);
+    expect(validateDocument({ ...q, nodes: [{ ...q.nodes[0], hiddenFields: ['mail', 'mail'] }] }).length).toBeGreaterThan(0);
+    expect(validateDocument({ ...q, nodes: [{ kind: 'question', id: 'n', key: 'x', label: { fr: 'X' }, type: 'text', hiddenFields: ['a'] }] }).length).toBeGreaterThan(0);
+  });
+
+  it('export puis réimport : bibliothèque, références et champs masqués identiques', () => {
+    const ws = importFiles([{ name: 'p.bundle.json', text: JSON.stringify(v7()) }]).workspace!;
+    (ws.questionnaires[0]!.nodes[0] as { hiddenFields?: string[] }).hiddenFields = ['mail'];
+    for (const back of [importFiles(exportFiles(ws)), importFiles([{ name: 'p.bundle.json', text: exportBundle(ws) }])]) {
+      expect(back.errors).toEqual([]);
+      expect(back.workspace!.library).toEqual(ws.library);
+      expect(back.workspace!.questionnaires).toEqual(ws.questionnaires);
     }
   });
 });

@@ -121,6 +121,7 @@ export function renameKey(ws: Workspace, target: RenameTarget, newKey: string): 
     if (!field || field.key === newKey) return ws;
     const old = field.key;
     field.key = newKey;
+    if (target.owner.kind === 'libraryQuestion') renameHidden(next, target.owner.id, old, newKey);
     const rules: Rule[] = [
       { owner: target.owner, path: [old], structure: q.key },
       { owner: target.owner, path: [`${old}_${OTHER_VALUE}`], structure: q.key },
@@ -147,6 +148,15 @@ export function qualifyKeys(ws: Workspace, owner: Owner, keys: string[], alias: 
   const next: Workspace = JSON.parse(JSON.stringify(ws));
   const rules: Rule[] = keys.flatMap((k) => [{ owner, path: [k] }, { owner, path: [`${k}_${OTHER_VALUE}`] }]);
   return applyRules(next, rules, (p) => `${alias}.${p[0]}`);
+}
+
+/** Champ renommé d'une question de bibliothèque : suit dans `hiddenFields` de ses instances (EVO-009). */
+function renameHidden(ws: Workspace, questionId: string, old: string, key: string): void {
+  for (const g of [...ws.questionnaires, ...ws.library.fragments]) {
+    for (const n of g.nodes) {
+      if (n.kind === 'question' && 'ref' in n && n.ref === questionId && n.hiddenFields) n.hiddenFields = n.hiddenFields.map((k) => (k === old ? key : k));
+    }
+  }
 }
 
 /** Renomme la propriété `old` de chaque objet d'une liste (valeur d'exemple, valeurs de scénario). */

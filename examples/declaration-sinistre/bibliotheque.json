@@ -1,5 +1,5 @@
 {
-  "formatVersion": 7,
+  "formatVersion": 8,
   "kind": "library",
   "questions": [
     {
@@ -106,6 +106,91 @@
           "type": "address",
           "defaultCountry": "FR",
           "verify": true
+        }
+      ]
+    },
+    {
+      "id": "lq_identite",
+      "key": "identite",
+      "label": {
+        "fr": "Vos coordonnées",
+        "en": "Your contact details"
+      },
+      "description": "Identité complète réutilisable (EVO-009) : chaque instance peut masquer des champs (demande_remboursement n'affiche que nom, prénom et mail).",
+      "type": "structure",
+      "fields": [
+        {
+          "id": "li_civilite",
+          "key": "civilite",
+          "label": {
+            "fr": "Civilité",
+            "en": "Title"
+          },
+          "type": "civility",
+          "required": true
+        },
+        {
+          "id": "li_nom",
+          "key": "nom",
+          "label": {
+            "fr": "Nom",
+            "en": "Last name"
+          },
+          "type": "text",
+          "required": true
+        },
+        {
+          "id": "li_prenom",
+          "key": "prenom",
+          "label": {
+            "fr": "Prénom",
+            "en": "First name"
+          },
+          "type": "text",
+          "required": true
+        },
+        {
+          "id": "li_date_naissance",
+          "key": "date_naissance",
+          "label": {
+            "fr": "Date de naissance",
+            "en": "Date of birth"
+          },
+          "type": "date",
+          "required": true,
+          "max": "$today()"
+        },
+        {
+          "id": "li_adresse",
+          "key": "adresse",
+          "label": {
+            "fr": "Adresse",
+            "en": "Address"
+          },
+          "type": "address",
+          "required": true,
+          "defaultCountry": "FR"
+        },
+        {
+          "id": "li_mail",
+          "key": "mail",
+          "label": {
+            "fr": "Adresse mail",
+            "en": "Email address"
+          },
+          "type": "email",
+          "required": true
+        },
+        {
+          "id": "li_telephone",
+          "key": "telephone",
+          "label": {
+            "fr": "Téléphone",
+            "en": "Phone"
+          },
+          "type": "phone",
+          "required": true,
+          "defaultCountry": "FR"
         }
       ]
     }

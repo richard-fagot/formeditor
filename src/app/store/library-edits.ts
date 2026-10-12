@@ -1,7 +1,7 @@
 import {
-  createsCycle, deriveKey, newId, uniqueKey, type GraphNode, type Label, type LocalizedText, type Question, type Workspace,
+  createsCycle, deriveKey, isValidKey, newId, OTHER_VALUE, uniqueKey, type GraphNode, type Label, type LocalizedText, type Question, type Workspace,
 } from '../../core/model';
-import { renameKey } from '../../core/references';
+import { collectExpressions, findUsages, renameKey, type FoundExpression, type Owner } from '../../core/references';
 import { previewText } from '../../plugin-api';
 import { getGraph, layoutOf, updateNode, usedKeys, type GraphRef } from './graph';
 
@@ -76,6 +76,78 @@ export function moveToLibrary(ws: Workspace, ref: GraphRef, nodeId: string): str
   ws.library.questions.push({ ...rest, id } as Question);
   updateNode(ws, ref, nodeId, () => ({ kind: 'question', id: nodeId, ref: id }));
   return id;
+}
+
+/** Expression réécrite par la copie en bibliothèque sous une autre clé (rapport). */
+export interface RewrittenExpression {
+  loc: FoundExpression['loc'];
+  before: string;
+  after: string;
+}
+
+const ownerOf = (ref: GraphRef): Owner => ({ kind: ref.kind, id: ref.id });
+
+/**
+ * Copie une question locale dans la bibliothèque (EVO-009) ; le nœud devient une instance (même id, même place).
+ * Sans `key` : même clé, expressions inchangées. Avec `key` (clé prise dans la bibliothèque) : la question est d'abord
+ * renommée, références réécrites et rapportées. Refusé si la clé est invalide, prise dans la bibliothèque ou dans le graphe.
+ */
+export function copyToLibrary(ws: Workspace, ref: GraphRef, nodeId: string, key?: string):
+  { ws: Workspace; id: string; rewritten: RewrittenExpression[] } | undefined {
+  const g = getGraph(ws, ref);
+  const node = g?.nodes.find((n) => n.id === nodeId);
+  if (!g || !node || node.kind !== 'question' || 'ref' in node) return undefined;
+  const target = key ?? node.key;
+  const takenInGraph = target !== node.key && usedKeys(ws, g).includes(target);
+  if (!isValidKey(target) || takenInGraph || ws.library.questions.some((q) => q.key === target)) return undefined;
+  let next: Workspace = JSON.parse(JSON.stringify(ws));
+  const rewritten: RewrittenExpression[] = [];
+  if (target !== node.key) {
+    next = renameKey(next, { kind: 'question', owner: ownerOf(ref), nodeId }, target);
+    const before = collectExpressions(ws);
+    collectExpressions(next).forEach((f, i) => {
+      if (before[i] && before[i]!.text !== f.text) rewritten.push({ loc: f.loc, before: before[i]!.text, after: f.text });
+    });
+  }
+  const id = moveToLibrary(next, ref, nodeId);
+  return id ? { ws: next, id, rewritten } : undefined;
+}
+
+/** Instance de structure de bibliothèque désignée (nœud référence et définition). */
+function structureInstance(ws: Workspace, ref: GraphRef, nodeId: string) {
+  const node = getGraph(ws, ref)?.nodes.find((n) => n.id === nodeId);
+  if (!node || node.kind !== 'question' || !('ref' in node)) return undefined;
+  const q = ws.library.questions.find((x) => x.id === node.ref);
+  return q?.type === 'structure' ? { node, q } : undefined;
+}
+
+/**
+ * Masque ou réaffiche un champ d'une instance de structure (EVO-009). Refusé (false) si le champ est le dernier
+ * affiché. La définition en bibliothèque n'est jamais modifiée.
+ */
+export function setFieldHidden(ws: Workspace, ref: GraphRef, nodeId: string, field: string, hidden: boolean): boolean {
+  const inst = structureInstance(ws, ref, nodeId);
+  if (!inst || !inst.q.fields.some((f) => f.key === field)) return false;
+  const list = inst.node.hiddenFields ?? [];
+  if (hidden) {
+    if (list.includes(field)) return true;
+    const shown = inst.q.fields.filter((f) => !list.includes(f.key));
+    if (shown.length <= 1) return false;
+    inst.node.hiddenFields = [...list, field];
+  } else {
+    const rest = list.filter((k) => k !== field);
+    if (rest.length) inst.node.hiddenFields = rest;
+    else delete inst.node.hiddenFields;
+  }
+  return true;
+}
+
+/** Expressions du graphe qui référencent ce champ de l'instance (`cle.champ…`, `cle.champ_other`) : avertissement au masquage. */
+export function hiddenFieldUsages(ws: Workspace, ref: GraphRef, nodeId: string, field: string): FoundExpression[] {
+  const inst = structureInstance(ws, ref, nodeId);
+  if (!inst) return [];
+  const mine = (f: FoundExpression) => f.loc.owner.kind === ref.kind && f.loc.owner.id === ref.id;
+  return [...findUsages(ws, [inst.q.key, field]), ...findUsages(ws, [inst.q.key, `${field}_${OTHER_VALUE}`])].filter(mine);
 }
 
 /**

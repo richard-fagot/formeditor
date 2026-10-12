@@ -8,6 +8,7 @@ import { runCommand } from '../../app/commands';
 import { getGraph, scopeOf, useStore, useT, usedKeys, type GraphRef } from '../../app/store';
 import { Button, Field, Section } from '../../ui-kit';
 import { LabelEditor } from '../expression-editor';
+import { HiddenFields } from './HiddenFields';
 import { KeyInput } from './KeyInput';
 import { useGraphEdit } from './useGraphEdit';
 import { usePluginEnv } from './usePluginEnv';
@@ -27,6 +28,7 @@ export function LibraryQuestionProperties({ graph, node }: { graph: GraphRef; no
       <Field label={t('props.label')} hint={node.label ? t('props.overridden') : undefined}>
         <LabelEditor value={node.label ?? q?.label} onChange={(label) => patchNode(node.id, { label })} />
       </Field>
+      <HiddenFields graph={graph} node={node} />
       <div className="flex flex-wrap gap-1">
         {node.label && (
           <Button size="sm" onClick={() => patchNode(node.id, { label: undefined })}><RotateCcw className="size-3" />{t('props.resetLabel')}</Button>

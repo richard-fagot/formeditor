@@ -14,6 +14,8 @@ Cadre de l'application. Dépend de `app/*`, `ui/*`, `ui-kit`.
   côte à côte (`view.compare`) ; panneau latéral de la bibliothèque (`ui/library`, affiché / masqué par `view.libraryPanel`,
   masqué pendant la vue côte à côte), graphe + panneau Problèmes (`ui/diagram`), propriétés à droite.
 - `ComparePane` : vue côte à côte, logigramme d'un autre questionnaire en lecture seule (`Diagram readOnly`), choix du questionnaire, fermeture.
+- `CopyDialog` (EVO-009) : copie en bibliothèque dont la clé est prise (`copyRequest`) : « Nouvelle clé » proposée suffixée,
+  « Copier » grisé tant qu'elle est invalide ou prise (bibliothèque, graphe), puis `node.toLibrary` avec la clé.
 - `Palette` (cmdk) : commandes disponibles, insertion depuis la bibliothèque (« Insérer : … ») et recherche de nœud ;
   mode « relier » (commande E) ; mode « bibliothèque » (commande I : questions et fragments seulement, sans ceux qui créeraient un cycle d'appels).
 

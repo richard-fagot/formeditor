@@ -8,6 +8,7 @@ export {
 export { setQuestionLabel } from './question-edits';
 export {
   addLibraryQuestion, addFragment, deleteLibraryItem, referenceNode, insertionCycle, placeNode, moveToLibrary, canMoveToLibrary, setLibraryQuestionLabel, renameExit,
+  copyToLibrary, setFieldHidden, hiddenFieldUsages, type RewrittenExpression,
   type LibraryItem,
 } from './library-edits';
 export { groupIntoFragment, groupEntries, canExtract } from './group';
