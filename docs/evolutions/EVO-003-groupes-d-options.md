@@ -1,6 +1,6 @@
 # EVO-003 — Groupes d'options dans les choix unique et multiple
 
-Statut : en cours
+Statut : fait 2026-10-12
 Dépend de : EVO-001 (liste ordonnée d'entrées, entrées dynamiques)
 
 ## Besoin
