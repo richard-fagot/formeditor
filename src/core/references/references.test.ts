@@ -21,6 +21,17 @@ describe('portée', () => {
     expect(scope.get('sys.type_adherent')).toMatchObject({ type: 'enum', values: ['ud', 'amicale', 'particulier'], description: 'Catégorie de l\'adhérent.' });
     expect(scope.get('sys.sinistres.date')).toMatchObject({ kind: 'system', type: 'date' });
   });
+  it('porte le libellé d’une variable et d’un champ de liste (EVO-005), absent sinon', () => {
+    expect(scope.get('sys.type_adherent')?.caption).toBe('Catégorie d\'adhérent');
+    expect(scope.get('sys.sinistres.nature')?.caption).toBe('Nature du sinistre');
+    expect(scope.get('sys.sinistres.date')?.caption).toBeUndefined();
+    expect(scope.get('sys.nom_assure')).not.toHaveProperty('caption');
+  });
+  it('le libellé n’est ni une expression collectée ni touché par un renommage', () => {
+    expect(collectExpressions(ws).some((f) => f.text === 'Déclarant ayant droit' || f.text === 'Catégorie d\'adhérent')).toBe(false);
+    const renamed = renameKey(ws, { kind: 'system', name: 'type_adherent' }, 'categorie');
+    expect(renamed.project.systemState.find((v) => v.name === 'categorie')?.caption).toBe('Catégorie d\'adhérent');
+  });
   it('résout les chemins connus et refuse les inconnus', () => {
     expect(resolvePath(scope, ['victimes', 'prenom'])?.kind).toBe('field');
     expect(resolvePath(scope, ['inconnu'])).toBeUndefined();

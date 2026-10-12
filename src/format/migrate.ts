@@ -47,6 +47,8 @@ export const MIGRATIONS: Migrations = {
   },
   /** EVO-003 : groupes d'options. Un document antérieur n'a pas de groupe : seul le numéro de version change. */
   2: (doc) => bump(doc, 3),
+  /** EVO-005 : libellés `caption` (arête, variable, champ). Un document antérieur n'en a pas : seul le numéro change. */
+  3: (doc) => bump(doc, 4),
 };
 
 /** Change seulement `formatVersion` (et celui des documents d'un bundle). */

@@ -13,9 +13,9 @@ utilitaires purs. Aucun import externe : c'est la base de tous les autres module
   `cle.groupe`), `OTHER_GROUP` (`AUTRE`).
 - `node.ts` : `GraphNode` (union par `kind` : question locale ou de bibliothèque, block, info, summary, end, exit),
   `isLocalQuestion`, `isLibraryQuestion`.
-- `graph.ts` : `Edge`, `Graph`.
-- `documents.ts` : `Questionnaire`, `Library`, `Block`, `LabelSet`, `Project`, `SystemVariable`, `Scenario`,
-  `Layout`, `Workspace` (projet complet en mémoire), `Bundle`, `FORMAT_VERSION` (3).
+- `graph.ts` : `Edge` (dont `caption?`, libellé de lecture, EVO-005), `Graph`.
+- `documents.ts` : `Questionnaire`, `Library`, `Block`, `LabelSet`, `Project`, `SystemVariable` (dont `caption?`), `Scenario`,
+  `Layout`, `Workspace` (projet complet en mémoire), `Bundle`, `FORMAT_VERSION` (4).
 - `keys.ts` : `deriveKey` (« Date du sinistre » → `date_sinistre`), `uniqueKey`, `isValidKey`, `newId`, `RESERVED_KEYS` (dont `groupe`).
 
 ## Invariants

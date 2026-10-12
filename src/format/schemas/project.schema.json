@@ -37,6 +37,9 @@
             "list"
           ]
         },
+        "caption": {
+          "$ref": "common.schema.json#/$defs/caption"
+        },
         "description": {
           "type": "string"
         },

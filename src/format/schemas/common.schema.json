@@ -464,10 +464,19 @@
           "type": "string",
           "description": "Arête sortant d'une instance de bloc : nom de la sortie du bloc concernée ; absente = toute sortie."
         },
+        "caption": {
+          "$ref": "#/$defs/caption"
+        },
         "description": {
           "type": "string"
         }
       }
+    },
+    "caption": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[^\\r\\n]*$",
+      "description": "Libellé de lecture, une ligne, une seule langue ; jamais affiché à l'utilisateur final, sans effet sur le comportement."
     },
     "formatVersion": {
       "type": "integer",
