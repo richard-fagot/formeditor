@@ -55,6 +55,8 @@ export interface AppState extends ImageState {
   preview: Record<string, PreviewState>;
   problemsOpen: boolean;
   notice?: { title: string; lines: string[] };
+  /** Copie en bibliothèque en attente d'une autre clé (clé déjà prise, EVO-009). */
+  copyRequest?: { graph: GraphRef; nodeId: string };
   /** Demande d'ajustement de la vue du logigramme (compteur). */
   fitRequest: number;
   /** Demande de mise en page automatique du logigramme affiché (compteur). */
@@ -193,6 +195,7 @@ export const useStore = create<Store>()(
       set((s) => {
         Object.assign(s, initialState(ws));
         s.notice = undefined;
+        s.copyRequest = undefined;
       });
     },
     openTab(tab) {

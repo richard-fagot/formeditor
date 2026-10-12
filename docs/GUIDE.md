@@ -1,5 +1,5 @@
 # Guide utilisateur — Éditeur de questionnaires
-Mis à jour le 2026-10-12 — jusqu'à EVO-008
+Mis à jour le 2026-10-12 — jusqu'à EVO-009
 
 ## Mode d'emploi du guide
 
@@ -144,7 +144,7 @@ Mis à jour le 2026-10-12 — jusqu'à EVO-008
   annule seulement la frappe dans le champ. `[cmd: edit.undo]`
 - **Rétablir** — `Ctrl+Shift+Z` ou `Ctrl+Y`, ou palette « Rétablir ». `[cmd: edit.redo]`
 - **Lire les badges d'un nœud** — « Départ » (« Entrée » dans un fragment) ; « * » obligatoire (« * ? » : obligatoire sous condition) ; « + autre » ;
-  « bib. » élément de bibliothèque ; « trad. » traduction manquante ; « ⚠ n » problèmes (rouge si erreur).
+  « bib. » élément de bibliothèque ; « 3 / 7 champs » instance de structure dont des champs sont masqués (§10) ; « trad. » traduction manquante ; « ⚠ n » problèmes (rouge si erreur).
 
 ## 4. Logigramme — arêtes et conditions
 
@@ -271,6 +271,7 @@ Changer de type : sélectionner une question locale (pas une référence de bibl
 - **Renommer la clé d'un champ** — Champ « Clé » du champ déplié ; validé en quittant le champ ; propagé aux expressions (`victime.nom`).
 - **Rendre une structure répétable** — Case « Répétable (plusieurs occurrences) », puis « Occurrences min. », « Occurrences max. »,
   « Libellé du bouton « Ajouter » ». Le wizard affiche « Ajouter » et « Supprimer » par occurrence.
+- **Réutiliser une structure de bibliothèque avec moins de champs** — Voir « Masquer des champs d'une structure de bibliothèque » (§10).
 
 ### Mail, téléphone, adresse, civilité
 Types dédiés (aussi comme champ de structure) avec **contrôles de format intégrés** : rien à écrire, un message par
@@ -432,10 +433,22 @@ Concerne le choix unique et le choix multiple. Le booléen et le tri-state n'ont
   ou double-clic (ou `Entrée`) : inséré à la suite du nœud sélectionné. `[cmd: library.insertItem]`
 - **Créer une question de bibliothèque** — Onglet « Bibliothèque », « + » de la rubrique « Questions » (« Nouvelle question
   de bibliothèque »), ou palette. Elle se règle comme une question locale ; toute modification vaut pour tous ses usages. `[cmd: library.newQuestion]`
-- **Placer une question existante dans la bibliothèque** — Sélectionner la question locale, palette « Placer la question dans
-  la bibliothèque ». Le nœud devient une référence (même clé). Absent si la clé existe déjà dans la bibliothèque. `[cmd: node.toLibrary]`
-- **Reformuler une question de bibliothèque dans un questionnaire** — Sélectionner la référence (badge « bib. ») : seul
-  « Intitulé » est modifiable (« Intitulé surchargé localement. ») ; « Reprendre l’intitulé de la bibliothèque » annule la surcharge.
+- **Copier une question dans la bibliothèque** — Sélectionner la question locale, bouton « Copier dans la bibliothèque »
+  (section « Bibliothèque » du panneau de propriétés) ou palette. Sa définition complète (intitulé, type, aide, options et groupes,
+  champs, contraintes, messages) passe en bibliothèque ; le nœud devient une référence (badge « bib. ») au même endroit, avec
+  les mêmes arêtes et conditions, et garde sa clé : les expressions ne changent pas. Si la clé existe déjà dans la bibliothèque,
+  un dialogue demande une « Nouvelle clé » (proposée suffixée) : « Copier » reste grisé tant que la clé est invalide ou prise
+  (bibliothèque ou questionnaire) ; la question est alors renommée et la fenêtre « Copie faite : références réécrites » liste
+  les expressions modifiées. Bouton et commande absents sur une référence de bibliothèque. `Ctrl+Z` annule. `[cmd: node.toLibrary]`
+- **Reformuler une question de bibliothèque dans un questionnaire** — Sélectionner la référence (badge « bib. ») : seuls
+  « Intitulé » et, pour une structure, « Champs affichés » sont modifiables (« Intitulé surchargé localement. ») ; « Reprendre l’intitulé de la bibliothèque » annule la surcharge.
+- **Masquer des champs d'une structure de bibliothèque** — Sélectionner la référence d'une structure : la liste « Champs
+  affichés » du panneau montre chaque champ, dans l'ordre de la bibliothèque, avec une case « affiché ». Décocher masque le
+  champ **dans ce questionnaire seulement** (ni la bibliothèque ni les autres usages ne changent) ; le dernier champ affiché
+  ne peut pas être décoché. Un champ masqué n'est pas présenté dans la prévisualisation, même s'il est obligatoire. Le nœud
+  affiche « n / m champs ». Un champ ajouté plus tard à la structure en bibliothèque apparaît affiché partout. Si une expression
+  du questionnaire utilise le champ masqué, la fenêtre « Champ masqué encore référencé : … » liste ces expressions, et la
+  vérification « Champ masqué « … » » les signale (§15). Recocher pour réafficher ; `Ctrl+Z` annule.
 - **Ouvrir la question d'une référence** — Bouton « Ouvrir dans la bibliothèque » du panneau, ou palette. `[cmd: node.openInLibrary]`
 - **Afficher un élément de la bibliothèque** — Onglet « Bibliothèque », cliquer l'élément dans la liste de gauche (« Jeux de
   libellés », « Questions », « Fragments »). Une question s'affiche à droite (« Utilisé dans : … » liste les questionnaires
@@ -579,6 +592,8 @@ ou palette « Problèmes ») ; un clic sur un problème sélectionne le nœud ou
 - **Expression invalide « … » : …** — Erreur de syntaxe → corriger l'expression (guillemets, parenthèses, opérateurs §8).
 - **Référence inconnue « … »** — Clé ou variable inexistante (faute, question supprimée) → corriger le nom ou créer la question / variable.
 - **Référence inconnue « x » : dans un filtre, un nom désigne un champ de l’élément…** → écrire `$$.cle` pour une réponse.
+- **Champ masqué « … » : il ne sera jamais renseigné** — Une expression lit un champ masqué d'une structure de bibliothèque
+  (§10) → recocher « affiché » sur la référence, ou retirer le champ de l'expression.
 - **Clé en double « … »** — Deux questions (ou variables) avec la même clé → renommer l'une (« Clé » ou « Nom »).
 - **Clé invalide « … » (snake_case attendu)** — Minuscules, chiffres et `_`, commençant par une lettre → renommer.
 - **Nœud inaccessible depuis le départ** — Aucune arête n'y mène (depuis l'entrée, dans un fragment) → le relier, le supprimer ou changer le départ.
@@ -704,7 +719,7 @@ ou palette « Problèmes ») ; un clic sur un problème sélectionne le nœud ou
 | Insérer depuis la bibliothèque | — | `library.insertItem` |
 | Afficher / masquer le panneau Bibliothèque | — | `view.libraryPanel` |
 | Extraire la sélection en fragment | `Ctrl+G` | `node.group` |
-| Placer la question dans la bibliothèque | — | `node.toLibrary` |
+| Copier dans la bibliothèque | — | `node.toLibrary` |
 | Ouvrir dans la bibliothèque | — | `node.openInLibrary` |
 | Ouvrir le fragment | — | `node.openFragment` |
 | Définir comme entrée du fragment | — | `node.setEntry` |

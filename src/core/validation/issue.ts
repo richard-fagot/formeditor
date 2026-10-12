@@ -15,7 +15,7 @@ export interface Issue {
 }
 
 const ERRORS = new Set<IssueCode>(['invalidExpression', 'unknownReference', 'unknownFilterReference', 'duplicateKey', 'invalidKey', 'libraryMissing', 'missingStart', 'unknownExit', 'duplicateGroup', 'reservedGroupCode',
-  'fragmentCycle', 'expectedKeyMissing']);
+  'fragmentCycle', 'expectedKeyMissing', 'hiddenField']);
 
 export function issue(code: IssueCode, owner: Owner, where: Partial<Issue> = {}, params: Record<string, string> = {}): Issue {
   return { code, severity: ERRORS.has(code) ? 'error' : 'warning', owner, ...where, params };

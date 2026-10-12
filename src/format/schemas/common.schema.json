@@ -312,9 +312,17 @@
             },
             "label": {
               "$ref": "#/$defs/label"
+            },
+            "hiddenFields": {
+              "type": "array",
+              "description": "Question structure (version 8) : clés des champs masqués dans cette instance ; absent = tous affichés. Une clé inconnue est ignorée.",
+              "items": {
+                "$ref": "#/$defs/key"
+              },
+              "uniqueItems": true
             }
           },
-          "description": "Question de la bibliothèque, par référence ; libellé surchargeable."
+          "description": "Question de la bibliothèque, par référence ; libellé surchargeable, champs d'une structure masquables."
         },
         {
           "description": "Instance (appel) d'un fragment de la bibliothèque, par référence : ses clés sont vues de l'appelant sous `alias.cle`.",

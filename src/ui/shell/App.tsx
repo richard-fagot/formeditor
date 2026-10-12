@@ -6,6 +6,7 @@ import { Button, Dialog } from '../../ui-kit';
 import { FragmentView, Library } from '../library';
 import { SystemState } from '../system-state';
 import { Settings } from '../settings';
+import { CopyDialog } from './CopyDialog';
 import { Palette } from './Palette';
 import { QuestionnaireView } from './QuestionnaireView';
 import { Tabs } from './Tabs';
@@ -43,6 +44,7 @@ export function App() {
         {active === 'settings' && <Settings />}
       </main>
       <Palette />
+      <CopyDialog />
       <Dialog open={!!notice} onOpenChange={() => useStore.getState().set((s) => void (s.notice = undefined))} title={notice?.title ?? ''} description={notice?.title}>
         <ul className="max-h-80 space-y-1 overflow-y-auto p-4 font-mono text-xs text-rose-700">
           {notice?.lines.map((l, i) => <li key={i}>{l}</li>)}

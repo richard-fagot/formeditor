@@ -1,7 +1,7 @@
 import { checkSyntax, extractReferences, filterReferences, templateExpressions, templateReferences, type RefPath } from '../expressions';
 import { fragmentCallers, OTHER_VALUE, type Graph, type Question, type Workspace } from '../model';
 import {
-  collectExpressions, fragmentScope, questionnaireScope, questionOfNode, resolvePath, structureScope,
+  collectExpressions, fragmentScope, hiddenFieldPaths, questionnaireScope, questionOfNode, resolvePath, structureScope,
   type FoundExpression, type Owner, type RefInfo, type Scope,
 } from '../references';
 import { generated, guaranteedBefore, type Guarantees } from './guarantee';
@@ -83,6 +83,15 @@ export function checkReferences(ws: Workspace): Issue[] {
     return [...unknown].map((r) => r.split('.'));
   };
   const reported = new Set<string>();
+  const hiddenCache = new Map<string, string[]>();
+  /** Références à un champ masqué d'une instance du graphe propriétaire (EVO-009 : `cle.champ`, `cle.champ.nsp`, `cle.champ_other`). */
+  const hiddenOf = (owner: Owner, r: RefPath): string | undefined => {
+    if (owner.kind === 'libraryQuestion') return undefined;
+    const k = `${owner.kind}:${owner.id}`;
+    if (!hiddenCache.has(k)) hiddenCache.set(k, graphs.has(k) ? hiddenFieldPaths(ws, graphs.get(k)!) : []);
+    const s = r.join('.');
+    return hiddenCache.get(k)!.find((p) => s === p || s.startsWith(`${p}.`) || s === `${p}_${OTHER_VALUE}`);
+  };
 
   for (const f of collectExpressions(ws)) {
     const where = { nodeId: f.loc.nodeId, edgeId: f.loc.edgeId, property: f.loc.property };
@@ -97,7 +106,14 @@ export function checkReferences(ws: Workspace): Issue[] {
       continue;
     }
     const scopes = scopesFor(f);
-    const unknown = f.loc.owner.kind === 'fragment' ? checkExpected(f, refsOf(f)) : refsOf(f).filter((r) => scopes.some((s) => !resolvePath(s, r)));
+    const hidden = new Set<string>();
+    const refs = refsOf(f).filter((r) => {
+      const p = hiddenOf(f.loc.owner, r);
+      if (p && !(f.loc.structure && resolvePath(scopes[0]!, r))) hidden.add(r.join('.'));
+      return !hidden.has(r.join('.'));
+    });
+    for (const r of hidden) out.push(issue('hiddenField', f.loc.owner, where, { ref: r }));
+    const unknown = f.loc.owner.kind === 'fragment' ? checkExpected(f, refs) : refs.filter((r) => scopes.some((s) => !resolvePath(s, r)));
     // Nom d'un filtre qui est une clé de question : suggérer `$$.cle` (racine du contexte).
     const fromFilter = new Map(exprs.flatMap(filterReferences).map((x) => [x.path.join('.'), x.name]));
     for (const r of new Set(unknown.map((x) => x.join('.')))) {
@@ -105,7 +121,7 @@ export function checkReferences(ws: Workspace): Issue[] {
       const known = key !== undefined && scopes.every((s) => resolvePath(s, [key]));
       out.push(known ? issue('unknownFilterReference', f.loc.owner, where, { ref: r, key: key! }) : issue('unknownReference', f.loc.owner, where, { ref: r }));
     }
-    if (unknown.length) continue;
+    if (unknown.length || hidden.size) continue;
     out.push(...checkGuaranteed(ws, f, scopes[0]!, guaranteed, graphs));
   }
   return out;

@@ -18,10 +18,12 @@ utilitaires purs. Aucun import externe : c'est la base de tous les autres module
   `undisclosed?`) ; `COUNTRY_SUFFIX` / `COUNTRY_REF` (`pays` : `<clé>_pays`, `cle.pays`), `DEFAULT_COUNTRY` (`FR`), `hasCountry`,
   `CIVILITY_CODES`, `CIVILITY_LABELS` (longs / courts, fr / en), `civilityCodes(q)`, `civilityLabel(q, code)`.
 - `node.ts` : `GraphNode` (union par `kind` : question locale ou de bibliothèque, fragment (`FragmentNode` : `ref`, `alias`), info, summary, end, exit),
-  `isLocalQuestion`, `isLibraryQuestion`.
+  `isLocalQuestion`, `isLibraryQuestion`. `LibraryQuestionNode.hiddenFields?` : clés des champs masqués d'une instance de structure (EVO-009).
+- `instance.ts` (EVO-009) : `instanceQuestion(q, node)` (question effective d'une instance : intitulé surchargé, champs masqués retirés dans l'ordre
+  de la bibliothèque ; clé inconnue ignorée ; tous masqués → masquage ignoré), `visibleFieldKeys`.
 - `graph.ts` : `Edge` (dont `caption?`, libellé de lecture, EVO-005), `Graph`.
 - `documents.ts` : `Questionnaire` (porte `start`), `Library` (`fragments`), `Fragment` (`entry?`, pas de `start`), `LabelSet`, `Project`, `SystemVariable` (dont `caption?`), `Scenario`,
-  `Layout`, `Workspace` (projet complet en mémoire), `Bundle`, `FORMAT_VERSION` (7).
+  `Layout`, `Workspace` (projet complet en mémoire), `Bundle`, `FORMAT_VERSION` (8).
 - `graph.ts` : `Graph` = `nodes` + `edges` (sans départ).
 - `fragment.ts` (EVO-008) : `fragmentRoots` (nœuds sans arête entrante), `fragmentEntry` (`entry`, sinon premier candidat, sinon premier nœud),
   `fragmentExits` (nœuds sans arête sortante), `graphStart` (départ ou entrée), `calledFragments`, `createsCycle`, `fragmentCallers`.
@@ -37,4 +39,4 @@ utilitaires purs. Aucun import externe : c'est la base de tous les autres module
 - `StructureField` exclut le type `structure` (pas de structure imbriquée).
 
 ## Tests
-`keys.test.ts`, `fragment.test.ts`.
+`keys.test.ts`, `fragment.test.ts`, `instance.test.ts`.

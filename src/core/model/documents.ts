@@ -2,7 +2,7 @@ import type { Graph } from './graph';
 import type { LangCode, LocalizedText } from './text';
 import type { Question } from './question';
 
-export const FORMAT_VERSION = 7;
+export const FORMAT_VERSION = 8;
 
 export interface Questionnaire extends Graph {
   formatVersion: number;

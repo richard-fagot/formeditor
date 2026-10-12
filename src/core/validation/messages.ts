@@ -51,6 +51,7 @@ export function defaultMessage(param: string, arg?: unknown): LocalizedText {
 export const ISSUE_MESSAGES: Record<string, LocalizedText> = {
   invalidExpression: { fr: 'Expression invalide « {expr} » : {error}', en: 'Invalid expression "{expr}": {error}' },
   unknownReference: { fr: 'Référence inconnue « {ref} »', en: 'Unknown reference "{ref}"' },
+  hiddenField: { fr: 'Champ masqué « {ref} » : il ne sera jamais renseigné', en: 'Hidden field "{ref}": it will never be answered' },
   unknownFilterReference: {
     fr: 'Référence inconnue « {ref} » : dans un filtre, un nom désigne un champ de l’élément ; pour la question « {key} », écrire $$.{key}',
     en: 'Unknown reference "{ref}": in a filter, a name is a field of the item; for the question "{key}", write $$.{key}',

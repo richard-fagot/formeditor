@@ -8,7 +8,8 @@ Résolution des clés et espaces de noms, index des usages, renommage propagé. 
   nœud/arête, propriété, `structure` si champ de structure, `relative` si évalué par élément d'une entrée dynamique — `label` / `value` de `options[i]`, avec `source` = son `from`).
 - Portée : `questionnaireScope(ws, qId)`, `fragmentScope(ws, fragmentId, callers?)` (`callers` : appelants retenus, type `Caller` ;
   défaut : tous, un fragment appelant apporte ses propres appelants ; `[]` : clés du fragment et `sys` seulement), `structureScope(outer, structure)`,
-  `resolvePath(scope, path)` ; une variable système (et un champ de liste) porte `type`, `description`, `caption` (libellé, EVO-005) et `values` (énumération) pour l'autocomplétion ; `questionOfNode(ws, node)` (question effective, libellé surchargé).
+  `resolvePath(scope, path)` ; une variable système (et un champ de liste) porte `type`, `description`, `caption` (libellé, EVO-005) et `values` (énumération) pour l'autocomplétion ; `questionOfNode(ws, node)` (question effective, libellé surchargé, champs masqués retirés : absents de la portée, EVO-009) ;
+  `hiddenFieldPaths(ws, graph)` : chemins des champs masqués visibles depuis un graphe (`cle.champ`, `alias.cle.champ`).
   Fragments imbriqués (EVO-008) : `alias.sous_alias.cle`, `RefInfo.alias` = chemin des alias (`ident.adr`) ; garde contre un cycle d'appels.
 - `findUsages(ws, path)`.
 - Groupes d'options (EVO-003) : la portée contient `<chemin>.groupe` (genre `group`) pour chaque question ou champ à choix
@@ -21,7 +22,7 @@ Résolution des clés et espaces de noms, index des usages, renommage propagé. 
   manquantes) ; seuls les libellés modifiés sont réécrits.
 - `renameKey(ws, target, newKey)` : `target` = question (`owner` + `nodeId`, `fieldId` pour un champ),
   alias d'un nœud fragment (`{ kind: 'alias', owner, nodeId }` : questionnaire ou fragment ; réécrit aussi chez les appelants), variable système (scénarios compris), ou champ d'une liste système (`systemField` :
-  `sys.x.champ`, noms relatifs des entrées dynamiques dont `from` est `sys.x`, exemple et scénarios ; nom invalide ou pris → inchangé). Renvoie un nouveau `Workspace`.
+  `sys.x.champ`, noms relatifs des entrées dynamiques dont `from` est `sys.x`, exemple et scénarios ; nom invalide ou pris → inchangé). Renvoie un nouveau `Workspace`. Renommer un champ d'une question de bibliothèque suit dans `hiddenFields` de ses instances (EVO-009).
 - `qualifyKeys(ws, owner, keys, alias)` : préfixe par `alias.` les références à `keys` (et `cle_other`) dans les
   expressions de `owner` (questions déplacées dans un fragment appelé sous cet alias).
 
@@ -37,4 +38,4 @@ Résolution des clés et espaces de noms, index des usages, renommage propagé. 
   (le fragment est partagé) : la vérification « clé attendue absente » le signale chez l'appelant.
 
 ## Tests
-`references.test.ts` (sur l'exemple), `groups.test.ts`, `dont-know.test.ts`, `fragments.test.ts` (portée imbriquée, renommage chez les appelants).
+`references.test.ts` (sur l'exemple), `groups.test.ts`, `dont-know.test.ts`, `fragments.test.ts` (portée imbriquée, renommage chez les appelants), `hidden-fields.test.ts` (EVO-009).

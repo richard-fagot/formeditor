@@ -1,5 +1,5 @@
 {
-  "formatVersion": 7,
+  "formatVersion": 8,
   "kind": "questionnaire",
   "id": "q_remboursement",
   "key": "demande_remboursement",
@@ -47,6 +47,17 @@
       }
     },
     {
+      "kind": "question",
+      "id": "n_rappel",
+      "ref": "lq_identite",
+      "hiddenFields": [
+        "civilite",
+        "date_naissance",
+        "adresse",
+        "telephone"
+      ]
+    },
+    {
       "kind": "end",
       "id": "n_fin_remboursement",
       "title": {
@@ -54,8 +65,8 @@
         "en": "Request recorded"
       },
       "message": {
-        "fr": "Merci {ident.prenom} {ident.nom} : votre demande de {montant_demande} € est enregistrée.",
-        "en": "Thank you {ident.prenom} {ident.nom}: your request for €{montant_demande} is recorded."
+        "fr": "Merci {ident.prenom} {ident.nom} : votre demande de {montant_demande} € est enregistrée. Confirmation envoyée à {identite.mail}.",
+        "en": "Thank you {ident.prenom} {ident.nom}: your request for €{montant_demande} is recorded. Confirmation sent to {identite.mail}."
       },
       "outcome": "submitted"
     }
@@ -79,8 +90,13 @@
       "to": "n_montant_demande"
     },
     {
-      "id": "e_montant_fin",
+      "id": "e_montant_rappel",
       "from": "n_montant_demande",
+      "to": "n_rappel"
+    },
+    {
+      "id": "e_rappel_fin",
+      "from": "n_rappel",
       "to": "n_fin_remboursement"
     }
   ]

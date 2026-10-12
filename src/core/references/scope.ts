@@ -1,5 +1,5 @@
 import {
-  COUNTRY_REF, DONT_KNOW_REF, fragmentCallers, hasCountry, GROUP_REF, hasDontKnow, isLibraryQuestion, OTHER_VALUE, type Graph, type Label, type Question,
+  COUNTRY_REF, DONT_KNOW_REF, fragmentCallers, hasCountry, GROUP_REF, hasDontKnow, instanceQuestion, isLibraryQuestion, OTHER_VALUE, type Graph, type Label, type Question,
   type QuestionType, type StructureField, type SystemVariable, type VariableType, type Workspace,
 } from '../model';
 
@@ -29,12 +29,33 @@ export interface RefInfo {
 /** Références visibles depuis un endroit du projet, indexées par chemin. */
 export type Scope = Map<string, RefInfo>;
 
-/** Question effective d'un nœud question (locale ou bibliothèque, libellé surchargé). */
+/** Question effective d'un nœud question (locale ou bibliothèque : libellé surchargé, champs masqués retirés, EVO-009). */
 export function questionOfNode(ws: Workspace, node: Graph['nodes'][number]): Question | undefined {
   if (node.kind !== 'question') return undefined;
   if (!isLibraryQuestion(node)) return node;
   const q = ws.library.questions.find((x) => x.id === node.ref);
-  return q && node.label ? { ...q, label: node.label } : q;
+  return q && instanceQuestion(q, node);
+}
+
+/**
+ * Chemins des champs masqués (EVO-009) visibles depuis le graphe `g` : `cle.champ` pour ses instances,
+ * `alias.cle.champ` pour celles des fragments qu'il appelle (garde contre un cycle d'appels).
+ */
+export function hiddenFieldPaths(ws: Workspace, g: Graph, prefix: string[] = [], seen = new Set<string>()): string[] {
+  const out: string[] = [];
+  for (const n of g.nodes) {
+    if (isLibraryQuestion(n) && n.hiddenFields?.length) {
+      const q = ws.library.questions.find((x) => x.id === n.ref);
+      const shown = q && questionOfNode(ws, n);
+      if (q?.type !== 'structure' || shown?.type !== 'structure') continue;
+      for (const f of q.fields) if (!shown.fields.some((x) => x.key === f.key)) out.push([...prefix, q.key, f.key].join('.'));
+    }
+    if (n.kind === 'fragment' && !seen.has(n.ref)) {
+      const f = ws.library.fragments.find((x) => x.id === n.ref);
+      if (f) out.push(...hiddenFieldPaths(ws, f, [...prefix, n.alias], new Set([...seen, n.ref])));
+    }
+  }
+  return out;
 }
 
 function addQuestion(scope: Scope, q: Question | StructureField, prefix: string, extra: Partial<RefInfo>) {

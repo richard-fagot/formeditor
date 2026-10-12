@@ -19,7 +19,9 @@ vient des plugins (`registry`). Dépend de `app/store`, `registry`, `core`, `ui-
 - `EdgeProperties` : libellé (`caption`, une ligne, vide = retiré ; clé d'historique `<id>:caption`), condition (vide = « sinon »), rang (`edge.moveUp`/`moveDown`), sortie nommée d'un fragment (une sortie inconnue
   reste proposée, marquée « (?) »), suppression (`node.delete`).
 - `LibraryQuestionProperties` : question de bibliothèque référencée ; seul l'intitulé est surchargeable
-  (« Reprendre l'intitulé de la bibliothèque » retire la surcharge), « Ouvrir dans la bibliothèque ».
+  (« Reprendre l'intitulé de la bibliothèque » retire la surcharge), « Ouvrir dans la bibliothèque ». Structure : `HiddenFields` (EVO-009),
+  case « affiché » par champ (`setFieldHidden`, la dernière affichée est grisée), avertissement `notice` si le champ masqué est référencé (`hiddenFieldUsages`).
+- Question locale : section « Bibliothèque », bouton « Copier dans la bibliothèque » (`node.toLibrary`, EVO-009).
 - `FragmentCallProperties` (EVO-008) : fragment référencé, alias (`KeyInput` : clé prise refusée ; renommage propagé, `renameKey` cible `alias`
   avec le graphe propriétaire), sorties du fragment (`fragmentExits`), clés attendues de l'appelant (`expectedKeys`, « absente » si la portée
   de cet appelant ne la résout pas), « Ouvrir le fragment » (`node.openFragment`).

@@ -1,5 +1,5 @@
 {
-  "description": "Demande de remboursement, assuré mineur : sortie du fragment par representant_legal, l'arête `ident.majeur = false` du nœud fragment mène à la page d'information.",
+  "description": "Demande de remboursement, assuré mineur : sortie du fragment par representant_legal, l'arête `ident.majeur = false` du nœud fragment mène à la page d'information. Coordonnées : instance « identite » réduite à nom, prénom, mail (EVO-009).",
   "questionnaire": "q_remboursement",
   "scenario": "sc_amicale_sans_sinistre",
   "today": "2026-10-10",
@@ -9,8 +9,9 @@
     { "step": "n_ident/fn_date_naissance", "value": "2015-03-02" },
     { "step": "n_ident/fn_majeur", "value": false },
     { "step": "n_ident/fn_representant_legal", "value": "Léa Morel" },
-    { "step": "n_montant_demande", "value": 80.5 }
+    { "step": "n_montant_demande", "value": 80.5 },
+    { "step": "n_rappel", "value": { "nom": "Morel", "prenom": "Léa", "mail": "lea.morel@example.org" } }
   ],
-  "path": ["n_ident/fn_nom", "n_ident/fn_prenom", "n_ident/fn_date_naissance", "n_ident/fn_majeur", "n_ident/fn_representant_legal", "n_mineur", "n_montant_demande", "n_fin_remboursement"],
+  "path": ["n_ident/fn_nom", "n_ident/fn_prenom", "n_ident/fn_date_naissance", "n_ident/fn_majeur", "n_ident/fn_representant_legal", "n_mineur", "n_montant_demande", "n_rappel", "n_fin_remboursement"],
   "outcome": "submitted"
 }

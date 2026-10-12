@@ -27,7 +27,7 @@ Dépend de `core/model`, `core/expressions`, `core/references`, `core/runtime` (
 `invalidExpression`, `unknownReference`, `unknownFilterReference` (clé de question nue dans un filtre : `$$.cle` suggéré), `duplicateKey`, `invalidKey`, `unreachable`, `deadEnd`,
 `exitNotConnected`, `unknownExit`, `loopWithoutExit`, `noElse`, `multipleElse`, `notGuaranteed`,
 `missingTranslation`, `libraryMissing`, `missingStart`, `duplicateGroup`, `reservedGroupCode`, `emptyGroup`,
-`implicitExitNotConnected`, `fragmentEntry`, `fragmentNoExit`, `fragmentCycle`, `unusedFragment`, `endInFragment`, `expectedKeyMissing`
+`implicitExitNotConnected`, `fragmentEntry`, `fragmentNoExit`, `fragmentCycle`, `unusedFragment`, `endInFragment`, `expectedKeyMissing`, `hiddenField`
 (groupes d'options, `groups-check.ts` ; identifiant statique = code, sinon libellé « sinon » dans la langue par défaut).
 
 ## Choix
@@ -44,7 +44,10 @@ Dépend de `core/model`, `core/expressions`, `core/references`, `core/runtime` (
   `implicitExitNotConnected` ; pas de `deadEnd` ni de `missingStart` dans un fragment (ses nœuds sans arête sortante sont ses
   sorties) ; nœud fragment sans arête : `deadEnd` dans un questionnaire, sortie implicite dans un fragment. `workspace-check.ts` :
   `fragmentCycle`, `unusedFragment`. `guarantee.ts` : clés garanties à toutes les sorties empruntées, `alias.` (imbriqué) ; garde contre un cycle.
+- Champs masqués (EVO-009, `refs-check.ts`) : une référence du graphe qui vise un champ masqué d'une de ses instances (`hiddenFieldPaths` :
+  `cle.champ…`, `cle.champ_other`, `alias.cle.champ` via un fragment appelé) → `hiddenField` (erreur) au lieu de `unknownReference` ;
+  références internes à la définition (champ frère) non signalées.
 - Le typage des expressions se limite à la syntaxe et à l'existence des références.
 
 ## Tests
-`validation.test.ts` (l'exemple ne doit produire **aucun** problème), `groups.test.ts`, `dont-know.test.ts`, `contact.test.ts`, `fragments.test.ts`.
+`validation.test.ts` (l'exemple ne doit produire **aucun** problème), `groups.test.ts`, `dont-know.test.ts`, `contact.test.ts`, `fragments.test.ts`, `hidden-fields.test.ts`.

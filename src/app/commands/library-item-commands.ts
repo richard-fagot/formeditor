@@ -1,8 +1,8 @@
 import { newId, uniqueKey, type GraphNode } from '../../core/model';
 import { nodeKind } from '../../registry';
 import {
-  activeGraphRef, addFragment, canExtract, canMoveToLibrary, addLibraryQuestion, deleteLibraryItem, getGraph, groupEntries, groupIntoFragment, insertNode,
-  insertionCycle, moveToLibrary, placeNode, referenceNode, scopeOf, useStore, type GraphRef, type LibraryItem,
+  activeGraphRef, addFragment, canExtract, canMoveToLibrary, copyToLibrary, addLibraryQuestion, deleteLibraryItem, getGraph, groupEntries, groupIntoFragment, insertNode,
+  insertionCycle, placeNode, referenceNode, scopeOf, useStore, type GraphRef, type LibraryItem,
 } from '../store';
 import { makeTranslate } from '../i18n';
 import { createAfter, inDiagram } from './graph-commands';
@@ -53,6 +53,28 @@ function insertItem(arg: unknown) {
     placeNode(ws, r.id, node.id, position);
   });
   st().select({ graph: r, nodes: [node.id] });
+}
+
+/**
+ * Copie en bibliothèque (EVO-009) : même clé si elle est libre ; sinon dialogue de choix d'une autre clé
+ * (`copyRequest`), puis rapport des références réécrites.
+ */
+function copyQuestion(arg?: { graph?: GraphRef; nodeId?: string; key?: string }) {
+  const r = arg?.graph ?? ref();
+  const id = arg?.nodeId ?? selected()?.id;
+  if (!r || !id) return;
+  if (!arg?.key && !canMoveToLibrary(st().ws, r, id)) {
+    st().set((s) => void (s.copyRequest = { graph: r, nodeId: id }));
+    return;
+  }
+  const res = copyToLibrary(st().ws, r, id, arg?.key);
+  if (!res) return;
+  st().set((s) => void (s.copyRequest = undefined));
+  st().edit(scopeOf(r), () => res.ws);
+  if (res.rewritten.length) {
+    const lines = res.rewritten.map((x) => `${x.loc.nodeId ?? x.loc.edgeId ?? ''} · ${x.loc.property} : ${x.before} → ${x.after}`);
+    st().set((s) => void (s.notice = { title: t()('copy.rewritten'), lines }));
+  }
 }
 
 /** Questions et fragments de la bibliothèque : création, affichage, insertion, extraction, entrée, sorties. */
@@ -122,13 +144,10 @@ export function libraryItemCommands(): Command[] {
       },
     },
     {
+      // Question locale sélectionnée (EVO-009). `arg` : { graph, nodeId, key } — clé choisie dans le dialogue si la clé est prise.
       id: 'node.toLibrary', label: 'node.toLibrary', keys: [], scope: 'graph',
-      enabled: () => { const n = selected(); return !!n && canMoveToLibrary(st().ws, ref()!, n.id); },
-      run: () => {
-        const r = ref()!;
-        const id = selected()!.id;
-        st().edit(scopeOf(r), (ws) => void moveToLibrary(ws, r, id));
-      },
+      enabled: () => { const n = selected(); return !!n && n.kind === 'question' && !('ref' in n); },
+      run: (arg) => copyQuestion(arg as { graph?: GraphRef; nodeId?: string; key?: string } | undefined),
     },
     {
       id: 'node.openInLibrary', label: 'node.openInLibrary', keys: [], scope: 'graph',

@@ -26,12 +26,17 @@ export const NodeView = memo(function NodeView({ data, selected }: NodeProps & {
   const plugin = nodeKind(node.kind);
   const question = questionOfNode(env.ws, node);
   const issues = issuesByNode.get(node.id) ?? [];
+  // Instance de structure avec champs masqués (EVO-009) : « affichés / total ».
+  const def = isLibraryQuestion(node) ? env.ws.library.questions.find((q) => q.id === node.ref) : undefined;
+  const fieldsCount = def?.type === 'structure' && question?.type === 'structure' && question.fields.length < def.fields.length
+    ? t('node.fieldsCount', { shown: question.fields.length, total: def.fields.length }) : undefined;
   const badges = (
     <>
       {isStart && <Badge tone="indigo">{t(graph.kind === 'fragment' ? 'node.entry' : 'node.start')}</Badge>}
       {question?.required && <Badge tone="slate" title={typeof question.required === 'string' ? question.required : undefined}>{typeof question.required === 'string' ? '* ?' : '*'}</Badge>}
       {question && OTHER_TYPES.includes(question.type) && 'other' in question && question.other && <Badge>{t('node.badgeOther')}</Badge>}
       {(isLibraryQuestion(node) || node.kind === 'fragment') && <Badge tone="amber" title={t('node.libraryBadge')}>bib.</Badge>}
+      {fieldsCount && <Badge tone="amber">{fieldsCount}</Badge>}
       {node.kind === 'fragment' && !readOnly && (
         <button type="button" data-testid="fragment-open" title={t('node.openFragment')}
           className="nodrag rounded border border-amber-300 px-1 text-[10px] text-amber-800 hover:bg-amber-100"

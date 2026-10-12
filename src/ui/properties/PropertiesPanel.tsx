@@ -46,6 +46,11 @@ function NodeProperties({ graph, node, isStart }: { graph: GraphRef; node: Graph
   return (
     <div key={node.id}>
       {isLocalQuestion(node) && <QuestionProperties graph={graph} node={node} />}
+      {isLocalQuestion(node) && (
+        <Section title={t('tab.library')}>
+          <Button size="sm" data-testid="copy-to-library" onClick={() => runCommand('node.toLibrary')}>{t('node.toLibrary')}</Button>
+        </Section>
+      )}
       {isLibraryQuestion(node) && <LibraryQuestionProperties graph={graph} node={node} />}
       {node.kind === 'fragment' && <FragmentCallProperties graph={graph} node={node} />}
       {node.kind !== 'question' && node.kind !== 'fragment' && plugin.Properties && (

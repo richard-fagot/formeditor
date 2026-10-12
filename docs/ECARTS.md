@@ -11,3 +11,5 @@
 | 2026-10-12 | EVO-008 | mineur | Commentaires parlant encore de « bloc ». | `src/app/commands/edit-commands.ts:46`, `src/app/commands/image-commands.ts:6`, `src/ui/diagram/Diagram.tsx:115`, `src/core/model/question.ts:81` |
 | 2026-10-12 | EVO-008 | mineur | Une question de bibliothèque utilisée seulement dans un fragment a ses références signalées « inconnues » (`scopesFor` ne prend que les questionnaires ; préexistant avec les blocs). | `src/core/validation/refs-check.ts` |
 | 2026-10-12 | EVO-008 | mineur | Débogage : sur la dernière page d'un fragment, « Conditions évaluées » ne montre pas les arêtes de l'appelant qui seront suivies. | prévisualisation |
+| 2026-10-12 | EVO-009 | mineur | L'avertissement au masquage ne liste que les expressions du graphe de l'instance ; dans un fragment, les références `alias.cle.champ` des appelants n'y figurent pas (la vérification `hiddenField` les signale ensuite). | `src/app/store/library-edits.ts:146-150` |
+| 2026-10-12 | EVO-009 | mineur | Titre de la fenêtre d'avertissement assemblé en dur avec « : » à la française (espace fautive en anglais). | `src/ui/properties/HiddenFields.tsx:25` |

@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { exampleWorkspace } from '../../../tests/reference/example';
 import { checkWorkspace } from '../../core/validation';
-import { start, next, setAnswer, currentStep } from '../../core/runtime';
+import { start, next, setAnswer, currentStep, resolveStep } from '../../core/runtime';
 import type { FragmentNode, Questionnaire, Workspace } from '../../core/model';
 import {
-  addFragment, addLibraryQuestion, blankWorkspace, canMoveToLibrary, deleteLibraryItem, groupEntries, groupIntoFragment, insertNode, moveToLibrary,
-  referenceNode, removeNodes, renameExit, setLibraryQuestionLabel, type GraphRef,
+  addFragment, addLibraryQuestion, blankWorkspace, canMoveToLibrary, copyToLibrary, deleteLibraryItem, groupEntries, groupIntoFragment, hiddenFieldUsages, insertNode, moveToLibrary,
+  referenceNode, removeNodes, renameExit, setFieldHidden, setLibraryQuestionLabel, type GraphRef,
 } from './index';
 
 const Q = (ws: Workspace): Questionnaire => ws.questionnaires[0]!;
@@ -171,5 +171,86 @@ describe('extraction d’une sélection en fragment', () => {
     expect(outer.nodes.some((n) => n.kind === 'fragment' && n.ref === 'blk_identite_tiers')).toBe(true);
     // Les références de l'appelant à `tiers.…` passent par le nouvel alias.
     expect(JSON.stringify(Q(res.ws))).toContain('englobant.tiers.');
+  });
+});
+
+describe('copie en bibliothèque et champs masqués (EVO-009)', () => {
+  const answers = (ws: Workspace) => {
+    const input = { ws, questionnaireId: Q(ws).id, sys: ws.project.scenarios[0]!.values, env: { today: '2026-10-10', defaultLang: 'fr' } };
+    let s = start(input);
+    const seen: string[] = [];
+    for (let i = 0; i < 6; i++) {
+      const step = currentStep(input, s);
+      seen.push(step.id);
+      if (step.question?.type === 'single') s = setAnswer(input, s, (step.question.options[0] as { value: string }).value);
+      s = next(input, s);
+    }
+    return seen;
+  };
+
+  it('copie une question locale : définition complète en bibliothèque, instance à la même position, parcours identique', () => {
+    const ws = exampleWorkspace();
+    const before = answers(ws);
+    const node = Q(ws).nodes.find((n) => n.id === 'n_type')!;
+    const { kind: _k, ...def } = JSON.parse(JSON.stringify(node));
+    const res = copyToLibrary(ws, ref(ws), 'n_type')!;
+    expect(res.rewritten).toEqual([]);
+    expect(res.ws.library.questions.find((q) => q.id === res.id)).toEqual({ ...def, id: res.id });
+    expect(Q(res.ws).nodes.findIndex((n) => n.id === 'n_type')).toBe(Q(ws).nodes.findIndex((n) => n.id === 'n_type'));
+    expect(Q(res.ws).nodes.find((n) => n.id === 'n_type')).toEqual({ kind: 'question', id: 'n_type', ref: res.id });
+    expect(Q(res.ws).edges).toEqual(Q(ws).edges);
+    expect(answers(res.ws)).toEqual(before);
+    expect(checkWorkspace(res.ws)).toEqual(checkWorkspace(ws));
+  });
+
+  it('clé déjà prise : copie refusée sans autre clé ; avec une clé libre, références réécrites et rapportées', () => {
+    const ws = exampleWorkspace();
+    ws.library.questions.push({ id: 'x', key: 'type_sinistre', label: {}, type: 'text' });
+    expect(copyToLibrary(ws, ref(ws), 'n_type')).toBeUndefined();
+    expect(copyToLibrary(ws, ref(ws), 'n_type', 'montant_estime')).toBeUndefined(); // prise dans le questionnaire
+    const before = answers(ws);
+    const res = copyToLibrary(ws, ref(ws), 'n_type', 'nature_sinistre')!;
+    expect(res.ws.library.questions.find((q) => q.id === res.id)!.key).toBe('nature_sinistre');
+    expect(res.rewritten.length).toBeGreaterThan(0);
+    expect(res.rewritten.every((r) => r.before.includes('type_sinistre') && r.after.includes('nature_sinistre'))).toBe(true);
+    expect(answers(res.ws)).toEqual(before);
+    expect(checkWorkspace(res.ws).filter((i) => i.code === 'unknownReference')).toEqual([]);
+  });
+
+  it('pas de copie pour une question déjà issue de la bibliothèque', () => {
+    const ws = exampleWorkspace();
+    expect(canMoveToLibrary(ws, ref(ws), 'n_date')).toBe(false);
+    expect(copyToLibrary(ws, ref(ws), 'n_date')).toBeUndefined();
+  });
+
+  it('masque et réaffiche un champ ; le dernier champ affiché ne peut pas être masqué', () => {
+    const ws = exampleWorkspace();
+    const r: GraphRef = { kind: 'questionnaire', id: 'q_remboursement' };
+    const node = () => ws.questionnaires.find((q) => q.id === r.id)!.nodes.find((n) => n.id === 'n_rappel') as { hiddenFields?: string[] };
+    expect(setFieldHidden(ws, r, 'n_rappel', 'nom', true)).toBe(true);
+    expect(setFieldHidden(ws, r, 'n_rappel', 'prenom', true)).toBe(true);
+    expect(setFieldHidden(ws, r, 'n_rappel', 'mail', true)).toBe(false);
+    expect(node().hiddenFields).toEqual(['civilite', 'date_naissance', 'adresse', 'telephone', 'nom', 'prenom']);
+    setFieldHidden(ws, r, 'n_rappel', 'nom', false);
+    expect(node().hiddenFields).not.toContain('nom');
+    for (const k of ['civilite', 'date_naissance', 'adresse', 'telephone', 'prenom']) setFieldHidden(ws, r, 'n_rappel', k, false);
+    expect(node()).not.toHaveProperty('hiddenFields');
+    expect(ws.library.questions.find((q) => q.id === 'lq_identite')!.type === 'structure').toBe(true);
+  });
+
+  it('un champ ajouté en bibliothèque apparaît affiché dans les instances, masquages conservés', () => {
+    const ws = exampleWorkspace();
+    const lib = ws.library.questions.find((q) => q.id === 'lq_identite')!;
+    if (lib.type === 'structure') lib.fields.push({ id: 'li_pays', key: 'nationalite', label: { fr: 'Nationalité' }, type: 'text' });
+    const input = { ws, questionnaireId: 'q_remboursement', sys: {} };
+    const step = resolveStep(input, 'n_rappel')!;
+    expect(step.question?.type === 'structure' && step.question.fields.map((f) => f.key)).toEqual(['nom', 'prenom', 'mail', 'nationalite']);
+  });
+
+  it('hiddenFieldUsages : expressions du graphe qui référencent le champ', () => {
+    const ws = exampleWorkspace();
+    const r: GraphRef = { kind: 'questionnaire', id: 'q_remboursement' };
+    expect([...new Set(hiddenFieldUsages(ws, r, 'n_rappel', 'mail').map((u) => u.loc.nodeId))]).toEqual(['n_fin_remboursement']);
+    expect(hiddenFieldUsages(ws, r, 'n_rappel', 'nom')).toEqual([]);
   });
 });

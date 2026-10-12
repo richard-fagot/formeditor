@@ -70,6 +70,8 @@ export const MIGRATIONS: Migrations = {
       ...(doc.project ? { project: versioned(doc.project, 7) } : {}),
     };
   },
+  /** EVO-009 : champs masqués `hiddenFields` d'une instance. Propriété absente = tous affichés : seul le numéro change. */
+  7: (doc) => bump(doc, 8),
 };
 
 /** Graphe v6 → v7 : instances de bloc → nœuds fragment. */

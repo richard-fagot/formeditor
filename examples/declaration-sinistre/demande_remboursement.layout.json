@@ -1,5 +1,5 @@
 {
-  "formatVersion": 7,
+  "formatVersion": 8,
   "kind": "layout",
   "graph": "q_remboursement",
   "nodes": {
@@ -15,9 +15,13 @@
       "x": 0,
       "y": 320
     },
-    "n_fin_remboursement": {
+    "n_rappel": {
       "x": 0,
       "y": 480
+    },
+    "n_fin_remboursement": {
+      "x": 0,
+      "y": 640
     }
   }
 }
