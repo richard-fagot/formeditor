@@ -448,7 +448,7 @@ ou palette « Problèmes ») ; un clic sur un problème sélectionne le nœud ou
 - **Traduction manquante (…) : …** — Saisir le texte dans la langue indiquée (§13). Vaut aussi pour le libellé d'un groupe d'options.
 - **Groupe d’options en double « … »** — Deux groupes d'une question ont le même code (ou, sans code, le même libellé) →
   donner un « Code du groupe » distinct (§7).
-- **Code de groupe réservé « AUTRE »** — `AUTRE` désigne « Autre (préciser) » → choisir un autre code.
+- **Code de groupe réservé « … » (« Autre (préciser) »)** — Le code `AUTRE` désigne « Autre (préciser) » → choisir un autre code.
 - **Groupe d’options sans option « … »** — Ajouter des options sous la ligne `#` du groupe, ou supprimer le groupe.
 - **Élément de bibliothèque introuvable « … »** — Référence vers un élément supprimé → supprimer le nœud ou réinsérer un élément.
 - **Nœud de départ introuvable** — « Définir comme départ » sur un nœud (§3).

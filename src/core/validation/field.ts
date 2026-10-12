@@ -28,10 +28,11 @@ function validDate(s: string): boolean {
 
 /**
  * Valide une réponse. `ctx` est le contexte d'évaluation, réponse courante comprise (sous sa clé).
- * `other` : précision de l'option « Autre ».
+ * `other` : précision de l'option « Autre » ; `group` : groupe de la sélection d'un choix (`<clé>_group`, lu à côté
+ * de la réponse par l'appelant, jamais dans `ctx` où une clé homonyme peut venir d'ailleurs ; absent : la valeur suffit).
  */
 export function validateAnswer(
-  q: Question | StructureField, value: unknown, ctx: EvalContext, env: EvalEnv = {}, other?: unknown, path = '',
+  q: Question | StructureField, value: unknown, ctx: EvalContext, env: EvalEnv = {}, other?: unknown, path = '', group?: unknown,
 ): FieldError[] {
   const errors: FieldError[] = [];
   const fail = (param: string, arg?: unknown) =>
@@ -79,12 +80,11 @@ export function validateAnswer(
     }
     case 'single':
     case 'multiple': {
-      // Option = (groupe, valeur) ; groupe lu sous `<clé>_group` dans le contexte. Groupe non renseigné : la valeur suffit.
+      // Option = (groupe, valeur). Groupe non renseigné : la valeur suffit.
       const options = choiceOptions(q, ctx, env).map((o) => [o.group?.id ?? '', o.value] as const);
       if (q.other) options.push([OTHER_GROUP, OTHER_VALUE]);
       const list = Array.isArray(value) ? value : [value];
-      const groups = ctx[`${q.key}_${GROUP_SUFFIX}`];
-      const groupAt = (i: number) => (Array.isArray(groups) ? groups[i] : groups);
+      const groupAt = (i: number) => (Array.isArray(group) ? group[i] : group);
       const known = (v: unknown, g: unknown) => options.some(([og, ov]) => ov === String(v) && (g === undefined || g === null || String(g) === og));
       if (list.some((v, i) => !known(v, groupAt(i)))) fail('option');
       if (q.type === 'single') break;
@@ -127,7 +127,7 @@ function validateStructure(
     for (const f of q.fields) {
       if (f.when && !evaluateCondition(f.when, octx, env)) continue;
       const fpath = q.repeat ? `${path}[${i}].${f.key}` : `${path}.${f.key}`;
-      errors.push(...validateAnswer(f, occ?.[f.key], octx, env, occ?.[`${f.key}_${OTHER_VALUE}`], fpath));
+      errors.push(...validateAnswer(f, occ?.[f.key], octx, env, occ?.[`${f.key}_${OTHER_VALUE}`], fpath, occ?.[`${f.key}_${GROUP_SUFFIX}`]));
     }
   });
 }

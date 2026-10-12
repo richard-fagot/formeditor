@@ -4,7 +4,7 @@ import { EXAMPLE_DIR, exampleWorkspace } from '../../../tests/reference/example'
 import { FORMAT_VERSION, type Questionnaire } from '../../core/model';
 import { newWorkspace } from '../../format';
 import { currentStep, next, setAnswer, start, withAnswer, type RuntimeInput, type Session } from '../../core/runtime';
-import { firstInvalidStep, guardEnd } from './path-check';
+import { answerErrors, firstInvalidStep, guardEnd } from './path-check';
 
 const ws = exampleWorkspace();
 const chemin = JSON.parse(readFileSync(`${EXAMPLE_DIR}/chemins/ud_tiers_inconnu.json`, 'utf8')) as { answers: { step: string; value: unknown; other?: string }[] };
@@ -60,5 +60,26 @@ describe('fin de parcours bloquée par une réponse devenue invalide (EVO-001)',
     expect(guardEnd(small, s)).toBeUndefined();
     const changed = { ...s, answers: withAnswer(s.answers, ['couleurs'], ['bleu']) };
     expect(currentStep(small, guardEnd(small, changed)!).id).toBe('n2');
+  });
+});
+
+describe('groupe de la sélection (EVO-003) : lu à côté de la réponse validée', () => {
+  const w = structuredClone(ws);
+  const qualite = w.questionnaires[0]!.nodes.find((n) => n.id === 'n_qualite')!;
+  // Question homonyme dans le bloc : sa réponse est rangée sous `tiers`.
+  w.library.blocks[0]!.nodes.push({ ...structuredClone(qualite), id: 'bn_qualite' });
+  const input: RuntimeInput = { ws: w, questionnaireId: 'q_declaration', sys, env: { defaultLang: 'fr' } };
+  const params = (answers: Record<string, unknown>, step: string) => answerErrors(input, answers, step).map((e) => e.param);
+
+  it('question du questionnaire : couple (groupe, valeur)', () => {
+    expect(params({ qualite_declarant: 'enfant', qualite_declarant_group: 'SC' }, 'n_qualite')).toEqual([]);
+    expect(params({ qualite_declarant: 'enfant', qualite_declarant_group: 'Ayant droit' }, 'n_qualite')).toEqual(['option']);
+  });
+
+  it('question d’un bloc : le groupe homonyme de l’hôte ne s’applique pas', () => {
+    const host = { qualite_declarant: 'conjoint', qualite_declarant_group: 'Ayant droit' };
+    expect(params({ ...host, tiers: { qualite_declarant: 'enfant' } }, 'n_bloc_tiers/bn_qualite')).toEqual([]);
+    expect(params({ ...host, tiers: { qualite_declarant: 'enfant', qualite_declarant_group: 'SC' } }, 'n_bloc_tiers/bn_qualite')).toEqual([]);
+    expect(params({ ...host, tiers: { qualite_declarant: 'ascendant', qualite_declarant_group: 'SC' } }, 'n_bloc_tiers/bn_qualite')).toEqual(['option']);
   });
 });

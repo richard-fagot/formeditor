@@ -4,7 +4,8 @@ import { previewText, tr, type EditorEnv, type QuestionPropertiesProps, type Que
 import { Field, Input } from '../../../ui-kit';
 import { ChoiceField, formatAnswer } from './choice-field';
 import { OptionsEditor } from './options-editor';
-import { OTHER_LABEL, OtherEditor } from './other-editor';
+import { OtherEditor } from './other-editor';
+import { OTHER_LABEL } from './selection';
 
 type Choice = SingleChoiceQuestion | MultipleChoiceQuestion;
 const T = {

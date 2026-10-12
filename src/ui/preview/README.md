@@ -19,7 +19,8 @@ Dépend de `core`, `registry`, `app/store`, `app/commands`, `ui-kit`, `ui/system
   et mémorise la synthèse (`returnTo`) ; « Revenir à la synthèse » appelle `resume` après validation, en revalidant chaque page repassée.
 - `SystemPanel.tsx` : scénario nommé, édition libre (`PreviewState.sys`, la session est conservée :
   réévaluation immédiate), rétablir les valeurs du scénario, enregistrer comme scénario (`preview.saveScenario`).
-- `path-check.ts` (testé) : `answerErrors` (validation d'une réponse dans le contexte de sa page), `firstInvalidStep`
+- `path-check.ts` (testé) : `answerErrors` (validation d'une réponse dans le contexte de sa page, avec son groupe lu sous
+  `groupPath(answerPath)`), `firstInvalidStep`
   (première réponse invalide du chemin projeté), `guardEnd` : avant d'afficher une fin (après « Suivant », « Revenir
   à la synthèse » ou un changement de l'état du système), le wizard ramène à la première réponse invalide du chemin
   (`goTo`, erreurs affichées, réponse conservée) ; le parcours ne peut pas se terminer tant qu'elle n'est pas corrigée.

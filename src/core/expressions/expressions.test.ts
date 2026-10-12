@@ -116,6 +116,13 @@ describe('référence au groupe de la sélection (EVO-003)', () => {
     expect(evaluate("$count(temoins[lien.groupe = 'SC'])", g)).toBe(1);
     expect(evaluate('$$.lien.groupe', g)).toBe('SC');
   });
+  it('un indice ou un filtre sur la question est conservé : `liens[1].groupe` lit `liens_group[1]`', () => {
+    expect(evaluate('liens[0].groupe', g)).toBe('SC');
+    expect(evaluate('liens[1].groupe', g)).toBe('AA');
+    expect(evaluate('liens [1] . groupe', g)).toBe('AA');
+    expect(evaluate('temoins[1].lien.groupe', g)).toBe('AA');
+    expect(evaluate("temoins[lien = 'a'].lien.groupe", g)).toBe('SC');
+  });
   it('seule une étape finale `groupe` est réécrite', () => {
     expect(evaluate('autre.groupe.x', g)).toBe(1);
   });

@@ -4,11 +4,12 @@ Contraintes de champs (validation d'une réponse) et vérifications non bloquant
 Dépend de `core/model`, `core/expressions`, `core/references`, `core/runtime` (`choiceOptions`).
 
 ## API
-- `validateAnswer(question, value, ctx, env?, other?)` → `FieldError[]` (`path`, `param`, `message` multilingue).
+- `validateAnswer(question, value, ctx, env?, other?, path?, group?)` → `FieldError[]` (`path`, `param`, `message` multilingue).
   `ctx` doit contenir la réponse sous sa clé (contraintes libres). Messages : `question.messages[param]`
   sinon `defaultMessage(param, borne)`. Choix : une valeur absente des options visibles (statiques dont la
-  condition est vraie, entrées dynamiques déployées, « Autre ») donne `option` ; si le groupe est dans le contexte
-  (`<clé>_group`), c'est le couple (groupe, valeur) qui doit être visible. Structure répétable : `[]` est vide si la
+  condition est vraie, entrées dynamiques déployées, « Autre ») donne `option` ; si `group` est fourni (`<clé>_group`,
+  lu par l'appelant à côté de la réponse — jamais dans `ctx`, où une clé homonyme d'un hôte ou du questionnaire peut
+  figurer ; dans une structure, lu dans l'occurrence), c'est le couple (groupe, valeur) qui doit être visible. Structure répétable : `[]` est vide si la
   question est facultative (`repeat.min` ignoré) ; obligatoire, `repeat.min` (≥ 1) s'applique, et sans minimum
   la liste vide donne `required`.
 - `messageParams(question)` : paramètres dont le message est personnalisable pour cette question.

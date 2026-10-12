@@ -16,19 +16,23 @@ describe('référence au groupe `.groupe` (EVO-003)', () => {
     expect(resolvePath(scope, ['victimes', 'groupe'])).toBeUndefined();
     expect(resolvePath(scope, ['sys', 'type_adherent', 'groupe'])).toBeUndefined();
   });
-  it('après un champ de structure (préfixé ou frère) et une question de bloc vue par son alias', () => {
+  it('après un champ de structure (préfixé ou frère)', () => {
     const w = structuredClone(ws);
     const v = decl(w).nodes.find((n) => n.id === 'n_victimes') as unknown as { fields: unknown[] };
     v.fields.push({ id: 'f_lien', key: 'lien', label: { fr: 'Lien' }, type: 'single', options: [] });
     const s = questionnaireScope(w, 'q_declaration');
     expect(resolvePath(s, ['victimes', 'lien', 'groupe'])?.kind).toBe('group');
     expect(resolvePath(structureScope(s, v as unknown as Question), ['lien', 'groupe'])?.kind).toBe('group');
+  });
+  it('après une question à choix d’un bloc : `alias.cle.groupe` chez l’hôte, `cle.groupe` dans le bloc', () => {
+    const w = structuredClone(ws);
     const block = w.library.blocks[0]!;
-    const choice = block.nodes.find((n) => n.kind === 'question' && 'type' in n && (n.type === 'single' || n.type === 'multiple')) as { key: string } | undefined;
-    if (choice) {
-      expect(resolvePath(s, ['tiers', choice.key, 'groupe'])?.kind).toBe('group');
-      expect(resolvePath(blockScope(w, block.id), [choice.key, 'groupe'])?.kind).toBe('group');
-    }
+    block.nodes.push({ kind: 'question', id: 'bn_lien', key: 'lien', label: { fr: 'Lien' }, type: 'single', options: [] });
+    const host = questionnaireScope(w, 'q_declaration');
+    expect(resolvePath(host, ['tiers', 'lien', 'groupe'])).toMatchObject({ kind: 'group', alias: 'tiers', nodeId: 'bn_lien' });
+    expect(resolvePath(host, ['tiers', 'nom', 'groupe'])).toBeUndefined();
+    expect(resolvePath(blockScope(w, block.id), ['lien', 'groupe'])?.kind).toBe('group');
+    expect(resolvePath(blockScope(w, block.id), ['nom', 'groupe'])).toBeUndefined();
   });
   it('les libellés et conditions des groupes sont collectés', () => {
     const w = structuredClone(ws);

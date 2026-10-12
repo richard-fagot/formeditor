@@ -2,8 +2,7 @@ import type { OtherOption } from '../../../core/model';
 import { tr, type EditorEnv } from '../../../plugin-api';
 import { Checkbox, Field } from '../../../ui-kit';
 import { LabelEditor } from '../../../ui/expression-editor';
-
-export const OTHER_LABEL = { fr: 'Autre (préciser)', en: 'Other (specify)' };
+import { OTHER_LABEL } from './selection';
 const T = {
   other: { fr: 'Option « Autre (préciser) »', en: '“Other (specify)” option' },
   label: { fr: "Libellé de l'option", en: 'Option label' },

@@ -13,7 +13,7 @@ const lien = {
   ],
 } as Question;
 const check = (q: Question, value: unknown, group?: unknown, other?: string) =>
-  validateAnswer(q, value, { lien: value, ...(group === undefined ? {} : { lien_group: group }) }, env, other).map((e) => e.param);
+  validateAnswer(q, value, { lien: value }, env, other, '', group).map((e) => e.param);
 
 describe('validateAnswer : réponse = (valeur, groupe) (EVO-003)', () => {
   it('accepte une option de son groupe, refuse une option hors de ce groupe', () => {
@@ -32,6 +32,19 @@ describe('validateAnswer : réponse = (valeur, groupe) (EVO-003)', () => {
     expect(check(m, ['conjoint', 'conjoint'], ['SC', 'Ayant droit'])).toEqual([]);
     expect(check(m, ['seul', 'conjoint'], ['', 'SC'])).toEqual([]);
     expect(check(m, ['enfant', 'ascendant'], ['SC', 'SC'])).toEqual(['option']);
+  });
+});
+
+describe('validateAnswer : le groupe vient de la réponse elle-même, pas du contexte fusionné', () => {
+  it('question : `<clé>_group` du contexte ignoré, groupe passé avec la réponse', () => {
+    expect(validateAnswer(lien, 'conjoint', { lien: 'conjoint', lien_group: 'XX' }, env, undefined, '', 'SC')).toEqual([]);
+    expect(validateAnswer(lien, 'enfant', { lien: 'enfant', lien_group: 'SC' }, env, undefined, '', 'Ayant droit').map((e) => e.param)).toEqual(['option']);
+  });
+  it('champ de structure : groupe lu dans l’occurrence, même si le contexte a une clé homonyme', () => {
+    const s = { id: 's', key: 'victimes', label: { fr: 'V' }, type: 'structure', repeat: {}, fields: [{ ...lien, id: 'f' }] } as Question;
+    const outer = { lien: 'x', lien_group: 'XX' };
+    expect(validateAnswer(s, [{ lien: 'conjoint', lien_group: 'SC' }, { lien: 'seul' }], outer, env)).toEqual([]);
+    expect(validateAnswer(s, [{ lien: 'enfant', lien_group: 'Ayant droit' }], outer, env).map((e) => `${e.path}:${e.param}`)).toEqual(['victimes[0].lien:option']);
   });
 });
 

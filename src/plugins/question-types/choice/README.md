@@ -22,6 +22,9 @@ même dossier : ils partagent l'éditeur d'options et la saisie (DECISIONS.md).
   de la liste ; condition `when` pour les deux). Les modifications passent par `update` du panneau de propriétés
   (historique, comme les autres paramètres de type).
 - `other-editor.tsx` : option « Autre (préciser) » (libellé éditable, précision obligatoire).
+- `selection.ts` (pur, testé) : choix proposés (`itemsOf` : intitulé de section = libellé du groupe résolu par
+  `env.label`, traduit et interpolé), sections, sélection réaffichée (`selectedOf`), réponse d'un choix multiple
+  (`pickedAnswer` : valeurs et groupes parallèles), `OTHER_LABEL`.
 - `choice-field.tsx` : saisie dans la prévisualisation (options visibles de `env.options(q)`, une section titrée par
   groupe visible, « Autre » en dernier) ; `onChange(valeur, précision, groupe)` : identifiant du groupe, `AUTRE`, ou
   liste parallèle aux valeurs (`""` hors groupe) ; `formatAnswer` : « Groupe — Option ».
@@ -31,4 +34,4 @@ même dossier : ils partagent l'éditeur d'options et la saisie (DECISIONS.md).
 - Changement de type unique ↔ multiple : entrées et « Autre » conservés.
 
 ## Tests
-`reconcile.test.ts`, `groups.test.ts` ; fumée : `tests/smoke/evo-001.spec.ts`, `tests/smoke/evo-003.spec.ts`.
+`reconcile.test.ts`, `groups.test.ts`, `selection.test.ts` ; fumée : `tests/smoke/evo-001.spec.ts`, `tests/smoke/evo-003.spec.ts`.

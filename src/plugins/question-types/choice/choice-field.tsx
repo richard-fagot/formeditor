@@ -1,51 +1,7 @@
-import { OTHER_GROUP, OTHER_VALUE, type MultipleChoiceQuestion, type SingleChoiceQuestion } from '../../../core/model';
-import type { FieldProps, RenderEnv, ResolvedOption } from '../../../plugin-api';
+import { OTHER_VALUE } from '../../../core/model';
+import type { FieldProps, RenderEnv } from '../../../plugin-api';
 import { Input } from '../../../ui-kit';
-import { OTHER_LABEL } from './other-editor';
-
-type Choice = SingleChoiceQuestion | MultipleChoiceQuestion;
-/** Choix proposé : valeur, groupe (identifiant) et intitulé de section, texte affiché. */
-interface Item {
-  value: string;
-  group?: string;
-  title?: string;
-  text: string;
-}
-
-const optionText = (l: ResolvedOption['label'], env: RenderEnv) => (typeof l === 'string' ? l : env.label(l));
-const asList = (v: unknown): unknown[] => (Array.isArray(v) ? v : []);
-/** Un groupe non renseigné (réponse sans groupe) accepte la première option de même valeur. */
-const fits = (c: Item, v: unknown, g: unknown) => c.value === v && (g === undefined || g === null || (c.group ?? '') === g);
-
-function itemsOf(q: Choice, env: RenderEnv): Item[] {
-  const items: Item[] = env.options(q).map((o) => ({
-    value: o.value, text: optionText(o.label, env), ...(o.group ? { group: o.group.id, title: env.label(o.group.label) } : {}),
-  }));
-  if (q.other) items.push({ value: OTHER_VALUE, group: OTHER_GROUP, text: env.label(q.other.label ?? OTHER_LABEL) });
-  return items;
-}
-
-/** Indices des choix sélectionnés, dans l'ordre des valeurs de la réponse. */
-function selectedOf(items: Item[], values: unknown[], groups: unknown[]): number[] {
-  const out: number[] = [];
-  values.forEach((v, k) => {
-    const i = items.findIndex((c, j) => !out.includes(j) && fits(c, v, groups[k]));
-    if (i >= 0) out.push(i);
-  });
-  return out;
-}
-
-/** Choix en sections : un intitulé par groupe visible (les choix d'un groupe sont consécutifs). */
-function sectionsOf(items: Item[]): { title?: string; indexes: number[] }[] {
-  const out: { key?: string; title?: string; indexes: number[] }[] = [];
-  items.forEach((c, i) => {
-    const key = c.title === undefined ? undefined : c.group;
-    const last = out.at(-1);
-    if (last && last.key === key) last.indexes.push(i);
-    else out.push({ key, title: c.title, indexes: [i] });
-  });
-  return out;
-}
+import { asList, OTHER_LABEL, fits, itemsOf, pickedAnswer, sectionsOf, selectedOf, type Choice } from './selection';
 
 /** Saisie : boutons radio (unique) ou cases à cocher (multiple), en sections par groupe, puis « Autre » avec sa précision. */
 export function ChoiceField({ question, value, other, group, onChange, env, inputId }: FieldProps<Choice>) {
@@ -57,10 +13,9 @@ export function ChoiceField({ question, value, other, group, onChange, env, inpu
   const toggle = (i: number) => {
     const c = items[i]!;
     if (!multiple) return onChange(c.value, c.value === OTHER_VALUE ? other : undefined, c.group);
-    const list = selected.includes(i) ? selected.filter((x) => x !== i) : [...selected, i];
-    const picked = list.map((x) => items[x]!);
-    if (!picked.length) return onChange(null, undefined, undefined);
-    onChange(picked.map((x) => x.value), picked.some((x) => x.value === OTHER_VALUE) ? other : undefined, picked.map((x) => x.group ?? ''));
+    const answer = pickedAnswer(items, selected.includes(i) ? selected.filter((x) => x !== i) : [...selected, i]);
+    if (!answer) return onChange(null, undefined, undefined);
+    onChange(answer.values, answer.values.includes(OTHER_VALUE) ? other : undefined, answer.groups);
   };
   const option = (i: number) => (
     <label key={i} className="flex cursor-pointer items-center gap-3 rounded-lg border border-slate-200 px-4 py-3 hover:border-indigo-300 has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-50/50">

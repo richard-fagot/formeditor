@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { buildContext, currentStep, getAnswer, next, otherPath, setAnswer, start, type RuntimeInput } from '../../src/core/runtime';
+import { buildContext, currentStep, getAnswer, groupPath, next, otherPath, setAnswer, start, type RuntimeInput } from '../../src/core/runtime';
 import { validateAnswer } from '../../src/core/validation';
 import { EXAMPLE_DIR, exampleWorkspace } from './example';
 
@@ -35,7 +35,7 @@ describe('chemins attendus par scénario', () => {
         }
         const value = getAnswer(s.answers, step.answerPath);
         expect(value, `réponse attendue en ${step.id}`).not.toBeUndefined();
-        const errors = validateAnswer(step.question!, value, buildContext(input, s.answers, step.id), input.env, getAnswer(s.answers, otherPath(step.answerPath)));
+        const errors = validateAnswer(step.question!, value, buildContext(input, s.answers, step.id), input.env, getAnswer(s.answers, otherPath(step.answerPath)), '', getAnswer(s.answers, groupPath(step.answerPath)));
         expect(errors, `réponse invalide en ${step.id}`).toEqual([]);
       }
       s = next(input, s);
