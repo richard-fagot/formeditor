@@ -16,7 +16,7 @@ vient des plugins (`registry`). Dépend de `app/store`, `registry`, `core`, `ui-
 - `QuestionProperties` : intitulé (clé dérivée), clé (renommage propagé, `KeyInput`), type, obligatoire
   (booléen ou expression), valeur par défaut littérale (`DefaultValueInput`) et calculée (`defaultExpr`), aide, texte indicatif, paramètres du type (plugin, avec `renameField` pour les champs de structure), contraintes libres,
   messages d'erreur par contrainte, description.
-- `EdgeProperties` : condition (vide = « sinon »), rang (`edge.moveUp`/`moveDown`), sortie de bloc (une sortie inconnue
+- `EdgeProperties` : libellé (`caption`, une ligne, vide = retiré ; clé d'historique `<id>:caption`), condition (vide = « sinon »), rang (`edge.moveUp`/`moveDown`), sortie de bloc (une sortie inconnue
   reste proposée, marquée « (?) »), suppression (`node.delete`).
 - `LibraryQuestionProperties` : question de bibliothèque référencée ; seul l'intitulé est surchargeable
   (« Reprendre l'intitulé de la bibliothèque » retire la surcharge), « Ouvrir dans la bibliothèque ».

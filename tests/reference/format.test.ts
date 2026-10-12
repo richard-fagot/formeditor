@@ -15,6 +15,15 @@ describe('exemple « déclaration de sinistre »', () => {
     expect(byName(exported)).toEqual(byName(files));
   });
 
+  it('contient des libellés (EVO-005) : arête, arête de sortie de bloc, variable et champ de liste', () => {
+    const ws = exampleWorkspace();
+    const edges = ws.questionnaires.flatMap((q) => q.edges);
+    expect(edges.some((e) => e.caption && e.when)).toBe(true);
+    expect(edges.some((e) => e.caption && e.exit)).toBe(true);
+    expect(ws.project.systemState.some((v) => v.caption)).toBe(true);
+    expect(ws.project.systemState.some((v) => v.fields?.some((f) => f.caption))).toBe(true);
+  });
+
   it('aller-retour par bundle à l’identique', () => {
     const ws = exampleWorkspace();
     const bundle = exportBundle(ws);

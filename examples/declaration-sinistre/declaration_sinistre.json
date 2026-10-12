@@ -1,5 +1,5 @@
 {
-  "formatVersion": 3,
+  "formatVersion": 4,
   "kind": "questionnaire",
   "id": "q_declaration",
   "key": "declaration_sinistre",
@@ -545,12 +545,14 @@
       "id": "e_qualite_ayant_droit",
       "from": "n_qualite",
       "to": "n_ayant_droit",
-      "when": "qualite_declarant.groupe = 'Ayant droit'"
+      "when": "qualite_declarant.groupe = 'Ayant droit'",
+      "caption": "Déclarant ayant droit"
     },
     {
       "id": "e_qualite_montant",
       "from": "n_qualite",
-      "to": "n_montant"
+      "to": "n_montant",
+      "caption": "Sinon"
     },
     {
       "id": "e_ayant_droit_montant",
@@ -594,7 +596,8 @@
       "id": "e_bloc_non_identifie",
       "from": "n_bloc_tiers",
       "to": "n_tiers_inconnu",
-      "exit": "non_identifie"
+      "exit": "non_identifie",
+      "caption": "Tiers non identifié"
     },
     {
       "id": "e_inconnu_circonstances",

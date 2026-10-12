@@ -1,4 +1,4 @@
-# Format des questionnaires — version 3
+# Format des questionnaires — version 4
 
 Ce document décrit le format JSON produit par l'éditeur de questionnaires. Il s'adresse à l'équipe
 de développement (et à l'IA qui l'assiste) chargée de construire le moteur cible et les formulaires
@@ -34,12 +34,18 @@ libellés et interpolation — 6. Nœuds — 7. Questions — 8. Réponses — 9
 | `<clé>.layout.json`, `bloc_<clé>.layout.json` | `layout` | Positions des nœuds dans l'éditeur. | **non** (à ignorer) |
 | `<projet>.bundle.json` | `bundle` | `project`, `library`, `questionnaires[]`, `layouts[]` dans un seul fichier. | oui (même contenu) |
 
-- Chaque fichier (et le bundle) porte `formatVersion` (entier, actuellement `3`) et `kind`.
+- Chaque fichier (et le bundle) porte `formatVersion` (entier, actuellement `4`) et `kind`.
 - L'outil migre automatiquement à l'ouverture un fichier d'une version antérieure ; il refuse un fichier
   d'une version plus récente. Un moteur cible peut refuser toute version qu'il ne connaît pas.
 - Tout élément (projet, questionnaire, nœud, arête, question, bloc, variable, scénario, jeu de libellés)
   accepte une propriété `description` libre, destinée au lecteur humain ou à une IA, **sans effet** sur le
   comportement.
+- Une arête, une variable de l'état du système et un champ de liste d'objets acceptent aussi un
+  **libellé de lecture** `caption` (version 4) : chaîne simple non vide, sur une ligne, en une seule langue
+  (non traduite, sans interpolation). C'est un nom court affiché par l'éditeur à la place de la condition
+  ou à côté de la clé ; il n'est **jamais** montré à l'utilisateur final, n'est pas utilisable dans les
+  expressions (on écrit toujours la clé) et n'a **aucun effet** sur le comportement. À ne pas confondre
+  avec `label` / `title` (textes multilingues) ni avec `description` (explication longue).
 - Le format ne contient aucune donnée de présentation, sauf les fichiers `layout` (outil seulement).
 - Les fichiers sont écrits en UTF-8, indentés de 2 espaces, terminés par un saut de ligne.
 
@@ -47,7 +53,7 @@ Squelette d'un questionnaire :
 
 ```json
 {
-  "formatVersion": 3,
+  "formatVersion": 4,
   "kind": "questionnaire",
   "id": "q_declaration",
   "key": "declaration_sinistre",
@@ -102,6 +108,7 @@ du système, lu dans les expressions par `sys.<nom>`. Le dictionnaire `systemSta
 | `type` | `text`, `number`, `date` (chaîne `AAAA-MM-JJ`), `boolean`, `enum` (chaîne parmi `values`), `list` (tableau d'objets décrits par `fields`). |
 | `values` | `enum` : valeurs possibles. |
 | `fields` | `list` : champs des objets (mêmes propriétés `name`, `type`…). |
+| `caption?` | Libellé de lecture (version 4), ex. `"Profil de l'utilisateur connecté"` ; aussi sur chaque champ de `fields`. Jamais utilisé dans les expressions. |
 | `description?`, `example?` | Documentation ; valeur d'exemple. |
 
 Le dictionnaire est **déclaratif** : une variable absente de l'objet fourni est simplement absente dans
@@ -490,7 +497,9 @@ et `exit` ne sont jamais affichés : on les traverse.
 
 ### 11.1 Arêtes
 
-`{ "id", "from", "to", "when"?, "exit"?, "description"? }`. En quittant un nœud :
+`{ "id", "from", "to", "when"?, "exit"?, "caption"?, "description"? }`. `caption` (version 4) est un libellé de
+lecture (« Ayant droit adhérent », « Sinon ») que l'éditeur affiche sur le logigramme à la place de la
+condition ; il est permis avec ou sans condition, et sans effet sur la navigation. En quittant un nœud :
 
 1. on considère les arêtes dont `from` est ce nœud, **dans l'ordre du tableau `edges`** (leur rang) ;
 2. la première arête **avec condition** dont `when` est vraie est suivie ;
@@ -621,6 +630,7 @@ L'exemple fourni ne produit aucun problème.
 | Choix multiple avec « Autre » ; `'telephone' in canaux_contact` | `n_canaux`, `e_canaux_tel` |
 | Question de bibliothèque à intitulé surchargé | `n_tel` → `lq_telephone` |
 | Synthèse, confirmation à jeu de libellés booléen, boucle de correction, fin à variantes | `n_synthese`, `n_confirmation`, `e_confirmation_retour`, `n_fin` |
+| Libellés de lecture `caption` (version 4) : arête conditionnée, « sinon », arête de sortie de bloc ; variable et champ de liste | `e_qualite_ayant_droit`, `e_qualite_montant`, `e_bloc_non_identifie` ; `sys.type_adherent`, `sys.sinistres` (`nature`) |
 
 Après la date, on demande le lien avec un sinistre existant s'il y en a un d'antérieur, puis on va aux
 victimes (accident) ou au montant :
@@ -674,9 +684,10 @@ doit égaler `path`, toutes les réponses doivent avoir été consommées et l'i
 
 Toute évolution incompatible incrémente `formatVersion` et s'accompagne d'une migration dans l'outil,
 des schémas, de ce document et de l'exemple. Les ajouts compatibles (nouvelle propriété facultative)
-sont documentés ici. Version actuelle : **3**.
+sont documentés ici. Version actuelle : **4**.
 
 | Version | Changement | Migration |
 | --- | --- | --- |
 | 2 | Options d'un choix : suite ordonnée d'entrées (statiques ou dynamiques) ; `source` disparaît (EVO-001). | `source` → entrée dynamique placée après les options statiques. |
 | 3 | Groupes d'options (`{ group, code?, when?, options }` dans `options[]`), réponse `<clé>_group`, référence `cle.groupe`, mot réservé `groupe` (EVO-003). | Aucune transformation (un document antérieur n'a pas de groupe) ; seul `formatVersion` change. |
+| 4 | Libellé de lecture `caption` (chaîne, une ligne) sur l'arête, la variable de l'état du système et le champ de liste d'objets (EVO-005). | Aucune transformation (un document antérieur n'a pas de libellé) ; seul `formatVersion` change. |

@@ -145,13 +145,9 @@ describe('migration 2 → 3 (EVO-003 : groupes d’options)', () => {
     return { q, options };
   };
 
-  it('le format courant est la version 3', () => {
-    expect(FORMAT_VERSION).toBe(3);
-  });
-
   it('un document version 2 est migré sans transformation (bundle compris)', () => {
     const v2 = { ...minimalQuestionnaire(), formatVersion: 2 };
-    expect(migrate(v2)).toEqual({ ...v2, formatVersion: 3 });
+    expect(migrate(v2)).toEqual({ ...v2, formatVersion: FORMAT_VERSION });
     const ws = newWorkspace('P', 'fr');
     const bundle = { ...JSON.parse(exportBundle({ ...ws, questionnaires: [v2] })), formatVersion: 2 };
     bundle.project.formatVersion = 2;
@@ -159,7 +155,7 @@ describe('migration 2 → 3 (EVO-003 : groupes d’options)', () => {
     bundle.questionnaires[0].formatVersion = 2;
     const back = importFiles([{ name: 'ancien.bundle.json', text: JSON.stringify(bundle) }]);
     expect(back.errors).toEqual([]);
-    expect(back.workspace!.questionnaires[0]!.formatVersion).toBe(3);
+    expect(back.workspace!.questionnaires[0]!.formatVersion).toBe(FORMAT_VERSION);
     expect(back.workspace!.questionnaires[0]!.nodes).toEqual(v2.nodes);
   });
 
@@ -186,6 +182,67 @@ describe('migration 2 → 3 (EVO-003 : groupes d’options)', () => {
     expect(back.errors).toEqual([]);
     expect(back.workspace!.questionnaires[0]!.nodes[0]).toMatchObject({ options });
     expect(importFiles([{ name: 'p.bundle.json', text: exportBundle(ws) }]).workspace!.questionnaires[0]!.nodes[0]).toMatchObject({ options });
+  });
+});
+
+describe('migration 3 → 4 (EVO-005 : libellés `caption`)', () => {
+  const captioned = () => {
+    const q = minimalQuestionnaire();
+    q.nodes.push({ kind: 'end', id: 'n2', message: { fr: 'Fin' } });
+    q.edges = [
+      { id: 'e1', from: 'n1', to: 'n2', when: 'nom = "x"', caption: 'Ayant droit' },
+      { id: 'e2', from: 'n1', to: 'n2', caption: 'Sinon' },
+    ];
+    const ws = newWorkspace('P', 'fr');
+    ws.project.systemState = [
+      { name: 'profil', type: 'enum', values: ['UD', 'AD'], caption: 'Profil connecté' },
+      { name: 'contrats', type: 'list', fields: [{ name: 'numero', type: 'text', caption: 'Numéro de contrat' }] },
+    ];
+    return { ...ws, questionnaires: [q] };
+  };
+
+  it('le format courant est la version 4', () => {
+    expect(FORMAT_VERSION).toBe(4);
+  });
+
+  it('un document version 3 est migré sans transformation (bundle compris) et reste valide', () => {
+    const v3 = { ...minimalQuestionnaire(), formatVersion: 3 };
+    expect(migrate(v3)).toEqual({ ...v3, formatVersion: 4 });
+    const ws = newWorkspace('P', 'fr');
+    const bundle = { ...JSON.parse(exportBundle({ ...ws, questionnaires: [v3] })), formatVersion: 3 };
+    bundle.project.formatVersion = 3;
+    bundle.library.formatVersion = 3;
+    bundle.questionnaires[0].formatVersion = 3;
+    const back = importFiles([{ name: 'ancien.bundle.json', text: JSON.stringify(bundle) }]);
+    expect(back.errors).toEqual([]);
+    expect(back.workspace!.questionnaires[0]!.formatVersion).toBe(4);
+    expect(back.workspace!.project.formatVersion).toBe(4);
+    expect(back.workspace!.questionnaires[0]!.edges).toEqual([]);
+  });
+
+  it('accepte un libellé sur une arête, une variable et un champ de liste', () => {
+    const ws = captioned();
+    expect(validateDocument(ws.questionnaires[0]!)).toEqual([]);
+    expect(validateDocument(ws.project)).toEqual([]);
+  });
+
+  it('refuse un libellé vide ou sur plusieurs lignes', () => {
+    const ws = captioned();
+    ws.questionnaires[0]!.edges[0]!.caption = 'Ayant\ndroit';
+    expect(validateDocument(ws.questionnaires[0]!).length).toBeGreaterThan(0);
+    ws.questionnaires[0]!.edges[0]!.caption = '';
+    expect(validateDocument(ws.questionnaires[0]!).length).toBeGreaterThan(0);
+    ws.project.systemState[0]!.caption = 'a\r\nb';
+    expect(validateDocument(ws.project).length).toBeGreaterThan(0);
+  });
+
+  it('export puis réimport : libellés d’arêtes, de variables et de champs identiques', () => {
+    const ws = captioned();
+    for (const back of [importFiles(exportFiles(ws)), importFiles([{ name: 'p.bundle.json', text: exportBundle(ws) }])]) {
+      expect(back.errors).toEqual([]);
+      expect(back.workspace!.questionnaires[0]!.edges).toEqual(ws.questionnaires[0]!.edges);
+      expect(back.workspace!.project.systemState).toEqual(ws.project.systemState);
+    }
   });
 });
 

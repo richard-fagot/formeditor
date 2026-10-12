@@ -1,5 +1,5 @@
 {
-  "formatVersion": 3,
+  "formatVersion": 4,
   "kind": "project",
   "id": "p_sinistres",
   "name": "Déclarations de sinistre",
@@ -19,6 +19,7 @@
     {
       "name": "type_adherent",
       "type": "enum",
+      "caption": "Catégorie d'adhérent",
       "description": "Catégorie de l'adhérent.",
       "values": [
         "ud",
@@ -48,6 +49,7 @@
     {
       "name": "sinistres",
       "type": "list",
+      "caption": "Sinistres déjà déclarés",
       "description": "Sinistres déjà déclarés par l'adhérent.",
       "fields": [
         {
@@ -60,7 +62,8 @@
         },
         {
           "name": "nature",
-          "type": "text"
+          "type": "text",
+          "caption": "Nature du sinistre"
         }
       ],
       "example": [

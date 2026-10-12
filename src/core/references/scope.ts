@@ -13,6 +13,8 @@ export interface RefInfo {
   type?: QuestionType | VariableType;
   label?: Label;
   description?: string;
+  /** Libellé de lecture d'une variable système ou d'un champ de liste (EVO-005). */
+  caption?: string;
   /** Valeurs possibles d'une variable système de type énumération. */
   values?: string[];
   /** Nœud qui porte la question (dans le graphe de l'hôte ou du bloc). */
@@ -48,7 +50,7 @@ function addSystem(scope: Scope, vars: SystemVariable[], prefix = 'sys') {
   if (prefix === 'sys') scope.set('sys', { path: 'sys', kind: 'system' });
   for (const v of vars) {
     const path = `${prefix}.${v.name}`;
-    scope.set(path, { path, kind: 'system', type: v.type, description: v.description, ...(v.values ? { values: v.values } : {}) });
+    scope.set(path, { path, kind: 'system', type: v.type, description: v.description, ...(v.caption ? { caption: v.caption } : {}), ...(v.values ? { values: v.values } : {}) });
     if (v.fields) addSystem(scope, v.fields, path);
   }
 }

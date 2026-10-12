@@ -6,7 +6,10 @@ import { useDiagram } from './DiagramContext';
 
 const MAX = 32;
 
-/** Arête : condition en abrégé, rang si plusieurs arêtes sortent du même nœud, « sinon ». */
+/**
+ * Arête : condition en abrégé, rang si plusieurs arêtes sortent du même nœud, « sinon ».
+ * Un libellé (`caption`, EVO-005) remplace la condition, tronqué en CSS ; l'infobulle donne libellé et condition.
+ */
 export const EdgeView = memo(function EdgeView(props: EdgeProps) {
   const { graph, readOnly } = useDiagram();
   const t = useT();
@@ -17,11 +20,12 @@ export const EdgeView = memo(function EdgeView(props: EdgeProps) {
   const list = siblings.split(',');
   const conditioned = list.length > 1 || edge.when !== undefined;
   const rank = list.indexOf(edge.id) + 1;
+  const caption = edge.caption;
   const text = edge.when ? (edge.when.length > MAX ? edge.when.slice(0, MAX) + '…' : edge.when) : edge.when === '' ? '?' : t('edge.else');
   return (
     <>
       <BaseEdge path={path} markerEnd={props.markerEnd} style={{ stroke: props.selected ? '#6366f1' : '#94a3b8', strokeWidth: props.selected ? 2 : 1.5 }} />
-      {(conditioned || edge.exit) && (
+      {(conditioned || edge.exit || caption) && (
         <EdgeLabelRenderer>
           <div
             data-edge-label={edge.id}
@@ -29,14 +33,14 @@ export const EdgeView = memo(function EdgeView(props: EdgeProps) {
             className={cn(
               'nodrag nopan pointer-events-auto absolute max-w-56 cursor-pointer truncate rounded-md border bg-white px-1.5 py-0.5 font-mono text-[10px] shadow-xs',
               props.selected ? 'border-indigo-400 text-indigo-700' : 'border-slate-200 text-slate-600',
-              !edge.when && 'italic text-slate-400',
+              !edge.when && !caption && 'italic text-slate-400',
             )}
             onClick={() => !readOnly && useStore.getState().select({ graph, nodes: [], edge: edge.id })}
-            title={edge.when}
+            title={caption ? `${caption}\n${edge.when || t('edge.else')}` : edge.when}
           >
             {edge.exit && <span className="mr-1 text-amber-600">{edge.exit}</span>}
             {list.length > 1 && <span className="mr-1 text-slate-400">{rank}.</span>}
-            {conditioned && text}
+            {caption ? <span data-edge-caption className="font-sans">{caption}</span> : conditioned && text}
           </div>
         </EdgeLabelRenderer>
       )}

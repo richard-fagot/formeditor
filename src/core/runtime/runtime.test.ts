@@ -48,6 +48,21 @@ describe('navigation', () => {
   });
 });
 
+describe('libellés d’arêtes (EVO-005)', () => {
+  it('un libellé ne change pas le chemin suivi : seuls la condition et le rang comptent', () => {
+    const nodes = [q('a', 'a', 'number'), q('b', 'b'), q('c', 'c'), end];
+    const edges = [e('a', 'fin'), e('a', 'b', 'a > sys.seuil'), e('a', 'c', 'a > 5'), e('b', 'c'), e('c', 'fin')];
+    const captions = ['Sinon', 'Au-delà du seuil', 'b est vrai', 'Toujours', 'Fin'];
+    const plain = input(nodes, edges);
+    const captioned = input(nodes, edges.map((x, i) => ({ ...x, caption: captions[i] })));
+    for (const a of [1, 7, 20]) {
+      const run = (inp: RuntimeInput) => next(inp, setAnswer(inp, start(inp), a));
+      expect(run(captioned).history).toEqual(run(plain).history);
+      expect(currentStep(captioned, run(captioned)).id).toBe(currentStep(plain, run(plain)).id);
+    }
+  });
+});
+
 describe('boucle et effacement hors chemin', () => {
   const inp = input(
     [q('a', 'a'), q('b', 'b'), q('c', 'c'), q('ok', 'ok', 'boolean'), end],

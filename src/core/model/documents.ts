@@ -2,7 +2,7 @@ import type { Graph } from './graph';
 import type { LangCode, LocalizedText } from './text';
 import type { Question } from './question';
 
-export const FORMAT_VERSION = 3;
+export const FORMAT_VERSION = 4;
 
 export interface Questionnaire extends Graph {
   formatVersion: number;
@@ -43,6 +43,8 @@ export type VariableType = 'text' | 'number' | 'date' | 'boolean' | 'enum' | 'li
 export interface SystemVariable {
   name: string;
   type: VariableType;
+  /** Libellé de lecture (une ligne, une seule langue) ; jamais utilisé dans les expressions. */
+  caption?: string;
   description?: string;
   /** Valeurs possibles d'une énumération. */
   values?: string[];

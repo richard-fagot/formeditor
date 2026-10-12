@@ -68,4 +68,11 @@ describe('docs/GUIDE.md', () => {
     const md = readFileSync('docs/GUIDE.md', 'utf8');
     expect(checkGuide(md, guideCommands())).toEqual([]);
   });
+  it('décrit les libellés d’arête et de variable (EVO-005)', () => {
+    const md = readFileSync('docs/GUIDE.md', 'utf8');
+    expect(md).toMatch(/\*\*Donner un libellé à une arête\*\* — /);
+    expect(md).toMatch(/\*\*Donner un libellé à une variable\*\* — /);
+    expect(md).toMatch(/\*\*Retrouver une variable par son libellé\*\* — /);
+    expect(Number(/jusqu'à EVO-(\d+)/.exec(md)?.[1])).toBeGreaterThanOrEqual(5);
+  });
 });

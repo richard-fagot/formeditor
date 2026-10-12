@@ -4,11 +4,11 @@ import { previewText } from '../../plugin-api';
 import { runCommand } from '../../app/commands';
 import { useEditorEnv, useStore, useT, type GraphRef } from '../../app/store';
 import { questionOfNode } from '../../core/references';
-import { Button, Field, Section, Select } from '../../ui-kit';
+import { Button, Field, Input, Section, Select } from '../../ui-kit';
 import { ExpressionInput } from '../expression-editor';
 import { useGraphEdit } from './useGraphEdit';
 
-/** Propriétés d'une arête : condition (vide = « sinon »), rang, sortie de bloc. */
+/** Propriétés d'une arête : libellé (EVO-005), condition (vide = « sinon »), rang, sortie de bloc. */
 export function EdgeProperties({ graph, g, edge }: { graph: GraphRef; g: Graph; edge: Edge }) {
   const t = useT();
   const env = useEditorEnv();
@@ -31,6 +31,14 @@ export function EdgeProperties({ graph, g, edge }: { graph: GraphRef; g: Graph; 
         <div>{t('props.from')} : <span className="text-slate-700">{name(edge.from)}</span></div>
         <div>{t('props.to')} : <span className="text-slate-700">{name(edge.to)}</span></div>
       </div>
+      <Field label={t('props.caption')} hint={t('props.captionHint')}>
+        <Input
+          key={edge.id}
+          data-testid="edge-caption"
+          value={edge.caption ?? ''}
+          onChange={(e) => patchEdge(edge.id, { caption: e.target.value.replace(/[\r\n]+/g, ' ') || undefined })}
+        />
+      </Field>
       <Field label={t('props.condition')} hint={t('props.conditionHint', { rank, count: siblings.length })}>
         <ExpressionInput
           key={edge.id}

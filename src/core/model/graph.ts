@@ -12,6 +12,8 @@ export interface Edge {
   when?: Expression;
   /** Pour une arête sortant d'une instance de bloc : nom de la sortie du bloc. */
   exit?: string;
+  /** Libellé de lecture (une ligne, une seule langue), affiché à la place de la condition ; sans effet sur la navigation. */
+  caption?: string;
   description?: string;
 }
 

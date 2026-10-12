@@ -74,6 +74,6 @@ describe('guide (EVO-004)', () => {
     expect(guide).toMatch(/\*\*Exporter le logigramme en image\*\* — `X` \(logigramme\)/);
     expect(guide).toContain('[cmd: view.exportImage]');
     expect(guide).toMatch(/\*\*Exporter le logigramme en SVG\*\*/);
-    expect(guide).toMatch(/jusqu'à EVO-004/);
+    expect(Number(/jusqu'à EVO-(\d+)/.exec(guide)?.[1])).toBeGreaterThanOrEqual(4);
   });
 });
