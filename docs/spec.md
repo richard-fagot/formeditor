@@ -23,11 +23,11 @@ L'outil sert à **spécifier** des questionnaires métier (déclarations de sini
 | Projet | Conteneur de tout le reste : questionnaires, bibliothèque unique, dictionnaire de l'état du système, jeux de libellés, scénarios, langues. |
 | Questionnaire | Graphe orienté de nœuds reliés par des arêtes conditionnées. Peut converger et boucler. |
 | Nœud | Élément du graphe : question, instance de bloc, page d'information, page de synthèse, fin de parcours. Chaque nœud correspond à une ou plusieurs pages du wizard. |
-| Arête | Transition d'un nœud vers un autre. Elle porte une condition facultative et un ordre d'évaluation. |
+| Arête | Transition d'un nœud vers un autre. Elle porte une condition facultative, un ordre d'évaluation et un libellé facultatif de lecture (EVO-005). |
 | Question | Élément de saisie : intitulé, type, clé, caractère obligatoire, options, contraintes. |
 | Bloc | Sous-graphe de nœuds réutilisable, défini dans la bibliothèque et référencé dans les questionnaires par une instance nommée (alias). |
 | Bibliothèque | Unique par projet. Contient les questions, blocs et jeux de libellés réutilisables. Les questionnaires y font **référence** (pas de copie). |
-| État du système | Variables fournies par le logiciel hôte (profil connecté, résultats de services…). Déclarées une fois au niveau du projet et partagées par tous les questionnaires. Typées, éventuellement listes d'objets. |
+| État du système | Variables fournies par le logiciel hôte (profil connecté, résultats de services…). Déclarées une fois au niveau du projet et partagées par tous les questionnaires. Typées, éventuellement listes d'objets. Chaque variable (et chaque champ d'une liste d'objets) peut porter un libellé facultatif de lecture (EVO-005). |
 | Référence | Désignation d'une valeur : réponse à une question, sous-champ, variable système. Utilisable dans les conditions, les libellés et les sources de valeurs. Remplace le « champ paramétré » de la version initiale. |
 | Expression | Formule booléenne ou calculée, écrite en texte, qui combine des références. |
 | Scénario | Jeu de valeurs nommé de l'état du système, utilisé pour la prévisualisation. |
@@ -41,6 +41,7 @@ Principe directeur : **rien n'est imposé au créateur**. L'ordre des nœuds est
 
 - Un questionnaire a un **nœud de départ** unique.
 - Chaque nœud a zéro ou plusieurs arêtes sortantes. Chacune porte une condition facultative et un rang.
+- **Libellé d'arête** (EVO-005) : toute arête, conditionnée ou non, issue ou non d'une sortie de bloc, peut porter un libellé facultatif qui dit l'intention métier (« Ayant droit adhérent », « Sinon »). Texte libre sur une ligne, sans interpolation, en une seule langue : il sert à la lecture de la spécification et n'est jamais affiché à l'utilisateur final. Il n'a **aucun effet sur la navigation** (seuls la condition et le rang comptent) et ne s'utilise pas dans les expressions.
 - Navigation : les arêtes sortantes sont évaluées par rang ; la première dont la condition est vraie est suivie. Une arête sans condition joue le rôle de « sinon ».
 - **Convergence** : plusieurs arêtes peuvent pointer vers le même nœud.
 - **Boucle** : une arête peut pointer vers un nœud déjà visité. Lors d'un nouveau passage, la réponse remplace la précédente : aucune itération n'est conservée. Pour saisir plusieurs victimes, on utilise une structure répétable (§3.4), pas une boucle.
@@ -122,6 +123,7 @@ Unicité : une clé est unique dans son questionnaire, et unique dans son bloc p
 - Une condition est une expression booléenne qui combine des réponses et des variables système.
 - Opérateurs attendus : égalité, comparaisons numériques et de dates, ET / OU / NON, « contient » (choix multiple, listes), « est renseigné », dénombrement (nombre d'éléments cochés, nombre d'occurrences), accès aux sous-champs, filtrage d'une liste d'objets.
 - Les expressions s'écrivent **en texte**, avec autocomplétion des clés et des variables, coloration et validation en direct. Pas de constructeur visuel : l'utilisateur est seul et à l'aise avec une syntaxe.
+- **Libellés des variables système** (EVO-005) : l'autocomplétion affiche le libellé d'une variable (ou d'un champ de liste d'objets) à côté de sa clé, et sa recherche porte sur la clé **et** sur le libellé (taper « connecté » propose `sys.profil` libellée « Profil connecté » ; casse et accents ignorés) ; choisir la proposition insère la clé. Le survol d'une référence `sys.…` dans un éditeur d'expression affiche son libellé (et sa description). Le libellé ne s'écrit jamais dans une expression : on écrit toujours la clé.
 - **Libellés** (intitulé, aide, texte d'information, option, message de fin) : interpolation de valeurs (`Quelle est la date de naissance de {victime.prenom} ?`) et variantes conditionnelles (texte A si condition, sinon texte B).
 
 ### 3.7 Contraintes
@@ -176,6 +178,8 @@ Une question est un rectangle : intitulé en gras en haut, clé en discret, puis
 
 Badges discrets : obligatoire, « Autre », condition, référence bibliothèque, traduction manquante. Les autres nœuds (bloc, information, synthèse, fin) ont chacun une forme distincte. Les arêtes affichent leur condition en abrégé et leur rang si plusieurs sortent d'un nœud.
 
+**Libellé d'arête** (EVO-005) : saisi dans le panneau de propriétés de l'arête, au-dessus de la condition. Avec libellé, l'arête affiche le libellé **à la place** de la condition (rang et nom de sortie de bloc conservés), y compris pour une arête seule sans condition ; tronqué par « … » s'il dépasse la largeur de l'étiquette. Le survol de l'étiquette affiche le libellé complet et la condition (« sinon » si elle n'en a pas). Sans libellé, affichage inchangé. L'export en image (§6.4) montre l'étiquette telle qu'affichée. Saisie et effacement sont annulables.
+
 ### 4.3 Édition rapide
 
 - **Création chaînée** : depuis le nœud sélectionné, un raccourci crée une nouvelle question reliée à la suite et ouvre directement la saisie de l'intitulé. Un second raccourci crée une branche (arête conditionnée) avec focus sur la condition.
@@ -218,7 +222,9 @@ Les raccourcis à une lettre ne sont actifs que lorsque le focus est sur le grap
 
 ### 4.5 Dictionnaire de l'état du système
 
-C'est un écran de projet. On y déclare chaque variable : nom, type (texte, nombre, date, booléen, énumération, liste d'objets avec son schéma), description, valeur d'exemple. L'autocomplétion des expressions s'appuie dessus.
+C'est un écran de projet. On y déclare chaque variable : nom, libellé, type (texte, nombre, date, booléen, énumération, liste d'objets avec son schéma), description, valeur d'exemple. L'autocomplétion des expressions s'appuie dessus.
+
+**Libellé** (EVO-005) : facultatif, saisi à côté du nom (clé) de la variable, et à côté du nom de chaque champ d'une liste d'objets. Texte libre sur une ligne, en une seule langue, pour savoir de quoi il s'agit sans revenir à la documentation du logiciel hôte ; distinct de la description, qui explique. Il apparaît dans le dictionnaire, dans l'autocomplétion et au survol des expressions (§3.6), et dans l'éditeur de scénarios (ainsi que dans le panneau d'état du système de la prévisualisation) en face de chaque valeur à saisir. Jamais affiché à l'utilisateur final, sans effet sur le comportement. Saisie et effacement sont annulables.
 
 ### 4.6 Vérifications (non bloquantes)
 
@@ -264,6 +270,7 @@ L'import accepte un bundle ou des fichiers unitaires. L'export propose les deux.
 
 - **Versionné** (`formatVersion`). L'outil migre automatiquement les anciennes versions à l'ouverture.
 - **Lisible par une IA** : clés lisibles, expressions écrites avec les clés, descriptions facultatives sur chaque élément, aucune donnée de présentation.
+- **Libellés de lecture** (EVO-005) : propriété facultative `caption` (chaîne simple sur une ligne, non traduite) sur l'arête, la variable de l'état du système et le champ d'une liste d'objets ; exportée pour l'équipe de dev, sans effet sur le comportement. Format version 4 ; un fichier antérieur se migre sans transformation.
 - **Livré avec** :
   - un **JSON Schema** par type de fichier ;
   - un document **FORMAT.md** qui explique le modèle, la sémantique de navigation, la grammaire des expressions et l'interpolation, avec des exemples ;
