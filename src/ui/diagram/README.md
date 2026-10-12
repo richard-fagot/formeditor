@@ -10,7 +10,8 @@ Dépend de `app/store`, `app/commands` (liaison tracée à la souris : `edge.cre
 - `LIBRARY_MIME` : type des données glissées depuis le panneau de la bibliothèque (`{ kind, id }`).
 
 ## Fonctionnement
-- Nœuds et arêtes dérivés du store (`ws` + mise en page `layouts`) ; positions écrites sans historique
+- Nœuds et arêtes dérivés du store (`ws` + mise en page `layouts`) ; un nœud recréé reprend ses mesures (`measured`,
+  `rf.getInternalNode`), sinon React Flow le masque jusqu'à remesure (test : `tests/smoke/selection.spec.ts`) ; positions écrites sans historique
   pendant le glisser, point d'historique au début du glisser.
 - `NodeView` : cadre, poignées, badges (départ, obligatoire, autre, bibliothèque, source, traduction,
   problèmes) ; contenu délégué au plugin du type de nœud (`registry.nodeKind`) ; édition en place de
@@ -35,7 +36,6 @@ Dépend de `app/store`, `app/commands` (liaison tracée à la souris : `edge.cre
   `.react-flow__viewport` avec `transform` forcé (boîte des nœuds ∪ tracés d'arêtes, marge 40 px), fond blanc, `pixelRatio` 2
   (réduit et signalé au-delà de 16 384 px), poignées filtrées ; « sélection » : filtre sur `data-id` des nœuds / arêtes et
   `data-edge-label` des libellés. Titre dessiné sur un second canvas. Pièges : sélection vidée puis restaurée, transitions
-  coupées (`[data-exporting]`, `index.css`), attente d'une tâche + une image avant capture, puis de la remesure des nœuds
-  (recréés sans `measured` au changement de sélection, donc masqués) : sinon image blanche ou surbrillance figée.
+  coupées (`[data-exporting]`, `index.css`), attente d'une tâche + une image avant capture : sinon surbrillance figée.
   Seulement pour le logigramme modifiable d'un questionnaire. Test : `tests/smoke/evo-004.spec.ts`.
 - Suppression par la commande (touche Suppr), jamais par React Flow (`deleteKeyCode=null`).

@@ -12,14 +12,6 @@ const HEADER = 48;
 
 const nextFrame = () => new Promise<void>((r) => setTimeout(() => requestAnimationFrame(() => r()), 0));
 
-/**
- * Attend que React Flow ait remesuré les nœuds : un changement de sélection recrée les nœuds, masqués
- * (`visibility: hidden`) jusqu'à leur mesure ; une capture prise avant serait blanche (2 s au plus).
- */
-async function nodesMeasured(root: Element) {
-  for (let i = 0; i < 120 && root.querySelector('.react-flow__node[style*="visibility: hidden"]'); i++) await nextFrame();
-}
-
 /** Éléments conservés en mode « sélection seulement » (nœuds sélectionnés, arêtes entre eux). */
 interface Keep {
   nodes: Set<string>;
@@ -107,7 +99,6 @@ export function useImageExport(graph: GraphRef, container: RefObject<HTMLDivElem
     st.select({ graph, nodes: [] });
     try {
       await nextFrame(); // rendu sans sélection validé avant la capture
-      await nodesMeasured(root);
       const nodes = rf.getNodes().filter((n) => !keep || keep.nodes.has(n.id));
       const b = contentBounds(root, rf.getNodesBounds(nodes), keep?.edges);
       const width = Math.ceil(b.width + 2 * MARGIN);
