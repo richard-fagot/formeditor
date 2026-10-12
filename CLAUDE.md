@@ -99,7 +99,9 @@ La session principale orchestre et ne code pas elle-même. Pour chaque phase de 
    ceux qui touchent le code sont notés dans `docs/ECARTS.md`, et corrigés seulement à la demande
    de l'utilisateur, par un seul passage du `realisateur` sans nouvelle relecture si `npm run check` est vert.
 7. Consignes aux sous-agents : courtes, elles renvoient aux fichiers (EVO, spec) au lieu de les
-   paraphraser, et ne demandent ni refactorisation ni amélioration annexe.
+   paraphraser, et ne demandent ni refactorisation ni amélioration annexe. Elles ne demandent jamais
+   de répétitions ni de tests sous charge (voir Harnais). Une petite correction se limite à :
+   corriger la cause, un test ciblé qui la couvre, `npm run check` une fois, compte rendu bref.
 
 Les points d'arrêt des démos restent valables.
 
