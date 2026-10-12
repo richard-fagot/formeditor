@@ -122,3 +122,78 @@ Ajouter une section « Analyse » en bas de ce fichier :
 
 Faisable sans ambiguïté bloquante → choix notés dans l'analyse et `docs/DECISIONS.md`, puis
 réalisation. Sinon → statut « à arbitrer », options et conséquences, arrêt sans coder.
+
+## Analyse
+
+### 1. Faisabilité et modules impactés
+
+Faisable sans ambiguïté bloquante. Types de questions existants et rendu retenu :
+
+| Type | Rendu « Ne sais pas » (prévisualisation) | Aperçu du logigramme |
+| --- | --- | --- |
+| Texte, date, nombre | Case à cocher sous le champ ; cochée, le champ est vidé et désactivé | Mention discrète « + Ne sais pas » en italique |
+| Choix unique, choix multiple | Dernière option (radio / case), après « Autre », hors de tout groupe | Dernière ligne, en italique |
+| Booléen, tri-state | Dernière option, après « Autre » (le « Ne sait pas » d'un tri-state reste sa 3e valeur `unknown`) | Dernier libellé, en italique |
+| Structure | Pas de propriété sur la structure elle-même (conteneur) ; chacun de ses champs peut l'avoir | — |
+
+Les pages d'information, de synthèse et de fin ne sont pas des questions : pas de propriété.
+
+Modules (d'après `docs/MAP.md`) :
+- `core/model` : `dontKnow?: { label?: Label }` sur toute question sauf structure ; constantes `DONT_KNOW_SUFFIX` (`nsp`),
+  `DONT_KNOW_REF` (`nsp`), `DONT_KNOW_GROUP` (`NSP`), `DONT_KNOW_LABEL` ; `nsp` ajouté à `RESERVED_KEYS`.
+- `format` : `formatVersion` 5, migration 4 → 5 (identité), schéma (`questionCore.dontKnow`, refusé sur une structure),
+  `docs/FORMAT.md`, exemple et chemins attendus.
+- `core/expressions` : réécriture de `<chemin>.nsp` (point 2).
+- `core/references` : `.nsp` dans la portée des questions qui ont l'option ; libellé `dontKnow.label` parcouru
+  (renommage propagé, traductions manquantes).
+- `core/runtime` : `setAnswer(…, dontKnow)`, marqueur `<clé>_nsp` (point 3), effacement hors chemin, synthèse ;
+  `dontKnowAnswer(q)` (valeur et groupe d'une réponse « Ne sais pas »).
+- `core/validation` : aucune vérification de saisie (obligatoire compris) quand « Ne sais pas » est cochée ;
+  code `NSP` réservé pour un groupe (`reservedGroupCode`).
+- `plugin-api` : `FieldProps.dontKnow` / `onDontKnow`, `formatAnswer` inchangé (la synthèse affiche le libellé).
+- Plugins `text`, `date`, `number`, `choice`, `boolean`, `tristate` (aperçu, propriétés, saisie), `structure`
+  (marqueur dans l'occurrence, synthèse) ; `ui/expression-editor` (`DontKnowEditor`, partagé par les plugins) ;
+  `ui/preview` (réponse, validation, synthèse) ; `app/commands` (`node.toggleDontKnow`) ; `docs/GUIDE.md`, `docs/spec.md`.
+- **Table de décision** : aucune n'existe dans l'outil (EVO-004 est l'export en image) ; rien à générer. Le critère
+  correspondant est sans objet (DECISIONS.md).
+
+### 2. Valeur de `ma_question` et référence `ma_question.nsp`
+
+- `ma_question` vaut une **valeur vide** : `null` (retiré du contexte, comme une facultative laissée vide : `$exists`
+  faux), `[]` pour un choix multiple (liste vide, `$count` = 0). Les expressions typées ne cassent pas.
+- `ma_question.nsp` est **réalisable** comme `.groupe` (EVO-003) : `core/expressions` réécrit toute étape **finale** `nsp`
+  d'un chemin de noms en `(<chemin>_nsp = true)` (`ma_question.nsp` → `(ma_question_nsp = true)`, `decl.cle.nsp` →
+  `(decl.cle_nsp = true)`, `victimes[0].lien.nsp` → `(victimes[0].lien_nsp = true)`). En JSONata, une comparaison avec
+  une valeur absente vaut `false` : la référence vaut donc `true` ou `false`, jamais vide. `nsp` devient un **mot
+  réservé** (aucune clé ne peut s'appeler `nsp`) : pas d'ambiguïté avec un sous-champ de structure.
+- Portée : `.nsp` n'est connu que sur une question (ou un champ) dont l'option est activée ; ailleurs, référence
+  inconnue (signalée, §4.6). Même règle « posée sur tous les chemins » que la question.
+- « Vide » et « sans réponse » : les conditions existantes ne changent pas (sans l'option, rien n'est stocké). Avec
+  l'option, `$exists(ma_question)` est faux dans les deux cas ; on les distingue par `ma_question.nsp`. Pour le moteur,
+  une question « Ne sais pas » **a** une réponse (`null` / `[]` posé, marqueur présent) : le parcours avance.
+- `ma_question.groupe` vaut `NSP` (choix unique et multiple, chaîne seule : la liste des valeurs est vide) ; `NSP`
+  devient un code de groupe réservé, comme `AUTRE`.
+
+### 3. Stockage d'une réponse « Ne sais pas »
+
+- Marqueur **distinct de la valeur** : `<clé>_nsp: true` à côté de la réponse (comme `<clé>_other`, `<clé>_group`),
+  valeur `null` (`[]` en choix multiple), `<clé>_group: "NSP"` pour un choix unique ou multiple. Une saisie texte
+  littérale « Ne sais pas » reste une valeur ordinaire sans marqueur : aucune ambiguïté.
+- Cocher une autre option, ou saisir, efface le marqueur ; décocher « Ne sais pas » efface marqueur et valeur
+  (champ vide, question sans réponse). Dans une structure, le marqueur est rangé dans l'occurrence.
+- Chemins attendus : une étape porte `dontKnow: true` à côté de `value`.
+- **Migration** : `formatVersion` 5, migration 4 → 5 sans transformation (propriété absente = désactivée). Les
+  réponses ne sont pas stockées dans le projet : rien d'autre à migrer.
+
+Forme JSON : `"dontKnow": {}` (libellé par défaut « Ne sais pas ») ou `"dontKnow": { "label": <libellé> }` — libellé
+comme celui d'une option (§5.2 de FORMAT.md) : multilingue, interpolé, à variantes.
+
+### Choix secondaires
+
+- Panneau de propriétés : case « Option « Ne sais pas » » et libellé, juste après « Autre (préciser) » pour les
+  choix, booléen et tri-state, à la fin des paramètres du type pour texte, date, nombre (champs de structure compris).
+- Commande `node.toggleDontKnow` (palette, sans raccourci par défaut) ; la spec §4.4 n'en fixe pas.
+- « Ne sais pas » cochée : aucune contrainte (intégrée ou libre) ni obligation n'est évaluée pour la question.
+- Synthèse et débogage : le libellé « Ne sais pas » de la question.
+
+Conclusion : faisable, choix notés dans `docs/DECISIONS.md` ; réalisation.
