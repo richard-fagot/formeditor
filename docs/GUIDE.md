@@ -201,7 +201,7 @@ libres » et « Description (pour l’équipe de dev) ». Chaque saisie est enre
     exclusive (la cocher décoche les autres options, cocher une autre option la décoche) ;
   - texte, date, nombre : case « Ne sais pas » sous le champ ; cochée, le champ est vidé et désactivé ; décochée, il revient vide.
   Cochée, elle satisfait une question obligatoire et aucun contrôle (format, min/max, longueur, contraintes) ne s'applique.
-  Logigramme : dernière ligne en italique (choix), « + Ne sais pas » en italique après l'aperçu (saisie). Pas de table de
+  Logigramme : dernière ligne en italique (choix ; « / libellé » en fin de ligne pour oui/non et tri-state), « + Ne sais pas » en italique après l'aperçu (saisie). Pas de table de
   décision dans l'outil : rien d'autre à régler.
 - **Ajouter un texte d'aide** — Champ « Aide » (affiché sous l'intitulé dans le wizard ; variantes possibles).
 - **Ajouter un texte indicatif dans le champ** — « Texte indicatif » (types texte et nombre seulement).

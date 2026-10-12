@@ -1,6 +1,6 @@
 # EVO-006 — Option « Ne sais pas » sur tous les types de questions
 
-Statut : en cours
+Statut : fait 2026-10-12
 Dépend de : aucune (s'articule avec EVO-003 pour les groupes et EVO-004 pour la table de décision)
 
 ## Besoin
