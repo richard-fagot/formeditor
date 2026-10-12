@@ -89,7 +89,9 @@ Une question comporte :
 
 Toute entrée peut être déplacée (boutons du panneau de propriétés ou ordre des lignes de la saisie rapide ; pas de glisser-déposer ni de raccourci dédié, comme pour les options statiques), supprimée, dupliquée et porter une **condition d'affichage** ; une entrée dynamique dont la condition est fausse n'affiche aucune valeur. Une valeur déjà proposée plus haut dans la liste n'est pas répétée.
 
-Saisie rapide (§4.3) : une ligne `$<référence>` (ex. `$sys.sinistres`, `$couleur_preferee`) crée une entrée dynamique ; toute autre ligne crée une option statique (une option qui commence par `$` s'écrit `\$…`). Une référence inconnue ou mal écrite est signalée par les vérifications (§4.6).
+**Groupes d'options** (EVO-003) : les entrées peuvent être regroupées sous des intitulés de groupe. Le libellé d'un groupe se comporte exactement comme celui d'une option (multilingue, interpolation, variantes conditionnelles). Un groupe a en plus un **code** facultatif et une **condition d'affichage** facultative. Il contient des options statiques et des entrées dynamiques (pas de groupe dans un groupe). Les entrées placées avant le premier groupe n'appartiennent à aucun groupe. Un groupe dont la condition est fausse, ou dont aucune option n'est visible, n'est pas affiché. Une valeur est unique dans son groupe mais peut se répéter d'un groupe à l'autre : la réponse identifie l'option **et** son groupe. L'identifiant d'un groupe est son code s'il est défini, sinon son libellé dans la langue par défaut ; il est unique dans la question, et `AUTRE` est réservé. « Autre (préciser) » reste en dernier, hors de tout groupe. Dans la prévisualisation, chaque groupe est une section titrée ; dans le panneau de propriétés, chaque groupe a sa ligne de paramétrage (libellé, code, condition, traductions) juste avant celles de ses options ; monter ou descendre un groupe déplace ses options, le supprimer supprime ses options.
+
+Saisie rapide (§4.3) : `# Libellé` ouvre un groupe (la ligne ne contient que le libellé) ; `* option` ou `- option` ajoute une option au groupe courant (une ligne sans puce reste acceptée) ; les lignes vides sont ignorées ; `\#`, `\*`, `\-` écrivent une option qui commence par ce caractère. Une ligne `$<référence>` (ex. `$sys.sinistres`, `$couleur_preferee`) crée une entrée dynamique ; toute autre ligne crée une option statique (une option qui commence par `$` s'écrit `\$…`). Une référence inconnue ou mal écrite est signalée par les vérifications (§4.6).
 
 Le booléen et le tri-state n'ont pas d'entrées : leurs libellés viennent du jeu de libellés (EVO-001, arbitrage A).
 
@@ -109,6 +111,7 @@ Portée et espaces de noms :
 | `date_sinistre` | Réponse à une question du questionnaire courant. |
 | `victime.nom` | Sous-champ d'une structure. |
 | `temoins[0].nom`, `count(temoins)` | Occurrences d'une structure répétable. |
+| `ma_question.groupe` | Groupe de la sélection d'un choix unique ou multiple (EVO-003) : code du groupe, sinon son libellé (langue par défaut) ; `AUTRE` pour « Autre (préciser) » ; vide hors groupe. Choix multiple : liste des groupes des options sélectionnées, dans l'ordre des valeurs. `groupe` est un mot réservé (aucune clé ne peut s'appeler `groupe`). |
 | `sys.profil` | Variable de l'état du système. |
 | `decl.date_sinistre` | Question d'un bloc instancié avec l'alias `decl`, vue depuis le questionnaire. À l'intérieur du bloc, sa clé s'écrit sans préfixe. |
 
@@ -166,6 +169,7 @@ Une question est un rectangle : intitulé en gras en haut, clé en discret, puis
 | Nombre | `<entier naturel>`, `<réel>`, etc. |
 | Choix unique | Options avec boutons radio, tronquées par « … » si trop longues. |
 | Choix multiple | Options avec cases à cocher, tronquées par « … ». |
+| Groupe d'options (choix) | Intitulé du groupe en gras, ses options dessous ; même troncature « … ». |
 | Entrée dynamique (choix) | La référence affichée **à sa position** parmi les options, ex. `<sys.sinistres : date>` ou `<couleur_preferee>`. |
 | Structure | Miniature des champs, tronquée par « … ». Mention « × n » si répétable. |
 
@@ -176,7 +180,7 @@ Badges discrets : obligatoire, « Autre », condition, référence bibliothèque
 - **Création chaînée** : depuis le nœud sélectionné, un raccourci crée une nouvelle question reliée à la suite et ouvre directement la saisie de l'intitulé. Un second raccourci crée une branche (arête conditionnée) avec focus sur la condition.
 - **Type au clavier** : un raccourci par type, appliqué au nœud sélectionné.
 - **Édition en place** de l'intitulé (double-clic ou Entrée) ; la clé est dérivée automatiquement.
-- **Saisie rapide des options** : une option par ligne, collage multi-lignes accepté.
+- **Saisie rapide des options** : une option par ligne, collage multi-lignes accepté ; `# Libellé` ouvre un groupe, `* ` ou `- ` en tête est une puce facultative (§3.4).
 - **Palette de commandes** (Ctrl+K) : toutes les actions, la recherche de nœud par clé ou intitulé, l'insertion depuis la bibliothèque.
 - **Glisser depuis la bibliothèque** : panneau latéral filtrable.
 - **Mise en page automatique** à la demande, positions manuelles conservées sinon. Environ 30 nœuds par questionnaire.
@@ -217,6 +221,7 @@ C'est un écran de projet. On y déclare chaque variable : nom, type (texte, nom
 ### 4.6 Vérifications (non bloquantes)
 
 - Référence inconnue ou cassée, clé en double.
+- Groupes d'options : identifiant de groupe en double dans une question, code `AUTRE`, groupe sans option.
 - Nœud inaccessible, nœud sans sortie qui n'est pas une fin, boucle sans sortie possible.
 - Nœud avec plusieurs sorties sans « sinon ».
 - Référence à une question **qui n'est pas garantie d'avoir été posée** sur tous les chemins menant au nœud.
