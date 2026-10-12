@@ -1,8 +1,8 @@
 import type { FileContent } from '../../format';
 
-/** Télécharge un texte comme fichier (API web standard). */
-export function download(name: string, text: string): void {
-  const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+/** Télécharge un texte (JSON) ou un contenu binaire (image) comme fichier (API web standard). */
+export function download(name: string, data: string | Blob): void {
+  const url = URL.createObjectURL(typeof data === 'string' ? new Blob([data], { type: 'application/json' }) : data);
   const a = document.createElement('a');
   a.href = url;
   a.download = name;

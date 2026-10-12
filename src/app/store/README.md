@@ -11,6 +11,7 @@ Dépend de `core`, `format`, `app/i18n`, `plugin-api` (utilitaires).
   questionnaire disparu → onglet fermé, réapparu → rouvert ; sélection et `libraryItem` d'un bloc disparu vidées), `checkpoint(scope)`,
   `silent(recipe)` (sans historique), `set(recipe)` (état d'interface), `loadWorkspace`, `openTab`, `closeTab`,
   `select`, `requestFocus('label' | 'condition' | 'variable', id)`, `markExported`.
+- Annuler / rétablir et transactions (`travel.ts` : `travel`, `changedScopes`, synchronisation des onglets).
 - Portées d'historique (`history.ts`) : `q:<id>` (questionnaire, sa mise en page et son entrée dans le projet), `library`, `project` ;
   `scopeOf(graphRef)`. Les frappes successives d'un même champ (même `key`, < 1,5 s) forment une seule étape.
 - Édition pure du graphe (`graph.ts`, sur brouillon immer) : `insertNode`, `connect` (une arête conditionnée
@@ -32,6 +33,8 @@ Dépend de `core`, `format`, `app/i18n`, `plugin-api` (utilitaires).
   les textes saisis restent), `setDefaultLanguage`.
 - Affichage : `layoutRequest` (compteur : mise en page automatique demandée au logigramme affiché), `compare` (vue côte à côte :
   questionnaire affiché en lecture seule à droite), onglet `settings`.
+- Image du logigramme (EVO-004, `image-state.ts`, état initial `initialImageState`) : `imageOptions` (`ImageOptions` : `scope` `all` | `selection`, `title` ; sauvegardées avec la session),
+  `imageDialog` (dialogue d'options ouvert), `imageRequest` (compteur : export demandé à `ui/diagram`), `imageBusy` (export en cours).
 - `setQuestionLabel` : change l'intitulé et, si la clé était dérivée de l'ancien, la redérive et propage.
 - Hooks : `useT()`, `useEditorEnv()` (environnement de l'éditeur sans `questionType`, ajouté par `ui/*` via `usePluginEnv`), `activeGraphRef`, `activeQuestionnaire`.
 

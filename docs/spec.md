@@ -156,6 +156,7 @@ Objectif : pas de clicodrome. Chaque action courante doit se faire au clavier ou
 - **Vue côte à côte** (souhaitable) : deux questionnaires affichés en parallèle pour comparer.
 - Dans un onglet de questionnaire, deux sous-onglets : **Logigramme** et **Prévisualisation**.
 - Le logigramme est divisé en deux zones : à gauche le graphe, à droite le **panneau de propriétés** de l'objet sélectionné (question, arête, bloc, champ de structure, page). Un panneau « Problèmes », repliable, liste les avertissements (§4.6).
+- **Barre du logigramme** : mise en page automatique, ajuster la vue, **exporter le logigramme en image** (§6.4).
 
 ### 4.2 Représentation des nœuds
 
@@ -209,6 +210,7 @@ Tous les raccourcis sont **paramétrables** dans un écran dédié. Chaque actio
 | Annuler / rétablir | Ctrl+Z / Ctrl+Shift+Z |
 | Mise en page auto / ajuster la vue | L / F |
 | Basculer logigramme ↔ prévisualisation | P |
+| Exporter le logigramme en image | X |
 | Onglet suivant / précédent | Ctrl+Tab / Ctrl+Shift+Tab |
 | Exporter | Ctrl+S |
 
@@ -274,6 +276,17 @@ L'import accepte un bundle ou des fichiers unitaires. L'export propose les deux.
 - **Export** manuel en fichiers, qui reste la source de vérité partageable.
 - Signalement des modifications non exportées.
 
+### 6.4 Image du logigramme
+
+Le logigramme d'un questionnaire s'exporte en **image PNG**, pour l'insérer dans des documents et le partager hors de l'outil.
+
+- **Commande** « Exporter le logigramme en image » (palette, raccourci X, bouton de la barre du logigramme). Disponible dans la vue Logigramme d'un questionnaire non vide.
+- **Dialogue d'options** : périmètre (logigramme entier, ou sélection seule si des nœuds sont sélectionnés : nœuds sélectionnés et arêtes entre eux), titre du questionnaire en en-tête (coché par défaut). Les derniers choix sont retenus dans le navigateur ; `Entrée` lance l'export.
+- **Contenu** : tout le logigramme quels que soient le zoom et la portion visible, tel qu'affiché (aperçus, conditions abrégées, blocs repliés ou dépliés, badges), **sans** mini-carte, contrôles, fond quadrillé, poignées ni surbrillance de sélection.
+- **Rendu** : fond blanc, thème clair, marge autour du contenu, résolution au moins 2× la taille à 100 %.
+- **Fichier** téléchargé : `<projet> - <questionnaire> - AAAAMMJJ.png` ; les caractères interdits dans un nom de fichier sont remplacés par `_`.
+- **Pas de SVG** : un SVG produit par capture du HTML n'est qu'un `foreignObject`, que les outils bureautiques n'affichent pas.
+
 ## 7. Contraintes
 
 - **Livrable** : une page HTML unique, ouverte sans serveur (double-clic, `file://`). Les librairies sont intégrées au fichier par le build : l'outil fonctionne aussi hors ligne.
@@ -302,6 +315,7 @@ L'architecture combine un **noyau métier pur**, sans interface et testé en TDD
 | État et annuler | Zustand + zundo | Redux Toolkit | Peu de code ; historique annuler/rétablir natif. |
 | Éditeur d'expression | CodeMirror 6 | Monaco | Léger ; autocomplétion et coloration extensibles. |
 | Validation du format | Ajv | — | Validation par JSON Schema, réutilisable par l'équipe de dev. |
+| Image du logigramme | html-to-image | modern-screenshot | Méthode d'export documentée par React Flow ; fonctionne en `file://`. |
 | Persistance | idb-keyval | Dexie | IndexedDB en quelques lignes. |
 | Raccourcis | tinykeys | hotkeys-js | Minuscule ; liaisons reconfigurables. |
 | Kit graphique | Tailwind + Radix UI (via shadcn/ui) | Mantine | Moderne, accessible, composants copiés dans le dépôt donc maîtrisés. |

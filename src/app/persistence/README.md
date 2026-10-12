@@ -8,7 +8,7 @@ changement), et restauration au démarrage. Dépend de `format` et `app/store`.
 
 ## Contenu sauvegardé
 Le bundle JSON (même format que l'export), l'indicateur « modifications non exportées », les onglets
-ouverts, la langue de l'interface et les raccourcis personnalisés. L'export reste la source de vérité partageable.
+ouverts, la langue de l'interface, les raccourcis personnalisés et les derniers choix de l'export d'image (`imageOptions`). L'export reste la source de vérité partageable.
 
 ## Pièges
 - En `file://`, IndexedDB est disponible dans Firefox et Chromium ; toute erreur est ignorée (l'outil reste utilisable).

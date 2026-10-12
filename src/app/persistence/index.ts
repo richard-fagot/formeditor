@@ -2,7 +2,7 @@
 import { createStore, get, set } from 'idb-keyval';
 import type { Workspace } from '../../core/model';
 import { importFiles, exportBundle } from '../../format';
-import { useStore, type TabId } from '../store';
+import { useStore, type ImageOptions, type TabId } from '../store';
 
 const DB = () => createStore('editeur-questionnaires', 'etat');
 const KEY = 'session';
@@ -15,6 +15,8 @@ interface Saved {
   activeTab: TabId;
   uiLang: string;
   keymap: Record<string, string[]>;
+  /** Derniers choix du dialogue d'export d'image (EVO-004). */
+  imageOptions?: ImageOptions;
 }
 
 /** Restaure la dernière session (renvoie `false` s'il n'y en a pas ou si elle est illisible). */
@@ -30,6 +32,7 @@ export async function restoreSession(): Promise<boolean> {
       st.dirty = saved.dirty;
       st.uiLang = saved.uiLang ?? 'fr';
       st.keymap = saved.keymap ?? {};
+      if (saved.imageOptions) st.imageOptions = { scope: saved.imageOptions.scope === 'selection' ? 'selection' : 'all', title: saved.imageOptions.title !== false };
       st.tabs = saved.tabs?.filter((t) => !t.startsWith('q:') || workspace.questionnaires.some((q) => `q:${q.id}` === t)) ?? st.tabs;
       if (st.tabs.includes(saved.activeTab)) st.activeTab = saved.activeTab;
     });
@@ -44,11 +47,11 @@ export function startAutosave(): () => void {
   let timer: ReturnType<typeof setTimeout> | undefined;
   const save = () => {
     const s = useStore.getState();
-    const data: Saved = { bundle: exportBundle(s.ws), dirty: s.dirty, tabs: s.tabs, activeTab: s.activeTab, uiLang: s.uiLang, keymap: s.keymap };
+    const data: Saved = { bundle: exportBundle(s.ws), dirty: s.dirty, tabs: s.tabs, activeTab: s.activeTab, uiLang: s.uiLang, keymap: s.keymap, imageOptions: s.imageOptions };
     void set(KEY, data, DB()).catch(() => undefined);
   };
   const unsub = useStore.subscribe((s, prev) => {
-    if (s.ws === prev.ws && s.tabs === prev.tabs && s.activeTab === prev.activeTab && s.dirty === prev.dirty && s.uiLang === prev.uiLang && s.keymap === prev.keymap) return;
+    if (s.ws === prev.ws && s.tabs === prev.tabs && s.activeTab === prev.activeTab && s.dirty === prev.dirty && s.uiLang === prev.uiLang && s.keymap === prev.keymap && s.imageOptions === prev.imageOptions) return;
     clearTimeout(timer);
     timer = setTimeout(save, DELAY_MS);
   });

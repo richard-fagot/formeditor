@@ -8,16 +8,18 @@ import { libraryCommands } from './library-commands';
 import { libraryItemCommands } from './library-item-commands';
 import { systemCommands } from './system-commands';
 import { settingsCommands } from './settings-commands';
+import { imageCommands } from './image-commands';
 import type { Command } from './types';
 
 export { type Command, labelOf } from './types';
 export { download } from './files';
+export { imageFileName, imageTitle } from './image-file';
 
 let catalog: Command[] | undefined;
 
 /** Toutes les commandes (construites une fois). */
 export function commands(): Command[] {
-  catalog ??= [...projectCommands(), ...shellCommands(), ...graphCommands(), ...editCommands(), ...libraryCommands(), ...libraryItemCommands(), ...systemCommands(), ...settingsCommands(), ...navCommands()];
+  catalog ??= [...projectCommands(), ...shellCommands(), ...graphCommands(), ...editCommands(), ...libraryCommands(), ...libraryItemCommands(), ...systemCommands(), ...settingsCommands(), ...imageCommands(), ...navCommands()];
   return catalog;
 }
 

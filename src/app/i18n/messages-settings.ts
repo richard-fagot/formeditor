@@ -1,4 +1,4 @@
-/** Textes de l'écran des paramètres (langues, traductions, raccourcis), de la vue côte à côte et de la mise en page. */
+/** Textes de l'écran des paramètres (langues, traductions, raccourcis), de la vue côte à côte, de la mise en page et de l’export d’image. */
 export const SETTINGS_MESSAGES = {
   'tab.settings': { fr: 'Paramètres', en: 'Settings' },
   'settings.languages': { fr: 'Langues des contenus', en: 'Content languages' },
@@ -47,5 +47,21 @@ export const SETTINGS_MESSAGES = {
   'view.compare': { fr: 'Vue côte à côte', en: 'Side-by-side view' },
   'compare.with': { fr: 'Comparer avec', en: 'Compare with' },
   'compare.close': { fr: 'Fermer la vue côte à côte', en: 'Close the side-by-side view' },
+  'image.export': { fr: 'Exporter le logigramme en image', en: 'Export the flowchart as an image' },
+  'image.run': { fr: 'Exporter l’image avec ces options', en: 'Export the image with these options' },
+  'image.short': { fr: 'Image', en: 'Image' },
+  'image.scope': { fr: 'Périmètre', en: 'Scope' },
+  'image.scopeAll': { fr: 'Logigramme entier', en: 'Whole flowchart' },
+  'image.scopeSelection': { fr: 'Sélection seulement ({n} nœud(s) et les arêtes entre eux)', en: 'Selection only ({n} node(s) and the edges between them)' },
+  'image.title': { fr: 'Titre du questionnaire en en-tête', en: 'Questionnaire title as a header' },
+  'image.format': { fr: 'Format : PNG, haute résolution (2×), fond blanc', en: 'Format: PNG, high resolution (2×), white background' },
+  'image.submit': { fr: 'Exporter', en: 'Export' },
+  'image.busy': { fr: 'Export en cours…', en: 'Exporting…' },
+  'image.failed': { fr: 'Échec de l’export de l’image', en: 'Image export failed' },
+  'image.reduced': { fr: 'Image réduite', en: 'Image reduced' },
+  'image.reducedHint': {
+    fr: 'Logigramme trop grand pour la résolution 2× : résolution ramenée à {ratio}×.',
+    en: 'Flowchart too large for 2× resolution: resolution lowered to {ratio}×.',
+  },
   'compare.readOnly': { fr: 'lecture seule', en: 'read-only' },
 } satisfies Record<string, { fr: string; en: string }>;

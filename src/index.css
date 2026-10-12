@@ -1,1 +1,6 @@
 @import "tailwindcss";
+
+/* Export du logigramme en image (EVO-004) : pas de transition figée en cours de capture. */
+[data-exporting] * {
+  transition: none !important;
+}

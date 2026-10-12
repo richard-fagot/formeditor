@@ -24,6 +24,7 @@ export const EdgeView = memo(function EdgeView(props: EdgeProps) {
       {(conditioned || edge.exit) && (
         <EdgeLabelRenderer>
           <div
+            data-edge-label={edge.id}
             style={{ transform: `translate(-50%, -50%) translate(${x}px, ${y}px)` }}
             className={cn(
               'nodrag nopan pointer-events-auto absolute max-w-56 cursor-pointer truncate rounded-md border bg-white px-1.5 py-0.5 font-mono text-[10px] shadow-xs',

@@ -1,5 +1,5 @@
 # Guide utilisateur — Éditeur de questionnaires
-Mis à jour le 2026-10-12 — jusqu'à EVO-003
+Mis à jour le 2026-10-12 — jusqu'à EVO-004
 
 ## Mode d'emploi du guide
 
@@ -109,6 +109,16 @@ Mis à jour le 2026-10-12 — jusqu'à EVO-003
 - **Déplacer un nœud** — Le glisser à la souris. La position est enregistrée (annulable par `Ctrl+Z`).
 - **Ranger automatiquement le logigramme** — `L` (logigramme), bouton « Mise en page automatique » de la barre du logigramme,
   ou palette. Recalcule toutes les positions de haut en bas ; annulable. `[cmd: view.layout]`
+- **Exporter le logigramme en image** — `X` (logigramme), bouton « Image » de la barre du logigramme, ou palette
+  « Exporter le logigramme en image ». Une fenêtre d'options s'ouvre avec les derniers choix : périmètre « Logigramme entier »
+  ou « Sélection seulement » (proposé si des nœuds sont sélectionnés : ces nœuds et les arêtes entre eux), case « Titre du
+  questionnaire en en-tête » (cochée par défaut) ; `Entrée` ou « Exporter » lance l'export (« Export en cours… » pendant
+  la capture). L'image PNG contient tout le logigramme quels que soient le zoom et la portion visible, tel qu'affiché
+  (aperçus, conditions, badges), sans contrôles, fond quadrillé, poignées ni surbrillance de sélection ; fond blanc,
+  marge, résolution 2×. Fichier téléchargé : `<projet> - <questionnaire> - AAAAMMJJ.png` (titre dans la langue des
+  contenus affichée ; `\ / : * ? " < > |` remplacés par `_`). Les choix sont retenus dans le navigateur. Disponible dans la
+  vue Logigramme d'un questionnaire non vide (pas pour un bloc de la bibliothèque ni la vue côte à côte).
+  `[cmd: view.exportImage]` `[cmd: view.exportImageRun]`
 - **Ajuster la vue au graphe** — `F` (logigramme), palette « Ajuster la vue », ou bouton cadre des contrôles en bas à gauche. `[cmd: view.fit]`
 - **Zoomer, se déplacer dans le logigramme** — Molette pour zoomer, glisser le fond pour se déplacer ; boutons « + » / « − » en bas à gauche.
 - **Définir le départ** — Sélectionner le nœud, bouton « Définir comme départ » (section « Départ ») du panneau de propriétés,
@@ -467,7 +477,9 @@ ou palette « Problèmes ») ; un clic sur un problème sélectionne le nœud ou
 - **Conserver les itérations d'une boucle** : un nouveau passage remplace la réponse ; utiliser une structure répétable.
 - **Modifier plusieurs nœuds à la fois** dans le panneau de propriétés (seuls dupliquer, supprimer, grouper agissent sur une sélection).
 - **Rechercher / remplacer** dans les textes ; **traduire automatiquement**.
-- **Exporter autre chose que du JSON** (pas de PDF, d'image du logigramme, de formulaire final).
+- **Exporter autre chose que du JSON et l'image PNG du logigramme** (pas de PDF, de formulaire final).
+- **Exporter le logigramme en SVG** : un SVG produit par capture de l'écran n'est qu'un bloc HTML enveloppé (`foreignObject`),
+  que Word, PowerPoint et la plupart des éditeurs vectoriels n'affichent pas ; seul le PNG est proposé.
 - **Travailler à plusieurs** ou sur un serveur : la sauvegarde automatique reste dans le navigateur ; partager par l'export.
 - **Annuler après un rechargement** de la page, ou annuler « Nouveau projet », « Ouvrir l’exemple… », l'import d'un projet.
 - **Piloter le wizard au clavier** par des raccourcis dédiés (« Suivant », « Précédent », « Recommencer » sont à la souris).
@@ -557,6 +569,8 @@ ou palette « Problèmes ») ; un clic sur un problème sélectionne le nœud ou
 | Rétablir tous les raccourcis par défaut | — | `shortcut.reset` |
 | Mise en page automatique | `L` | `view.layout` |
 | Vue côte à côte | — | `view.compare` |
+| Exporter le logigramme en image | `X` | `view.exportImage` |
+| Exporter l’image avec ces options | — | `view.exportImageRun` |
 | Aller au nœud suivant | `↓` | `nav.down` |
 | Aller au nœud précédent | `↑` | `nav.up` |
 | Aller au nœud voisin suivant | `→` | `nav.right` |
