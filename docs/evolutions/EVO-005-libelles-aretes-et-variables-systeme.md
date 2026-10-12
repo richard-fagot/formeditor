@@ -1,6 +1,6 @@
 # EVO-005 — Libellé personnalisé des branches et des variables système
 
-Statut : en cours
+Statut : fait 2026-10-12
 Dépend de : aucune
 
 ## Besoin
