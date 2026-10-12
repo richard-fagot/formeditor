@@ -1,7 +1,9 @@
 import { useEffect, useMemo, type ReactNode } from 'react';
 import { Bug, ChevronLeft, ChevronRight, Database, RotateCcw, Undo2 } from 'lucide-react';
 import { OTHER_VALUE } from '../../core/model';
-import { back, currentStep, getAnswer, groupPath, next, otherPath, progress, resume, setAnswer, start, type RuntimeInput, type Session } from '../../core/runtime';
+import {
+  back, currentStep, dontKnowAnswer, dontKnowPath, getAnswer, groupPath, next, otherPath, progress, resume, setAnswer, start, type RuntimeInput, type Session,
+} from '../../core/runtime';
 import { checkWorkspace } from '../../core/validation';
 import { nodeKind, questionType } from '../../registry';
 import { runCommand } from '../../app/commands';
@@ -104,6 +106,13 @@ function Wizard({ questionnaireId, preview }: { questionnaireId: string; preview
   const value = step.answerPath ? getAnswer(session.answers, step.answerPath) : undefined;
   const other = step.answerPath ? (getAnswer(session.answers, otherPath(step.answerPath)) as string | undefined) : undefined;
   const group = step.answerPath ? getAnswer(session.answers, groupPath(step.answerPath)) : undefined;
+  const dontKnow = step.answerPath ? getAnswer(session.answers, dontKnowPath(step.answerPath)) === true : false;
+  // « Ne sais pas » cochée : réponse vide, groupe `NSP` (choix) et marqueur ; décochée : plus de réponse (EVO-006).
+  const setDontKnow = (on: boolean) => {
+    if (!q) return;
+    const a = dontKnowAnswer(q);
+    update({ session: on ? setAnswer(input, session, a.value, undefined, a.group, true) : setAnswer(input, session, undefined) });
+  };
   const check = () => errorsAt(input, session);
   const errors = state?.attempted ? check() : [];
   const errorMap: Record<string, string[]> = {};
@@ -139,6 +148,7 @@ function Wizard({ questionnaireId, preview }: { questionnaireId: string; preview
               </label>
               {q.help && <p className="text-sm text-slate-500">{env.label(q.help)}</p>}
               <plugin.Field key={step.id} question={q} value={value} other={other} group={group} errors={errorMap} env={env} inputId={`f-${step.id}`}
+                dontKnow={dontKnow} onDontKnow={setDontKnow}
                 onChange={(v, o, g) => update({ session: setAnswer(input, session, v, v === OTHER_VALUE || (Array.isArray(v) && v.includes(OTHER_VALUE)) ? o : undefined, g) })} />
               {(errorMap[''] ?? []).map((m, i) => <p key={i} className="text-sm text-rose-600" role="alert">{m}</p>)}
             </div>

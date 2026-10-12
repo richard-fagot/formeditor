@@ -3,3 +3,4 @@ export { ExpressionInput } from './ExpressionInput';
 export { LabelEditor } from './LabelEditor';
 export { ExpressionEnvProvider, useExpressionEnv, type ExpressionEnv } from './context';
 export { ConstraintsEditor, type ConstraintsValue } from './ConstraintsEditor';
+export { DontKnowEditor } from './DontKnowEditor';

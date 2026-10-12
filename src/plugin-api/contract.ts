@@ -40,7 +40,7 @@ export interface RenderEnv extends EditorEnv {
 }
 
 /** Propriétés communes à toutes les questions, conservées lors d'un changement de type. */
-export type QuestionBase = Pick<Question, 'id' | 'key' | 'label' | 'description' | 'help' | 'placeholder' | 'required' | 'messages' | 'constraints'>;
+export type QuestionBase = Pick<Question, 'id' | 'key' | 'label' | 'description' | 'help' | 'placeholder' | 'required' | 'messages' | 'constraints' | 'dontKnow'>;
 
 export interface QuestionPropertiesProps<Q extends Question = Question> {
   question: Q;
@@ -57,6 +57,13 @@ export interface FieldProps<Q extends Question = Question> {
   /** Groupe de la sélection d'un choix (`<clé>_group`) : identifiant, ou liste parallèle aux valeurs. */
   group?: unknown;
   onChange(value: unknown, other?: string, group?: unknown): void;
+  /** « Ne sais pas » choisie (`<clé>_nsp`, EVO-006). */
+  dontKnow?: boolean;
+  /**
+   * Coche (`true`) ou décoche « Ne sais pas » : l'appelant range la réponse vide, le groupe `NSP` et le marqueur,
+   * ou efface la réponse. Toute réponse passée par `onChange` efface le marqueur.
+   */
+  onDontKnow?(on: boolean): void;
   /** Messages d'erreur déjà résolus, par chemin (`''` pour la question). */
   errors: Record<string, string[]>;
   env: RenderEnv;

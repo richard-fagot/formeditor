@@ -57,7 +57,7 @@ export const ISSUE_MESSAGES: Record<string, LocalizedText> = {
   missingTranslation: { fr: 'Traduction manquante ({lang}) : {property}', en: 'Missing translation ({lang}): {property}' },
   libraryMissing: { fr: 'Élément de bibliothèque introuvable « {ref} »', en: 'Library item not found "{ref}"' },
   duplicateGroup: { fr: 'Groupe d’options en double « {group} »', en: 'Duplicate option group "{group}"' },
-  reservedGroupCode: { fr: 'Code de groupe réservé « {group} » (« Autre (préciser) »)', en: 'Reserved group code "{group}" ("Other (specify)")' },
+  reservedGroupCode: { fr: 'Code de groupe réservé « {group} » (« Autre (préciser) » ou « Ne sais pas »)', en: 'Reserved group code "{group}" ("Other (specify)" or "Don’t know")' },
   emptyGroup: { fr: 'Groupe d’options sans option « {group} »', en: 'Option group without options "{group}"' },
   missingStart: { fr: 'Nœud de départ introuvable', en: 'Start node not found' },
 };

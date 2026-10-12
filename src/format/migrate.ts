@@ -49,6 +49,8 @@ export const MIGRATIONS: Migrations = {
   2: (doc) => bump(doc, 3),
   /** EVO-005 : libellés `caption` (arête, variable, champ). Un document antérieur n'en a pas : seul le numéro change. */
   3: (doc) => bump(doc, 4),
+  /** EVO-006 : option « Ne sais pas » (`dontKnow`). Propriété absente = désactivée : seul le numéro change. */
+  4: (doc) => bump(doc, 5),
 };
 
 /** Change seulement `formatVersion` (et celui des documents d'un bundle). */

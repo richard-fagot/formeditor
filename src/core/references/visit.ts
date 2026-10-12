@@ -87,6 +87,7 @@ export function mapQuestion<Q extends Question | StructureField>(q: Q, f: ExprMa
       break;
   }
   if ('other' in q && q.other?.label) out.other = { ...q.other, label: mapLabel(q.other.label, f, at('other.label')) };
+  if (q.dontKnow?.label) out.dontKnow = { ...q.dontKnow, label: mapLabel(q.dontKnow.label, f, at('dontKnow.label')) };
   return out as Q;
 }
 

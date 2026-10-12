@@ -1,14 +1,17 @@
 import { OTHER_VALUE } from '../../../core/model';
-import type { FieldProps, RenderEnv } from '../../../plugin-api';
+import { dontKnowLabel, type FieldProps, type RenderEnv } from '../../../plugin-api';
 import { Input } from '../../../ui-kit';
 import { asList, OTHER_LABEL, fits, itemsOf, pickedAnswer, sectionsOf, selectedOf, type Choice } from './selection';
 
-/** Saisie : boutons radio (unique) ou cases à cocher (multiple), en sections par groupe, puis « Autre » avec sa précision. */
-export function ChoiceField({ question, value, other, group, onChange, env, inputId }: FieldProps<Choice>) {
+/**
+ * Saisie : boutons radio (unique) ou cases à cocher (multiple), en sections par groupe, puis « Autre » avec sa précision,
+ * puis « Ne sais pas » (exclusive : la cocher vide la réponse, cocher une autre option la décoche).
+ */
+export function ChoiceField({ question, value, other, group, onChange, env, inputId, dontKnow, onDontKnow }: FieldProps<Choice>) {
   const multiple = question.type === 'multiple';
   const items = itemsOf(question, env);
   const values = multiple ? asList(value) : typeof value === 'string' ? [value] : [];
-  const selected = selectedOf(items, values, multiple ? asList(group) : [group]);
+  const selected = dontKnow ? [] : selectedOf(items, values, multiple ? asList(group) : [group]);
   const hasOther = selected.some((i) => items[i]!.value === OTHER_VALUE);
   const toggle = (i: number) => {
     const c = items[i]!;
@@ -17,12 +20,13 @@ export function ChoiceField({ question, value, other, group, onChange, env, inpu
     if (!answer) return onChange(null, undefined, undefined);
     onChange(answer.values, answer.values.includes(OTHER_VALUE) ? other : undefined, answer.groups);
   };
-  const option = (i: number) => (
-    <label key={i} className="flex cursor-pointer items-center gap-3 rounded-lg border border-slate-200 px-4 py-3 hover:border-indigo-300 has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-50/50">
-      <input type={multiple ? 'checkbox' : 'radio'} name={inputId} className="size-4 accent-indigo-600" checked={selected.includes(i)} onChange={() => toggle(i)} />
-      <span className="text-slate-800">{items[i]!.text}</span>
+  const box = (key: string | number, text: string, checked: boolean, change: () => void) => (
+    <label key={key} className="flex cursor-pointer items-center gap-3 rounded-lg border border-slate-200 px-4 py-3 hover:border-indigo-300 has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-50/50">
+      <input type={multiple ? 'checkbox' : 'radio'} name={inputId} className="size-4 accent-indigo-600" checked={checked} onChange={change} />
+      <span className="text-slate-800">{text}</span>
     </label>
   );
+  const option = (i: number) => box(i, items[i]!.text, selected.includes(i), () => toggle(i));
   return (
     <div role={multiple ? 'group' : 'radiogroup'} id={inputId} className="space-y-2">
       {sectionsOf(items).map((s, k) => (s.title === undefined ? s.indexes.map(option) : (
@@ -34,6 +38,7 @@ export function ChoiceField({ question, value, other, group, onChange, env, inpu
       {hasOther && (
         <Input autoFocus aria-label={env.label(question.other?.label ?? OTHER_LABEL)} value={other ?? ''} onChange={(e) => onChange(value, e.target.value, group)} />
       )}
+      {question.dontKnow && box('nsp', env.label(dontKnowLabel(question)), !!dontKnow, () => onDontKnow?.(!(multiple && dontKnow)))}
     </div>
   );
 }

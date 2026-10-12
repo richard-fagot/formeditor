@@ -1,6 +1,7 @@
 import jsonata from 'jsonata';
 import { addDays, age, daysBetween, todayIso } from './dates';
 import { rewriteGroupRefs } from './group-ref';
+import { rewriteDontKnowRefs } from './dont-know-ref';
 
 /** Environnement d'évaluation (date du jour figée pour les tests et la prévisualisation). */
 export interface EvalEnv {
@@ -53,7 +54,7 @@ function bindings(env: EvalEnv) {
 
 /** Évalue une expression ; lève une erreur en cas d'échec. */
 export function evaluateStrict(expr: string, ctx: EvalContext, env: EvalEnv = {}): unknown {
-  const c = compile(rewriteGroupRefs(expr));
+  const c = compile(rewriteDontKnowRefs(rewriteGroupRefs(expr)));
   if (isError(c)) throw new Error(c.message);
   const value = c.evaluate(ctx, bindings(env));
   return normalize(value);

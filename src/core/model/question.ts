@@ -31,6 +31,14 @@ export interface OtherOption {
 }
 
 /**
+ * Option « Ne sais pas » (EVO-006), sur toute question sauf structure. Réponse : valeur vide (`null`, `[]` en choix
+ * multiple), marqueur `<cle>_nsp: true`, groupe `NSP` pour un choix ; référence `cle.nsp`.
+ */
+export interface DontKnowOption {
+  label?: Label;
+}
+
+/**
  * Entrée dynamique d'un choix : zéro, une ou plusieurs options issues d'une référence (réponse
  * précédente, liste de l'état du système), déployées à sa position. Reconnue à la présence de `from`.
  */
@@ -84,6 +92,8 @@ interface QuestionBase {
   /** Messages d'erreur des contraintes intégrées, par nom de paramètre (`min`, `maxLength`, `required`…). */
   messages?: Record<string, LocalizedText>;
   constraints?: Constraint[];
+  /** Option « Ne sais pas » (EVO-006) : présente = activée. Jamais sur une structure. */
+  dontKnow?: DontKnowOption;
 }
 
 export interface TextQuestion extends QuestionBase {
@@ -141,6 +151,8 @@ export type StructureField = Exclude<Question, StructureQuestion> & { when?: Exp
 
 export interface StructureQuestion extends QuestionBase {
   type: 'structure';
+  /** Pas d'option « Ne sais pas » sur une structure (ses champs peuvent l'avoir). */
+  dontKnow?: never;
   fields: StructureField[];
   /** Présent si la structure est répétable. */
   repeat?: { min?: number; max?: number; addLabel?: LocalizedText };
@@ -158,6 +170,17 @@ export const GROUP_SUFFIX = 'group';
 export const GROUP_REF = 'groupe';
 /** Identifiant de groupe de l'option « Autre (préciser) ». */
 export const OTHER_GROUP = 'AUTRE';
+/** Suffixe du marqueur « Ne sais pas » : `<clé>_nsp` (EVO-006). */
+export const DONT_KNOW_SUFFIX = 'nsp';
+/** Mot réservé des expressions : `ma_question.nsp` (vrai si « Ne sais pas » est choisie). */
+export const DONT_KNOW_REF = 'nsp';
+/** Identifiant de groupe de l'option « Ne sais pas ». */
+export const DONT_KNOW_GROUP = 'NSP';
+/** Libellé par défaut de l'option « Ne sais pas » (destiné à l'utilisateur final). */
+export const DONT_KNOW_LABEL = { fr: 'Ne sais pas', en: 'Don’t know' };
+/** Vrai si « Ne sais pas » est activée sur la question (jamais sur une structure). */
+export const hasDontKnow = (q: { type: string; dontKnow?: unknown }): boolean => q.type !== 'structure' && !!q.dontKnow;
+
 /** Valeur « ne sait pas » d'un tri-state. */
 export const UNKNOWN_VALUE = 'unknown';
 

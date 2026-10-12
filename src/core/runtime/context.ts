@@ -1,4 +1,4 @@
-import { GROUP_SUFFIX, OTHER_VALUE } from '../model';
+import { DONT_KNOW_GROUP, DONT_KNOW_SUFFIX, GROUP_SUFFIX, OTHER_VALUE, type Question, type StructureField } from '../model';
 import type { EvalContext } from '../expressions';
 import { resolveStep, type RuntimeInput } from './steps';
 
@@ -45,3 +45,12 @@ export const otherPath = (path: string[]) => [...path.slice(0, -1), `${path.at(-
 
 /** Chemin du groupe de la sélection d'un choix : `<clé>_group` à côté de la réponse (EVO-003). */
 export const groupPath = (path: string[]) => [...path.slice(0, -1), `${path.at(-1)}_${GROUP_SUFFIX}`];
+
+/** Chemin du marqueur « Ne sais pas » : `<clé>_nsp` à côté de la réponse (EVO-006). */
+export const dontKnowPath = (path: string[]) => [...path.slice(0, -1), `${path.at(-1)}_${DONT_KNOW_SUFFIX}`];
+
+/** Réponse « Ne sais pas » : valeur vide (`[]` pour un choix multiple) et, pour un choix, groupe `NSP`. */
+export function dontKnowAnswer(q: Question | StructureField): { value: null | []; group?: string } {
+  if (q.type === 'multiple') return { value: [], group: DONT_KNOW_GROUP };
+  return q.type === 'single' ? { value: null, group: DONT_KNOW_GROUP } : { value: null };
+}

@@ -1,7 +1,7 @@
 import { OTHER_VALUE, UNKNOWN_VALUE, type LocalizedText, type TristateQuestion } from '../../../core/model';
-import { tr, previewText, type EditorEnv, type QuestionTypePlugin } from '../../../plugin-api';
+import { dontKnowLabel, tr, previewText, type EditorEnv, type QuestionTypePlugin } from '../../../plugin-api';
 import { Checkbox, Field, Input, Select } from '../../../ui-kit';
-import { LabelEditor } from '../../../ui/expression-editor';
+import { DontKnowEditor, LabelEditor } from '../../../ui/expression-editor';
 
 const T = {
   name: { fr: 'Tri-state', en: 'Tri-state' },
@@ -11,6 +11,8 @@ const T = {
   otherLabel: { fr: "Libellé de l'option", en: 'Option label' },
   detailRequired: { fr: 'Précision obligatoire', en: 'Detail required' },
 };
+/** Valeur de l'option « Ne sais pas » dans la liste affichée (jamais enregistrée : marqueur `<clé>_nsp`). */
+const DONT_KNOW = Symbol('nsp');
 /** Libellés par défaut, destinés à l'utilisateur final. */
 const DEFAULTS = {
   yes: { fr: 'Oui', en: 'Yes' } as LocalizedText,
@@ -38,7 +40,12 @@ export const tristateType: QuestionTypePlugin<TristateQuestion> = {
     const l = labels(question, env.ws);
     const parts = [l.yes, l.no, l.unknown].map((t) => previewText(t, env));
     if (question.other) parts.push(previewText(question.other.label ?? OTHER_LABEL, env));
-    return <span className="text-slate-500">{parts.join(' / ')}</span>;
+    return (
+      <span className="text-slate-500">
+        {parts.join(' / ')}
+        {question.dontKnow && <span className="italic"> / {previewText(dontKnowLabel(question), env)}</span>}
+      </span>
+    );
   },
   Properties: ({ question, update, env }) => (
     <div className="space-y-3">
@@ -61,17 +68,21 @@ export const tristateType: QuestionTypePlugin<TristateQuestion> = {
             onChange={(e) => update({ other: { ...question.other, detailRequired: e.target.checked || undefined } })} />
         </div>
       )}
+      <DontKnowEditor value={question.dontKnow} onChange={(dontKnow) => update({ dontKnow })} />
     </div>
   ),
-  Field: ({ question, value, other, onChange, env, inputId }) => {
+  Field: ({ question, value, other, onChange, env, inputId, dontKnow, onDontKnow }) => {
     const l = labels(question, env.ws);
     const choices: [unknown, string][] = [[true, env.text(l.yes)], [false, env.text(l.no)], [UNKNOWN_VALUE, env.text(l.unknown)]];
     if (question.other) choices.push([OTHER_VALUE, env.label(question.other.label ?? OTHER_LABEL)]);
+    // « Ne sais pas » : dernière option, après « Autre » (EVO-006).
+    if (question.dontKnow) choices.push([DONT_KNOW, env.label(dontKnowLabel(question))]);
     return (
       <div role="radiogroup" id={inputId} className="space-y-2">
         {choices.map(([v, label]) => (
-          <label key={String(v)} className="flex cursor-pointer items-center gap-3 rounded-lg border border-slate-200 px-4 py-3 hover:border-indigo-300 has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-50/50">
-            <input type="radio" name={inputId} className="size-4 accent-indigo-600" checked={value === v} onChange={() => onChange(v, v === OTHER_VALUE ? other : undefined)} />
+          <label key={typeof v === 'symbol' ? 'nsp' : String(v)} className="flex cursor-pointer items-center gap-3 rounded-lg border border-slate-200 px-4 py-3 hover:border-indigo-300 has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-50/50">
+            <input type="radio" name={inputId} className="size-4 accent-indigo-600" checked={v === DONT_KNOW ? !!dontKnow : !dontKnow && value === v}
+              onChange={() => (v === DONT_KNOW ? onDontKnow?.(true) : onChange(v, v === OTHER_VALUE ? other : undefined))} />
             <span className="text-slate-800">{label}</span>
           </label>
         ))}

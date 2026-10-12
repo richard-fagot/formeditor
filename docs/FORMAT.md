@@ -34,7 +34,7 @@ libellés et interpolation — 6. Nœuds — 7. Questions — 8. Réponses — 9
 | `<clé>.layout.json`, `bloc_<clé>.layout.json` | `layout` | Positions des nœuds dans l'éditeur. | **non** (à ignorer) |
 | `<projet>.bundle.json` | `bundle` | `project`, `library`, `questionnaires[]`, `layouts[]` dans un seul fichier. | oui (même contenu) |
 
-- Chaque fichier (et le bundle) porte `formatVersion` (entier, actuellement `4`) et `kind`.
+- Chaque fichier (et le bundle) porte `formatVersion` (entier, actuellement `5`) et `kind`.
 - L'outil migre automatiquement à l'ouverture un fichier d'une version antérieure ; il refuse un fichier
   d'une version plus récente. Un moteur cible peut refuser toute version qu'il ne connaît pas.
 - Tout élément (projet, questionnaire, nœud, arête, question, bloc, variable, scénario, jeu de libellés)
@@ -53,7 +53,7 @@ Squelette d'un questionnaire :
 
 ```json
 {
-  "formatVersion": 4,
+  "formatVersion": 5,
   "kind": "questionnaire",
   "id": "q_declaration",
   "key": "declaration_sinistre",
@@ -73,7 +73,7 @@ Squelette d'un questionnaire :
   Les id sont uniques dans leur graphe ; un nœud question local a le même id que sa question.
 - **`key`** : clé lisible en `snake_case` (`^[a-z][a-z0-9_]*$`). C'est elle qu'on écrit dans les
   expressions et qui nomme la réponse. Mots réservés (interdits comme clé) : `sys`, `true`, `false`,
-  `null`, `and`, `or`, `in`, `groupe` (§10.3).
+  `null`, `and`, `or`, `in`, `groupe`, `nsp` (§10.3).
 
 Unicité des clés (l'outil le vérifie, §13) :
 
@@ -156,7 +156,7 @@ Résolution d'un libellé : variante → langue (avec repli) → interpolation.
 
 | Propriétés de type **libellé** (variantes possibles, interpolées) | Propriétés **texte multilingue** |
 | --- | --- |
-| Question : `label`, `help`, `placeholder` ; option : `label` ; groupe d'options : `group` (§7.3) ; `other.label` ; surcharge `label` d'une question de bibliothèque ; `info` : `title`, `text` ; `summary` : `title` ; `end` : `title`, `message` | Interpolées, sans variantes : `messages.<param>`, `constraints[].message` (§9). Non interpolées : `title` d'un questionnaire ou d'un bloc, `unit`, `repeat.addLabel`, `yes`/`no`/`unknown` d'un jeu de libellés, `label` d'une sortie de bloc |
+| Question : `label`, `help`, `placeholder` ; option : `label` ; groupe d'options : `group` (§7.3) ; `other.label` ; `dontKnow.label` (§7.7) ; surcharge `label` d'une question de bibliothèque ; `info` : `title`, `text` ; `summary` : `title` ; `end` : `title`, `message` | Interpolées, sans variantes : `messages.<param>`, `constraints[].message` (§9). Non interpolées : `title` d'un questionnaire ou d'un bloc, `unit`, `repeat.addLabel`, `yes`/`no`/`unknown` d'un jeu de libellés, `label` d'une sortie de bloc |
 
 ### 5.3 Interpolation
 
@@ -207,6 +207,7 @@ bibliothèque ; seul l'intitulé (`label`) peut être surchargé.
 | `defaultExpr?` | Valeur par défaut calculée (expression), prioritaire sur `default`. |
 | `messages?` | `{ "<paramètre>": texte multilingue }` : message d'erreur par contrainte intégrée (§9.2). |
 | `constraints?` | Règles libres `[{ "rule": "<expression vraie si valide>", "message"?: {…} }]` (§9). |
+| `dontKnow?` | Option « Ne sais pas » (version 5, §7.7) : `{}` ou `{ "label": <libellé> }`. Tous types **sauf** `structure` (ses champs peuvent l'avoir). |
 | `description?` | Libre. |
 
 **Valeur par défaut** : en arrivant sur une page question dont la réponse est inconnue, le moteur pose
@@ -310,7 +311,25 @@ statiques. La migration 1 → 2 place cette `source` en dernière entrée de `op
 - `repeat: { "min"?, "max"?, "addLabel"? }` rend la structure répétable : réponse en tableau, bouton
   « Ajouter » (`addLabel`) et « Supprimer » bornés par `min` / `max`.
 - La précision « Autre » d'un champ est rangée dans l'occurrence : `{ "canal": "other", "canal_other": "…" }` ;
-  de même le groupe de la sélection d'un choix : `{ "lien": "conjoint", "lien_group": "SC" }`.
+  de même le groupe de la sélection d'un choix : `{ "lien": "conjoint", "lien_group": "SC" }`, et le marqueur
+  « Ne sais pas » : `{ "age": null, "age_nsp": true }`.
+
+### 7.7 « Ne sais pas » (version 5, tous types sauf `structure`)
+
+`dontKnow: { "label"? }` ajoute un choix « Ne sais pas » (libellé par défaut « Ne sais pas », sinon `label`, un
+libellé comme celui d'une option, §5.2) qui permet de répondre explicitement « je ne sais pas » ; absent = désactivé.
+
+- Affichage : pour `single`, `multiple`, `boolean`, `tristate`, dernier choix, après « Autre », hors de tout groupe ;
+  pour `text`, `date`, `number`, case à cocher sous le champ (cochée : champ vidé et désactivé).
+- **Exclusive** : la choisir remplace toute autre réponse ; toute autre réponse l'annule.
+- Réponse (§8) : valeur **vide** (`null` ; `[]` pour `multiple`), marqueur `<clé>_nsp: true` à côté, et pour
+  `single` / `multiple` groupe `"NSP"` sous `<clé>_group`. Une saisie littérale « Ne sais pas » reste une valeur
+  ordinaire, sans marqueur.
+- Validation (§9) : marqueur présent et `dontKnow` activé → réponse acceptée, aucune vérification (ni `required`,
+  ni contraintes, ni règles libres).
+- Expressions (§10.3) : `cle` est absente (ou `[]`), `cle.nsp` vaut `true` ; sans « Ne sais pas », `cle.nsp` vaut `false`.
+- Ce n'est pas une entrée de `options[]` : pas de condition, pas de position, pas de valeur propre. `NSP` est un code de
+  groupe réservé (§13).
 
 ## 8. Réponses
 
@@ -330,6 +349,9 @@ Les réponses d'un parcours forment un objet indexé par clé :
 }
 ```
 
+Avec « Ne sais pas » (§7.7) : `"montant_estime": null, "montant_estime_nsp": true` ;
+`"canaux_contact": [], "canaux_contact_group": "NSP", "canaux_contact_nsp": true`.
+
 - Question d'un questionnaire (locale ou de bibliothèque) : sous sa clé.
 - Question d'un bloc : sous `<alias>.<clé>` (objet de l'alias de l'instance).
 - Précision « Autre » : clé `<clé>_other`, à côté de la réponse.
@@ -339,6 +361,8 @@ Les réponses d'un parcours forment un objet indexé par clé :
   liste **parallèle** aux valeurs, de même longueur et dans le même ordre (`["conjoint", "conjoint"]` /
   `["SC", "AA"]`). Une réponse sans `<clé>_group` (valeur par défaut, ancien jeu de test) désigne la première
   option visible de cette valeur.
+- « Ne sais pas » (version 5, §7.7) : clé `<clé>_nsp` (`true`), à côté de la réponse vide (`null`, `[]` pour
+  `multiple`) ; groupe `"NSP"` pour `single` et `multiple` (chaîne, pas une liste). Absente sinon.
 - Question facultative laissée vide (on a cliqué « Suivant » sans répondre) : `null`. Une question
   jamais atteinte, ou dont la réponse a été effacée (§11.5), est **absente**.
 - Une page revisitée (retour arrière, boucle) **remplace** la réponse : aucune itération n'est conservée.
@@ -354,6 +378,8 @@ chemin (`""` pour la question, `victimes[0].prenom`, `coordonnees.ville` pour un
 
 Le contexte de validation est celui de la page (§10.2) où la réponse en cours est placée sous sa clé.
 
+0. **Ne sais pas** : si `dontKnow` est activé et `<clé>_nsp` vaut `true` (lu à côté de la réponse ; dans une
+   structure, dans l'occurrence), la réponse est acceptée : rien d'autre n'est vérifié.
 1. **Obligatoire** : `required` vaut `true` (ou son expression vaut `true`).
 2. **Vide** : absente, `null`, `""` ou `[]`. Une réponse vide est refusée (`required`) si la question est
    obligatoire, acceptée sinon ; **rien d'autre n'est vérifié** (ni contraintes, ni règles libres).
@@ -443,6 +469,7 @@ Les fonctions de date utilisent la date du jour du moteur (figée par `today` da
 | `victimes[0].nom`, `$count(victimes)` | Occurrence d'une structure répétable (indice à partir de 0), nombre d'occurrences. |
 | `type_sinistre_other` | Précision « Autre » de `type_sinistre`. |
 | `qualite_declarant.groupe` | Groupe de la sélection d'un choix (version 3) : lit `qualite_declarant_group` (§8) — code du groupe, sinon son libellé dans la langue par défaut ; `"AUTRE"` pour « Autre » ; absent (`single`) ou `""` (`multiple`) hors groupe ; liste pour `multiple`. Aussi `tiers.cle.groupe` (bloc), `victimes.lien.groupe`, `lien.groupe` (champ de structure). Un moteur peut, comme l'outil, réécrire toute étape **finale** `groupe` d'un chemin de noms en `<dernier nom>_group` avant d'évaluer, en gardant les indices et filtres du dernier nom (`liens[0].groupe` → `liens_group[0]`). Ailleurs qu'après une question à choix, `.groupe` est une référence inconnue. |
+| `montant_estime.nsp` | « Ne sais pas » choisie (version 5, §7.7) : `true` si `montant_estime_nsp` vaut `true`, `false` sinon (jamais absent). Aussi `tiers.cle.nsp`, `victimes[0].age.nsp`, `age.nsp` (champ de structure). Un moteur peut, comme l'outil, réécrire tout chemin de noms terminé par `.nsp` en `(<chemin>_nsp = true)` (`victimes[0].age.nsp` → `(victimes[0].age_nsp = true)`). Sur une structure répétable sans indice (`victimes.age.nsp`), la comparaison d'une liste vaut `false` : utiliser un indice ou un filtre (`victimes[age.nsp]`). Connu seulement sur une question dont `dontKnow` est activé ; ailleurs, référence inconnue. |
 | `sys.profil`, `sys.sinistres.nature` | Variable de l'état du système ; champ des objets d'une liste. |
 | `tiers.nom` | Question `nom` du bloc instancié avec l'alias `tiers` (depuis l'hôte, ou dans le bloc). |
 | `nom` (dans le bloc) | Question `nom` du bloc lui-même ; une clé du questionnaire hôte reste accessible sans préfixe si le bloc n'a pas de question homonyme. |
@@ -555,7 +582,7 @@ avec les réponses connues tant que les pages question ont une réponse (`null` 
 elle en ignorant les conditions (sans repasser par le chemin déjà projeté). La projection s'arrête aussi
 lorsqu'elle atteint une page déjà projetée (boucle refermée, par exemple `confirmation = false` qui
 renvoie au début) ou une page sans arête applicable (fin, blocage). Les réponses (avec précisions
-« Autre » et groupes `<clé>_group`) des questions absentes de cet ensemble sont **effacées**.
+« Autre », groupes `<clé>_group` et marqueurs `<clé>_nsp`) des questions absentes de cet ensemble sont **effacées**.
 
 Ainsi, après un retour arrière où l'on change `type_sinistre` de `accident` à `vol`, la réponse
 `victimes` disparaît dès qu'on avance : la question n'est plus sur le chemin.
@@ -564,7 +591,8 @@ Ainsi, après un retour arrière où l'on change `type_sinistre` de `accident` �
 
 Une page `summary` liste, dans l'ordre de **première** visite, les questions de l'historique avant
 elle qui ont une réponse (y compris `null`, affichée vide) : intitulé et réponse courante. Une option
-d'un groupe s'affiche « Groupe — Option » (intitulé du groupe dans la langue affichée).
+d'un groupe s'affiche « Groupe — Option » (intitulé du groupe dans la langue affichée) ; une réponse « Ne sais pas »,
+par le libellé de l'option.
 
 Depuis une synthèse, l'utilisateur peut revenir à une question pour la modifier. « Revenir à la
 synthèse » avance alors (comme « Suivant », avec validation et effacement) sur les pages déjà vues et
@@ -603,8 +631,8 @@ en contenir : le moteur cible peut les vérifier à son tour.
 | `loopWithoutExit` | Boucle dont aucune arête ne sort. |
 | `exitNotConnected`, `unknownExit` | Sortie de bloc non raccordée ; arête visant une sortie inexistante. |
 | `libraryMissing` | Question, bloc ou jeu de libellés de bibliothèque introuvable. |
-| `missingTranslation` | Texte sans traduction dans une langue du projet (libellés de groupe compris). |
-| `duplicateGroup`, `reservedGroupCode`, `emptyGroup` | Groupes d'options d'une question : identifiant en double ; code `AUTRE` (réservé) ; groupe sans option (§7.3). |
+| `missingTranslation` | Texte sans traduction dans une langue du projet (libellés de groupe et `dontKnow.label` compris). |
+| `duplicateGroup`, `reservedGroupCode`, `emptyGroup` | Groupes d'options d'une question : identifiant en double ; code `AUTRE` ou `NSP` (réservés) ; groupe sans option (§7.3). |
 
 L'exemple fourni ne produit aucun problème.
 
@@ -630,6 +658,7 @@ L'exemple fourni ne produit aucun problème.
 | Choix multiple avec « Autre » ; `'telephone' in canaux_contact` | `n_canaux`, `e_canaux_tel` |
 | Question de bibliothèque à intitulé surchargé | `n_tel` → `lq_telephone` |
 | Synthèse, confirmation à jeu de libellés booléen, boucle de correction, fin à variantes | `n_synthese`, `n_confirmation`, `e_confirmation_retour`, `n_fin` |
+| « Ne sais pas » (version 5) : nombre obligatoire avec minimum et libellé traduit ; choix multiple obligatoire avec « Autre » et libellé par défaut ; `montant_estime.nsp` dans une arête | `n_montant`, `n_canaux`, `e_montant_expertise` ; chemin `amicale_ne_sais_pas.json` |
 | Libellés de lecture `caption` (version 4) : arête conditionnée, « sinon », arête de sortie de bloc ; variable et champ de liste | `e_qualite_ayant_droit`, `e_qualite_montant`, `e_bloc_non_identifie` ; `sys.type_adherent`, `sys.sinistres` (`nature`) |
 
 Après la date, on demande le lien avec un sinistre existant s'il y en a un d'antérieur, puis on va aux
@@ -659,7 +688,8 @@ doit les rejouer à l'identique.
     { "step": "n_type", "value": "vol" },
     { "step": "n_bloc_tiers/bn_nom", "value": "Dupont" },
     { "step": "n_qualite", "value": "conjoint", "group": "Ayant droit" },
-    { "step": "n_canaux", "value": ["courrier", "other"], "other": "Par l'amicale" }
+    { "step": "n_canaux", "value": ["courrier", "other"], "other": "Par l'amicale" },
+    { "step": "n_montant", "dontKnow": true }
   ],
   "path": ["n_intro", "n_type", "…", "n_fin"],
   "outcome": "submitted"
@@ -670,7 +700,7 @@ doit les rejouer à l'identique.
 | --- | --- |
 | `questionnaire`, `scenario` | Id du questionnaire joué ; id du scénario qui fournit l'état du système. |
 | `today` | Date du jour à utiliser pour `$today()`, `$age`… |
-| `answers[]` | Réponses dans l'ordre de saisie : `step` (id de page ; dans un bloc `idInstance/idNœud`), `value`, `other?` (précision « Autre »), `group?` (groupe de la sélection, rangé sous `<clé>_group`, §8). |
+| `answers[]` | Réponses dans l'ordre de saisie : `step` (id de page ; dans un bloc `idInstance/idNœud`), `value`, `other?` (précision « Autre »), `group?` (groupe de la sélection, rangé sous `<clé>_group`, §8), `dontKnow?` (`true` : « Ne sais pas » choisie, sans `value` ; valeur, groupe et marqueur posés comme au §7.7). |
 | `path` | Pages visitées (questions, informations, synthèses, fin), boucles comprises, dans l'ordre. |
 | `outcome` | `outcome` du nœud `end` atteint. |
 
@@ -684,10 +714,11 @@ doit égaler `path`, toutes les réponses doivent avoir été consommées et l'i
 
 Toute évolution incompatible incrémente `formatVersion` et s'accompagne d'une migration dans l'outil,
 des schémas, de ce document et de l'exemple. Les ajouts compatibles (nouvelle propriété facultative)
-sont documentés ici. Version actuelle : **4**.
+sont documentés ici. Version actuelle : **5**.
 
 | Version | Changement | Migration |
 | --- | --- | --- |
 | 2 | Options d'un choix : suite ordonnée d'entrées (statiques ou dynamiques) ; `source` disparaît (EVO-001). | `source` → entrée dynamique placée après les options statiques. |
 | 3 | Groupes d'options (`{ group, code?, when?, options }` dans `options[]`), réponse `<clé>_group`, référence `cle.groupe`, mot réservé `groupe` (EVO-003). | Aucune transformation (un document antérieur n'a pas de groupe) ; seul `formatVersion` change. |
 | 4 | Libellé de lecture `caption` (chaîne, une ligne) sur l'arête, la variable de l'état du système et le champ de liste d'objets (EVO-005). | Aucune transformation (un document antérieur n'a pas de libellé) ; seul `formatVersion` change. |
+| 5 | Option « Ne sais pas » `dontKnow` (toute question sauf structure), réponse `<clé>_nsp`, groupe réservé `NSP`, référence `cle.nsp`, mot réservé `nsp` (EVO-006). | Aucune transformation (propriété absente = désactivée) ; seul `formatVersion` change. |

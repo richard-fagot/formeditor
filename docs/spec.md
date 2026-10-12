@@ -66,6 +66,7 @@ Une question comporte :
 - une **clé** (§3.5) ;
 - un caractère **obligatoire** ou facultatif, éventuellement conditionné par une expression ;
 - facultativement : texte d'aide, placeholder, valeur par défaut (littérale ou expression) ;
+- facultativement, l'option **« Ne sais pas »** (EVO-006, tous types sauf structure) ;
 - des **contraintes** (§3.7) selon le type.
 
 ### 3.4 Types de questions
@@ -82,6 +83,8 @@ Une question comporte :
 | Structure | Groupe de champs de tous types sauf structure. Chaque champ a sa clé, ses contraintes et sa condition d'affichage. Peut être **répétable** (min/max d'occurrences, ex. plusieurs victimes ou témoins), avec un bouton « Ajouter » pour créer une occurrence et la possibilité d'en supprimer une. |
 
 **Autre (préciser)**, applicable au choix unique, au choix multiple, au booléen et au tri-state : ajoute une option qui ouvre un champ texte. Libellé éditable, précision obligatoire ou facultative. Elle est toujours affichée en dernier.
+
+**Ne sais pas** (EVO-006), applicable à toute question sauf la structure elle-même (ses champs peuvent l'avoir), désactivée par défaut : permet de répondre explicitement « je ne sais pas », distinct de « pas de réponse ». Son libellé (« Ne sais pas » par défaut) se comporte exactement comme celui d'une option : multilingue, interpolé, à variantes, traductions manquantes signalées. Choix unique ou multiple, booléen, tri-state : dernière option, après « Autre (préciser) », hors de tout groupe. Texte, date, nombre : case à cocher sous le champ ; cochée, le champ est vidé et désactivé ; décochée, il revient vide. Elle est **exclusive** (la cocher décoche les autres options ; cocher une autre option ou saisir la décoche), **satisfait** une question obligatoire, et aucune contrainte (intégrée ou libre) ne s'applique quand elle est cochée. Ce n'est pas une option de la liste : absente de la saisie rapide, non réordonnable, non conditionnable. Réglée dans le panneau de propriétés juste après « Autre (préciser) » (en fin de section du type pour les saisies), ou par la palette (« Activer « Ne sais pas » », sans raccourci par défaut). L'outil n'a pas de table de décision : rien n'y est généré.
 
 **Options d'un choix unique ou multiple** : une suite ordonnée d'**entrées**, affichées strictement dans l'ordre saisi. Chaque entrée est :
 
@@ -113,6 +116,7 @@ Portée et espaces de noms :
 | `victime.nom` | Sous-champ d'une structure. |
 | `temoins[0].nom`, `count(temoins)` | Occurrences d'une structure répétable. |
 | `ma_question.groupe` | Groupe de la sélection d'un choix unique ou multiple (EVO-003) : code du groupe, sinon son libellé (langue par défaut) ; `AUTRE` pour « Autre (préciser) » ; vide hors groupe. Choix multiple : liste des groupes des options sélectionnées, dans l'ordre des valeurs. `groupe` est un mot réservé (aucune clé ne peut s'appeler `groupe`). |
+| `ma_question.nsp` | « Ne sais pas » choisie (EVO-006) : `true` si oui, `false` sinon (jamais vide). `ma_question` est alors vide (absent ; liste vide pour un choix multiple), comme une question sans réponse ; `ma_question.groupe` vaut le code réservé `NSP`. Connu seulement sur une question dont l'option est activée (aussi `alias.cle.nsp`, `structure.champ.nsp`). `nsp` est un mot réservé. |
 | `sys.profil` | Variable de l'état du système. |
 | `decl.date_sinistre` | Question d'un bloc instancié avec l'alias `decl`, vue depuis le questionnaire. À l'intérieur du bloc, sa clé s'écrit sans préfixe. |
 
@@ -175,6 +179,7 @@ Une question est un rectangle : intitulé en gras en haut, clé en discret, puis
 | Groupe d'options (choix) | Intitulé du groupe en gras, ses options dessous ; même troncature « … ». |
 | Entrée dynamique (choix) | La référence affichée **à sa position** parmi les options, ex. `<sys.sinistres : date>` ou `<couleur_preferee>`. |
 | Structure | Miniature des champs, tronquée par « … ». Mention « × n » si répétable. |
+| « Ne sais pas » (EVO-006) | Choix, booléen, tri-state : son libellé en italique, en dernier. Texte, date, nombre : « + Ne sais pas » en italique après l'aperçu du type. |
 
 Badges discrets : obligatoire, « Autre », condition, référence bibliothèque, traduction manquante. Les autres nœuds (bloc, information, synthèse, fin) ont chacun une forme distincte. Les arêtes affichent leur condition en abrégé et leur rang si plusieurs sortent d'un nœud.
 
@@ -229,7 +234,7 @@ C'est un écran de projet. On y déclare chaque variable : nom, libellé, type (
 ### 4.6 Vérifications (non bloquantes)
 
 - Référence inconnue ou cassée, clé en double.
-- Groupes d'options : identifiant de groupe en double dans une question, code `AUTRE`, groupe sans option.
+- Groupes d'options : identifiant de groupe en double dans une question, code `AUTRE` ou `NSP` (réservés), groupe sans option.
 - Nœud inaccessible, nœud sans sortie qui n'est pas une fin, boucle sans sortie possible.
 - Nœud avec plusieurs sorties sans « sinon ».
 - Référence à une question **qui n'est pas garantie d'avoir été posée** sur tous les chemins menant au nœud.
@@ -240,7 +245,7 @@ C'est un écran de projet. On y déclare chaque variable : nom, libellé, type (
 La prévisualisation exécute le questionnaire avec le même moteur de parcours que celui décrit pour l'équipe de dev. Elle sert de référence comportementale, pas de maquette UX.
 
 - **Wizard** : une question par page, barre de progression indicative, boutons précédent / suivant. Pages d'information, de synthèse et de fin rendues selon leur type.
-- **Validation** des contraintes à la saisie, avec les messages spécifiés.
+- **Validation** des contraintes à la saisie, avec les messages spécifiés. « Ne sais pas » cochée : question considérée comme répondue, aucune contrainte vérifiée (EVO-006).
 - **Synthèse** : récapitulatif automatique ; un clic sur une réponse ramène à la question. Si la modification change le parcours, les réponses des questions qui n'appartiennent plus au chemin sont effacées. Une réponse du chemin devenue invalide (ex. valeur dynamique disparue après un changement de réponse ou d'état du système) est conservée, mais le parcours ne peut pas atteindre une fin : le wizard ramène à la première question concernée, avec son message d'erreur, jusqu'à ce qu'elle soit corrigée.
 - **Panneau d'état du système**, repliable, à côté du wizard :
   - choix d'un **scénario nommé** (« UD avec 2 sinistres », « Amicale sans sinistre ») ;
@@ -271,6 +276,7 @@ L'import accepte un bundle ou des fichiers unitaires. L'export propose les deux.
 - **Versionné** (`formatVersion`). L'outil migre automatiquement les anciennes versions à l'ouverture.
 - **Lisible par une IA** : clés lisibles, expressions écrites avec les clés, descriptions facultatives sur chaque élément, aucune donnée de présentation.
 - **Libellés de lecture** (EVO-005) : propriété facultative `caption` (chaîne simple sur une ligne, non traduite) sur l'arête, la variable de l'état du système et le champ d'une liste d'objets ; exportée pour l'équipe de dev, sans effet sur le comportement. Format version 4 ; un fichier antérieur se migre sans transformation.
+- **« Ne sais pas »** (EVO-006) : propriété facultative `dontKnow` (`{}` ou `{ "label": … }`) d'une question ou d'un champ de structure ; réponse « Ne sais pas » = valeur vide et marqueur `<clé>_nsp: true` (groupe `NSP` pour un choix). Format version 5 ; un fichier antérieur se migre sans transformation (propriété absente = désactivée).
 - **Livré avec** :
   - un **JSON Schema** par type de fichier ;
   - un document **FORMAT.md** qui explique le modèle, la sémantique de navigation, la grammaire des expressions et l'interpolation, avec des exemples ;

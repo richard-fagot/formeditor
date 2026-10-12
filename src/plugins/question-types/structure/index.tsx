@@ -1,5 +1,5 @@
 import type { StructureQuestion } from '../../../core/model';
-import { previewText, tr, type QuestionTypePlugin, type RenderEnv } from '../../../plugin-api';
+import { dontKnowLabel, previewText, tr, type QuestionTypePlugin, type RenderEnv } from '../../../plugin-api';
 import { StructureProperties } from './fields-editor';
 import { occurrencesOf, StructureInput, visibleFields } from './occurrences';
 
@@ -14,7 +14,8 @@ function formatAnswer(q: StructureQuestion, value: unknown, env: RenderEnv): str
   const occs = q.repeat ? (Array.isArray(value) ? (value as Record<string, unknown>[]) : []) : occurrencesOf(q, value);
   return occs
     .map((occ) => visibleFields(q, occ, env)
-      .map((f) => env.questionType(f.type)?.formatAnswer(f, occ[f.key], env.scoped(occ), occ[`${f.key}_other`] as string | undefined, occ[`${f.key}_group`]) ?? '')
+      .map((f) => (occ[`${f.key}_nsp`] === true ? env.scoped(occ).label(dontKnowLabel(f))
+        : env.questionType(f.type)?.formatAnswer(f, occ[f.key], env.scoped(occ), occ[`${f.key}_other`] as string | undefined, occ[`${f.key}_group`]) ?? ''))
       .filter(Boolean)
       .join(', '))
     .join(' ; ');
@@ -25,7 +26,7 @@ export const structureType: QuestionTypePlugin<StructureQuestion> = {
   type: 'structure',
   name: T.name,
   shortcut: 's',
-  create: (base, previous) => ({ ...base, type: 'structure', fields: previous?.type === 'structure' ? previous.fields : [] }),
+  create: ({ dontKnow: _nsp, ...base }, previous) => ({ ...base, type: 'structure', fields: previous?.type === 'structure' ? previous.fields : [] }),
   Preview: ({ question, env }) => (
     <div className="text-slate-500">
       {question.repeat && <span className="float-right font-mono text-indigo-500">× n</span>}

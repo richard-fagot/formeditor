@@ -1,7 +1,7 @@
 import { OTHER_VALUE, type BooleanQuestion, type LabelSet, type LocalizedText } from '../../../core/model';
-import { tr, previewText, type EditorEnv, type QuestionTypePlugin } from '../../../plugin-api';
+import { dontKnowLabel, tr, previewText, type EditorEnv, type QuestionTypePlugin } from '../../../plugin-api';
 import { Checkbox, Field, Input, Select } from '../../../ui-kit';
-import { LabelEditor } from '../../../ui/expression-editor';
+import { DontKnowEditor, LabelEditor } from '../../../ui/expression-editor';
 
 const T = {
   name: { fr: 'Booléen', en: 'Boolean' },
@@ -12,6 +12,8 @@ const T = {
   detailRequired: { fr: 'Précision obligatoire', en: 'Detail required' },
   optionLabel: { fr: "Libellé de l'option", en: 'Option label' },
 };
+/** Valeur de l'option « Ne sais pas » dans la liste affichée (jamais enregistrée : marqueur `<clé>_nsp`). */
+const DONT_KNOW = Symbol('nsp');
 /** Libellés par défaut, destinés à l'utilisateur final. */
 const YES: LocalizedText = { fr: 'Oui', en: 'Yes' };
 const NO: LocalizedText = { fr: 'Non', en: 'No' };
@@ -34,7 +36,12 @@ export const booleanType: QuestionTypePlugin<BooleanQuestion> = {
   Preview: ({ question, env }) => {
     const l = labels(question, env.ws);
     const text = (t: LocalizedText) => previewText(t, env);
-    return <span className="text-slate-500">{[text(l.yes), text(l.no), question.other && previewText(question.other.label ?? T.otherLabel, env)].filter(Boolean).join(' / ')}</span>;
+    return (
+      <span className="text-slate-500">
+        {[text(l.yes), text(l.no), question.other && previewText(question.other.label ?? T.otherLabel, env)].filter(Boolean).join(' / ')}
+        {question.dontKnow && <span className="italic"> / {previewText(dontKnowLabel(question), env)}</span>}
+      </span>
+    );
   },
   Properties: ({ question, update, env }) => (
     <div className="space-y-3">
@@ -60,17 +67,21 @@ export const booleanType: QuestionTypePlugin<BooleanQuestion> = {
           />
         </div>
       )}
+      <DontKnowEditor value={question.dontKnow} onChange={(dontKnow) => update({ dontKnow })} />
     </div>
   ),
-  Field: ({ question, value, other, onChange, env, inputId }) => {
+  Field: ({ question, value, other, onChange, env, inputId, dontKnow, onDontKnow }) => {
     const l = labels(question, env.ws);
     const choices: [unknown, string][] = [[true, env.text(l.yes)], [false, env.text(l.no)]];
     if (question.other) choices.push([OTHER_VALUE, env.label(question.other.label ?? T.otherLabel)]);
+    // « Ne sais pas » : dernière option, après « Autre » (EVO-006).
+    if (question.dontKnow) choices.push([DONT_KNOW, env.label(dontKnowLabel(question))]);
     return (
       <div role="radiogroup" id={inputId} className="space-y-2">
         {choices.map(([v, label]) => (
-          <label key={String(v)} className="flex cursor-pointer items-center gap-3 rounded-lg border border-slate-200 px-4 py-3 hover:border-indigo-300 has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-50/50">
-            <input type="radio" name={inputId} className="size-4 accent-indigo-600" checked={value === v} onChange={() => onChange(v, v === OTHER_VALUE ? other : undefined)} />
+          <label key={typeof v === 'symbol' ? 'nsp' : String(v)} className="flex cursor-pointer items-center gap-3 rounded-lg border border-slate-200 px-4 py-3 hover:border-indigo-300 has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-50/50">
+            <input type="radio" name={inputId} className="size-4 accent-indigo-600" checked={v === DONT_KNOW ? !!dontKnow : !dontKnow && value === v}
+              onChange={() => (v === DONT_KNOW ? onDontKnow?.(true) : onChange(v, v === OTHER_VALUE ? other : undefined))} />
             <span className="text-slate-800">{label}</span>
           </label>
         ))}

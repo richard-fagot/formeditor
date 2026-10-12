@@ -1,4 +1,4 @@
-import { buildContext, currentStep, getAnswer, goTo, groupPath, otherPath, projectedSteps, resolveStep, type Answers, type RuntimeInput, type Session } from '../../core/runtime';
+import { buildContext, currentStep, dontKnowPath, getAnswer, goTo, groupPath, otherPath, projectedSteps, resolveStep, type Answers, type RuntimeInput, type Session } from '../../core/runtime';
 import { validateAnswer } from '../../core/validation';
 
 /** Erreurs de validation de la réponse à une page question, dans le contexte de cette page. */
@@ -9,8 +9,9 @@ export function answerErrors(input: RuntimeInput, answers: Answers, stepId: stri
   const value = getAnswer(answers, step.answerPath);
   const other = getAnswer(answers, otherPath(step.answerPath)) as string | undefined;
   const group = getAnswer(answers, groupPath(step.answerPath));
+  const dontKnow = getAnswer(answers, dontKnowPath(step.answerPath));
   const ctx = buildContext(input, answers, stepId);
-  return validateAnswer(q, value, { ...ctx, ...(value === null || value === undefined ? {} : { [q.key]: value }) }, input.env, other, '', group);
+  return validateAnswer(q, value, { ...ctx, ...(value === null || value === undefined ? {} : { [q.key]: value }) }, input.env, other, '', group, dontKnow);
 }
 
 /** Première page du chemin effectif dont la réponse (connue) est devenue invalide (spec §5). */

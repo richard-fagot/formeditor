@@ -13,6 +13,7 @@ Saisie d'expressions JSONata et de libellés multilingues. Dépend de `core/expr
 - `LabelEditor` : libellé multilingue (une saisie par langue) avec variantes conditionnelles `{variants, otherwise}`.
 - `ConstraintsEditor` : contraintes libres (règle + message) et messages des contraintes intégrées ;
   utilisé par `ui/properties` et par les champs de structure.
+- `DontKnowEditor` : option « Ne sais pas » (EVO-006) : case d'activation et libellé (`LabelEditor`), partagé par les plugins.
 - `ExpressionEnvProvider` / `useExpressionEnv` : portée (`Scope` de `core/references`) et langues, fournies
   par le panneau de propriétés.
 

@@ -105,6 +105,11 @@ export function graphCommands(): Command[] {
       run: () => updateQuestion((q) => ({ ...q, other: 'other' in q && q.other ? undefined : {} }) as Question),
     },
     {
+      id: 'node.toggleDontKnow', label: 'node.toggleDontKnow', keys: [], scope: 'graph',
+      enabled: () => isLocalQuestion() && (selectedNode() as unknown as Question).type !== 'structure',
+      run: () => updateQuestion((q) => ({ ...q, dontKnow: q.dontKnow ? undefined : {} }) as Question),
+    },
+    {
       id: 'node.editLabel', label: 'node.editLabel', keys: ['Enter'], scope: 'graph', enabled: () => !!selectedNode(),
       run: () => st().requestFocus('label', selectedNode()!.id),
     },

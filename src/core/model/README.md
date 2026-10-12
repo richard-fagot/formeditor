@@ -11,12 +11,14 @@ utilitaires purs. Aucun import externe : c'est la base de tous les autres module
   Groupes (EVO-003) : `ChoiceGroup` `{ group, code?, when?, options: ChoiceItem[] }` (reconnu à `group`, `isChoiceGroup`),
   `ChoiceItem` (option ou entrée dynamique), `GROUP_SUFFIX` (`group` : réponse `<clé>_group`), `GROUP_REF` (`groupe` :
   `cle.groupe`), `OTHER_GROUP` (`AUTRE`).
+  « Ne sais pas » (EVO-006) : `dontKnow?: DontKnowOption` (`{ label? }`) sur toute question sauf structure (`dontKnow?: never`),
+  `hasDontKnow`, `DONT_KNOW_SUFFIX` / `DONT_KNOW_REF` (`nsp` : marqueur `<clé>_nsp`, référence `cle.nsp`), `DONT_KNOW_GROUP` (`NSP`), `DONT_KNOW_LABEL`.
 - `node.ts` : `GraphNode` (union par `kind` : question locale ou de bibliothèque, block, info, summary, end, exit),
   `isLocalQuestion`, `isLibraryQuestion`.
 - `graph.ts` : `Edge` (dont `caption?`, libellé de lecture, EVO-005), `Graph`.
 - `documents.ts` : `Questionnaire`, `Library`, `Block`, `LabelSet`, `Project`, `SystemVariable` (dont `caption?`), `Scenario`,
-  `Layout`, `Workspace` (projet complet en mémoire), `Bundle`, `FORMAT_VERSION` (4).
-- `keys.ts` : `deriveKey` (« Date du sinistre » → `date_sinistre`), `uniqueKey`, `isValidKey`, `newId`, `RESERVED_KEYS` (dont `groupe`).
+  `Layout`, `Workspace` (projet complet en mémoire), `Bundle`, `FORMAT_VERSION` (5).
+- `keys.ts` : `deriveKey` (« Date du sinistre » → `date_sinistre`), `uniqueKey`, `isValidKey`, `newId`, `RESERVED_KEYS` (dont `groupe`, `nsp`).
 
 ## Invariants
 - Les types reflètent exactement le format JSON (docs/FORMAT.md) : le modèle en mémoire **est** le format.

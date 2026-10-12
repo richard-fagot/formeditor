@@ -1,4 +1,4 @@
-import { isVariantLabel, type Label, type LocalizedText, type Question } from '../core/model';
+import { DONT_KNOW_LABEL, isVariantLabel, type Label, type LocalizedText, type Question, type StructureField } from '../core/model';
 import type { QuestionBase } from './contract';
 
 /** Chaîne de l'interface de l'outil dans la langue demandée (repli : français). */
@@ -8,9 +8,9 @@ export function tr(t: LocalizedText, lang: string): string {
 
 /** Propriétés communes d'une question (pour un changement de type). */
 export function commonQuestionFields(q: Question): QuestionBase {
-  const { id, key, label, description, help, placeholder, required, messages, constraints } = q;
+  const { id, key, label, description, help, placeholder, required, messages, constraints, dontKnow } = q;
   return Object.fromEntries(
-    Object.entries({ id, key, label, description, help, placeholder, required, messages, constraints }).filter(([, v]) => v !== undefined),
+    Object.entries({ id, key, label, description, help, placeholder, required, messages, constraints, dontKnow }).filter(([, v]) => v !== undefined),
   ) as QuestionBase;
 }
 
@@ -20,3 +20,6 @@ export function previewText(label: Label | undefined, env: { contentLang: string
   const t = isVariantLabel(label) ? label.otherwise : label;
   return t[env.contentLang] ?? t[env.defaultLang] ?? Object.values(t)[0] ?? '';
 }
+
+/** Libellé de l'option « Ne sais pas » d'une question (défaut : « Ne sais pas »), EVO-006. */
+export const dontKnowLabel = (q: Question | StructureField): Label => q.dontKnow?.label ?? DONT_KNOW_LABEL;

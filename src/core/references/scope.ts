@@ -1,10 +1,10 @@
 import {
-  GROUP_REF, isLibraryQuestion, OTHER_VALUE, type Graph, type Label, type Question, type QuestionType,
+  DONT_KNOW_REF, GROUP_REF, hasDontKnow, isLibraryQuestion, OTHER_VALUE, type Graph, type Label, type Question, type QuestionType,
   type StructureField, type SystemVariable, type VariableType, type Workspace,
 } from '../model';
 
-/** `group` : groupe de la sélection d'un choix (`cle.groupe`, EVO-003). */
-export type RefKind = 'answer' | 'field' | 'other' | 'group' | 'alias' | 'system';
+/** `group` : groupe de la sélection d'un choix (`cle.groupe`, EVO-003) ; `dontKnow` : `cle.nsp` (EVO-006). */
+export type RefKind = 'answer' | 'field' | 'other' | 'group' | 'dontKnow' | 'alias' | 'system';
 
 export interface RefInfo {
   /** Chemin pointé : `tiers.nom`, `sys.sinistres.date`. */
@@ -40,6 +40,9 @@ function addQuestion(scope: Scope, q: Question | StructureField, prefix: string,
   if ('other' in q && q.other) scope.set(`${path}_${OTHER_VALUE}`, { path: `${path}_${OTHER_VALUE}`, kind: 'other', type: 'text', ...extra });
   if (q.type === 'single' || q.type === 'multiple') {
     scope.set(`${path}.${GROUP_REF}`, { path: `${path}.${GROUP_REF}`, type: 'text', ...extra, kind: 'group' });
+  }
+  if (hasDontKnow(q)) {
+    scope.set(`${path}.${DONT_KNOW_REF}`, { path: `${path}.${DONT_KNOW_REF}`, type: 'boolean', ...extra, kind: 'dontKnow' });
   }
   if (q.type === 'structure') {
     for (const f of q.fields) addQuestion(scope, f, `${path}.`, { ...extra, kind: 'field' });

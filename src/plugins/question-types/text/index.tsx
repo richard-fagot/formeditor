@@ -1,6 +1,7 @@
 import type { TextQuestion } from '../../../core/model';
-import { tr, type QuestionTypePlugin } from '../../../plugin-api';
+import { dontKnowLabel, previewText, tr, type QuestionTypePlugin } from '../../../plugin-api';
 import { Checkbox, Field, Input, Textarea } from '../../../ui-kit';
+import { DontKnowEditor } from '../../../ui/expression-editor';
 
 const T = {
   name: { fr: 'Texte', en: 'Text' },
@@ -20,7 +21,12 @@ export const textType: QuestionTypePlugin<TextQuestion> = {
   name: T.name,
   shortcut: 't',
   create: (base) => ({ ...base, type: 'text' }),
-  Preview: ({ question, env }) => <span className="font-mono text-slate-400">{tr(question.multiline ? T.long : T.short, env.uiLang)}</span>,
+  Preview: ({ question, env }) => (
+    <span className="font-mono text-slate-400">
+      {tr(question.multiline ? T.long : T.short, env.uiLang)}
+      {question.dontKnow && <span className="font-sans italic"> + {previewText(dontKnowLabel(question), env)}</span>}
+    </span>
+  ),
   Properties: ({ question, update, env }) => (
     <div className="space-y-3">
       <Checkbox label={tr(T.multiline, env.uiLang)} checked={!!question.multiline} onChange={(e) => update({ multiline: e.target.checked || undefined })} />
@@ -35,17 +41,26 @@ export const textType: QuestionTypePlugin<TextQuestion> = {
       <Field label={tr(T.pattern, env.uiLang)}>
         <Input className="font-mono" value={question.pattern ?? ''} onChange={(e) => update({ pattern: e.target.value || undefined })} />
       </Field>
+      <DontKnowEditor value={question.dontKnow} onChange={(dontKnow) => update({ dontKnow })} />
     </div>
   ),
-  Field: ({ question, value, onChange, env, inputId }) => {
+  Field: ({ question, value, onChange, env, inputId, dontKnow, onDontKnow }) => {
     const props = {
       id: inputId,
       value: typeof value === 'string' ? value : '',
       placeholder: env.label(question.placeholder),
       maxLength: question.maxLength,
+      disabled: !!dontKnow,
       onChange: (e: { target: { value: string } }) => onChange(e.target.value === '' ? null : e.target.value),
     };
-    return question.multiline ? <Textarea rows={5} {...props} /> : <Input {...props} />;
+    return (
+      <div className="space-y-2">
+        {question.multiline ? <Textarea rows={5} {...props} /> : <Input {...props} />}
+        {question.dontKnow && (
+          <Checkbox data-testid="dont-know" label={env.label(dontKnowLabel(question))} checked={!!dontKnow} onChange={(e) => onDontKnow?.(e.target.checked)} />
+        )}
+      </div>
+    );
   },
   formatAnswer: (_q, value) => (value === null || value === undefined ? '' : String(value)),
 };

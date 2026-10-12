@@ -1,7 +1,8 @@
 import type { FC } from 'react';
 import { isChoiceGroup, isDynamicEntry, type ChoiceItem, type MultipleChoiceQuestion, type Question, type SingleChoiceQuestion } from '../../../core/model';
-import { previewText, tr, type EditorEnv, type QuestionPropertiesProps, type QuestionTypePlugin } from '../../../plugin-api';
+import { dontKnowLabel, previewText, tr, type EditorEnv, type QuestionPropertiesProps, type QuestionTypePlugin } from '../../../plugin-api';
 import { Field, Input } from '../../../ui-kit';
+import { DontKnowEditor } from '../../../ui/expression-editor';
 import { ChoiceField, formatAnswer } from './choice-field';
 import { OptionsEditor } from './options-editor';
 import { OtherEditor } from './other-editor';
@@ -16,7 +17,7 @@ const T = {
 };
 const MAX_PREVIEW = 4;
 
-/** Entrées et « Autre » conservés lors d'un changement de type (choix unique ↔ multiple). */
+/** Entrées et « Autre » conservés lors d'un changement de type (choix unique ↔ multiple) ; « Ne sais pas » suit `base`. */
 const keep = (previous?: Question) =>
   previous && (previous.type === 'single' || previous.type === 'multiple')
     ? { options: previous.options, ...(previous.other ? { other: previous.other } : {}) }
@@ -26,17 +27,21 @@ const keep = (previous?: Question) =>
 const itemPreview = (o: ChoiceItem, env: EditorEnv) =>
   (isDynamicEntry(o) ? `<${o.from}${o.label ? ` : ${o.label}` : ''}>` : previewText(o.label, env)) + (o.when ? ' ?' : '');
 
-/** Aperçu du nœud : ○ / ☐ par option, intitulé de groupe en gras avec ses options dessous, « Autre » en dernier, tronqué par « … ». */
+/**
+ * Aperçu du nœud : ○ / ☐ par option, intitulé de groupe en gras avec ses options dessous, « Autre » puis « Ne sais pas »
+ * (en italique) en dernier, tronqué par « … ».
+ */
 function Preview({ question, env }: { question: Choice; env: EditorEnv }) {
   const mark = question.type === 'single' ? '○' : '☐';
-  const rows = question.options.flatMap((o) => (isChoiceGroup(o)
+  const rows: { text: string; bold?: boolean; indent?: boolean; italic?: boolean }[] = question.options.flatMap((o) => (isChoiceGroup(o)
     ? [{ text: previewText(o.group, env) + (o.when ? ' ?' : ''), bold: true }, ...o.options.map((x) => ({ text: `${mark} ${itemPreview(x, env)}`, indent: true }))]
     : [{ text: `${mark} ${itemPreview(o, env)}` }]));
   if (question.other) rows.push({ text: `${mark} ${previewText(question.other.label ?? OTHER_LABEL, env)}` });
+  if (question.dontKnow) rows.push({ text: `${mark} ${previewText(dontKnowLabel(question), env)}`, italic: true });
   return (
     <ul className="space-y-px text-slate-500">
       {rows.slice(0, MAX_PREVIEW).map((r, i) => (
-        <li key={i} className={'bold' in r ? 'truncate font-semibold text-slate-700' : 'indent' in r ? 'truncate pl-2' : 'truncate'}>{r.text}</li>
+        <li key={i} className={r.bold ? 'truncate font-semibold text-slate-700' : r.indent ? 'truncate pl-2' : r.italic ? 'truncate italic' : 'truncate'}>{r.text}</li>
       ))}
       {rows.length > MAX_PREVIEW && <li>…</li>}
     </ul>
@@ -49,6 +54,7 @@ function Properties({ question, update, env }: QuestionPropertiesProps<Choice>) 
     <div className="space-y-3">
       <OptionsEditor options={question.options} env={env} onChange={(options) => update({ options })} />
       <OtherEditor other={question.other} env={env} onChange={(other) => update({ other })} />
+      <DontKnowEditor value={question.dontKnow} onChange={(dontKnow) => update({ dontKnow })} />
       {question.type === 'multiple' && (
         <div className="grid grid-cols-2 gap-2">
           <Field label={tr(T.minSelected, env.uiLang)}>

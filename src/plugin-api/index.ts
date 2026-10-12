@@ -3,4 +3,4 @@ export type {
   EditorEnv, RenderEnv, QuestionTypePlugin, NodeKindPlugin, FieldProps, PageProps, ShapeProps,
   QuestionPropertiesProps, NodePropertiesProps, QuestionBase, ResolvedOption,
 } from './contract';
-export { tr, commonQuestionFields, previewText } from './helpers';
+export { tr, commonQuestionFields, previewText, dontKnowLabel } from './helpers';

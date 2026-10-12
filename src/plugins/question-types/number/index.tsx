@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import type { NumberBound, NumberKind, NumberQuestion } from '../../../core/model';
-import { tr, type FieldProps, type QuestionTypePlugin } from '../../../plugin-api';
-import { Field, Input, LocalizedTextInput, Select } from '../../../ui-kit';
-import { ExpressionInput } from '../../../ui/expression-editor';
+import { dontKnowLabel, previewText, tr, type FieldProps, type QuestionTypePlugin } from '../../../plugin-api';
+import { Checkbox, Field, Input, LocalizedTextInput, Select } from '../../../ui-kit';
+import { DontKnowEditor, ExpressionInput } from '../../../ui/expression-editor';
 
 const T = {
   name: { fr: 'Nombre', en: 'Number' },
@@ -31,6 +31,7 @@ export const numberType: QuestionTypePlugin<NumberQuestion> = {
     <span className="font-mono text-slate-400">
       {`<${tr(T[question.numberKind ?? 'real'], env.uiLang)}>`}
       {question.unit && ` ${question.unit[env.contentLang] ?? Object.values(question.unit)[0] ?? ''}`}
+      {question.dontKnow && <span className="font-sans italic"> + {previewText(dontKnowLabel(question), env)}</span>}
     </span>
   ),
   Properties: ({ question, update, env }) => (
@@ -59,6 +60,7 @@ export const numberType: QuestionTypePlugin<NumberQuestion> = {
         <LocalizedTextInput languages={env.languages} activeLang={env.contentLang} value={question.unit}
           onChange={(unit) => update({ unit: Object.keys(unit).length ? unit : undefined })} />
       </Field>
+      <DontKnowEditor value={question.dontKnow} onChange={(dontKnow) => update({ dontKnow })} />
     </div>
   ),
   Field: NumberField,
@@ -66,7 +68,7 @@ export const numberType: QuestionTypePlugin<NumberQuestion> = {
 };
 
 /** Saisie d'un nombre : texte local (une saisie partielle comme « 12, » n'est pas écrasée). */
-function NumberField({ question, value, onChange, env, inputId }: FieldProps<NumberQuestion>) {
+function NumberField({ question, value, onChange, env, inputId, dontKnow, onDontKnow }: FieldProps<NumberQuestion>) {
   const [text, setText] = useState(typeof value === 'number' ? String(value) : '');
   useEffect(() => {
     if (typeof value !== 'number') return;
@@ -77,11 +79,21 @@ function NumberField({ question, value, onChange, env, inputId }: FieldProps<Num
     const n = Number(raw.replace(',', '.'));
     onChange(raw.trim() === '' || Number.isNaN(n) ? null : n);
   };
+  // « Ne sais pas » cochée : champ vidé et désactivé (EVO-006).
+  const toggleDontKnow = (on: boolean) => {
+    setText('');
+    onDontKnow?.(on);
+  };
   return (
-    <div className="flex items-center gap-2">
-      <Input id={inputId} inputMode="decimal" className="w-48" value={text} placeholder={env.label(question.placeholder)}
-        onChange={(e) => change(e.target.value)} />
-      {question.unit && <span className="text-slate-500">{env.text(question.unit)}</span>}
+    <div className="space-y-2">
+      <div className="flex items-center gap-2">
+        <Input id={inputId} inputMode="decimal" className="w-48" value={dontKnow ? '' : text} disabled={!!dontKnow} placeholder={env.label(question.placeholder)}
+          onChange={(e) => change(e.target.value)} />
+        {question.unit && <span className="text-slate-500">{env.text(question.unit)}</span>}
+      </div>
+      {question.dontKnow && (
+        <Checkbox data-testid="dont-know" label={env.label(dontKnowLabel(question))} checked={!!dontKnow} onChange={(e) => toggleDontKnow(e.target.checked)} />
+      )}
     </div>
   );
 }
