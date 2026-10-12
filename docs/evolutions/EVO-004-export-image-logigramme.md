@@ -1,6 +1,6 @@
 # EVO-004 — Export du logigramme en image
 
-Statut : en cours
+Statut : fait 2026-10-12
 
 ## Besoin
 
