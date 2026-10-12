@@ -47,6 +47,8 @@ function DiagramInner({ graph, issues, readOnly }: DiagramProps) {
   const container = useRef<HTMLDivElement>(null);
   const rf = useReactFlow();
 
+  // Mesures reprises de React Flow : sans elles, un nœud recréé (changement de sélection, déplacement) est masqué
+  // (`visibility: hidden`) jusqu'à sa remesure et le logigramme disparaît brièvement.
   const nodes: RFNode<NodeData>[] = useMemo(
     () =>
       (g?.nodes ?? []).map((n) => ({
@@ -55,7 +57,9 @@ function DiagramInner({ graph, issues, readOnly }: DiagramProps) {
         position: layout?.nodes[n.id] ?? { x: 0, y: 0 },
         data: { nodeId: n.id },
         selected: !readOnly && selection.nodes.includes(n.id),
+        measured: rf.getInternalNode(n.id)?.measured,
       })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [g?.nodes, layout, selection.nodes, readOnly],
   );
   const blocks = useStore((s) => s.ws.library.blocks);
