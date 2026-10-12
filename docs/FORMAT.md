@@ -1,4 +1,4 @@
-# Format des questionnaires — version 4
+# Format des questionnaires — version 6
 
 Ce document décrit le format JSON produit par l'éditeur de questionnaires. Il s'adresse à l'équipe
 de développement (et à l'IA qui l'assiste) chargée de construire le moteur cible et les formulaires
@@ -34,7 +34,7 @@ libellés et interpolation — 6. Nœuds — 7. Questions — 8. Réponses — 9
 | `<clé>.layout.json`, `bloc_<clé>.layout.json` | `layout` | Positions des nœuds dans l'éditeur. | **non** (à ignorer) |
 | `<projet>.bundle.json` | `bundle` | `project`, `library`, `questionnaires[]`, `layouts[]` dans un seul fichier. | oui (même contenu) |
 
-- Chaque fichier (et le bundle) porte `formatVersion` (entier, actuellement `5`) et `kind`.
+- Chaque fichier (et le bundle) porte `formatVersion` (entier, actuellement `6`) et `kind`.
 - L'outil migre automatiquement à l'ouverture un fichier d'une version antérieure ; il refuse un fichier
   d'une version plus récente. Un moteur cible peut refuser toute version qu'il ne connaît pas.
 - Tout élément (projet, questionnaire, nœud, arête, question, bloc, variable, scénario, jeu de libellés)
@@ -53,7 +53,7 @@ Squelette d'un questionnaire :
 
 ```json
 {
-  "formatVersion": 5,
+  "formatVersion": 6,
   "kind": "questionnaire",
   "id": "q_declaration",
   "key": "declaration_sinistre",
@@ -167,6 +167,10 @@ le contexte de la page affichée (§10.2). Exemples : `Bonjour {sys.nom_assure}`
 - Mise en forme de la valeur : absente ou `null` → chaîne vide ; liste → éléments joints par `, ` ;
   objet → JSON ; nombre, booléen → forme JSON brute (`950.5`, `true`) ; date → chaîne ISO telle quelle.
   C'est la **valeur** qui est affichée, pas le libellé d'une option (`{type_sinistre}` donne `vol`).
+  Exceptions (version 6, §7.8), quand l'expression est une simple référence (`civilite`, `souscripteur.civilite`,
+  `x[0].civilite`) dont le dernier nom est la clé d'une question ou d'un champ `civility` ou `phone` : une civilité
+  affiche son **libellé** dans la langue affichée (`{civilite} {nom}` → « Madame Dupont »), un téléphone son format
+  international lisible (`+33 6 12 34 56 78`).
 - Une expression en erreur donne une chaîne vide.
 - `{{` et `}}` produisent des accolades littérales. À l'intérieur d'une expression, les accolades
   s'imbriquent et celles qui figurent entre guillemets ne comptent pas ; une `{` sans fermeture est du texte.
@@ -227,6 +231,10 @@ champs de structure ne sont pas appliquées (comportement actuel de l'outil).
 | `boolean` | `true` / `false` | `labelSet?` (id d'un jeu `boolean` ; défaut « Oui / Non »), `other?` |
 | `tristate` | `true` / `false` / `"unknown"` | `labelSet?` (id d'un jeu `tristate` ; défaut « Oui / Non / Ne sait pas »), `other?` |
 | `structure` | objet `{ <clé du champ>: réponse }`, ou **tableau** de tels objets si répétable | `fields[]`, `repeat?` |
+| `email` (v6) | chaîne : le mail, nom de domaine en minuscules | aucun (§7.8) |
+| `phone` (v6) | chaîne E.164 (`"+33612345678"`) ; pays sous `<clé>_pays` | `defaultCountry?` (défaut `"FR"`), `countries?` (pays autorisés, défaut : tous), `lineType?` (`"mobile"` \| `"fixed"`) (§7.8) |
+| `address` (v6) | chaîne : la ligne saisie ; pays sous `<clé>_pays` | `defaultCountry?` (défaut `"FR"`), `countries?`, `minLength?` (défaut 5), `maxLength?` (défaut 200), `verify?` (§7.8) |
+| `civility` (v6) | chaîne : code `"MME"`, `"M"` ou `"NP"` | `labels?`, `short?`, `undisclosed?` (§7.8) |
 
 Avec l'option « Autre » (§7.4), la réponse vaut `"other"` (dans le tableau pour `multiple`).
 Une question laissée vide a pour réponse `null` (§8).
@@ -319,8 +327,8 @@ statiques. La migration 1 → 2 place cette `source` en dernière entrée de `op
 `dontKnow: { "label"? }` ajoute un choix « Ne sais pas » (libellé par défaut « Ne sais pas », sinon `label`, un
 libellé comme celui d'une option, §5.2) qui permet de répondre explicitement « je ne sais pas » ; absent = désactivé.
 
-- Affichage : pour `single`, `multiple`, `boolean`, `tristate`, dernier choix, après « Autre », hors de tout groupe ;
-  pour `text`, `date`, `number`, case à cocher sous le champ (cochée : champ vidé et désactivé).
+- Affichage : pour `single`, `multiple`, `boolean`, `tristate`, `civility`, dernier choix, après « Autre », hors de tout groupe ;
+  pour `text`, `date`, `number`, `email`, `phone`, `address`, case à cocher sous le champ (cochée : champ vidé et désactivé).
 - **Exclusive** : la choisir remplace toute autre réponse ; toute autre réponse l'annule.
 - Réponse (§8) : valeur **vide** (`null` ; `[]` pour `multiple`), marqueur `<clé>_nsp: true` à côté, et pour
   `single` / `multiple` groupe `"NSP"` sous `<clé>_group`. Une saisie littérale « Ne sais pas » reste une valeur
@@ -330,6 +338,50 @@ libellé comme celui d'une option, §5.2) qui permet de répondre explicitement 
 - Expressions (§10.3) : `cle` est absente (ou `[]`), `cle.nsp` vaut `true` ; sans « Ne sais pas », `cle.nsp` vaut `false`.
 - Ce n'est pas une entrée de `options[]` : pas de condition, pas de position, pas de valeur propre. `NSP` est un code de
   groupe réservé (§13).
+
+### 7.8 Mail, téléphone, adresse, civilité (version 6)
+
+Types dédiés, utilisables comme question et comme champ de structure. Leurs **contrôles de format** sont intégrés
+au type (§9.1, étape 3) ; leurs messages se surchargent par `messages` (§9.2). Les codes pays sont ceux de
+l'ISO 3166-1 alpha-2 (`"FR"`, `"BE"`, `"GB"`), en majuscules. Les espaces de début et de fin de saisie sont retirés
+avant contrôle et enregistrement.
+
+- **`email`** : adresse conforme à la syntaxe `addr-spec` de la RFC 5322 restreinte par la forme `Mailbox` de la
+  RFC 5321 : partie locale en `dot-atom` (caractères `atext`, points ni en début, ni en fin, ni doublés) ou en chaîne
+  entre guillemets (`"jean dupont"@exemple.fr`, `qtextSMTP` ou paire `\x`) ; domaine en noms de domaine (labels de
+  1 à 63 lettres ASCII, chiffres ou tirets, sans tiret en début ni en fin) ou littéral d'adresse
+  (`[192.0.2.1]`, `[IPv6:2001:db8::1]`) ; partie locale de 64 caractères au plus, adresse de 254 au plus ; ni
+  commentaire, ni espace repliable, ni syntaxe obsolète, ni caractère non ASCII (RFC 6531 / 6532 non prises en
+  charge). Réponse : le **nom de domaine en minuscules**, la partie locale telle que saisie. Pas de vérification
+  d'existence de la boîte.
+- **`phone`** : saisie d'un indicatif pays et d'un numéro (chiffres, espaces, points, tirets, parenthèses, `+` en
+  tête). Un numéro qui commence par `+` ou `00` fixe le pays, quel que soit le pays choisi. Contrôles : numéro
+  **valide pour son pays** (longueur et préfixes du plan de numérotation ; l'outil utilise les métadonnées complètes de
+  libphonenumber) et pays dans `countries` s'il est renseigné (`phone`) ; si `lineType` est renseigné, numéro de ce
+  type (`lineType`) — un numéro qu'un pays ne permet pas de classer (fixe ou mobile, ex. États-Unis) est accepté.
+  Réponse : format international **E.164** (`"+33612345678"` pour une saisie FR `06 12 34 56 78`) ; pays du numéro
+  sous `<clé>_pays` (§8). Une saisie invalide est enregistrée telle quelle (et refusée par la validation).
+- **`address`** : un pays et **une seule ligne** de texte libre (numéro, voie, code postal, ville). Contrôles : au
+  moins une lettre (tout alphabet), longueur entre `minLength` (5) et `maxLength` (200) caractères, ni retour à la
+  ligne ni caractère de contrôle (`address`) ; si le pays est `FR`, la ligne contient un code postal de 5 chiffres
+  (`postalCode`). Réponse : la ligne ; pays sous `<clé>_pays`. `verify: true` signale une adresse **à vérifier par
+  un service de normalisation** (BAN pour la France, ou autre) : c'est une consigne pour le moteur cible, l'outil
+  n'appelle aucun service.
+- **`civility`** : choix unique prédéfini, codes **fixes** `"MME"` (Madame), `"M"` (Monsieur) et, si
+  `undisclosed: true`, `"NP"` (Ne se prononce pas, en dernier). Libellés par défaut (fr / en) : longs « Madame » /
+  « Madam », « Monsieur » / « Mister » ; courts (`short: true`) « Mme » / « Mrs », « M. » / « Mr » ; « Ne se prononce
+  pas » / « Prefer not to say ». `labels: { "MME"?: …, "M"?: …, "NP"?: … }` (textes multilingues) remplace un
+  libellé ; le code ne change pas. Pas d'« Autre », d'option ajoutée ni de source dynamique. Contrôle : réponse
+  parmi les codes proposés (`option`).
+
+```json
+{ "id": "lq_souscripteur", "key": "souscripteur", "type": "structure", "label": { "fr": "Souscripteur" }, "fields": [
+  { "id": "lf_civilite", "key": "civilite", "type": "civility", "label": { "fr": "Civilité" }, "required": true },
+  { "id": "lf_mail", "key": "mail", "type": "email", "label": { "fr": "Adresse mail" } },
+  { "id": "lf_telephone", "key": "telephone", "type": "phone", "label": { "fr": "Téléphone" }, "defaultCountry": "FR", "lineType": "mobile" },
+  { "id": "lf_adresse", "key": "adresse", "type": "address", "label": { "fr": "Adresse" }, "defaultCountry": "FR", "verify": true }
+] }
+```
 
 ## 8. Réponses
 
@@ -352,6 +404,9 @@ Les réponses d'un parcours forment un objet indexé par clé :
 Avec « Ne sais pas » (§7.7) : `"montant_estime": null, "montant_estime_nsp": true` ;
 `"canaux_contact": [], "canaux_contact_group": "NSP", "canaux_contact_nsp": true`.
 
+Types de la version 6 (§7.8) : `"souscripteur": { "civilite": "MME", "mail": "Jean.Dupont@exemple.fr",
+"telephone": "+32470123456", "telephone_pays": "BE", "adresse": "12 rue des Lilas 31000 Toulouse", "adresse_pays": "FR" }`.
+
 - Question d'un questionnaire (locale ou de bibliothèque) : sous sa clé.
 - Question d'un bloc : sous `<alias>.<clé>` (objet de l'alias de l'instance).
 - Précision « Autre » : clé `<clé>_other`, à côté de la réponse.
@@ -363,6 +418,8 @@ Avec « Ne sais pas » (§7.7) : `"montant_estime": null, "montant_estime_nsp": 
   option visible de cette valeur.
 - « Ne sais pas » (version 5, §7.7) : clé `<clé>_nsp` (`true`), à côté de la réponse vide (`null`, `[]` pour
   `multiple`) ; groupe `"NSP"` pour `single` et `multiple` (chaîne, pas une liste). Absente sinon.
+- Pays d'un téléphone ou d'une adresse (version 6, §7.8) : clé `<clé>_pays` (code ISO 3166-1 alpha-2), à côté de la
+  réponse, effacée avec elle ; absente si la question n'a pas de réponse.
 - Question facultative laissée vide (on a cliqué « Suivant » sans répondre) : `null`. Une question
   jamais atteinte, ou dont la réponse a été effacée (§11.5), est **absente**.
 - Une page revisitée (retour arrière, boucle) **remplace** la réponse : aucune itération n'est conservée.
@@ -399,6 +456,9 @@ Le contexte de validation est celui de la page (§10.2) où la réponse en cours
      validation (entrées dont `when` vaut `true`, déployées comme au §7.3, `other` si « Autre » est activé),
      sinon `option`. Si le groupe est renseigné (`<clé>_group`, §8), c'est le couple (groupe, valeur) qui doit
      être visible (`""` : hors groupe ; `"AUTRE"` avec `other`) ; puis `minSelected`, `maxSelected` (nombre de valeurs cochées).
+   - `email`, `phone`, `address`, `civility` (version 6) : contrôles du §7.8, sur la réponse sans espaces de bord
+     (`email` ; `phone` puis `lineType` ; `address` puis, en France, `postalCode` ; `option`). Le pays est lu sous
+     `<clé>_pays` (dans une structure, dans l'occurrence), sinon `defaultCountry`, sinon `"FR"`.
    - `structure` : `repeat.min` / `repeat.max` sur le nombre d'occurrences (`minOccurrences`,
      `maxOccurrences`) ; s'il n'y a pas d'erreur d'occurrences, chaque champ **visible** de chaque
      occurrence est validé par ce même algorithme, dans le contexte de la page complété par les champs
@@ -425,6 +485,11 @@ Le message d'une erreur est `messages.<paramètre>` s'il existe, sinon le messag
 | `option` | Cette réponse n'est plus proposée. | This answer is no longer available. |
 | `otherDetail` | Précisez votre réponse. | Please specify. |
 | `minOccurrences` / `maxOccurrences` | Au moins / Au plus {0} élément(s). | At least / At most {0} item(s). |
+| `email` | Adresse mail invalide. | Invalid email address. |
+| `phone` | Numéro de téléphone invalide. | Invalid phone number. |
+| `lineType` | Numéro {0} attendu (mobile, fixe). | {0} number expected (Mobile, Landline). |
+| `address` | Adresse invalide : une ligne de {0} caractères, avec au moins une lettre. ({0} = `5–200`) | Invalid address: one line of {0} characters, with at least one letter. |
+| `postalCode` | Code postal manquant. | Postal code missing. |
 | `constraints[i]` | Valeur invalide. | Invalid value. |
 
 ```json
@@ -470,6 +535,7 @@ Les fonctions de date utilisent la date du jour du moteur (figée par `today` da
 | `type_sinistre_other` | Précision « Autre » de `type_sinistre`. |
 | `qualite_declarant.groupe` | Groupe de la sélection d'un choix (version 3) : lit `qualite_declarant_group` (§8) — code du groupe, sinon son libellé dans la langue par défaut ; `"AUTRE"` pour « Autre » ; absent (`single`) ou `""` (`multiple`) hors groupe ; liste pour `multiple`. Aussi `tiers.cle.groupe` (bloc), `victimes.lien.groupe`, `lien.groupe` (champ de structure). Un moteur peut, comme l'outil, réécrire toute étape **finale** `groupe` d'un chemin de noms en `<dernier nom>_group` avant d'évaluer, en gardant les indices et filtres du dernier nom (`liens[0].groupe` → `liens_group[0]`). Ailleurs qu'après une question à choix, `.groupe` est une référence inconnue. |
 | `montant_estime.nsp` | « Ne sais pas » choisie (version 5, §7.7) : `true` si `montant_estime_nsp` vaut `true`, `false` sinon (jamais absent). Aussi `tiers.cle.nsp`, `victimes[0].age.nsp`, `age.nsp` (champ de structure). Un moteur peut, comme l'outil, réécrire tout chemin de noms terminé par `.nsp` en `(<chemin>_nsp = true)` (`victimes[0].age.nsp` → `(victimes[0].age_nsp = true)`). Sur une structure répétable sans indice (`victimes.age.nsp`), la comparaison d'une liste vaut `false` : utiliser un indice ou un filtre (`victimes[age.nsp]`). Connu seulement sur une question dont `dontKnow` est activé ; ailleurs, référence inconnue. |
+| `telephone.pays` | Pays d'un téléphone ou d'une adresse (version 6, §7.8) : lit `telephone_pays` (§8), code ISO ; absent si non répondu. Aussi `tiers.cle.pays`, `souscripteur.telephone.pays`, `souscripteurs[0].telephone.pays`. L'outil réécrit tout chemin de noms terminé par `.pays` en `($exists(<chemin>_pays) ? <chemin>_pays : <chemin>.pays)` (`_pays` inséré après l'avant-dernier nom, comme `.groupe`) : un champ de structure nommé `pays` reste lisible (`pays` n'est pas réservé). Connu seulement après une question `phone` ou `address` ; ailleurs, référence inconnue. |
 | `sys.profil`, `sys.sinistres.nature` | Variable de l'état du système ; champ des objets d'une liste. |
 | `tiers.nom` | Question `nom` du bloc instancié avec l'alias `tiers` (depuis l'hôte, ou dans le bloc). |
 | `nom` (dans le bloc) | Question `nom` du bloc lui-même ; une clé du questionnaire hôte reste accessible sans préfixe si le bloc n'a pas de question homonyme. |
@@ -660,6 +726,7 @@ L'exemple fourni ne produit aucun problème.
 | Synthèse, confirmation à jeu de libellés booléen, boucle de correction, fin à variantes | `n_synthese`, `n_confirmation`, `e_confirmation_retour`, `n_fin` |
 | « Ne sais pas » (version 5) : nombre obligatoire avec minimum et libellé traduit ; choix multiple obligatoire avec « Autre » et libellé par défaut ; `montant_estime.nsp` dans une arête | `n_montant`, `n_canaux`, `e_montant_expertise` ; chemin `amicale_ne_sais_pas.json` |
 | Libellés de lecture `caption` (version 4) : arête conditionnée, « sinon », arête de sortie de bloc ; variable et champ de liste | `e_qualite_ayant_droit`, `e_qualite_montant`, `e_bloc_non_identifie` ; `sys.type_adherent`, `sys.sinistres` (`nature`) |
+| Mail, téléphone, adresse, civilité (version 6) : structure de bibliothèque non utilisée par le questionnaire (civilité obligatoire, téléphone mobile, adresse à vérifier) | `lq_souscripteur` (bibliothèque) |
 
 Après la date, on demande le lien avec un sinistre existant s'il y en a un d'antérieur, puis on va aux
 victimes (accident) ou au montant :
@@ -714,7 +781,7 @@ doit égaler `path`, toutes les réponses doivent avoir été consommées et l'i
 
 Toute évolution incompatible incrémente `formatVersion` et s'accompagne d'une migration dans l'outil,
 des schémas, de ce document et de l'exemple. Les ajouts compatibles (nouvelle propriété facultative)
-sont documentés ici. Version actuelle : **5**.
+sont documentés ici. Version actuelle : **6**.
 
 | Version | Changement | Migration |
 | --- | --- | --- |
@@ -722,3 +789,4 @@ sont documentés ici. Version actuelle : **5**.
 | 3 | Groupes d'options (`{ group, code?, when?, options }` dans `options[]`), réponse `<clé>_group`, référence `cle.groupe`, mot réservé `groupe` (EVO-003). | Aucune transformation (un document antérieur n'a pas de groupe) ; seul `formatVersion` change. |
 | 4 | Libellé de lecture `caption` (chaîne, une ligne) sur l'arête, la variable de l'état du système et le champ de liste d'objets (EVO-005). | Aucune transformation (un document antérieur n'a pas de libellé) ; seul `formatVersion` change. |
 | 5 | Option « Ne sais pas » `dontKnow` (toute question sauf structure), réponse `<clé>_nsp`, groupe réservé `NSP`, référence `cle.nsp`, mot réservé `nsp` (EVO-006). | Aucune transformation (propriété absente = désactivée) ; seul `formatVersion` change. |
+| 6 | Types `email`, `phone`, `address`, `civility` et leurs paramètres, réponse `<clé>_pays`, référence `cle.pays`, contrôles intégrés `email`, `phone`, `lineType`, `address`, `postalCode` (EVO-007). | Aucune transformation (un document antérieur n'utilise pas ces types) ; seul `formatVersion` change. |

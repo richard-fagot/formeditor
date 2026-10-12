@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { evaluate, evaluateCondition, pickText, resolveLabel, type EvalContext } from '../../core/expressions';
+import { displayFormatters } from '../../core/contact';
 import { buildContext, choiceOptions, resolveStep, start, type RuntimeInput, type Session } from '../../core/runtime';
 import type { RenderEnv } from '../../plugin-api';
 import { systemStateOf, useStore, type PreviewState } from '../../app/store';
@@ -13,7 +14,8 @@ export function usePreview(questionnaireId: string) {
   const contentLang = useStore((s) => s.contentLang);
   const lang = p?.lang ?? contentLang;
   const input: RuntimeInput = useMemo(
-    () => ({ ws, questionnaireId, sys: systemStateOf(ws, p), env: { defaultLang: ws.project.defaultLanguage } }),
+    // `display` : interpolation d'une civilité (libellé) et d'un téléphone (format international), EVO-007.
+    () => ({ ws, questionnaireId, sys: systemStateOf(ws, p), env: { defaultLang: ws.project.defaultLanguage, display: displayFormatters(ws) } }),
     [ws, questionnaireId, p],
   );
   const session: Session = useMemo(() => {

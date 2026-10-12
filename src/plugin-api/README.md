@@ -15,6 +15,8 @@ Types seulement, et deux utilitaires (`tr`, `commonQuestionFields`). Dépend de 
 - `QuestionPropertiesProps.renameField(fieldId, key)` : renommage propagé d'un champ de structure.
 - Groupe de la sélection d'un choix (EVO-003) : `FieldProps.group` (valeur de `<clé>_group`) et
   `onChange(value, other?, group?)` ; `formatAnswer(question, value, env, other?, group?)`.
+- Pays (EVO-007) : `FieldProps.country` (`<clé>_pays`) et `onChange(value, other?, group?, country?)` ; l'appelant range le pays à
+  côté de la réponse (absent : effacé).
 - « Ne sais pas » (EVO-006) : `FieldProps.dontKnow` (marqueur `<clé>_nsp`) et `onDontKnow(on)` (l'appelant range la réponse vide,
   le groupe `NSP` et le marqueur, ou efface la réponse) ; `dontKnowLabel(q)` (libellé, défaut « Ne sais pas ») ; `dontKnow` fait
   partie de `QuestionBase` (conservé au changement de type, retiré vers une structure).

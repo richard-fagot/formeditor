@@ -1,7 +1,7 @@
 # core/validation
 
 Contraintes de champs (validation d'une réponse) et vérifications non bloquantes du graphe (spec §4.6).
-Dépend de `core/model`, `core/expressions`, `core/references`, `core/runtime` (`choiceOptions`).
+Dépend de `core/model`, `core/expressions`, `core/references`, `core/runtime` (`choiceOptions`), `core/contact`.
 
 ## API
 - `validateAnswer(question, value, ctx, env?, other?, path?, group?)` → `FieldError[]` (`path`, `param`, `message` multilingue).
@@ -14,6 +14,10 @@ Dépend de `core/model`, `core/expressions`, `core/references`, `core/runtime` (
   la liste vide donne `required`.
 - « Ne sais pas » (EVO-006) : `validateAnswer(…, group?, dontKnow?)` ; marqueur `true` et option activée → aucune erreur
   (obligatoire, contraintes intégrées et libres) ; dans une structure, lu dans l'occurrence (`champ_nsp`). Code de groupe `NSP` réservé.
+- Mail, téléphone, adresse, civilité (EVO-007) : contrôles intégrés de `core/contact` (`email`, `phone`, `lineType`, `address`,
+  `postalCode`, `option`) ; pays lu dans `ctx` sous `<clé>_pays` (dans une structure, l'occurrence), sinon `defaultCountry`.
+  `formatErrors(q, valeur, pays?)` : ces contrôles seuls (réponse vide → aucun), pour le contrôle à la sortie du champ.
+  Messages par défaut dans `messages.ts` (`lineType` : `{0}` = mobile / fixe ; `address` : `{0}` = bornes `5–200`).
 - `messageParams(question)` : paramètres dont le message est personnalisable pour cette question.
 - `checkWorkspace(ws)` → `Issue[]` : `code`, `severity`, `owner`, `nodeId?`, `edgeId?`, `property?`, `params`.
 - `describeIssue(issue, lang)` : texte fr/en.
@@ -36,4 +40,4 @@ Dépend de `core/model`, `core/expressions`, `core/references`, `core/runtime` (
 - Le typage des expressions se limite à la syntaxe et à l'existence des références.
 
 ## Tests
-`validation.test.ts` (l'exemple ne doit produire **aucun** problème), `groups.test.ts`, `dont-know.test.ts`.
+`validation.test.ts` (l'exemple ne doit produire **aucun** problème), `groups.test.ts`, `dont-know.test.ts`, `contact.test.ts`.

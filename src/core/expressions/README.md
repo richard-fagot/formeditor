@@ -11,6 +11,12 @@ JSONata** (1.8, synchrone). Dépend de `core/model`.
 - « Ne sais pas » (EVO-006, `dont-know-ref.ts`) : tout chemin de noms terminé par `.nsp` est réécrit en `(<chemin>_nsp = true)`
   avant évaluation (`victimes[0].age.nsp` → `(victimes[0].age_nsp = true)`) : vrai ou faux, jamais vide ; références et renommage
   voient l'écriture d'origine.
+- Pays (EVO-007, `country-ref.ts`) : tout chemin de noms terminé par `.pays` est réécrit en `($exists(P_pays) ? P_pays : P.pays)`
+  (`_pays` inséré après l'avant-dernier nom, comme `.groupe`) : un champ nommé `pays` reste lisible ; références et renommage
+  voient l'écriture d'origine.
+- Interpolation (EVO-007) : `EvalEnv.display` (mise en forme par clé) et `EvalEnv.lang` ; une expression interpolée réduite à une
+  référence (`a`, `a.b`, `a[0].b`) dont le dernier nom a une mise en forme l'utilise (texte, ou texte multilingue pris dans
+  `lang`) ; `resolveLabel` passe sa langue.
 - `EvalEnv` : `today?`, `defaultLang?` (langue par défaut : identifiant d'un groupe d'options sans code, `core/runtime`).
 - `evaluate(expr, ctx, env?)` → valeur ou `undefined` si erreur ; `evaluateStrict` lève ; `evaluateCondition` → `true` seulement si l'expression vaut `true`.
 - `checkSyntax(expr)` → `{ message, position }` ou `undefined` ; `compile` (avec cache).
@@ -32,4 +38,4 @@ Objet des réponses par clé + `sys` (état du système) + un objet par alias de
 - JSONata renvoie des « séquences » : `evaluateStrict` les convertit en tableaux simples.
 
 ## Tests
-`expressions.test.ts`, `dont-know.test.ts`.
+`expressions.test.ts`, `dont-know.test.ts`, `country.test.ts`.

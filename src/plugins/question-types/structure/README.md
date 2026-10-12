@@ -11,5 +11,5 @@ Raccourci par défaut : S.
   « Ajouter » (libellé `addLabel`) et « Supprimer » bornés par `min` / `max` ; libellés et conditions évalués
   avec `env.scoped(occurrence)`. Erreurs par chemin `cle[i].champ` (`core/validation`). Précision « Autre » et groupe
   de la sélection d'un champ à choix rangés dans l'occurrence (`champ_other`, `champ_group`), ainsi que le marqueur « Ne sais pas »
-  (`champ_nsp`, réponse de `dontKnowAnswer`) ; synthèse : libellé « Ne sais pas » du champ. Pas d'option « Ne sais pas » sur la structure elle-même.
+  (`champ_nsp`, réponse de `dontKnowAnswer`) et le pays d'un téléphone ou d'une adresse (`champ_pays`, EVO-007) ; synthèse : libellé « Ne sais pas » du champ. Pas d'option « Ne sais pas » sur la structure elle-même.
 - Aperçu : miniature des champs tronquée par « … », mention « × n » si répétable.

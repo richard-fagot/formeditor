@@ -19,5 +19,5 @@ export function resolveLabel(label: Label | undefined, langs: LangChoice, ctx: E
   const text = isVariantLabel(label)
     ? (label.variants.find((v) => evaluateCondition(v.when, ctx, env))?.text ?? label.otherwise)
     : label;
-  return interpolate(pickText(text, langs), ctx, env);
+  return interpolate(pickText(text, langs), ctx, env.display ? { ...env, lang: langs.lang } : env);
 }

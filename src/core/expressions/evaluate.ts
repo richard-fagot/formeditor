@@ -2,12 +2,21 @@ import jsonata from 'jsonata';
 import { addDays, age, daysBetween, todayIso } from './dates';
 import { rewriteGroupRefs } from './group-ref';
 import { rewriteDontKnowRefs } from './dont-know-ref';
+import { rewriteCountryRefs } from './country-ref';
+import type { LocalizedText } from '../model';
 
 /** Environnement d'évaluation (date du jour figée pour les tests et la prévisualisation). */
 export interface EvalEnv {
   today?: string;
   /** Langue par défaut du projet : identifiant d'un groupe d'options sans code (EVO-003). */
   defaultLang?: string;
+  /** Langue affichée (interpolation d'un libellé : texte multilingue renvoyé par `display`). */
+  lang?: string;
+  /**
+   * Mise en forme de l'interpolation par clé de question (EVO-007) : appliquée quand l'expression interpolée est une
+   * simple référence dont le dernier nom est cette clé (civilité → libellé, téléphone → format international).
+   */
+  display?: Record<string, (value: unknown) => string | LocalizedText | undefined>;
 }
 export type EvalContext = Record<string, unknown>;
 
@@ -54,7 +63,7 @@ function bindings(env: EvalEnv) {
 
 /** Évalue une expression ; lève une erreur en cas d'échec. */
 export function evaluateStrict(expr: string, ctx: EvalContext, env: EvalEnv = {}): unknown {
-  const c = compile(rewriteDontKnowRefs(rewriteGroupRefs(expr)));
+  const c = compile(rewriteDontKnowRefs(rewriteGroupRefs(rewriteCountryRefs(expr))));
   if (isError(c)) throw new Error(c.message);
   const value = c.evaluate(ctx, bindings(env));
   return normalize(value);

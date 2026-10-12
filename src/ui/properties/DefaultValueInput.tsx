@@ -3,7 +3,7 @@ import type { QuestionType } from '../../core/model';
 import { Input } from '../../ui-kit';
 
 /** Types dont la réponse est une chaîne : la valeur littérale se saisit telle quelle. */
-const STRING_TYPES: readonly QuestionType[] = ['text', 'date', 'single'];
+const STRING_TYPES: readonly QuestionType[] = ['text', 'date', 'single', 'email', 'phone', 'address', 'civility'];
 
 const show = (type: QuestionType, v: unknown) =>
   v === undefined ? '' : STRING_TYPES.includes(type) && typeof v === 'string' ? v : JSON.stringify(v);

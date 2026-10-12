@@ -1,5 +1,5 @@
 {
-  "formatVersion": 5,
+  "formatVersion": 6,
   "kind": "library",
   "questions": [
     {
@@ -45,6 +45,69 @@
           "en": "10-digit number expected."
         }
       }
+    },
+    {
+      "id": "lq_souscripteur",
+      "key": "souscripteur",
+      "label": {
+        "fr": "Souscripteur",
+        "en": "Policyholder"
+      },
+      "description": "Coordonnées du souscripteur (EVO-007) : civilité, nom, mail, téléphone mobile et adresse.",
+      "type": "structure",
+      "fields": [
+        {
+          "id": "lf_civilite",
+          "key": "civilite",
+          "label": {
+            "fr": "Civilité",
+            "en": "Title"
+          },
+          "type": "civility",
+          "required": true
+        },
+        {
+          "id": "lf_nom",
+          "key": "nom",
+          "label": {
+            "fr": "Nom",
+            "en": "Last name"
+          },
+          "type": "text",
+          "required": true
+        },
+        {
+          "id": "lf_mail",
+          "key": "mail",
+          "label": {
+            "fr": "Adresse mail",
+            "en": "Email address"
+          },
+          "type": "email"
+        },
+        {
+          "id": "lf_telephone",
+          "key": "telephone",
+          "label": {
+            "fr": "Téléphone",
+            "en": "Phone"
+          },
+          "type": "phone",
+          "defaultCountry": "FR",
+          "lineType": "mobile"
+        },
+        {
+          "id": "lf_adresse",
+          "key": "adresse",
+          "label": {
+            "fr": "Adresse",
+            "en": "Address"
+          },
+          "type": "address",
+          "defaultCountry": "FR",
+          "verify": true
+        }
+      ]
     }
   ],
   "blocks": [

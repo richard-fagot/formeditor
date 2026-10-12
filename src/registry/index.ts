@@ -8,6 +8,10 @@ import { singleType, multipleType } from '../plugins/question-types/choice';
 import { booleanType } from '../plugins/question-types/boolean';
 import { tristateType } from '../plugins/question-types/tristate';
 import { structureType } from '../plugins/question-types/structure';
+import { emailType } from '../plugins/question-types/email';
+import { phoneType } from '../plugins/question-types/phone';
+import { addressType } from '../plugins/question-types/address';
+import { civilityType } from '../plugins/question-types/civility';
 import { questionKind } from '../plugins/node-kinds/question';
 import { infoKind } from '../plugins/node-kinds/info';
 import { summaryKind } from '../plugins/node-kinds/summary';
@@ -18,6 +22,7 @@ import { exitKind } from '../plugins/node-kinds/exit';
 /** Types de questions disponibles, dans l'ordre d'affichage. */
 export const QUESTION_TYPE_PLUGINS = [
   textType, dateType, numberType, singleType, multipleType, booleanType, tristateType, structureType,
+  emailType, phoneType, addressType, civilityType,
 ] as unknown as QuestionTypePlugin<Question>[];
 
 export const NODE_KIND_PLUGINS = [questionKind, infoKind, summaryKind, endKind, blockKind, exitKind] as unknown as NodeKindPlugin<GraphNode>[];

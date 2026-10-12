@@ -1,5 +1,6 @@
 import { evaluate, evaluateCondition, type EvalContext, type EvalEnv } from '../expressions';
-import { DONT_KNOW_SUFFIX, GROUP_SUFFIX, hasDontKnow, OTHER_GROUP, OTHER_VALUE, type LocalizedText, type Question, type StructureField } from '../model';
+import { ADDRESS_MAX, ADDRESS_MIN, contactErrors } from '../contact';
+import { COUNTRY_SUFFIX, DONT_KNOW_SUFFIX, GROUP_SUFFIX, hasDontKnow, OTHER_GROUP, OTHER_VALUE, type LocalizedText, type Question, type StructureField } from '../model';
 import { choiceOptions } from '../runtime';
 import { defaultMessage } from './messages';
 
@@ -95,6 +96,12 @@ export function validateAnswer(
       if (q.maxSelected !== undefined && list.length > q.maxSelected) fail('maxSelected', q.maxSelected);
       break;
     }
+    case 'email':
+    case 'phone':
+    case 'address':
+    case 'civility':
+      for (const p of contactErrors(q, value, ctx[`${q.key}_${COUNTRY_SUFFIX}`])) fail(p, messageArg(q, p));
+      break;
     case 'structure':
       validateStructure(q, value, ctx, env, path || q.key, fail, errors);
       break;
@@ -104,6 +111,24 @@ export function validateAnswer(
     if (!evaluateCondition(c.rule, ctx, env)) errors.push({ path, param: `constraints[${i}]`, message: c.message ?? defaultMessage('constraint') });
   });
   return errors;
+}
+
+/** Argument du message par défaut : type de ligne exigé, bornes de longueur d'une adresse (`5–200`). */
+function messageArg(q: Question | StructureField, param: string): unknown {
+  if (param === 'lineType' && q.type === 'phone') return q.lineType;
+  if (param === 'address' && q.type === 'address') return `${q.minLength ?? ADDRESS_MIN}–${q.maxLength ?? ADDRESS_MAX}`;
+  return undefined;
+}
+
+/**
+ * Contrôles de format intégrés seuls (mail, téléphone, adresse, civilité ; EVO-007), pour un contrôle à la sortie du
+ * champ : réponse vide → aucune erreur. `country` : pays choisi (`<clé>_pays`).
+ */
+export function formatErrors(q: Question | StructureField, value: unknown, country?: unknown): FieldError[] {
+  if (isEmpty(value)) return [];
+  return contactErrors(q, value, country).map((param) => ({
+    path: '', param, message: q.messages?.[param] ?? defaultMessage(param, messageArg(q, param)),
+  }));
 }
 
 const hasOther = (v: unknown) => v === OTHER_VALUE || (Array.isArray(v) && v.includes(OTHER_VALUE));
@@ -144,7 +169,10 @@ export function messageParams(q: Question | StructureField): string[] {
   const r = q as unknown as Record<string, unknown>;
   return [
     'required',
-    ...BUILTIN_PARAMS.filter((p) => r[p] !== undefined),
+    ...(q.type === 'address' ? [] : BUILTIN_PARAMS.filter((p) => r[p] !== undefined)),
+    ...(q.type === 'email' ? ['email'] : []),
+    ...(q.type === 'phone' ? ['phone', ...(q.lineType ? ['lineType'] : [])] : []),
+    ...(q.type === 'address' ? ['address', 'postalCode'] : []),
     ...(q.type === 'date' ? ['format'] : []),
     ...(q.type === 'single' || q.type === 'multiple' ? ['option'] : []),
     ...('other' in q && q.other?.detailRequired ? ['otherDetail'] : []),

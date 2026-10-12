@@ -19,10 +19,17 @@ module.exports = {
     },
     {
       name: 'core-sans-librairie-interface',
-      comment: 'core ne dépend que de librairies non graphiques (jsonata).',
+      comment: 'core ne dépend que de librairies non graphiques (jsonata ; libphonenumber-js dans core/contact, EVO-007).',
       severity: 'error',
-      from: { path: '^src/core/' },
+      from: { path: '^src/core/', pathNot: '^src/core/contact/' },
       to: { dependencyTypes: ['npm', 'npm-dev'], pathNot: 'node_modules/jsonata/' },
+    },
+    {
+      name: 'contact-sur-model',
+      comment: 'core/contact : core/model et libphonenumber-js seulement.',
+      severity: 'error',
+      from: { path: '^src/core/contact/' },
+      to: { pathNot: ['^src/core/(contact|model)/', 'node_modules/libphonenumber-js/'] },
     },
     {
       name: 'model-autonome',
