@@ -1,6 +1,6 @@
 # EVO-008 — Fragments de questionnaire réutilisables
 
-Statut : en cours
+Statut : fait 2026-10-12
 Dépend de : aucune (réutilise la bibliothèque, les instances nommées des blocs et le logigramme)
 
 ## Besoin

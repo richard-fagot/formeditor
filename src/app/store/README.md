@@ -14,6 +14,7 @@ Dépend de `core`, `format`, `app/i18n`, `plugin-api` (utilitaires).
 - Annuler / rétablir et transactions (`travel.ts` : `travel`, `changedScopes`, synchronisation des onglets).
 - Portées d'historique (`history.ts`) : `q:<id>` (questionnaire, sa mise en page et son entrée dans le projet), `library`, `project` ;
   `scopeOf(graphRef)`. Les frappes successives d'un même champ (même `key`, < 1,5 s) forment une seule étape.
+  L'annulation remet chaque mise en page à sa place (ordre conservé, disparues retirées, nouvelles en fin) : le bundle est identique après annulation.
 - Édition pure du graphe (`graph.ts`, sur brouillon immer) : `insertNode`, `connect` (une arête conditionnée
   passe avant le « sinon »), `removeNodes`, `removeEdge`, `moveEdge`, `updateNode` (retire les `undefined`),
   `duplicateNodes`, `getGraph`, `layoutOf`, `usedKeys`, `freshKey`.
