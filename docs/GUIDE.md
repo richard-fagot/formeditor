@@ -306,7 +306,7 @@ Concerne le choix unique et le choix multiple. Le booléen et le tri-state n'ont
   Les clés qui commencent par le texte tapé sont proposées en premier.
 - **Lire le libellé d'une variable dans une expression** — Survoler une référence `sys.…` (champ de liste compris,
   `sys.sinistres.nature`) : une infobulle donne la clé, le libellé et la description. Rien ne s'affiche si la variable n'a
-  ni libellé ni description.
+  ni libellé ni description, ni dans une chaîne entre guillemets (`"sys.profil"`) ou un nom entre accents graves.
 - **Désigner une valeur** — `cle` : réponse du questionnaire ; `structure.champ` : sous-champ ; `victimes[0].nom` : occurrence
   (à partir de 0) ; `sys.variable`, `sys.liste.champ` : état du système ; `alias.cle` : question d'une instance de bloc ;
   `cle_other` : précision « Autre » ; `$$.cle` : réponse lue depuis la racine (dans un filtre).
