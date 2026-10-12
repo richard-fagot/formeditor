@@ -9,5 +9,6 @@ Raccourci par défaut : S.
   champ (plugin obtenu par `env.questionType`, jamais importé). Contraintes libres et messages : `ConstraintsEditor`. Portée des expressions : `structureScope`.
 - `occurrences.tsx` : saisie en prévisualisation. Occurrences complétées jusqu'au minimum ; boutons
   « Ajouter » (libellé `addLabel`) et « Supprimer » bornés par `min` / `max` ; libellés et conditions évalués
-  avec `env.scoped(occurrence)`. Erreurs par chemin `cle[i].champ` (`core/validation`).
+  avec `env.scoped(occurrence)`. Erreurs par chemin `cle[i].champ` (`core/validation`). Précision « Autre » et groupe
+  de la sélection d'un champ à choix rangés dans l'occurrence (`champ_other`, `champ_group`).
 - Aperçu : miniature des champs tronquée par « … », mention « × n » si répétable.

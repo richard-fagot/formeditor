@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { buildContext, currentStep, getAnswer, next, otherPath, setAnswer, start, type RuntimeInput } from '../../src/core/runtime';
+import { buildContext, currentStep, getAnswer, groupPath, next, otherPath, setAnswer, start, type RuntimeInput } from '../../src/core/runtime';
 import { validateAnswer } from '../../src/core/validation';
 import { EXAMPLE_DIR, exampleWorkspace } from './example';
 
@@ -10,7 +10,7 @@ interface ExpectedPath {
   questionnaire: string;
   scenario: string;
   today: string;
-  answers: { step: string; value: unknown; other?: string }[];
+  answers: { step: string; value: unknown; other?: string; group?: unknown }[];
   path: string[];
   outcome: string;
 }
@@ -22,7 +22,7 @@ describe('chemins attendus par scénario', () => {
   const ws = exampleWorkspace();
   it.each(cases)('%s', (_f, c) => {
     const scenario = ws.project.scenarios.find((s) => s.id === c.scenario)!;
-    const input: RuntimeInput = { ws, questionnaireId: c.questionnaire, sys: scenario.values, env: { today: c.today } };
+    const input: RuntimeInput = { ws, questionnaireId: c.questionnaire, sys: scenario.values, env: { today: c.today, defaultLang: ws.project.defaultLanguage } };
     const queue = [...c.answers];
     let s = start(input);
     for (let guard = 0; guard < 200; guard++) {
@@ -31,11 +31,11 @@ describe('chemins attendus par scénario', () => {
       if (step.answerPath) {
         if (queue[0]?.step === step.id) {
           const a = queue.shift()!;
-          s = setAnswer(input, s, a.value, a.other);
+          s = setAnswer(input, s, a.value, a.other, a.group);
         }
         const value = getAnswer(s.answers, step.answerPath);
         expect(value, `réponse attendue en ${step.id}`).not.toBeUndefined();
-        const errors = validateAnswer(step.question!, value, buildContext(input, s.answers, step.id), input.env, getAnswer(s.answers, otherPath(step.answerPath)));
+        const errors = validateAnswer(step.question!, value, buildContext(input, s.answers, step.id), input.env, getAnswer(s.answers, otherPath(step.answerPath)), '', getAnswer(s.answers, groupPath(step.answerPath)));
         expect(errors, `réponse invalide en ${step.id}`).toEqual([]);
       }
       s = next(input, s);

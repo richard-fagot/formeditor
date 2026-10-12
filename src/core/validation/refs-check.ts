@@ -83,7 +83,9 @@ function checkGuaranteed(
   const guardRefs = new Set(f.loc.guard ? extractReferences(f.loc.guard).map((r) => r.join('.')) : []);
   const roots = refsOf(f, true)
     .filter((r) => !guardRefs.has(r.join('.')))
-    .flatMap((r) => {
+    .flatMap((ref) => {
+      // `cle.groupe` : même règle que la question `cle`.
+      const r = resolvePath(scope, ref)?.kind === 'group' ? ref.slice(0, -1) : ref;
       const info = resolvePath(scope, r);
       if (!info || info.kind === 'system' || info.kind === 'alias') return [];
       if (f.loc.structure && info.kind === 'field' && !r[0]!.includes('.') && info.path === r[0]) return []; // champ frère

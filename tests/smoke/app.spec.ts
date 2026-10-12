@@ -192,6 +192,10 @@ test('exemple : choix avec option conditionnée et entrée dynamique, date, stru
   await expect(page.getByTestId('occurrence')).toHaveCount(1);
   await next.click();
 
+  // Choix groupé (EVO-003) : « Victime directe », code SC, pas de page « ayant droit ».
+  await preview.getByText('Enfant').click();
+  await next.click();
+
   // Nombre avec unité.
   await expect(preview).toContainText('€');
   expect(errors).toEqual([]);

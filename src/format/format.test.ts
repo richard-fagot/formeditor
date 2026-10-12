@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { FORMAT_VERSION, type Questionnaire } from '../core/model';
+import { FORMAT_VERSION, type ChoiceEntry, type Questionnaire } from '../core/model';
 import { validateDocument } from './validate';
 import { migrate, type Migrations } from './migrate';
 import { serialize } from './serialize';
@@ -73,7 +73,7 @@ describe('migration 1 → 2 (EVO-001 : entrées d’options ordonnées)', () => 
 
   it('`source` devient une entrée dynamique placée après les options statiques, partout', () => {
     const q = migrate(JSON.parse(fixture('questionnaire-v1.json').text));
-    expect(q.formatVersion).toBe(2);
+    expect(q.formatVersion).toBe(FORMAT_VERSION);
     expect(validateDocument(q)).toEqual([]);
     const [lien, couleurs, struct] = nodes(q);
     expect(lien!.source).toBeUndefined();
@@ -130,6 +130,62 @@ describe('migration 1 → 2 (EVO-001 : entrées d’options ordonnées)', () => 
     const q = migrate(JSON.parse(fixture('questionnaire-v1.json').text));
     nodes(q)[0]!.options = [{ value: 'a', label: { fr: 'A' }, from: 'sys.x' }];
     expect(validateDocument(q).length).toBeGreaterThan(0);
+  });
+});
+
+describe('migration 2 → 3 (EVO-003 : groupes d’options)', () => {
+  const grouped = () => {
+    const q = minimalQuestionnaire();
+    const options = [
+      { value: 'seul', label: { fr: 'Hors groupe' } },
+      { group: { fr: 'Victime directe', en: 'Direct victim' }, code: 'SC', options: [{ value: 'conjoint', label: { fr: 'Conjoint' } }, { value: 'enfant', label: { fr: 'Enfant' } }] },
+      { group: { fr: 'Ayant droit' }, when: 'nom = "x"', options: [{ value: 'conjoint', label: { fr: 'Conjoint' } }, { from: 'sys.liste' }] },
+    ] as ChoiceEntry[];
+    q.nodes[0] = { kind: 'question', id: 'n1', key: 'choix', label: { fr: 'Choix' }, type: 'single', options };
+    return { q, options };
+  };
+
+  it('le format courant est la version 3', () => {
+    expect(FORMAT_VERSION).toBe(3);
+  });
+
+  it('un document version 2 est migré sans transformation (bundle compris)', () => {
+    const v2 = { ...minimalQuestionnaire(), formatVersion: 2 };
+    expect(migrate(v2)).toEqual({ ...v2, formatVersion: 3 });
+    const ws = newWorkspace('P', 'fr');
+    const bundle = { ...JSON.parse(exportBundle({ ...ws, questionnaires: [v2] })), formatVersion: 2 };
+    bundle.project.formatVersion = 2;
+    bundle.library.formatVersion = 2;
+    bundle.questionnaires[0].formatVersion = 2;
+    const back = importFiles([{ name: 'ancien.bundle.json', text: JSON.stringify(bundle) }]);
+    expect(back.errors).toEqual([]);
+    expect(back.workspace!.questionnaires[0]!.formatVersion).toBe(3);
+    expect(back.workspace!.questionnaires[0]!.nodes).toEqual(v2.nodes);
+  });
+
+  it('accepte une entrée de groupe (code, condition, options et entrées dynamiques)', () => {
+    expect(validateDocument(grouped().q)).toEqual([]);
+  });
+
+  it('refuse un groupe dans un groupe, un groupe sans `options` et une propriété inconnue', () => {
+    const bad = (entry: unknown) => {
+      const { q } = grouped();
+      (q.nodes[0] as unknown as { options: unknown[] }).options = [entry];
+      return validateDocument(q);
+    };
+    expect(bad({ group: { fr: 'A' }, options: [{ group: { fr: 'B' }, options: [] }] }).length).toBeGreaterThan(0);
+    expect(bad({ group: { fr: 'A' } }).length).toBeGreaterThan(0);
+    expect(bad({ group: { fr: 'A' }, options: [], couleur: 'bleu' }).length).toBeGreaterThan(0);
+    expect(bad({ group: { fr: 'A' }, code: '', options: [] }).length).toBeGreaterThan(0);
+  });
+
+  it('export puis réimport : groupes, codes et ordre identiques', () => {
+    const { q, options } = grouped();
+    const ws = { ...newWorkspace('P', 'fr'), questionnaires: [q] };
+    const back = importFiles(exportFiles(ws));
+    expect(back.errors).toEqual([]);
+    expect(back.workspace!.questionnaires[0]!.nodes[0]).toMatchObject({ options });
+    expect(importFiles([{ name: 'p.bundle.json', text: exportBundle(ws) }]).workspace!.questionnaires[0]!.nodes[0]).toMatchObject({ options });
   });
 });
 

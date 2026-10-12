@@ -5,7 +5,7 @@ const STOP_WORDS = new Set([
 ]);
 const MAX_WORDS = 5;
 /** Clés réservées par la grammaire des expressions. */
-export const RESERVED_KEYS = new Set(['sys', 'true', 'false', 'null', 'and', 'or', 'in']);
+export const RESERVED_KEYS = new Set(['sys', 'true', 'false', 'null', 'and', 'or', 'in', 'groupe']);
 
 const KEY_PATTERN = /^[a-z][a-z0-9_]*$/;
 

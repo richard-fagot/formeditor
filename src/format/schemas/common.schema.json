@@ -134,14 +134,56 @@
         }
       }
     },
-    "choiceEntry": {
-      "description": "Entrée de la liste ordonnée des options : option statique ou entrée dynamique.",
+    "choiceItem": {
+      "description": "Élément d'un groupe d'options : option statique ou entrée dynamique.",
       "oneOf": [
         {
           "$ref": "#/$defs/option"
         },
         {
           "$ref": "#/$defs/dynamicEntry"
+        }
+      ]
+    },
+    "choiceGroup": {
+      "description": "Groupe d'options (EVO-003) : intitulé (libellé comme celui d'une option), code facultatif, condition d'affichage, options statiques et entrées dynamiques. Pas de groupe imbriqué. Reconnu à la présence de `group`.",
+      "type": "object",
+      "required": [
+        "group",
+        "options"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "group": {
+          "$ref": "#/$defs/label"
+        },
+        "code": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Identifiant du groupe dans la réponse (`<clé>_group`) ; défaut : le libellé dans la langue par défaut. `AUTRE` est réservé."
+        },
+        "when": {
+          "$ref": "#/$defs/expression"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/choiceItem"
+          }
+        }
+      }
+    },
+    "choiceEntry": {
+      "description": "Entrée de la liste ordonnée des options : option statique, entrée dynamique ou groupe d'options.",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/option"
+        },
+        {
+          "$ref": "#/$defs/dynamicEntry"
+        },
+        {
+          "$ref": "#/$defs/choiceGroup"
         }
       ]
     },

@@ -1,9 +1,10 @@
 import {
-  isLibraryQuestion, OTHER_VALUE, type Graph, type Label, type Question, type QuestionType,
+  GROUP_REF, isLibraryQuestion, OTHER_VALUE, type Graph, type Label, type Question, type QuestionType,
   type StructureField, type SystemVariable, type VariableType, type Workspace,
 } from '../model';
 
-export type RefKind = 'answer' | 'field' | 'other' | 'alias' | 'system';
+/** `group` : groupe de la sélection d'un choix (`cle.groupe`, EVO-003). */
+export type RefKind = 'answer' | 'field' | 'other' | 'group' | 'alias' | 'system';
 
 export interface RefInfo {
   /** Chemin pointé : `tiers.nom`, `sys.sinistres.date`. */
@@ -35,6 +36,9 @@ function addQuestion(scope: Scope, q: Question | StructureField, prefix: string,
   const path = prefix + q.key;
   scope.set(path, { path, kind: 'answer', type: q.type, label: q.label, ...extra });
   if ('other' in q && q.other) scope.set(`${path}_${OTHER_VALUE}`, { path: `${path}_${OTHER_VALUE}`, kind: 'other', type: 'text', ...extra });
+  if (q.type === 'single' || q.type === 'multiple') {
+    scope.set(`${path}.${GROUP_REF}`, { path: `${path}.${GROUP_REF}`, type: 'text', ...extra, kind: 'group' });
+  }
   if (q.type === 'structure') {
     for (const f of q.fields) addQuestion(scope, f, `${path}.`, { ...extra, kind: 'field' });
   }

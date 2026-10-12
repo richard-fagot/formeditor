@@ -6,7 +6,8 @@ sérialisation, import/export unitaire et bundle. Dépend uniquement de `core/mo
 ## API
 - `SCHEMAS`, `validateDocument(doc) → string[]`, `documentKind(doc)`.
 - `migrate(doc, migrations?, target?)`, `MIGRATIONS` (1 → 2 : `source` d'un choix devient une entrée dynamique
-  placée après les options statiques, questionnaires, bibliothèque et bundle, champs de structure compris).
+  placée après les options statiques, questionnaires, bibliothèque et bundle, champs de structure compris ;
+  2 → 3 : groupes d'options, seul `formatVersion` change, documents d'un bundle compris).
 - `serialize(doc)` : JSON indenté 2 espaces, ordre des clés conservé, `\n` final.
 - `newWorkspace(name, lang)`, `emptyLibrary()`, `toBundle(ws)`.
 - `exportFiles(ws) → FileContent[]` (`projet.json`, `bibliotheque.json`, `<q>.json`, `<q>.layout.json`, `bloc_<cle>.layout.json`).
@@ -16,7 +17,8 @@ sérialisation, import/export unitaire et bundle. Dépend uniquement de `core/mo
 
 ## Schémas
 `schemas/*.schema.json` sont des **livrables** pour l'équipe de dev ; ils sont la source de vérité
-(édités à la main). `common.schema.json` : définitions partagées (`id` sans `/`, `langCode`, `question`, `params_<type>`, `node`, `edge`…).
+(édités à la main). `common.schema.json` : définitions partagées (`id` sans `/`, `langCode`, `question`, `params_<type>`, `node`, `edge`,
+`choiceEntry` = option | entrée dynamique | `choiceGroup`, `choiceItem` = option | entrée dynamique…).
 Le sens de chaque propriété (navigation, validation, expressions) est dans `docs/FORMAT.md`.
 
 ## Invariants
@@ -24,4 +26,4 @@ Le sens de chaque propriété (navigation, validation, expressions) est dans `do
 - L'aller-retour import/export de l'exemple est identique à l'octet près (`tests/reference/format.test.ts`).
 
 ## Tests
-`format.test.ts` (unitaires, migration 1 → 2 sur `fixtures/*-v1.json`) ; `tests/reference/format.test.ts` (exemple).
+`format.test.ts` (unitaires, migration 1 → 2 sur `fixtures/*-v1.json`, migration 2 → 3 et groupes) ; `tests/reference/format.test.ts` (exemple).

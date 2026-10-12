@@ -19,6 +19,8 @@ export interface ResolvedOption {
   value: string;
   label: Label | string;
   dynamic?: true;
+  /** Groupe de l'option (EVO-003) : identifiant (code, sinon libellé dans la langue par défaut) et intitulé. */
+  group?: { id: string; label: Label };
 }
 
 /** Environnement de rendu de la prévisualisation. */
@@ -52,7 +54,9 @@ export interface FieldProps<Q extends Question = Question> {
   question: Q;
   value: unknown;
   other?: string;
-  onChange(value: unknown, other?: string): void;
+  /** Groupe de la sélection d'un choix (`<clé>_group`) : identifiant, ou liste parallèle aux valeurs. */
+  group?: unknown;
+  onChange(value: unknown, other?: string, group?: unknown): void;
   /** Messages d'erreur déjà résolus, par chemin (`''` pour la question). */
   errors: Record<string, string[]>;
   env: RenderEnv;
@@ -73,8 +77,8 @@ export interface QuestionTypePlugin<Q extends Question = Question> {
   Properties: FC<QuestionPropertiesProps<Q>>;
   /** Saisie dans la prévisualisation. */
   Field: FC<FieldProps<Q>>;
-  /** Valeur affichée dans une synthèse. */
-  formatAnswer(question: Q, value: unknown, env: RenderEnv, other?: string): string;
+  /** Valeur affichée dans une synthèse (`group` : groupe de la sélection d'un choix). */
+  formatAnswer(question: Q, value: unknown, env: RenderEnv, other?: string, group?: unknown): string;
   /** Badge « Autre » etc. */
   badges?(question: Q): string[];
 }

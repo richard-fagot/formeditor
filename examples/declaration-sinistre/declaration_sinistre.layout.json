@@ -1,5 +1,5 @@
 {
-  "formatVersion": 2,
+  "formatVersion": 3,
   "kind": "layout",
   "graph": "q_declaration",
   "nodes": {
@@ -26,6 +26,14 @@
     "n_victimes": {
       "x": 0,
       "y": 520
+    },
+    "n_qualite": {
+      "x": -320,
+      "y": 600
+    },
+    "n_ayant_droit": {
+      "x": -640,
+      "y": 650
     },
     "n_montant": {
       "x": 0,

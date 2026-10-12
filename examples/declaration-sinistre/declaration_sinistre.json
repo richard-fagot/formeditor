@@ -1,5 +1,5 @@
 {
-  "formatVersion": 2,
+  "formatVersion": 3,
   "kind": "questionnaire",
   "id": "q_declaration",
   "key": "declaration_sinistre",
@@ -207,6 +207,76 @@
           ]
         }
       ]
+    },
+    {
+      "kind": "question",
+      "id": "n_qualite",
+      "key": "qualite_declarant",
+      "label": {
+        "fr": "À quel titre déclarez-vous ce sinistre ?",
+        "en": "In what capacity are you reporting this claim?"
+      },
+      "type": "single",
+      "required": true,
+      "options": [
+        {
+          "group": {
+            "fr": "Victime directe",
+            "en": "Direct victim"
+          },
+          "code": "SC",
+          "options": [
+            {
+              "value": "conjoint",
+              "label": {
+                "fr": "Conjoint",
+                "en": "Spouse"
+              }
+            },
+            {
+              "value": "enfant",
+              "label": {
+                "fr": "Enfant",
+                "en": "Child"
+              }
+            }
+          ]
+        },
+        {
+          "group": {
+            "fr": "Ayant droit",
+            "en": "Beneficiary"
+          },
+          "options": [
+            {
+              "value": "conjoint",
+              "label": {
+                "fr": "Conjoint",
+                "en": "Spouse"
+              }
+            },
+            {
+              "value": "ascendant",
+              "label": {
+                "fr": "Ascendant",
+                "en": "Parent"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "info",
+      "id": "n_ayant_droit",
+      "title": {
+        "fr": "Justificatif",
+        "en": "Supporting document"
+      },
+      "text": {
+        "fr": "Vous déclarez en tant qu'ayant droit (groupe « {qualite_declarant.groupe} ») : un justificatif de votre qualité vous sera demandé.",
+        "en": "You are reporting as a beneficiary (group “{qualite_declarant.groupe}”): proof of your status will be requested."
+      }
     },
     {
       "kind": "question",
@@ -467,8 +537,24 @@
       "to": "n_montant"
     },
     {
-      "id": "e_victimes_montant",
+      "id": "e_victimes_qualite",
       "from": "n_victimes",
+      "to": "n_qualite"
+    },
+    {
+      "id": "e_qualite_ayant_droit",
+      "from": "n_qualite",
+      "to": "n_ayant_droit",
+      "when": "qualite_declarant.groupe = 'Ayant droit'"
+    },
+    {
+      "id": "e_qualite_montant",
+      "from": "n_qualite",
+      "to": "n_montant"
+    },
+    {
+      "id": "e_ayant_droit_montant",
+      "from": "n_ayant_droit",
       "to": "n_montant"
     },
     {

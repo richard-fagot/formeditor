@@ -1,5 +1,5 @@
 import { ArrowDown, ArrowUp, Copy, X } from 'lucide-react';
-import { isDynamicEntry, OTHER_VALUE, type ChoiceEntry, type DynamicEntry } from '../../../core/model';
+import { isDynamicEntry, OTHER_VALUE, type ChoiceItem, type DynamicEntry } from '../../../core/model';
 import type { Scope } from '../../../core/references';
 import { tr, type EditorEnv } from '../../../plugin-api';
 import { Button, Field, Input } from '../../../ui-kit';
@@ -29,23 +29,23 @@ function itemScope(outer: Scope, from: string): Scope {
 }
 
 /** Retire les propriétés vides (`undefined` ou chaîne vide), sauf `from`, `value` et `label` d'une option statique. */
-const clean = (e: ChoiceEntry): ChoiceEntry =>
-  Object.fromEntries(Object.entries(e).filter(([k, v]) => v !== undefined && (v !== '' || k === 'from' || !isDynamicEntry(e)))) as unknown as ChoiceEntry;
+const clean = (e: ChoiceItem): ChoiceItem =>
+  Object.fromEntries(Object.entries(e).filter(([k, v]) => v !== undefined && (v !== '' || k === 'from' || !isDynamicEntry(e)))) as unknown as ChoiceItem;
 
 interface Props {
-  entry: ChoiceEntry;
+  entry: ChoiceItem;
   env: EditorEnv;
   first: boolean;
   last: boolean;
-  onChange(e: ChoiceEntry): void;
+  onChange(e: ChoiceItem): void;
   onMove(delta: number): void;
   onDuplicate(): void;
   onRemove(): void;
 }
 
-/** Détail d'une entrée : réglages (statique : valeur, libellé ; dynamique : liste, libellé, valeur), condition, actions. */
+/** Détail d'un élément (option ou entrée dynamique, dans un groupe ou non) : réglages (statique : valeur, libellé ; dynamique : liste, libellé, valeur), condition, actions. */
 export function EntryDetail({ entry, env, first, last, onChange, onMove, onDuplicate, onRemove }: Props) {
-  const set = (patch: Partial<ChoiceEntry>) => onChange(clean({ ...entry, ...patch } as ChoiceEntry));
+  const set = (patch: Partial<ChoiceItem>) => onChange(clean({ ...entry, ...patch } as ChoiceItem));
   const dynamic = isDynamicEntry(entry);
   const stop = (f: () => void) => (e: { preventDefault(): void }) => (e.preventDefault(), f());
   return (

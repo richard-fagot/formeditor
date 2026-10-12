@@ -4,6 +4,11 @@ Analyse, évaluation, extraction des références, interpolation des libellés. 
 JSONata** (1.8, synchrone). Dépend de `core/model`.
 
 ## API
+- Groupe de la sélection (EVO-003, `group-ref.ts`) : avant évaluation, toute étape **finale** `groupe` d'un chemin de noms
+  est réécrite en `<dernier>_group` (`lien.groupe` → `lien_group`, `decl.lien.groupe` → `decl.lien_group`, indices et filtres
+  conservés : `liens[0].groupe` → `liens_group[0]`) ; la syntaxe,
+  `extractReferences` et `renameReference` voient l'écriture d'origine (`['lien','groupe']`).
+- `EvalEnv` : `today?`, `defaultLang?` (langue par défaut : identifiant d'un groupe d'options sans code, `core/runtime`).
 - `evaluate(expr, ctx, env?)` → valeur ou `undefined` si erreur ; `evaluateStrict` lève ; `evaluateCondition` → `true` seulement si l'expression vaut `true`.
 - `checkSyntax(expr)` → `{ message, position }` ou `undefined` ; `compile` (avec cache).
 - `extractReferences(expr)` → chemins racines (`[['tiers','nom'], ['sys','plafond']]`). Un nom dans le filtre d'une

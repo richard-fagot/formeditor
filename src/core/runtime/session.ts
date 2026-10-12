@@ -1,5 +1,5 @@
 import { evaluate } from '../expressions';
-import { buildContext, getAnswer, otherPath, withAnswer, type Answers } from './context';
+import { buildContext, getAnswer, groupPath, otherPath, withAnswer, type Answers } from './context';
 import { firstStep, reachableSteps, successor } from './navigate';
 import { resolveStep, type RuntimeInput, type Step } from './steps';
 
@@ -24,12 +24,16 @@ export function currentStep(input: RuntimeInput, s: Session): Step {
   return step;
 }
 
-/** Enregistre la réponse de la question courante (et sa précision « Autre »). */
-export function setAnswer(input: RuntimeInput, s: Session, value: unknown, other?: string): Session {
+/**
+ * Enregistre la réponse de la question courante, sa précision « Autre » et, pour un choix, le groupe de la
+ * sélection (`<clé>_group` : identifiant, ou liste parallèle aux valeurs ; absent hors groupe).
+ */
+export function setAnswer(input: RuntimeInput, s: Session, value: unknown, other?: string, group?: unknown): Session {
   const step = currentStep(input, s);
   if (!step.answerPath) return s;
   let answers = withAnswer(s.answers, step.answerPath, value);
   answers = withAnswer(answers, otherPath(step.answerPath), other || undefined);
+  answers = withAnswer(answers, groupPath(step.answerPath), group ?? undefined);
   return { ...s, answers };
 }
 
@@ -114,7 +118,7 @@ export function prune(input: RuntimeInput, answers: Answers): Answers {
   for (const id of allSteps) {
     const path = resolveStep(input, id)?.answerPath;
     if (!path || kept.has(path.join('.'))) continue;
-    out = withAnswer(withAnswer(out, path, undefined), otherPath(path), undefined);
+    for (const p of [path, otherPath(path), groupPath(path)]) out = withAnswer(out, p, undefined);
   }
   return out;
 }
@@ -124,6 +128,8 @@ export interface SummaryEntry {
   step: Step;
   value: unknown;
   other?: unknown;
+  /** Groupe de la sélection d'un choix (`<clé>_group`). */
+  group?: unknown;
 }
 
 /** Réponses du parcours effectif jusqu'à la page courante, dans l'ordre de première visite. */
@@ -136,7 +142,8 @@ export function summaryEntries(input: RuntimeInput, s: Session): SummaryEntry[] 
     seen.add(id);
     const value = getAnswer(s.answers, step.answerPath);
     if (value === undefined) continue;
-    out.push({ stepId: id, step, value, other: getAnswer(s.answers, otherPath(step.answerPath)) });
+    const group = getAnswer(s.answers, groupPath(step.answerPath));
+    out.push({ stepId: id, step, value, other: getAnswer(s.answers, otherPath(step.answerPath)), ...(group === undefined ? {} : { group }) });
   }
   return out;
 }

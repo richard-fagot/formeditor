@@ -1,5 +1,5 @@
 {
-  "description": "Amicale sans sinistre : accident corporel (pas de question de lien), une victime hospitalisée, pas de tiers, recontact par courrier et par un autre moyen précisé.",
+  "description": "Amicale sans sinistre : accident corporel (pas de question de lien), une victime hospitalisée, déclarant conjoint ayant droit (groupe sans code, même valeur que dans « Victime directe »), pas de tiers, recontact par courrier et par un autre moyen précisé.",
   "questionnaire": "q_declaration",
   "scenario": "sc_amicale_sans_sinistre",
   "today": "2026-10-10",
@@ -23,6 +23,11 @@
           "duree_hospitalisation": 3
         }
       ]
+    },
+    {
+      "step": "n_qualite",
+      "value": "conjoint",
+      "group": "Ayant droit"
     },
     {
       "step": "n_montant",
@@ -54,6 +59,8 @@
     "n_type",
     "n_date",
     "n_victimes",
+    "n_qualite",
+    "n_ayant_droit",
     "n_montant",
     "n_tiers",
     "n_circonstances",

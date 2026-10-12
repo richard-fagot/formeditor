@@ -1,5 +1,5 @@
 import { evaluate, evaluateCondition, type EvalContext, type EvalEnv } from '../expressions';
-import { OTHER_VALUE, type LocalizedText, type Question, type StructureField } from '../model';
+import { GROUP_SUFFIX, OTHER_GROUP, OTHER_VALUE, type LocalizedText, type Question, type StructureField } from '../model';
 import { choiceOptions } from '../runtime';
 import { defaultMessage } from './messages';
 
@@ -28,10 +28,11 @@ function validDate(s: string): boolean {
 
 /**
  * Valide une réponse. `ctx` est le contexte d'évaluation, réponse courante comprise (sous sa clé).
- * `other` : précision de l'option « Autre ».
+ * `other` : précision de l'option « Autre » ; `group` : groupe de la sélection d'un choix (`<clé>_group`, lu à côté
+ * de la réponse par l'appelant, jamais dans `ctx` où une clé homonyme peut venir d'ailleurs ; absent : la valeur suffit).
  */
 export function validateAnswer(
-  q: Question | StructureField, value: unknown, ctx: EvalContext, env: EvalEnv = {}, other?: unknown, path = '',
+  q: Question | StructureField, value: unknown, ctx: EvalContext, env: EvalEnv = {}, other?: unknown, path = '', group?: unknown,
 ): FieldError[] {
   const errors: FieldError[] = [];
   const fail = (param: string, arg?: unknown) =>
@@ -79,10 +80,13 @@ export function validateAnswer(
     }
     case 'single':
     case 'multiple': {
-      const visible = new Set(choiceOptions(q, ctx, env).map((o) => o.value));
-      if (q.other) visible.add(OTHER_VALUE);
+      // Option = (groupe, valeur). Groupe non renseigné : la valeur suffit.
+      const options = choiceOptions(q, ctx, env).map((o) => [o.group?.id ?? '', o.value] as const);
+      if (q.other) options.push([OTHER_GROUP, OTHER_VALUE]);
       const list = Array.isArray(value) ? value : [value];
-      if (list.some((v) => !visible.has(String(v)))) fail('option');
+      const groupAt = (i: number) => (Array.isArray(group) ? group[i] : group);
+      const known = (v: unknown, g: unknown) => options.some(([og, ov]) => ov === String(v) && (g === undefined || g === null || String(g) === og));
+      if (list.some((v, i) => !known(v, groupAt(i)))) fail('option');
       if (q.type === 'single') break;
       if (q.minSelected !== undefined && list.length < q.minSelected) fail('minSelected', q.minSelected);
       if (q.maxSelected !== undefined && list.length > q.maxSelected) fail('maxSelected', q.maxSelected);
@@ -123,7 +127,7 @@ function validateStructure(
     for (const f of q.fields) {
       if (f.when && !evaluateCondition(f.when, octx, env)) continue;
       const fpath = q.repeat ? `${path}[${i}].${f.key}` : `${path}.${f.key}`;
-      errors.push(...validateAnswer(f, occ?.[f.key], octx, env, occ?.[`${f.key}_${OTHER_VALUE}`], fpath));
+      errors.push(...validateAnswer(f, occ?.[f.key], octx, env, occ?.[`${f.key}_${OTHER_VALUE}`], fpath, occ?.[`${f.key}_${GROUP_SUFFIX}`]));
     }
   });
 }
