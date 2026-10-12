@@ -1,6 +1,6 @@
 # EVO-009 — Copier une question dans la bibliothèque et masquer des champs d'une question structurée
 
-Statut : en cours
+Statut : fait 2026-10-12
 Dépend de : spec §3.8 (bibliothèque de questions : création, référence d'une question de bibliothèque dans un questionnaire) et spec §3.4 (questions de type structure) — existants
 
 ## Besoin
