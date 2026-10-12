@@ -50,7 +50,8 @@ export function bindShortcuts(target: Window = window): () => void {
       const previous = map[key];
       map[key] = (e) => {
         if (useStore.getState().palette.open) return;
-        const typing = isTyping(document.activeElement);
+        // La cible compte aussi : Entrée validée dans la palette arrive ici après sa fermeture (champ démonté).
+        const typing = isTyping(document.activeElement) || (e.target instanceof Element && isTyping(e.target));
         const allowed = typing ? !!c.allowInInput : !activatesFocused(e) && (c.scope === 'global' || graphHasFocus());
         if (allowed && (!c.enabled || c.enabled())) {
           e.preventDefault();
