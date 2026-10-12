@@ -160,7 +160,9 @@ Mis à jour le 2026-10-12 — jusqu'à EVO-005
 - **Lire l'étiquette d'une arête** — Condition abrégée (32 caractères) ; « sinon » en italique pour une arête sans condition ;
   « ? » pour une condition encore vide ; « 2. » : rang quand plusieurs arêtes sortent du nœud ; nom de sortie pour un bloc.
   Avec un libellé : le libellé (police normale) au lieu de la condition, tronqué par « … » s'il est trop long ; au survol,
-  le libellé complet puis la condition (ou « sinon »). Une arête seule sans condition n'a d'étiquette que si elle a un libellé.
+  le libellé complet puis la condition telle que l'étiquette l'afficherait sans libellé (« ? » si encore vide, « sinon »
+  parmi plusieurs sorties, rien pour une arête seule sans condition). Une arête seule sans condition, hors sortie de bloc,
+  n'a d'étiquette que si elle a un libellé ; une arête de sortie de bloc a toujours une étiquette (nom de la sortie).
 - **Changer l'ordre d'évaluation des arêtes** — Sélectionner l'arête puis `Alt+↑` / `Alt+↓` (logigramme), boutons « Évaluer
   plus tôt » / « Évaluer plus tard » du panneau, ou palette. Le rang est rappelé sous « Condition » (« Rang 1 sur 3 »). `[cmd: edge.moveUp]` `[cmd: edge.moveDown]`
 - **Supprimer une arête** — Sélectionner l'arête puis `Suppr`, ou bouton « Supprimer » du panneau de l'arête. `[cmd: node.delete]`

@@ -6,6 +6,8 @@ import { resolve } from 'node:path';
 const appUrl = pathToFileURL(resolve('dist/index.html')).href;
 /** Délai de regroupement des frappes dans l'historique (COALESCE_MS = 1500) dépassé. */
 const AFTER_COALESCE = 1700;
+/** `C` redonne le focus à la condition 30 ms après (ExpressionInput) : attendre avant de saisir ailleurs. */
+const AFTER_REFOCUS = 300;
 
 async function openExample(page: Page) {
   const errors: string[] = [];
@@ -64,27 +66,34 @@ test('EVO-005 : libellé d’arête affiché, condition au survol, effacement, a
   // Arête seule sans condition (aucune pastille avant) : le libellé s'affiche.
   await expect(pill(page, 'e_type_date')).toHaveCount(0);
   await page.getByTestId('rf__node-n_date').click();
+  await expect(caption).toHaveCount(0); // nœud sélectionné : plus de panneau d'arête
   await page.keyboard.press('c'); // sélectionne l'arête entrante
-  await caption.fill('Vers la date');
+  // `C` donne (et redonne) le focus à la condition : l'attendre, sinon il peut arriver pendant la saisie du libellé.
+  await expect(page.locator('.cm-editor.cm-focused')).toHaveCount(1);
+  await page.waitForTimeout(AFTER_REFOCUS);
+  await page.locator('[data-testid="edge-caption"][data-edge-id="e_type_date"]').fill('Vers la date');
   await expect(pill(page, 'e_type_date').locator('[data-edge-caption]')).toHaveText('Vers la date');
-  await expect(pill(page, 'e_type_date')).toHaveAttribute('title', 'Vers la date\nsinon');
+  await expect(pill(page, 'e_type_date')).toHaveAttribute('title', 'Vers la date'); // arête seule : pas de « sinon »
 
   // Arête issue d'une sortie de bloc.
   await pill(page, 'e_bloc_identifie').click();
-  await caption.fill('Tiers identifié');
+  await page.locator('[data-testid="edge-caption"][data-edge-id="e_bloc_identifie"]').fill('Tiers identifié');
   await expect(pill(page, 'e_bloc_identifie').locator('[data-edge-caption]')).toHaveText('Tiers identifié');
   await expect(pill(page, 'e_bloc_identifie')).toContainText('identifie');
 
   // Libellé trop long : tronqué avec « … », complet au survol.
   const long = 'Un libellé de lecture beaucoup trop long pour tenir dans la pastille de l’arête du logigramme';
   await page.getByTestId('rf__node-n_date').click();
+  await expect(caption).toHaveCount(0); // nœud sélectionné : plus de panneau d'arête
   await page.keyboard.press('c');
-  await caption.fill(long);
+  await expect(page.locator('.cm-editor.cm-focused')).toHaveCount(1);
+  await page.waitForTimeout(AFTER_REFOCUS);
+  await page.locator('[data-testid="edge-caption"][data-edge-id="e_type_date"]').fill(long);
   const box = pill(page, 'e_type_date');
   await expect(box.locator('[data-edge-caption]')).toHaveText(long);
   const overflow = await box.evaluate((el) => ({ over: el.scrollWidth > el.clientWidth, ellipsis: getComputedStyle(el).textOverflow }));
   expect(overflow).toEqual({ over: true, ellipsis: 'ellipsis' });
-  await expect(box).toHaveAttribute('title', `${long}\nsinon`);
+  await expect(box).toHaveAttribute('title', long);
 
   // Prévisualisation : chemin inchangé, aucun libellé d'arête dans le wizard.
   await page.getByTestId('view-preview').click();
