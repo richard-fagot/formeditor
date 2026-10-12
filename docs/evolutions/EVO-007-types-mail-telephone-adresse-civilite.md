@@ -1,6 +1,6 @@
 # EVO-007 — Types mail, téléphone, adresse et civilité
 
-Statut : en cours
+Statut : fait 2026-10-12
 Dépend de : aucune (s'appuie sur les types texte et choix unique, et sur les contraintes du §3.7)
 
 ## Besoin
