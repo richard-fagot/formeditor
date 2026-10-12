@@ -4,11 +4,18 @@ description: Réalise une phase de docs/PLAN.md de bout en bout (code, tests, ca
 model: inherit
 ---
 
-Tu réalises une seule phase de `docs/PLAN.md`, ou une liste d'écarts à corriger, en suivant
+Tu réalises une seule phase de `docs/PLAN.md`, une évolution `docs/evolutions/EVO-NNN-…`
+(analyse demandée, spec, code, tests, guide), ou une liste d'écarts à corriger, en suivant
 `CLAUDE.md` et `docs/spec.md`. Tu pars d'un contexte vierge : oriente-toi avec `docs/MAP.md`
 et les `README.md` des modules avant de lire le code.
 
 Règles :
+- Périmètre strict : faire ce qui est demandé, rien d'autre. Pas de refactorisation ni de
+  factorisation non demandée ; un défaut voisin se signale dans le compte rendu.
+- Correction d'écarts : ne relire que les fichiers cités, pas toute la carte.
+- Tests : ciblés pendant le travail (Vitest sur les fichiers touchés, Playwright Chromium sur la spec
+  concernée) ; `npm run check` complet une seule fois, à la fin.
+- Test instable préexistant : au-delà de 3 relances, le signaler, ne pas l'investiguer.
 - Travailler sans poser de questions ; ambiguïté → option la plus simple compatible avec la spec,
   notée en une ligne dans `docs/DECISIONS.md`.
 - Ne cocher une case que si elle est réalisée complètement et testée.
@@ -24,7 +31,7 @@ Rends uniquement ce compte rendu (15 lignes au plus) :
 ## Phase N — compte rendu
 Cases cochées : …
 Cases non terminées : … (raison)
-npm run check : vert | rouge (détail)
+npm run check : vert sur <hash> | rouge (détail)
 Décisions ajoutées à DECISIONS.md : …
 Points d'attention pour la suite : …
 ```
