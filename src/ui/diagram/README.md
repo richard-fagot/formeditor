@@ -22,7 +22,8 @@ Dépend de `app/store`, `app/commands` (liaison tracée à la souris : `edge.cre
 - Le conteneur porte `data-graph-focus` : les raccourcis à une lettre agissent s'il a le focus (ou si le focus est
   sur un bouton hors dialogue, cf. `app/shortcuts`).
   Il le prend à l'ouverture d'un graphe (nouveau questionnaire, changement d'onglet), sauf saisie en cours.
-- Graphe vide : invitation « Ajouter une question » (commande `node.newQuestion`, raccourci affiché).
+- Nœud sélectionné seul gardé visible (`useKeepSelectionVisible.ts`).
+- Graphe vide (`EmptyHint.tsx`) : invitation « Ajouter une question » (commande `node.newQuestion`, raccourci affiché).
 - Mise en page automatique (`autoLayout.ts` : `computeLayout`, ELK.js `elk.bundled.js`, couches de haut en bas ;
   `useAutoLayout` : réagit à `layoutRequest`, tailles mesurées par React Flow, un point d'historique, vue ajustée). Test : `autoLayout.test.ts`.
 - Export en image (EVO-004, `useImageExport.ts`, `ImageDialog.tsx`) : le dialogue (derniers choix, `Entrée` = exporter) appelle

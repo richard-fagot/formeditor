@@ -5,13 +5,14 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import type { Issue } from '../../core/validation';
-import { command, runCommand } from '../../app/commands';
-import { formatKey, isTyping } from '../../app/shortcuts';
-import { getGraph, layoutOf, scopeOf, useStore, useT, type GraphRef } from '../../app/store';
-import { Button, Kbd } from '../../ui-kit';
+import { runCommand } from '../../app/commands';
+import { isTyping } from '../../app/shortcuts';
+import { getGraph, layoutOf, scopeOf, useStore, type GraphRef } from '../../app/store';
 import { DiagramContext } from './DiagramContext';
 import { useAutoLayout } from './useAutoLayout';
 import { useImageExport } from './useImageExport';
+import { useKeepSelectionVisible } from './useKeepSelectionVisible';
+import { EmptyHint } from './EmptyHint';
 import { ImageDialog } from './ImageDialog';
 import { NodeView, type NodeData } from './NodeView';
 import { EdgeView } from './EdgeView';
@@ -111,19 +112,7 @@ function DiagramInner({ graph, issues, readOnly }: DiagramProps) {
   const exportable = !readOnly && graph.kind === 'questionnaire';
   useImageExport(graph, container, exportable);
 
-  // Garde le nœud sélectionné visible (navigation au clavier, création chaînée).
-  useEffect(() => {
-    const id = !readOnly && selection.nodes.length === 1 ? selection.nodes[0] : undefined;
-    const p = id ? layout?.nodes[id] : undefined;
-    const box = container.current?.getBoundingClientRect();
-    if (!p || !box) return;
-    const { x, y, zoom } = rf.getViewport();
-    const sx = p.x * zoom + x;
-    const sy = p.y * zoom + y;
-    if (sx < 0 || sy < 0 || sx + 240 * zoom > box.width || sy + 100 * zoom > box.height) {
-      void rf.setCenter(p.x + 120, p.y + 50, { zoom, duration: 200 });
-    }
-  }, [selection.nodes, layout, rf]);
+  useKeepSelectionVisible(container, layout?.nodes, readOnly);
 
   const focusGraph = () => container.current?.focus({ preventScroll: true });
 
@@ -187,20 +176,5 @@ function DiagramInner({ graph, issues, readOnly }: DiagramProps) {
         {exportable && <ImageDialog graph={graph} />}
       </div>
     </DiagramContext.Provider>
-  );
-}
-
-/** Invitation affichée sur un graphe vide : la première question, à la souris ou par N. */
-function EmptyHint() {
-  const t = useT();
-  const custom = useStore((s) => s.keymap['node.newQuestion']);
-  const key = (custom ?? command('node.newQuestion')?.keys ?? [])[0];
-  return (
-    <div className="pointer-events-none absolute inset-0 flex items-center justify-center" data-testid="diagram-empty">
-      <div className="pointer-events-auto flex flex-col items-center gap-2 rounded-lg border border-dashed border-slate-300 bg-white/90 px-6 py-4 text-sm text-slate-500">
-        <span>{t('diagram.empty')}</span>
-        <Button size="sm" onClick={() => runCommand('node.newQuestion')}>{t('diagram.firstQuestion')}{key && <Kbd>{formatKey(key)}</Kbd>}</Button>
-      </div>
-    </div>
   );
 }
