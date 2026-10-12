@@ -2,6 +2,7 @@ import type { Expression, Label, LocalizedText } from './text';
 
 export const QUESTION_TYPES = [
   'text', 'date', 'number', 'single', 'multiple', 'boolean', 'tristate', 'structure',
+  'email', 'phone', 'address', 'civility',
 ] as const;
 export type QuestionType = (typeof QUESTION_TYPES)[number];
 
@@ -146,6 +147,51 @@ export interface TristateQuestion extends QuestionBase {
   other?: OtherOption;
 }
 
+/** Mail (EVO-007) : RFC 5321 `Mailbox` ; réponse : domaine en minuscules, partie locale telle que saisie. */
+export interface EmailQuestion extends QuestionBase {
+  type: 'email';
+}
+
+/** Type de ligne exigé d'un téléphone. */
+export type LineType = 'mobile' | 'fixed';
+
+/** Téléphone (EVO-007) : réponse E.164 (`+33612345678`), pays (ISO 3166-1 alpha-2) sous `<clé>_pays`. */
+export interface PhoneQuestion extends QuestionBase {
+  type: 'phone';
+  /** Pays proposé au départ. Défaut : `FR`. */
+  defaultCountry?: string;
+  /** Pays autorisés. Défaut : tous. */
+  countries?: string[];
+  /** Type de ligne exigé. Défaut : indifférent. */
+  lineType?: LineType;
+}
+
+/** Adresse sur une ligne (EVO-007) : réponse = la ligne saisie, pays sous `<clé>_pays`. */
+export interface AddressQuestion extends QuestionBase {
+  type: 'address';
+  defaultCountry?: string;
+  countries?: string[];
+  /** Bornes de longueur. Défaut : 5 et 200. */
+  minLength?: number;
+  maxLength?: number;
+  /** Adresse à vérifier par un service de normalisation (BAN pour la France…) : indicateur exporté, non exécuté. */
+  verify?: boolean;
+}
+
+/** Code d'une civilité : Madame, Monsieur, Ne se prononce pas. */
+export type CivilityCode = 'MME' | 'M' | 'NP';
+
+/** Civilité (EVO-007) : choix unique prédéfini, réponse = code fixe. */
+export interface CivilityQuestion extends QuestionBase {
+  type: 'civility';
+  /** Libellés modifiés, par code (sinon libellés par défaut). */
+  labels?: Partial<Record<CivilityCode, LocalizedText>>;
+  /** Libellés courts (« Mme », « M. ») au lieu des longs. */
+  short?: boolean;
+  /** Option « Ne se prononce pas » (`NP`), en dernier. */
+  undisclosed?: boolean;
+}
+
 /** Champ de structure : une question de tout type sauf structure, avec condition d'affichage. */
 export type StructureField = Exclude<Question, StructureQuestion> & { when?: Expression };
 
@@ -160,7 +206,8 @@ export interface StructureQuestion extends QuestionBase {
 
 export type Question =
   | TextQuestion | DateQuestion | NumberQuestion | SingleChoiceQuestion
-  | MultipleChoiceQuestion | BooleanQuestion | TristateQuestion | StructureQuestion;
+  | MultipleChoiceQuestion | BooleanQuestion | TristateQuestion | StructureQuestion
+  | EmailQuestion | PhoneQuestion | AddressQuestion | CivilityQuestion;
 
 /** Valeur réservée de l'option « Autre ». */
 export const OTHER_VALUE = 'other';
@@ -180,6 +227,36 @@ export const DONT_KNOW_GROUP = 'NSP';
 export const DONT_KNOW_LABEL = { fr: 'Ne sais pas', en: 'Don’t know' };
 /** Vrai si « Ne sais pas » est activée sur la question (jamais sur une structure). */
 export const hasDontKnow = (q: { type: string; dontKnow?: unknown }): boolean => q.type !== 'structure' && !!q.dontKnow;
+
+/** Suffixe du pays d'un téléphone ou d'une adresse : `<clé>_pays` (EVO-007). */
+export const COUNTRY_SUFFIX = 'pays';
+/** Référence au pays : `ma_question.pays` (EVO-007). */
+export const COUNTRY_REF = 'pays';
+/** Pays par défaut d'un téléphone ou d'une adresse. */
+export const DEFAULT_COUNTRY = 'FR';
+
+/** Codes de civilité dans l'ordre d'affichage. */
+export const CIVILITY_CODES: readonly CivilityCode[] = ['MME', 'M', 'NP'];
+/** Libellés par défaut des civilités (destinés à l'utilisateur final) : longs et courts. */
+export const CIVILITY_LABELS: Record<'long' | 'short', Record<CivilityCode, LocalizedText>> = {
+  long: {
+    MME: { fr: 'Madame', en: 'Madam' },
+    M: { fr: 'Monsieur', en: 'Mister' },
+    NP: { fr: 'Ne se prononce pas', en: 'Prefer not to say' },
+  },
+  short: {
+    MME: { fr: 'Mme', en: 'Mrs' },
+    M: { fr: 'M.', en: 'Mr' },
+    NP: { fr: 'Ne se prononce pas', en: 'Prefer not to say' },
+  },
+};
+/** Codes proposés par une question civilité (`NP` si activée, en dernier). */
+export const civilityCodes = (q: CivilityQuestion): CivilityCode[] => CIVILITY_CODES.filter((c) => c !== 'NP' || !!q.undisclosed);
+/** Libellé d'une civilité : libellé modifié, sinon libellé par défaut (court ou long). */
+export const civilityLabel = (q: CivilityQuestion, code: CivilityCode): LocalizedText =>
+  q.labels?.[code] ?? CIVILITY_LABELS[q.short ? 'short' : 'long'][code];
+/** Types dont la réponse porte un pays (`<clé>_pays`). */
+export const hasCountry = (q: { type: string }): boolean => q.type === 'phone' || q.type === 'address';
 
 /** Valeur « ne sait pas » d'un tri-state. */
 export const UNKNOWN_VALUE = 'unknown';

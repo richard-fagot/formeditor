@@ -27,6 +27,7 @@ Dépend de `core/model`, `core/expressions`.
 - « Ne sais pas » (EVO-006) : `setAnswer(…, group?, dontKnow?)` range le marqueur `<clé>_nsp: true` (`dontKnowPath`) ; toute autre
   réponse l'efface ; `prune` l'efface avec la réponse ; `SummaryEntry.dontKnow`. `dontKnowAnswer(q)` : valeur (`null`, `[]` pour un
   choix multiple) et groupe (`NSP` pour un choix) d'une réponse « Ne sais pas ».
+- Pays (EVO-007) : `setAnswer(…, dontKnow?, country?)` range `<clé>_pays` (`countryPath`) ; absent sinon ; `prune` l'efface avec la réponse.
 - `successor`, `chooseEdge`, `firstStep`, `prune`, `projectedSteps`, `getAnswer`, `withAnswer`, `otherPath`.
 
 ## Règles
@@ -40,4 +41,4 @@ Dépend de `core/model`, `core/expressions`.
 - Pas de validation des réponses ici : voir `core/validation` (`validateAnswer`).
 
 ## Tests
-`runtime.test.ts`, `trace.test.ts`, `options.test.ts`, `groups.test.ts`, `dont-know.test.ts` ; `tests/reference/paths.test.ts` rejoue `examples/*/chemins/*.json`.
+`runtime.test.ts`, `trace.test.ts`, `options.test.ts`, `groups.test.ts`, `dont-know.test.ts`, `country.test.ts` ; `tests/reference/paths.test.ts` rejoue `examples/*/chemins/*.json`.

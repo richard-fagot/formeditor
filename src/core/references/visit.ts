@@ -1,5 +1,5 @@
 import {
-  isChoiceGroup, isDynamicEntry, isVariantLabel, type ChoiceEntry, type Edge, type Graph, type GraphNode, type Label, type LocalizedText,
+  civilityCodes, civilityLabel, isChoiceGroup, isDynamicEntry, isVariantLabel, type ChoiceEntry, type Edge, type Graph, type GraphNode, type Label, type LocalizedText,
   type Question, type StructureField, type Workspace,
 } from '../model';
 
@@ -80,6 +80,14 @@ export function mapQuestion<Q extends Question | StructureField>(q: Q, f: ExprMa
     case 'single':
     case 'multiple':
       out.options = q.options.map((o, i) => mapEntry(o, f, at, `options[${i}]`));
+      break;
+    case 'civility':
+      // Libellés des civilités (EVO-007) : modifiés ou par défaut, parcourus pour les traductions manquantes ;
+      // seuls les libellés modifiés sont réécrits.
+      for (const code of civilityCodes(q)) {
+        const text = mapText(civilityLabel(q, code), f, at(`labels.${code}`));
+        if (q.labels?.[code]) out.labels = { ...(out.labels as object), [code]: text };
+      }
       break;
     case 'structure':
       out.fields = q.fields.map((fd) => mapQuestion(fd, f, { ...base, structure: q.key, property: `fields.${fd.key}` }));

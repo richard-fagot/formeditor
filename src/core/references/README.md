@@ -14,6 +14,9 @@ Résolution des clés et espaces de noms, index des usages, renommage propagé. 
   Le parcours visite libellé (`options[i].group`), condition et entrées de chaque groupe (`options[i].options[j].…`).
 - « Ne sais pas » (EVO-006) : la portée contient `<chemin>.nsp` (genre `dontKnow`, type `boolean`) pour une question ou un
   champ dont l'option est activée ; le libellé `dontKnow.label` est parcouru (renommage, traductions manquantes).
+- Pays (EVO-007) : la portée contient `<chemin>.pays` (genre `country`, type `text`) pour une question ou un champ `phone` ou
+  `address`. Les libellés d'une civilité (modifiés ou par défaut, propriété `labels.<code>`) sont parcourus (traductions
+  manquantes) ; seuls les libellés modifiés sont réécrits.
 - `renameKey(ws, target, newKey)` : `target` = question (`owner` + `nodeId`, `fieldId` pour un champ),
   alias d'instance de bloc, variable système (scénarios compris), ou champ d'une liste système (`systemField` :
   `sys.x.champ`, noms relatifs des entrées dynamiques dont `from` est `sys.x`, exemple et scénarios ; nom invalide ou pris → inchangé). Renvoie un nouveau `Workspace`.

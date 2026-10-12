@@ -10,7 +10,9 @@ Dépend de `core`, `registry`, `app/store`, `app/commands`, `ui-kit`, `ui/system
   l'environnement de rendu des plugins (libellés résolus, `options` via `choiceOptions`, `scoped`).
   `RuntimeInput.env.defaultLang` = langue par défaut du projet (identifiant d'un groupe d'options sans code). Le groupe de
   la sélection (`<clé>_group`) est passé au champ (`group`) et enregistré par `setAnswer` ; de même le marqueur « Ne sais pas »
-  (`dontKnow`, `onDontKnow` : `dontKnowAnswer` puis `setAnswer(…, true)`, décochée : réponse effacée).
+  (`dontKnow`, `onDontKnow` : `dontKnowAnswer` puis `setAnswer(…, true)`, décochée : réponse effacée) et le pays d'un téléphone
+  ou d'une adresse (`country`, `<clé>_pays`, EVO-007). `RuntimeInput.env.display` = `displayFormatters(ws)` (`core/contact`) :
+  interpolation d'une civilité (libellé) et d'un téléphone (format international).
 - `Preview.tsx` : barre (langue : commande `preview.lang` ; nombre de textes non traduits dans la langue affichée, montrés
   dans la langue par défaut ; recommencer, bascule des panneaux : commandes `preview.toggleSystem`,
   `preview.toggleDebug`), `Wizard` (progression, page, précédent / suivant, « Revenir à la synthèse »), panneau latéral.

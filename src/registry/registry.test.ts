@@ -4,9 +4,9 @@ import { commonQuestionFields } from '../plugin-api';
 import { QUESTION_TYPE_PLUGINS, questionType } from './index';
 
 describe('registre des types de questions', () => {
-  it('fournit les huit types de la spec avec leurs raccourcis par défaut (§4.4)', () => {
+  it('fournit les douze types de la spec avec leurs raccourcis par défaut (§4.4, EVO-007)', () => {
     expect(QUESTION_TYPE_PLUGINS.map((p) => p.type)).toEqual([...QUESTION_TYPES]);
-    expect(QUESTION_TYPE_PLUGINS.map((p) => p.shortcut)).toEqual(['t', 'd', 'r', 'u', 'm', 'b', '3', 's']);
+    expect(QUESTION_TYPE_PLUGINS.map((p) => p.shortcut)).toEqual(['t', 'd', 'r', 'u', 'm', 'b', '3', 's', 'Shift+E', 'Shift+T', 'Shift+A', 'Shift+C']);
   });
 
   it('crée des questions conformes au modèle et garde options et « Autre » d’un choix à l’autre', () => {
@@ -16,5 +16,8 @@ describe('registre des types de questions', () => {
     expect(questionType('tristate')!.create(commonQuestionFields(single), single)).toMatchObject({ type: 'tristate', other: {} });
     expect(questionType('structure')!.create(commonQuestionFields(single), single)).toMatchObject({ type: 'structure', fields: [] });
     expect(questionType('single')!.create(commonQuestionFields(single))).toMatchObject({ type: 'single', options: [] });
+    for (const t of ['email', 'phone', 'address', 'civility'] as const) {
+      expect(questionType(t)!.create(commonQuestionFields(single), single)).toEqual({ ...commonQuestionFields(single), type: t });
+    }
   });
 });

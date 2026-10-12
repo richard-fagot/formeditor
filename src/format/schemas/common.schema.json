@@ -226,7 +226,11 @@
             "multiple",
             "boolean",
             "tristate",
-            "structure"
+            "structure",
+            "email",
+            "phone",
+            "address",
+            "civility"
           ]
         }
       },
@@ -248,7 +252,11 @@
             "single",
             "multiple",
             "boolean",
-            "tristate"
+            "tristate",
+            "email",
+            "phone",
+            "address",
+            "civility"
           ]
         },
         "when": {
@@ -492,6 +500,11 @@
       "type": "integer",
       "minimum": 1
     },
+    "countryCode": {
+      "type": "string",
+      "pattern": "^[A-Z]{2}$",
+      "description": "Code pays ISO 3166-1 alpha-2 (`FR`, `BE`)."
+    },
     "params_text": {
       "type": "object",
       "properties": {
@@ -654,6 +667,106 @@
           "dontKnow"
         ]
       }
+    },
+    "params_email": {
+      "type": "object",
+      "description": "Mail (EVO-007) : RFC 5321 `Mailbox` (contrôle intégré `email`). Réponse : chaîne, nom de domaine en minuscules.",
+      "properties": {
+        "type": {
+          "const": "email"
+        }
+      },
+      "required": []
+    },
+    "params_phone": {
+      "type": "object",
+      "description": "Téléphone (EVO-007) : contrôles intégrés `phone` et `lineType`. Réponse : E.164 (`+33612345678`) ; pays sous `<clé>_pays`.",
+      "properties": {
+        "defaultCountry": {
+          "$ref": "#/$defs/countryCode",
+          "description": "Pays proposé au départ. Défaut : `FR`."
+        },
+        "countries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/countryCode"
+          },
+          "uniqueItems": true,
+          "description": "Pays autorisés. Absent ou vide : tous."
+        },
+        "lineType": {
+          "enum": [
+            "mobile",
+            "fixed"
+          ],
+          "description": "Type de ligne exigé. Absent : indifférent."
+        }
+      },
+      "required": []
+    },
+    "params_address": {
+      "type": "object",
+      "description": "Adresse sur une ligne (EVO-007) : contrôles intégrés `address` et `postalCode` (France). Réponse : la ligne saisie ; pays sous `<clé>_pays`.",
+      "properties": {
+        "defaultCountry": {
+          "$ref": "#/$defs/countryCode",
+          "description": "Pays proposé au départ. Défaut : `FR`."
+        },
+        "countries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/countryCode"
+          },
+          "uniqueItems": true,
+          "description": "Pays autorisés. Absent ou vide : tous."
+        },
+        "minLength": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Longueur minimale. Défaut : 5."
+        },
+        "maxLength": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Longueur maximale. Défaut : 200."
+        },
+        "verify": {
+          "type": "boolean",
+          "description": "Adresse à vérifier par un service de normalisation (BAN pour la France, ou autre) : indicateur pour l'équipe de dev, non exécuté par l'outil."
+        }
+      },
+      "required": []
+    },
+    "params_civility": {
+      "type": "object",
+      "description": "Civilité (EVO-007) : choix unique prédéfini. Réponse : code `MME`, `M` ou `NP`.",
+      "properties": {
+        "labels": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Libellés modifiés, par code (sinon libellés par défaut).",
+          "properties": {
+            "MME": {
+              "$ref": "#/$defs/localizedText"
+            },
+            "M": {
+              "$ref": "#/$defs/localizedText"
+            },
+            "NP": {
+              "$ref": "#/$defs/localizedText"
+            }
+          }
+        },
+        "short": {
+          "type": "boolean",
+          "description": "Libellés courts par défaut (« Mme », « M. ») au lieu des longs (« Madame », « Monsieur »)."
+        },
+        "undisclosed": {
+          "type": "boolean",
+          "description": "Option « Ne se prononce pas » (code `NP`), en dernier."
+        }
+      },
+      "required": []
     },
     "questionCore": {
       "description": "Propriétés communes à toutes les questions, puis paramètres propres au type (params_<type>).",
@@ -844,6 +957,66 @@
           },
           "then": {
             "$ref": "#/$defs/params_structure"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "email"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/params_email"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "phone"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/params_phone"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "address"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/params_address"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "civility"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/params_civility"
           }
         }
       ]

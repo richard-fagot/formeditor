@@ -80,6 +80,10 @@ Une question comporte :
 | Choix multiple | Liste d'options, nombre de sélections min et max. |
 | Booléen | « Oui / Non » par défaut, ou un jeu de libellés de la bibliothèque. |
 | Tri-state | Booléen avec une troisième valeur (« Ne sait pas »…), via un jeu de libellés. |
+| Mail (EVO-007) | Aucun. Contrôle intégré : adresse conforme à la RFC 5322 (`addr-spec`) restreinte par la RFC 5321 (`Mailbox`) : partie locale en `dot-atom` ou entre guillemets, domaine en noms de domaine (labels de 63 caractères au plus, sans tiret en bord) ou littéral IP (`[192.0.2.1]`, `[IPv6:2001:db8::1]`), 64 octets pour la partie locale et 254 caractères au total, ni commentaire ni espace repliable ; ASCII seulement (RFC 6531 / 6532 refusées). Valeur : domaine en minuscules, partie locale telle que saisie. |
+| Téléphone (EVO-007) | Pays par défaut (France), pays autorisés (tous par défaut), type de ligne attendu (indifférent, mobile, fixe). Saisie : sélecteur d'indicatif (drapeau, pays, indicatif) et numéro ; espaces, points, tirets, parenthèses acceptés ; un numéro en `+` ou `00` fixe le pays et prime sur le sélecteur. Contrôles intégrés : numéro valide pour le pays (plan de numérotation) et pays autorisé ; type de ligne si exigé. Valeur : E.164 (`+33612345678`), réaffichée au format national à la sortie du champ. |
+| Adresse (EVO-007) | Pays par défaut (France), pays autorisés, longueur min/max (5 / 200), indicateur « adresse à vérifier par un service de normalisation » (exporté, jamais exécuté : l'outil n'appelle aucun service). Saisie : sélecteur de pays (masqué si un seul pays est autorisé) et une seule ligne. Contrôles intégrés : au moins une lettre, longueur dans les bornes, ni retour à la ligne ni caractère de contrôle (tous alphabets acceptés) ; en France, un code postal à 5 chiffres. Valeur : la ligne saisie. |
+| Civilité (EVO-007) | Choix unique prédéfini, codes fixes : Madame (`MME`), Monsieur (`M`), « Ne se prononce pas » (`NP`, facultative, désactivée par défaut, en dernier). Libellés longs ou courts (« Mme », « M. »), modifiables et multilingues. Pas de « Autre (préciser) », d'option ajoutée ni de source dynamique. Saisie : boutons radio sur une ligne. |
 | Structure | Groupe de champs de tous types sauf structure. Chaque champ a sa clé, ses contraintes et sa condition d'affichage. Peut être **répétable** (min/max d'occurrences, ex. plusieurs victimes ou témoins), avec un bouton « Ajouter » pour créer une occurrence et la possibilité d'en supprimer une. |
 
 **Autre (préciser)**, applicable au choix unique, au choix multiple, au booléen et au tri-state : ajoute une option qui ouvre un champ texte. Libellé éditable, précision obligatoire ou facultative. Elle est toujours affichée en dernier.
@@ -96,6 +100,8 @@ Toute entrée peut être déplacée (boutons du panneau de propriétés ou ordre
 **Groupes d'options** (EVO-003) : les entrées peuvent être regroupées sous des intitulés de groupe. Le libellé d'un groupe se comporte exactement comme celui d'une option (multilingue, interpolation, variantes conditionnelles). Un groupe a en plus un **code** facultatif et une **condition d'affichage** facultative. Il contient des options statiques et des entrées dynamiques (pas de groupe dans un groupe). Les entrées placées avant le premier groupe n'appartiennent à aucun groupe. Un groupe dont la condition est fausse, ou dont aucune option n'est visible, n'est pas affiché. Une valeur est unique dans son groupe mais peut se répéter d'un groupe à l'autre : la réponse identifie l'option **et** son groupe. L'identifiant d'un groupe est son code s'il est défini, sinon son libellé dans la langue par défaut ; il est unique dans la question, et `AUTRE` est réservé. « Autre (préciser) » reste en dernier, hors de tout groupe. Dans la prévisualisation, chaque groupe est une section titrée ; dans le panneau de propriétés, chaque groupe a sa ligne de paramétrage (libellé, code, condition, traductions) juste avant celles de ses options ; monter ou descendre un groupe déplace ses options, le supprimer supprime ses options.
 
 Saisie rapide (§4.3) : `# Libellé` ouvre un groupe (la ligne ne contient que le libellé) ; `* option` ou `- option` ajoute une option au groupe courant (une ligne sans puce reste acceptée) ; les lignes vides sont ignorées ; `\#`, `\*`, `\-` écrivent une option qui commence par ce caractère. Une ligne `$<référence>` (ex. `$sys.sinistres`, `$couleur_preferee`) crée une entrée dynamique ; toute autre ligne crée une option statique (une option qui commence par `$` s'écrit `\$…`). Une référence inconnue ou mal écrite est signalée par les vérifications (§4.6).
+
+**Mail, téléphone, adresse, civilité** (EVO-007) : utilisables comme question et comme champ de structure. Les espaces de début et de fin de saisie sont retirés avant contrôle ; une saisie invalide est conservée telle quelle pour être corrigée. Une question facultative laissée vide n'est pas contrôlée. Obligatoire, contraintes libres, conditions d'affichage et « Ne sais pas » s'appliquent comme aux autres types. Dans le logigramme, le nœud affiche une icône du type, et pour le téléphone et l'adresse le pays par défaut s'il n'est pas la France et le type de ligne exigé. Dans la prévisualisation, les contrôles s'appliquent à la sortie du champ et à la validation de la page ; le panneau de débogage montre la valeur normalisée et le pays.
 
 Le booléen et le tri-state n'ont pas d'entrées : leurs libellés viennent du jeu de libellés (EVO-001, arbitrage A).
 
@@ -117,6 +123,7 @@ Portée et espaces de noms :
 | `temoins[0].nom`, `count(temoins)` | Occurrences d'une structure répétable. |
 | `ma_question.groupe` | Groupe de la sélection d'un choix unique ou multiple (EVO-003) : code du groupe, sinon son libellé (langue par défaut) ; `AUTRE` pour « Autre (préciser) » ; vide hors groupe. Choix multiple : liste des groupes des options sélectionnées, dans l'ordre des valeurs. `groupe` est un mot réservé (aucune clé ne peut s'appeler `groupe`). |
 | `ma_question.nsp` | « Ne sais pas » choisie (EVO-006) : `true` si oui, `false` sinon (jamais vide). `ma_question` est alors vide (absent ; liste vide pour un choix multiple), comme une question sans réponse ; `ma_question.groupe` vaut le code réservé `NSP`. Connu seulement sur une question dont l'option est activée (aussi `alias.cle.nsp`, `structure.champ.nsp`). `nsp` est un mot réservé. |
+| `ma_question.pays` | Pays d'un téléphone ou d'une adresse (EVO-007) : code ISO 3166-1 alpha-2 (`FR`, `BE`), rangé à côté de la réponse ; vide si non répondu. Aussi `alias.cle.pays`, `structure.champ.pays`. Inconnu sur les autres types ; un champ de structure nommé `pays` reste désigné par `structure.pays` (`pays` n'est pas réservé). |
 | `sys.profil` | Variable de l'état du système. |
 | `decl.date_sinistre` | Question d'un bloc instancié avec l'alias `decl`, vue depuis le questionnaire. À l'intérieur du bloc, sa clé s'écrit sans préfixe. |
 
@@ -135,6 +142,7 @@ Unicité : une clé est unique dans son questionnaire, et unique dans son bloc p
 - Chaque contrainte associe une **règle** et un **message d'erreur facultatif**, multilingue. Sans message, un message par défaut est généré.
 - Les bornes peuvent être littérales ou des expressions : date postérieure à aujourd'hui, antérieure à une autre réponse ou à une variable système, etc.
 - Une contrainte libre, sous forme d'expression booléenne, couvre les règles croisées entre plusieurs réponses.
+- **Contrôles intégrés** (EVO-007) des types mail, téléphone, adresse et civilité : ce ne sont pas des contraintes à écrire. Chacun a un message par défaut, multilingue et surchargeable comme les autres : `email` (« Adresse mail invalide. »), `phone` (« Numéro de téléphone invalide. », aussi pour un pays non autorisé), `lineType` (« Numéro mobile attendu. » / « Numéro fixe attendu. »), `address` (« Adresse invalide : une ligne de 5–200 caractères, avec au moins une lettre. »), `postalCode` (« Code postal manquant. »).
 
 ### 3.8 Bibliothèque et blocs
 
@@ -149,6 +157,7 @@ Unicité : une clé est unique dans son questionnaire, et unique dans son bloc p
 - Le projet déclare ses langues et une langue par défaut.
 - Tout texte destiné à l'utilisateur final est multilingue : intitulés, options, aides, messages, pages.
 - L'éditeur signale les traductions manquantes. La prévisualisation permet de changer de langue.
+- Civilité (EVO-007) : libellés par défaut fournis en français et en anglais ; dans les autres langues du projet, ils sont signalés comme traductions manquantes. L'interpolation d'une civilité (`{civilite} {nom}`) affiche son libellé dans la langue courante, celle d'un téléphone son format international lisible (`+33 6 12 34 56 78`) ; pour les autres types (choix unique compris), la valeur. Noms de pays : fournis par le navigateur (`Intl.DisplayNames`) dans la langue affichée, sans donnée embarquée.
 - L'interface de l'outil lui-même est aussi internationalisable (français par défaut).
 
 ## 4. IHM et ergonomie
@@ -209,6 +218,7 @@ Tous les raccourcis sont **paramétrables** dans un écran dédié. Chaque actio
 | Insérer depuis la bibliothèque | I |
 | Nouvelle page d'information / synthèse / fin | Alt+I / Alt+S / Alt+F |
 | Type : texte, date, nombre, choix unique, choix multiple, booléen, tri-state, structure | T, D, R, U, M, B, 3, S |
+| Type : mail, téléphone, adresse, civilité (EVO-007) | Shift+E, Shift+T, Shift+A, Shift+C |
 | Basculer obligatoire | O |
 | Activer « Autre (préciser) » | A |
 | Éditer l'intitulé | Entrée |
@@ -330,6 +340,7 @@ L'architecture combine un **noyau métier pur**, sans interface et testé en TDD
 | Validation du format | Ajv | — | Validation par JSON Schema, réutilisable par l'équipe de dev. |
 | Image du logigramme | html-to-image | modern-screenshot | Méthode d'export documentée par React Flow ; fonctionne en `file://`. |
 | Persistance | idb-keyval | Dexie | IndexedDB en quelques lignes. |
+| Téléphones (EVO-007) | libphonenumber-js (métadonnées `max`) | contrôle E.164 générique + règles France | Validation par pays et type de ligne, hors ligne, données embarquées (≈ 160 ko). |
 | Raccourcis | tinykeys | hotkeys-js | Minuscule ; liaisons reconfigurables. |
 | Kit graphique | Tailwind + Radix UI (via shadcn/ui) | Mantine | Moderne, accessible, composants copiés dans le dépôt donc maîtrisés. |
 | i18n de l'outil | Dictionnaires simples | i18next | Peu de chaînes ; i18next seulement si le besoin grandit. |
@@ -343,7 +354,8 @@ L'architecture combine un **noyau métier pur**, sans interface et testé en TDD
 | `core/expressions` | Analyse, évaluation, extraction des références, interpolation des libellés. Adaptateur JSONata isolé ici. | model |
 | `core/references` | Résolution des clés et espaces de noms, index des usages, renommage propagé. | model, expressions |
 | `core/runtime` | Moteur de parcours : arêtes, boucles, répétitions, historique, retour arrière. | model, expressions |
-| `core/validation` | Contraintes de champs et vérifications de graphe (§4.6). | model, expressions, references |
+| `core/contact` | Contrôles et normalisation des types mail, téléphone, adresse, civilité ; pays (EVO-007). | model |
+| `core/validation` | Contraintes de champs et vérifications de graphe (§4.6). | model, expressions, references, contact |
 | `format` | Sérialisation, JSON Schema, migrations, import/export, bundle. | model |
 | `plugins/question-types/<type>` | Pour chaque type : modèle, valeurs par défaut, contraintes, aperçu logigramme, panneau de propriétés, rendu wizard, fragment de schéma, doc. | core, ui-kit |
 | `plugins/node-kinds/<kind>` | Même découpage pour question, bloc, information, synthèse, fin. | core, ui-kit |

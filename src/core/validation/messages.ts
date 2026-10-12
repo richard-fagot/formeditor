@@ -18,6 +18,16 @@ export const DEFAULT_MESSAGES: Record<string, LocalizedText> = {
   minOccurrences: { fr: 'Au moins {0} élément(s).', en: 'At least {0} item(s).' },
   maxOccurrences: { fr: 'Au plus {0} élément(s).', en: 'At most {0} item(s).' },
   constraint: { fr: 'Valeur invalide.', en: 'Invalid value.' },
+  email: { fr: 'Adresse mail invalide.', en: 'Invalid email address.' },
+  phone: { fr: 'Numéro de téléphone invalide.', en: 'Invalid phone number.' },
+  lineType: { fr: 'Numéro {0} attendu.', en: '{0} number expected.' },
+  address: { fr: 'Adresse invalide : une ligne de {0} caractères, avec au moins une lettre.', en: 'Invalid address: one line of {0} characters, with at least one letter.' },
+  postalCode: { fr: 'Code postal manquant.', en: 'Postal code missing.' },
+};
+
+const LINE_TYPES: Record<string, LocalizedText> = {
+  mobile: { fr: 'mobile', en: 'Mobile' },
+  fixed: { fr: 'fixe', en: 'Landline' },
 };
 
 const NUMBER_KINDS: Record<string, LocalizedText> = {
@@ -30,7 +40,8 @@ export function defaultMessage(param: string, arg?: unknown): LocalizedText {
   const base = DEFAULT_MESSAGES[param] ?? DEFAULT_MESSAGES.constraint!;
   return Object.fromEntries(
     Object.entries(base).map(([lang, t]) => {
-      const a = param === 'numberKind' ? (NUMBER_KINDS[String(arg)]?.[lang] ?? String(arg)) : String(arg ?? '');
+      const names = param === 'numberKind' ? NUMBER_KINDS : param === 'lineType' ? LINE_TYPES : undefined;
+      const a = names ? (names[String(arg)]?.[lang] ?? String(arg)) : String(arg ?? '');
       return [lang, t.replace('{0}', a.replace(/[{}]/g, (c) => c + c))];
     }),
   );

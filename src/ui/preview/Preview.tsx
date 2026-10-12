@@ -2,7 +2,7 @@ import { useEffect, useMemo, type ReactNode } from 'react';
 import { Bug, ChevronLeft, ChevronRight, Database, RotateCcw, Undo2 } from 'lucide-react';
 import { OTHER_VALUE } from '../../core/model';
 import {
-  back, currentStep, dontKnowAnswer, dontKnowPath, getAnswer, groupPath, next, otherPath, progress, resume, setAnswer, start, type RuntimeInput, type Session,
+  back, countryPath, currentStep, dontKnowAnswer, dontKnowPath, getAnswer, groupPath, next, otherPath, progress, resume, setAnswer, start, type RuntimeInput, type Session,
 } from '../../core/runtime';
 import { checkWorkspace } from '../../core/validation';
 import { nodeKind, questionType } from '../../registry';
@@ -107,6 +107,7 @@ function Wizard({ questionnaireId, preview }: { questionnaireId: string; preview
   const other = step.answerPath ? (getAnswer(session.answers, otherPath(step.answerPath)) as string | undefined) : undefined;
   const group = step.answerPath ? getAnswer(session.answers, groupPath(step.answerPath)) : undefined;
   const dontKnow = step.answerPath ? getAnswer(session.answers, dontKnowPath(step.answerPath)) === true : false;
+  const country = step.answerPath ? (getAnswer(session.answers, countryPath(step.answerPath)) as string | undefined) : undefined;
   // « Ne sais pas » cochée : réponse vide, groupe `NSP` (choix) et marqueur ; décochée : plus de réponse (EVO-006).
   const setDontKnow = (on: boolean) => {
     if (!q) return;
@@ -147,9 +148,9 @@ function Wizard({ questionnaireId, preview }: { questionnaireId: string; preview
                 {q.required === true && <span className="text-rose-500"> *</span>}
               </label>
               {q.help && <p className="text-sm text-slate-500">{env.label(q.help)}</p>}
-              <plugin.Field key={step.id} question={q} value={value} other={other} group={group} errors={errorMap} env={env} inputId={`f-${step.id}`}
+              <plugin.Field key={step.id} question={q} value={value} other={other} group={group} country={country} errors={errorMap} env={env} inputId={`f-${step.id}`}
                 dontKnow={dontKnow} onDontKnow={setDontKnow}
-                onChange={(v, o, g) => update({ session: setAnswer(input, session, v, v === OTHER_VALUE || (Array.isArray(v) && v.includes(OTHER_VALUE)) ? o : undefined, g) })} />
+                onChange={(v, o, g, c) => update({ session: setAnswer(input, session, v, v === OTHER_VALUE || (Array.isArray(v) && v.includes(OTHER_VALUE)) ? o : undefined, g, undefined, c) })} />
               {(errorMap[''] ?? []).map((m, i) => <p key={i} className="text-sm text-rose-600" role="alert">{m}</p>)}
             </div>
           )}

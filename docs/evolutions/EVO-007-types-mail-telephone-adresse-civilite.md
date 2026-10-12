@@ -1,6 +1,6 @@
 # EVO-007 — Types mail, téléphone, adresse et civilité
 
-Statut : à faire
+Statut : fait 2026-10-12
 Dépend de : aucune (s'appuie sur les types texte et choix unique, et sur les contraintes du §3.7)
 
 ## Besoin
@@ -180,3 +180,43 @@ Ajouter une section « Analyse » en bas de ce fichier :
 
 Faisable sans ambiguïté bloquante → choix notés dans l'analyse et `docs/DECISIONS.md`, puis
 réalisation. Sinon → statut « à arbitrer », options et conséquences, arrêt sans coder.
+
+## Analyse
+
+Conclusion : **faisable sans arbitrage**. Choix retenus (repris dans `docs/DECISIONS.md`) :
+
+1. **Modules** : un plugin par type (`plugins/question-types/email`, `phone`, `address`, `civility`), car un plugin
+   n'importe jamais un autre plugin et chacun a sa saisie propre. Contrôles, normalisation, liste des pays et
+   libellés de civilité dans un nouveau module pur `core/contact` (dépend de `core/model` et de `libphonenumber-js`),
+   utilisé par `core/validation` (contrôles intégrés), les plugins (saisie) et `ui/preview` (interpolation). Autres
+   impacts : `core/model` (types, `COUNTRY_SUFFIX`, libellés de civilité), `core/expressions` (`cle.pays`, affichage
+   interpolé), `core/references` (portée `.pays`, traductions des libellés de civilité), `core/runtime`
+   (`<clé>_pays` rangé et effacé avec la réponse), `plugin-api` (`FieldProps.country`), `registry`, `format`
+   (version 6, schéma), `ui/preview`, `plugins/question-types/structure` (pays d'un champ dans l'occurrence).
+2. **Téléphone** : cible retenue, `libphonenumber-js` avec les métadonnées `max` (≈ 160 ko de JSON brut,
+   embarquées dans `dist/index.html`, aucun accès réseau) : validité par pays (longueur, préfixes) et type de ligne
+   (`MOBILE`, `FIXED_LINE`). Un numéro `FIXED_LINE_OR_MOBILE` (pays qui ne distinguent pas, ex. États-Unis) satisfait
+   les deux exigences. `00` en tête est remplacé par `+` avant analyse (indépendant du pays choisi). Liste des pays :
+   celle de la bibliothèque (codes ISO 3166-1 alpha-2, 245 entrées).
+3. **Noms de pays** : `Intl.DisplayNames` (type `region`) du navigateur, sans données embarquées ; disponible dans
+   Chrome, Edge et Firefox (≥ 86) et vérifié par les tests de fumée Chromium et Firefox. Repli : le code ISO si
+   l'API manque ou ne connaît pas le code. Drapeau : emoji calculé à partir du code (indicateurs régionaux).
+4. **Adresse** : aucun appel à un service externe ; `verify: true` est un **indicateur exporté** pour l'équipe de
+   dev (BAN pour la France, autre service ailleurs), sans effet dans l'outil. Option proposée, **non réalisée** :
+   appeler l'API Adresse (api-adresse.data.gouv.fr, publique, sans clé) en prévisualisation pour suggérer une
+   adresse normalisée ; risque : dépendance réseau et données saisies envoyées à un tiers.
+5. **Mail** : grammaire écrite et testée dans l'outil (`core/contact/email.ts`, ≈ 60 lignes) plutôt qu'une
+   bibliothèque : les bibliothèques courantes (validator.js…) n'appliquent pas exactement RFC 5321 `Mailbox`
+   (chaîne entre guillemets, littéraux IP, limites). Adresses internationalisées (RFC 6531 / 6532) **refusées** :
+   ASCII seulement, comme le prévoit RFC 5321 seule ; à revoir si un besoin apparaît.
+6. **Stockage** : valeur normalisée seule (mail normalisé, E.164, ligne d'adresse sans espaces de bord, code de
+   civilité) ; une saisie invalide est conservée telle quelle (sans espaces de bord) pour que le contrôle échoue
+   et que l'utilisateur la corrige. Le pays (téléphone, adresse) est rangé à côté de la réponse sous
+   `<clé>_pays` (comme `<clé>_group`), effacé avec elle. `cle.pays` est réécrit en
+   `($exists(cle_pays) ? cle_pays : cle.pays)` : un champ de structure existant nommé `pays` reste lisible et
+   `pays` n'est pas une clé réservée (comportement inchangé pour les projets existants).
+
+Autres choix : interpolation d'une civilité = son libellé affiché (langue courante), d'un téléphone = format
+international lisible ; c'est une exception à « valeur, pas libellé » (FORMAT §5.3), qui reste vraie pour le choix
+unique. Raccourcis par défaut : Shift+E (mail), Shift+T (téléphone), Shift+A (adresse), Shift+C (civilité), les
+lettres simples étant prises. Un numéro d'un pays non autorisé reçoit le message du contrôle téléphone.

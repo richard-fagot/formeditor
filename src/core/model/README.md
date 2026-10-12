@@ -13,11 +13,15 @@ utilitaires purs. Aucun import externe : c'est la base de tous les autres module
   `cle.groupe`), `OTHER_GROUP` (`AUTRE`).
   « Ne sais pas » (EVO-006) : `dontKnow?: DontKnowOption` (`{ label? }`) sur toute question sauf structure (`dontKnow?: never`),
   `hasDontKnow`, `DONT_KNOW_SUFFIX` / `DONT_KNOW_REF` (`nsp` : marqueur `<clé>_nsp`, référence `cle.nsp`), `DONT_KNOW_GROUP` (`NSP`), `DONT_KNOW_LABEL`.
+- Mail, téléphone, adresse, civilité (EVO-007) : `EmailQuestion`, `PhoneQuestion` (`defaultCountry?`, `countries?`, `lineType?`),
+  `AddressQuestion` (`defaultCountry?`, `countries?`, `minLength?`, `maxLength?`, `verify?`), `CivilityQuestion` (`labels?`, `short?`,
+  `undisclosed?`) ; `COUNTRY_SUFFIX` / `COUNTRY_REF` (`pays` : `<clé>_pays`, `cle.pays`), `DEFAULT_COUNTRY` (`FR`), `hasCountry`,
+  `CIVILITY_CODES`, `CIVILITY_LABELS` (longs / courts, fr / en), `civilityCodes(q)`, `civilityLabel(q, code)`.
 - `node.ts` : `GraphNode` (union par `kind` : question locale ou de bibliothèque, block, info, summary, end, exit),
   `isLocalQuestion`, `isLibraryQuestion`.
 - `graph.ts` : `Edge` (dont `caption?`, libellé de lecture, EVO-005), `Graph`.
 - `documents.ts` : `Questionnaire`, `Library`, `Block`, `LabelSet`, `Project`, `SystemVariable` (dont `caption?`), `Scenario`,
-  `Layout`, `Workspace` (projet complet en mémoire), `Bundle`, `FORMAT_VERSION` (5).
+  `Layout`, `Workspace` (projet complet en mémoire), `Bundle`, `FORMAT_VERSION` (6).
 - `keys.ts` : `deriveKey` (« Date du sinistre » → `date_sinistre`), `uniqueKey`, `isValidKey`, `newId`, `RESERVED_KEYS` (dont `groupe`, `nsp`).
 
 ## Invariants

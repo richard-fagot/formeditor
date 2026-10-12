@@ -1,5 +1,5 @@
 import { evaluate } from '../expressions';
-import { buildContext, dontKnowPath, getAnswer, groupPath, otherPath, withAnswer, type Answers } from './context';
+import { buildContext, countryPath, dontKnowPath, getAnswer, groupPath, otherPath, withAnswer, type Answers } from './context';
 import { firstStep, reachableSteps, successor } from './navigate';
 import { resolveStep, type RuntimeInput, type Step } from './steps';
 
@@ -27,15 +27,19 @@ export function currentStep(input: RuntimeInput, s: Session): Step {
 /**
  * Enregistre la réponse de la question courante, sa précision « Autre » et, pour un choix, le groupe de la
  * sélection (`<clé>_group` : identifiant, ou liste parallèle aux valeurs ; absent hors groupe) et le marqueur
- * « Ne sais pas » (`<clé>_nsp: true`, EVO-006 ; absent sinon : toute autre réponse l'efface).
+ * « Ne sais pas » (`<clé>_nsp: true`, EVO-006 ; absent sinon : toute autre réponse l'efface) et le pays d'un
+ * téléphone ou d'une adresse (`<clé>_pays`, EVO-007 ; absent sinon).
  */
-export function setAnswer(input: RuntimeInput, s: Session, value: unknown, other?: string, group?: unknown, dontKnow?: boolean): Session {
+export function setAnswer(
+  input: RuntimeInput, s: Session, value: unknown, other?: string, group?: unknown, dontKnow?: boolean, country?: string,
+): Session {
   const step = currentStep(input, s);
   if (!step.answerPath) return s;
   let answers = withAnswer(s.answers, step.answerPath, value);
   answers = withAnswer(answers, otherPath(step.answerPath), other || undefined);
   answers = withAnswer(answers, groupPath(step.answerPath), group ?? undefined);
   answers = withAnswer(answers, dontKnowPath(step.answerPath), dontKnow ? true : undefined);
+  answers = withAnswer(answers, countryPath(step.answerPath), country || undefined);
   return { ...s, answers };
 }
 
@@ -120,7 +124,7 @@ export function prune(input: RuntimeInput, answers: Answers): Answers {
   for (const id of allSteps) {
     const path = resolveStep(input, id)?.answerPath;
     if (!path || kept.has(path.join('.'))) continue;
-    for (const p of [path, otherPath(path), groupPath(path), dontKnowPath(path)]) out = withAnswer(out, p, undefined);
+    for (const p of [path, otherPath(path), groupPath(path), dontKnowPath(path), countryPath(path)]) out = withAnswer(out, p, undefined);
   }
   return out;
 }

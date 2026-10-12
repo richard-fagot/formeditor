@@ -1,5 +1,5 @@
 # Guide utilisateur — Éditeur de questionnaires
-Mis à jour le 2026-10-12 — jusqu'à EVO-006
+Mis à jour le 2026-10-12 — jusqu'à EVO-007
 
 ## Mode d'emploi du guide
 
@@ -260,6 +260,37 @@ Changer de type : sélectionner une question locale (pas une référence de bibl
 - **Rendre une structure répétable** — Case « Répétable (plusieurs occurrences) », puis « Occurrences min. », « Occurrences max. »,
   « Libellé du bouton « Ajouter » ». Le wizard affiche « Ajouter » et « Supprimer » par occurrence.
 
+### Mail, téléphone, adresse, civilité
+Types dédiés (aussi comme champ de structure) avec **contrôles de format intégrés** : rien à écrire, un message par
+défaut multilingue, personnalisable (§9). Les espaces en début et en fin de saisie sont retirés ; une question facultative
+laissée vide n'est pas contrôlée. Obligatoire, contraintes libres, conditions et « Ne sais pas » s'appliquent comme ailleurs.
+Dans le wizard, le contrôle s'applique à la sortie du champ (message sous le champ) et à « Suivant ».
+- **Passer une question en mail** — `Shift+E` ou palette « Type : Mail ». Contrôle `email` : adresse conforme aux RFC 5321 / 5322
+  (`jean+test@exemple.fr`, `"jean dupont"@exemple.fr`, `jean@[192.0.2.1]` acceptées ; espace, `@` doublé, point en début, en
+  fin ou doublé, partie locale de plus de 64 caractères, accents refusés). Valeur : domaine en minuscules
+  (`Jean.Dupont@Exemple.FR` → `Jean.Dupont@exemple.fr`). `[cmd: node.type.email]`
+- **Passer une question en téléphone** — `Shift+T` ou palette « Type : Téléphone ». Saisie : liste d'indicatifs (drapeau,
+  pays, `+33`) puis numéro ; espaces, points, tirets, parenthèses acceptés. Un numéro en `+` ou `00` fixe le pays (la liste
+  suit : `+32 470 12 34 56` → Belgique). Valeur : format international `+33612345678` ; le champ réaffiche le numéro au
+  format national en sortie (`06 12 34 56 78`). Contrôles `phone` (numéro valide pour le pays, pays autorisé) et `lineType`.
+  `[cmd: node.type.phone]`
+- **Régler un téléphone** — « Pays par défaut » (France par défaut), « Pays autorisés » (codes ISO séparés par des virgules,
+  ex. `FR, BE` ; vide : tous ; la liste du wizard est restreinte), « Type de ligne attendu » (indifférent, mobile, fixe).
+- **Passer une question en adresse** — `Shift+A` ou palette « Type : Adresse ». Saisie : pays (liste masquée si un seul pays est
+  autorisé) puis une ligne (numéro, voie, code postal, ville). Contrôle `address` : au moins une lettre, entre 5 et 200
+  caractères, une seule ligne (tous alphabets acceptés : `東京都千代田区1-1`) ; `postalCode` en France : code postal à 5
+  chiffres (`12 rue des Lilas 31000 Toulouse`). `[cmd: node.type.address]`
+- **Régler une adresse** — « Pays par défaut », « Pays autorisés », « Longueur min. » / « Longueur max. » (5 / 200 par défaut),
+  case « Adresse à vérifier par un service de normalisation (BAN…) » : indicateur exporté pour l'équipe de dev, l'outil
+  n'appelle aucun service.
+- **Passer une question en civilité** — `Shift+C` ou palette « Type : Civilité ». Boutons « Madame » / « Monsieur » sur une
+  ligne ; codes fixes `MME`, `M`. `[cmd: node.type.civility]`
+- **Régler une civilité** — « Libellés courts (« Mme », « M. ») » ; « Option « Ne se prononce pas » (code NP) » (en dernier) ;
+  « Libellé — MME » / « — M » / « — NP » : libellés multilingues remplaçant ceux par défaut (fournis en français et en
+  anglais ; les autres langues du projet sont signalées en traduction manquante). Le code ne change jamais.
+- Logigramme : icône du type ; pour le téléphone et l'adresse, le pays par défaut s'il n'est pas `FR`, « mobile » ou « fixe »
+  si un type de ligne est exigé ; pour la civilité, ses libellés.
+
 ## 7. Options
 
 Concerne le choix unique et le choix multiple. Le booléen et le tri-state n'ont pas d'options (§6).
@@ -327,6 +358,10 @@ Concerne le choix unique et le choix multiple. Le booléen et le tri-state n'ont
   est choisie ; vide pour une option sans groupe. Choix multiple : liste des groupes, dans l'ordre des valeurs cochées.
   `ma_question` donne toujours la valeur seule. Ex. : `qualite_declarant.groupe = 'SC'`, `'AA' in liens.groupe`.
   `groupe` est un mot réservé : aucune clé ne peut s'appeler `groupe`.
+- **Lire la valeur d'un mail, téléphone, adresse, civilité** — `ma_question` : mail normalisé, numéro `+33612345678`, ligne
+  d'adresse, code de civilité (`MME`, `M`, `NP`) ; vide si non répondu. `ma_question.pays` (téléphone, adresse ; aussi
+  `structure.champ.pays`) : code pays ISO (`FR`, `BE`), rangé sous `<clé>_pays`. Ex. : `souscripteur.telephone.pays != 'FR'`,
+  `souscripteur.civilite = 'MME'`. Ailleurs, `.pays` est « Référence inconnue » (sauf un champ de structure nommé `pays`).
 - **Tester « Ne sais pas »** — `ma_question.nsp` (aussi `alias.cle.nsp`, `structure.champ.nsp`, `victimes[0].champ.nsp`) :
   `true` si « Ne sais pas » est choisie, `false` sinon (jamais vide). `ma_question` est alors vide (`$exists` faux, liste
   vide `[]` pour un choix multiple), comme une question sans réponse : `.nsp` permet de les distinguer. `ma_question.groupe`
@@ -339,7 +374,9 @@ Concerne le choix unique et le choix multiple. Le booléen et le tri-state n'ont
 - **Savoir quand une condition est vraie** — Seulement si elle vaut `true`. Une réponse non posée ou vide est absente :
   `absent = 'x'` et `absent != 'x'` sont faux ; tester avec `$exists(cle)`.
 - **Insérer une valeur dans un texte** — `{expression}` dans un libellé : `Bonjour {sys.nom_assure}`. C'est la valeur qui
-  s'affiche, pas le libellé de l'option. `{{` et `}}` donnent des accolades.
+  s'affiche, pas le libellé de l'option. Exceptions : une civilité affiche son libellé dans la langue affichée
+  (`{civilite} {nom}` → « Madame Dupont »), un téléphone son format international (`+33 6 12 34 56 78`), quand
+  l'expression est la seule référence à la question. `{{` et `}}` donnent des accolades.
 - **Exemples prêts à copier** :
   1. `type_sinistre = 'vol'`
   2. `montant > 1000 and $exists(date_sinistre)`
@@ -353,6 +390,7 @@ Concerne le choix unique et le choix multiple. Le booléen et le tri-state n'ont
   10. `Montant pour {$count(victimes)} victime(s)` (interpolation dans un libellé)
   11. `qualite_declarant.groupe = 'SC'` (groupe de l'option choisie)
   12. `montant_estime.nsp` (« Ne sais pas » choisie)
+  13. `souscripteur.telephone.pays = 'BE'` (pays d'un téléphone)
 
 ## 9. Contraintes et messages d'erreur
 
@@ -360,7 +398,8 @@ Concerne le choix unique et le choix multiple. Le booléen et le tri-state n'ont
   valide) » (ex. `date_sinistre <= $today()`) et « Message d’erreur » multilingue. Croix (« Supprimer ») pour la retirer.
 - **Personnaliser un message d'erreur intégré** — Même section : un champ « Message d’erreur — <règle> » par règle
   applicable (`required`, `minLength`, `maxLength`, `pattern`, `min`, `max`, `numberKind`, `decimals`, `minSelected`,
-  `maxSelected`, `format`, `option`, `otherDetail`, `minOccurrences`, `maxOccurrences`). Vide : message par défaut.
+  `maxSelected`, `format`, `option`, `otherDetail`, `minOccurrences`, `maxOccurrences` ; contrôles intégrés `email`, `phone`,
+  `lineType`, `address`, `postalCode`, §6). Vide : message par défaut. Chaque langue du projet a sa ligne.
 - **Borner une réponse** — Par les réglages du type (§6) : longueurs, motif, dates, minimum / maximum, sélections, occurrences.
 - **Voir une contrainte en action** — Prévisualisation : les messages s'affichent en rouge sous la question après « Suivant ».
 
@@ -448,7 +487,8 @@ Concerne le choix unique et le choix multiple. Le booléen et le tri-state n'ont
 - **Retrouver le nœud d'une page** — Cliquer la page : le nœud est sélectionné dans le logigramme (visible en revenant au logigramme).
 - **Afficher le débogage** — Bouton « Débogage » ou palette : « Chemin parcouru », « Conditions évaluées (page courante) »
   (arête suivie surlignée, `true` / `false` / « sinon » / « erreur »), « Valeurs courantes » (réponses et `sys` ; le groupe
-  de l'option choisie apparaît sous `<clé>_group`, « Ne sais pas » sous `<clé>_nsp`). `[cmd: preview.toggleDebug]`
+  de l'option choisie apparaît sous `<clé>_group`, « Ne sais pas » sous `<clé>_nsp`, le pays d'un téléphone ou d'une adresse
+  sous `<clé>_pays`, à côté de la valeur normalisée). `[cmd: preview.toggleDebug]`
 - **Changer la langue de la prévisualisation** — Liste « Langue » de la barre, ou palette « Langue de la prévisualisation
   suivante » (plusieurs langues). Un bandeau compte les textes non traduits, affichés dans la langue par défaut. `[cmd: preview.lang]`
 - **Comprendre « parcours bloqué »** — « Aucune arête ne s’applique : parcours bloqué. » : aucune condition vraie et pas de
@@ -526,6 +566,9 @@ ou palette « Problèmes ») ; un clic sur un problème sélectionne le nœud ou
 - **Travailler à plusieurs** ou sur un serveur : la sauvegarde automatique reste dans le navigateur ; partager par l'export.
 - **Annuler après un rechargement** de la page, ou annuler « Nouveau projet », « Ouvrir l’exemple… », l'import d'un projet.
 - **Piloter le wizard au clavier** par des raccourcis dédiés (« Suivant », « Précédent », « Recommencer » sont à la souris).
+- **Vérifier qu'une adresse ou un mail existe** (boîte, voie) : seuls les formats sont contrôlés ; « Adresse à vérifier »
+  est un indicateur pour l'équipe de dev, aucun service n'est appelé.
+- **Accepter un mail avec accents** (adresses internationalisées RFC 6531 / 6532) : refusé.
 - **Importer un seul bloc ou une seule question de bibliothèque** : `bibliotheque.json` remplace toute la bibliothèque.
 
 ## Index des raccourcis
@@ -563,6 +606,10 @@ ou palette « Problèmes ») ; un clic sur un problème sélectionne le nœud ou
 | Type : Booléen | `B` | `node.type.boolean` |
 | Type : Tri-state | `3` | `node.type.tristate` |
 | Type : Structure | `S` | `node.type.structure` |
+| Type : Mail | `Shift+E` | `node.type.email` |
+| Type : Téléphone | `Shift+T` | `node.type.phone` |
+| Type : Adresse | `Shift+A` | `node.type.address` |
+| Type : Civilité | `Shift+C` | `node.type.civility` |
 | Basculer obligatoire | `O` | `node.toggleRequired` |
 | Activer « Autre (préciser) » | `A` | `node.toggleOther` |
 | Activer « Ne sais pas » | — | `node.toggleDontKnow` |

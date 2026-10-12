@@ -1,10 +1,13 @@
 import {
-  DONT_KNOW_REF, GROUP_REF, hasDontKnow, isLibraryQuestion, OTHER_VALUE, type Graph, type Label, type Question, type QuestionType,
+  COUNTRY_REF, DONT_KNOW_REF, hasCountry, GROUP_REF, hasDontKnow, isLibraryQuestion, OTHER_VALUE, type Graph, type Label, type Question, type QuestionType,
   type StructureField, type SystemVariable, type VariableType, type Workspace,
 } from '../model';
 
-/** `group` : groupe de la sélection d'un choix (`cle.groupe`, EVO-003) ; `dontKnow` : `cle.nsp` (EVO-006). */
-export type RefKind = 'answer' | 'field' | 'other' | 'group' | 'dontKnow' | 'alias' | 'system';
+/**
+ * `group` : groupe de la sélection d'un choix (`cle.groupe`, EVO-003) ; `dontKnow` : `cle.nsp` (EVO-006) ;
+ * `country` : pays d'un téléphone ou d'une adresse (`cle.pays`, EVO-007).
+ */
+export type RefKind = 'answer' | 'field' | 'other' | 'group' | 'dontKnow' | 'country' | 'alias' | 'system';
 
 export interface RefInfo {
   /** Chemin pointé : `tiers.nom`, `sys.sinistres.date`. */
@@ -43,6 +46,9 @@ function addQuestion(scope: Scope, q: Question | StructureField, prefix: string,
   }
   if (hasDontKnow(q)) {
     scope.set(`${path}.${DONT_KNOW_REF}`, { path: `${path}.${DONT_KNOW_REF}`, type: 'boolean', ...extra, kind: 'dontKnow' });
+  }
+  if (hasCountry(q)) {
+    scope.set(`${path}.${COUNTRY_REF}`, { path: `${path}.${COUNTRY_REF}`, type: 'text', ...extra, kind: 'country' });
   }
   if (q.type === 'structure') {
     for (const f of q.fields) addQuestion(scope, f, `${path}.`, { ...extra, kind: 'field' });

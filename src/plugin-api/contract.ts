@@ -56,7 +56,10 @@ export interface FieldProps<Q extends Question = Question> {
   other?: string;
   /** Groupe de la sélection d'un choix (`<clé>_group`) : identifiant, ou liste parallèle aux valeurs. */
   group?: unknown;
-  onChange(value: unknown, other?: string, group?: unknown): void;
+  /** Pays d'un téléphone ou d'une adresse (`<clé>_pays`, code ISO 3166-1 alpha-2, EVO-007). */
+  country?: string;
+  /** `country` : pays à ranger à côté de la réponse (téléphone, adresse) ; absent : effacé. */
+  onChange(value: unknown, other?: string, group?: unknown, country?: string): void;
   /** « Ne sais pas » choisie (`<clé>_nsp`, EVO-006). */
   dontKnow?: boolean;
   /**

@@ -57,9 +57,21 @@ export function formatValue(v: unknown): string {
   return String(v);
 }
 
+/** Référence simple (`a`, `a.b`, `a[0].b`) : dernier nom, sinon `undefined`. */
+const REF = /^\s*(?:[A-Za-z_][A-Za-z0-9_]*(?:\[\d+\])?\.)*([A-Za-z_][A-Za-z0-9_]*)(?:\[\d+\])?\s*$/;
+
+/** Valeur interpolée : mise en forme propre au type si l'expression est une simple référence (`env.display`, EVO-007). */
+function display(expr: string, value: unknown, env: EvalEnv): string {
+  const key = env.display && value !== undefined && value !== null ? REF.exec(expr)?.[1] : undefined;
+  const shown = key ? env.display![key]?.(value) : undefined;
+  if (shown === undefined) return formatValue(value);
+  if (typeof shown === 'string') return shown;
+  return shown[env.lang ?? ''] ?? shown[env.defaultLang ?? ''] ?? Object.values(shown)[0] ?? '';
+}
+
 export function interpolate(template: string, ctx: EvalContext, env: EvalEnv = {}): string {
   return parseTemplate(template)
-    .map((s) => ('expr' in s ? formatValue(evaluate(s.expr, ctx, env)) : s.text))
+    .map((s) => ('expr' in s ? display(s.expr, evaluate(s.expr, ctx, env), env) : s.text))
     .join('');
 }
 
