@@ -1,4 +1,4 @@
-import { OTHER_VALUE } from '../model';
+import { GROUP_SUFFIX, OTHER_VALUE } from '../model';
 import type { EvalContext } from '../expressions';
 import { resolveStep, type RuntimeInput } from './steps';
 
@@ -42,3 +42,6 @@ export function withAnswer(answers: Answers, path: string[], value: unknown): An
 }
 
 export const otherPath = (path: string[]) => [...path.slice(0, -1), `${path.at(-1)}_${OTHER_VALUE}`];
+
+/** Chemin du groupe de la sélection d'un choix : `<clé>_group` à côté de la réponse (EVO-003). */
+export const groupPath = (path: string[]) => [...path.slice(0, -1), `${path.at(-1)}_${GROUP_SUFFIX}`];

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, type ReactNode } from 'react';
 import { Bug, ChevronLeft, ChevronRight, Database, RotateCcw, Undo2 } from 'lucide-react';
 import { OTHER_VALUE } from '../../core/model';
-import { back, currentStep, getAnswer, next, otherPath, progress, resume, setAnswer, start, type RuntimeInput, type Session } from '../../core/runtime';
+import { back, currentStep, getAnswer, groupPath, next, otherPath, progress, resume, setAnswer, start, type RuntimeInput, type Session } from '../../core/runtime';
 import { checkWorkspace } from '../../core/validation';
 import { nodeKind, questionType } from '../../registry';
 import { runCommand } from '../../app/commands';
@@ -103,6 +103,7 @@ function Wizard({ questionnaireId, preview }: { questionnaireId: string; preview
   const plugin = q ? questionType(q.type) : undefined;
   const value = step.answerPath ? getAnswer(session.answers, step.answerPath) : undefined;
   const other = step.answerPath ? (getAnswer(session.answers, otherPath(step.answerPath)) as string | undefined) : undefined;
+  const group = step.answerPath ? getAnswer(session.answers, groupPath(step.answerPath)) : undefined;
   const check = () => errorsAt(input, session);
   const errors = state?.attempted ? check() : [];
   const errorMap: Record<string, string[]> = {};
@@ -137,8 +138,8 @@ function Wizard({ questionnaireId, preview }: { questionnaireId: string; preview
                 {q.required === true && <span className="text-rose-500"> *</span>}
               </label>
               {q.help && <p className="text-sm text-slate-500">{env.label(q.help)}</p>}
-              <plugin.Field key={step.id} question={q} value={value} other={other} errors={errorMap} env={env} inputId={`f-${step.id}`}
-                onChange={(v, o) => update({ session: setAnswer(input, session, v, v === OTHER_VALUE || (Array.isArray(v) && v.includes(OTHER_VALUE)) ? o : undefined) })} />
+              <plugin.Field key={step.id} question={q} value={value} other={other} group={group} errors={errorMap} env={env} inputId={`f-${step.id}`}
+                onChange={(v, o, g) => update({ session: setAnswer(input, session, v, v === OTHER_VALUE || (Array.isArray(v) && v.includes(OTHER_VALUE)) ? o : undefined, g) })} />
               {(errorMap[''] ?? []).map((m, i) => <p key={i} className="text-sm text-rose-600" role="alert">{m}</p>)}
             </div>
           )}

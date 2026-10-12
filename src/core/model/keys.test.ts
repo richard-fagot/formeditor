@@ -23,6 +23,14 @@ describe('uniqueKey', () => {
   });
 });
 
+describe('mot réservé « groupe » (EVO-003)', () => {
+  it('aucune clé ne peut s’appeler groupe ; la dérivation l’évite', () => {
+    expect(isValidKey('groupe')).toBe(false);
+    expect(isValidKey('groupe_age')).toBe(true);
+    expect(deriveKey('Groupe')).toBe('q_groupe');
+  });
+});
+
 describe('isValidKey', () => {
   it('accepte le snake_case et refuse le reste et les mots réservés', () => {
     expect(isValidKey('date_sinistre')).toBe(true);

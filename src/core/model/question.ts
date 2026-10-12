@@ -45,10 +45,26 @@ export interface DynamicEntry {
   when?: Expression;
 }
 
-/** Entrée de la liste ordonnée des options d'un choix : option statique ou entrée dynamique. */
-export type ChoiceEntry = ChoiceOption | DynamicEntry;
+/** Élément d'un groupe d'options : option statique ou entrée dynamique. */
+export type ChoiceItem = ChoiceOption | DynamicEntry;
+
+/**
+ * Groupe d'options (EVO-003) : intitulé (libellé comme celui d'une option), code facultatif, condition
+ * d'affichage, options statiques et entrées dynamiques (pas de groupe imbriqué). Reconnu à la présence de `group`.
+ */
+export interface ChoiceGroup {
+  group: Label;
+  /** Identifiant du groupe dans les réponses ; défaut : libellé dans la langue par défaut. */
+  code?: string;
+  when?: Expression;
+  options: ChoiceItem[];
+}
+
+/** Entrée de la liste ordonnée des options d'un choix : option statique, entrée dynamique ou groupe. */
+export type ChoiceEntry = ChoiceItem | ChoiceGroup;
 
 export const isDynamicEntry = (e: ChoiceEntry): e is DynamicEntry => 'from' in e;
+export const isChoiceGroup = (e: ChoiceEntry): e is ChoiceGroup => 'group' in e;
 
 interface QuestionBase {
   /** Id technique immuable. */
@@ -136,6 +152,12 @@ export type Question =
 
 /** Valeur réservée de l'option « Autre ». */
 export const OTHER_VALUE = 'other';
+/** Suffixe de la clé où est rangé le groupe de la sélection : `<clé>_group` (EVO-003). */
+export const GROUP_SUFFIX = 'group';
+/** Mot réservé des expressions : `ma_question.groupe` (groupe de la sélection). */
+export const GROUP_REF = 'groupe';
+/** Identifiant de groupe de l'option « Autre (préciser) ». */
+export const OTHER_GROUP = 'AUTRE';
 /** Valeur « ne sait pas » d'un tri-state. */
 export const UNKNOWN_VALUE = 'unknown';
 

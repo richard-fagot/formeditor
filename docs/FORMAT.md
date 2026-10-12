@@ -1,4 +1,4 @@
-# Format des questionnaires — version 2
+# Format des questionnaires — version 3
 
 Ce document décrit le format JSON produit par l'éditeur de questionnaires. Il s'adresse à l'équipe
 de développement (et à l'IA qui l'assiste) chargée de construire le moteur cible et les formulaires
@@ -34,7 +34,7 @@ libellés et interpolation — 6. Nœuds — 7. Questions — 8. Réponses — 9
 | `<clé>.layout.json`, `bloc_<clé>.layout.json` | `layout` | Positions des nœuds dans l'éditeur. | **non** (à ignorer) |
 | `<projet>.bundle.json` | `bundle` | `project`, `library`, `questionnaires[]`, `layouts[]` dans un seul fichier. | oui (même contenu) |
 
-- Chaque fichier (et le bundle) porte `formatVersion` (entier, actuellement `2`) et `kind`.
+- Chaque fichier (et le bundle) porte `formatVersion` (entier, actuellement `3`) et `kind`.
 - L'outil migre automatiquement à l'ouverture un fichier d'une version antérieure ; il refuse un fichier
   d'une version plus récente. Un moteur cible peut refuser toute version qu'il ne connaît pas.
 - Tout élément (projet, questionnaire, nœud, arête, question, bloc, variable, scénario, jeu de libellés)
@@ -47,7 +47,7 @@ Squelette d'un questionnaire :
 
 ```json
 {
-  "formatVersion": 2,
+  "formatVersion": 3,
   "kind": "questionnaire",
   "id": "q_declaration",
   "key": "declaration_sinistre",
@@ -67,7 +67,7 @@ Squelette d'un questionnaire :
   Les id sont uniques dans leur graphe ; un nœud question local a le même id que sa question.
 - **`key`** : clé lisible en `snake_case` (`^[a-z][a-z0-9_]*$`). C'est elle qu'on écrit dans les
   expressions et qui nomme la réponse. Mots réservés (interdits comme clé) : `sys`, `true`, `false`,
-  `null`, `and`, `or`, `in`.
+  `null`, `and`, `or`, `in`, `groupe` (§10.3).
 
 Unicité des clés (l'outil le vérifie, §13) :
 
@@ -149,7 +149,7 @@ Résolution d'un libellé : variante → langue (avec repli) → interpolation.
 
 | Propriétés de type **libellé** (variantes possibles, interpolées) | Propriétés **texte multilingue** |
 | --- | --- |
-| Question : `label`, `help`, `placeholder` ; option : `label` ; `other.label` ; surcharge `label` d'une question de bibliothèque ; `info` : `title`, `text` ; `summary` : `title` ; `end` : `title`, `message` | Interpolées, sans variantes : `messages.<param>`, `constraints[].message` (§9). Non interpolées : `title` d'un questionnaire ou d'un bloc, `unit`, `repeat.addLabel`, `yes`/`no`/`unknown` d'un jeu de libellés, `label` d'une sortie de bloc |
+| Question : `label`, `help`, `placeholder` ; option : `label` ; groupe d'options : `group` (§7.3) ; `other.label` ; surcharge `label` d'une question de bibliothèque ; `info` : `title`, `text` ; `summary` : `title` ; `end` : `title`, `message` | Interpolées, sans variantes : `messages.<param>`, `constraints[].message` (§9). Non interpolées : `title` d'un questionnaire ou d'un bloc, `unit`, `repeat.addLabel`, `yes`/`no`/`unknown` d'un jeu de libellés, `label` d'une sortie de bloc |
 
 ### 5.3 Interpolation
 
@@ -230,18 +230,41 @@ Une question laissée vide a pour réponse `null` (§8).
 - une **option statique** : `{ "value": "vol", "label": {…}, "when"?: "<condition d'affichage>" }`.
   La valeur `other` est réservée ;
 - ou une **entrée dynamique**, reconnue à la présence de `from` :
-  `{ "from": "<expression>", "label"?: "<expression>", "value"?: "<expression>", "when"?: "<condition>" }` (§7.5).
+  `{ "from": "<expression>", "label"?: "<expression>", "value"?: "<expression>", "when"?: "<condition>" }` (§7.5) ;
+- ou un **groupe d'options** (version 3), reconnu à la présence de `group` :
+  `{ "group": <libellé>, "code"?: "SC", "when"?: "<condition>", "options": [ option statique | entrée dynamique ] }`.
+  Pas de groupe dans un groupe.
 
 Une entrée dont `when` ne vaut pas `true` n'est pas proposée (entrée dynamique : aucune de ses valeurs ;
 une réponse qui la désigne est refusée, §9.1). Les entrées visibles sont déployées dans l'ordre :
 une option statique donne une option, une entrée dynamique en donne zéro, une ou plusieurs **à sa position**.
-Une valeur vide, `other` ou déjà proposée plus haut dans la liste (statique ou dynamique) est écartée.
-« Autre » (§7.4) vient toujours après toutes les entrées.
+Une valeur vide, `other` ou déjà proposée plus haut dans **le même groupe** (ou parmi les options hors groupe ;
+statique ou dynamique) est écartée.
+« Autre » (§7.4) vient toujours après toutes les entrées, hors de tout groupe.
+
+**Groupes.** Un groupe dont `when` ne vaut pas `true` ne donne rien ; sinon ses entrées sont déployées comme
+ci-dessus, à sa position, chacune rattachée au groupe. `group` est un libellé (§5.2) : multilingue, interpolé,
+à variantes ; il s'affiche comme intitulé de section au-dessus de ses options. Un groupe dont aucune option n'est
+visible n'est pas affiché. L'**identifiant** du groupe est `code` s'il est présent, sinon le libellé résolu dans la
+**langue par défaut** du projet (interpolé dans le contexte de la page) ; il doit être unique dans la question et
+`AUTRE` est réservé (§13). Les entrées placées avant le premier groupe n'appartiennent à aucun groupe. Une même
+valeur peut figurer dans deux groupes : une option est identifiée par le couple (identifiant du groupe, valeur).
 
 ```json
 "options": [
   { "from": "sys.sinistres", "label": "date & ' — ' & nature", "value": "id" },
   { "value": "aucun", "label": { "fr": "Non, aucun", "en": "No" } }
+]
+```
+
+```json
+"options": [
+  { "group": { "fr": "Victime directe", "en": "Direct victim" }, "code": "SC", "options": [
+    { "value": "conjoint", "label": { "fr": "Conjoint", "en": "Spouse" } },
+    { "value": "enfant", "label": { "fr": "Enfant", "en": "Child" } } ] },
+  { "group": { "fr": "Ayant droit", "en": "Beneficiary" }, "options": [
+    { "value": "conjoint", "label": { "fr": "Conjoint", "en": "Spouse" } },
+    { "value": "ascendant", "label": { "fr": "Ascendant", "en": "Parent" } } ] }
 ]
 ```
 
@@ -279,7 +302,8 @@ statiques. La migration 1 → 2 place cette `source` en dernière entrée de `op
   sans préfixe (`hospitalise = true`) et masquent une clé homonyme du questionnaire.
 - `repeat: { "min"?, "max"?, "addLabel"? }` rend la structure répétable : réponse en tableau, bouton
   « Ajouter » (`addLabel`) et « Supprimer » bornés par `min` / `max`.
-- La précision « Autre » d'un champ est rangée dans l'occurrence : `{ "canal": "other", "canal_other": "…" }`.
+- La précision « Autre » d'un champ est rangée dans l'occurrence : `{ "canal": "other", "canal_other": "…" }` ;
+  de même le groupe de la sélection d'un choix : `{ "lien": "conjoint", "lien_group": "SC" }`.
 
 ## 8. Réponses
 
@@ -294,13 +318,20 @@ Les réponses d'un parcours forment un objet indexé par clé :
   "tiers_implique": true,
   "tiers": { "nom": "Dupont", "coordonnees": { "adresse": "12 rue des Lilas", "code_postal": "69003", "ville": "Lyon" }, "assurance_connue": "unknown" },
   "circonstances": null,
-  "canaux_contact": ["email", "other"], "canaux_contact_other": "Par l'amicale"
+  "qualite_declarant": "conjoint", "qualite_declarant_group": "SC",
+  "canaux_contact": ["email", "other"], "canaux_contact_other": "Par l'amicale", "canaux_contact_group": ["", "AUTRE"]
 }
 ```
 
 - Question d'un questionnaire (locale ou de bibliothèque) : sous sa clé.
 - Question d'un bloc : sous `<alias>.<clé>` (objet de l'alias de l'instance).
 - Précision « Autre » : clé `<clé>_other`, à côté de la réponse.
+- Groupe de la sélection d'un choix (`single`, `multiple`, version 3) : clé `<clé>_group`, à côté de la réponse
+  (la valeur, elle, est inchangée). Il vaut l'identifiant du groupe de l'option choisie (§7.3), `"AUTRE"` pour
+  « Autre (préciser) ». Option hors groupe : clé absente (`single`) ou `""` (`multiple`). Pour `multiple`, c'est une
+  liste **parallèle** aux valeurs, de même longueur et dans le même ordre (`["conjoint", "conjoint"]` /
+  `["SC", "AA"]`). Une réponse sans `<clé>_group` (valeur par défaut, ancien jeu de test) désigne la première
+  option visible de cette valeur.
 - Question facultative laissée vide (on a cliqué « Suivant » sans répondre) : `null`. Une question
   jamais atteinte, ou dont la réponse a été effacée (§11.5), est **absente**.
 - Une page revisitée (retour arrière, boucle) **remplace** la réponse : aucune itération n'est conservée.
@@ -333,7 +364,8 @@ Le contexte de validation est celui de la page (§10.2) où la réponse en cours
      expression : ignorée si elle ne donne pas un nombre) ; `decimals` (nombre de chiffres après la virgule).
    - `single`, `multiple` : chaque valeur doit être parmi les options **visibles** au moment de la
      validation (entrées dont `when` vaut `true`, déployées comme au §7.3, `other` si « Autre » est activé),
-     sinon `option` ; puis `minSelected`, `maxSelected` (nombre de valeurs cochées).
+     sinon `option`. Si le groupe est renseigné (`<clé>_group`, §8), c'est le couple (groupe, valeur) qui doit
+     être visible (`""` : hors groupe ; `"AUTRE"` avec `other`) ; puis `minSelected`, `maxSelected` (nombre de valeurs cochées).
    - `structure` : `repeat.min` / `repeat.max` sur le nombre d'occurrences (`minOccurrences`,
      `maxOccurrences`) ; s'il n'y a pas d'erreur d'occurrences, chaque champ **visible** de chaque
      occurrence est validé par ce même algorithme, dans le contexte de la page complété par les champs
@@ -403,6 +435,7 @@ Les fonctions de date utilisent la date du jour du moteur (figée par `today` da
 | `victimes.nom` | Champ d'une structure (pour une structure répétable : les valeurs de toutes les occurrences). |
 | `victimes[0].nom`, `$count(victimes)` | Occurrence d'une structure répétable (indice à partir de 0), nombre d'occurrences. |
 | `type_sinistre_other` | Précision « Autre » de `type_sinistre`. |
+| `qualite_declarant.groupe` | Groupe de la sélection d'un choix (version 3) : lit `qualite_declarant_group` (§8) — code du groupe, sinon son libellé dans la langue par défaut ; `"AUTRE"` pour « Autre » ; absent (`single`) ou `""` (`multiple`) hors groupe ; liste pour `multiple`. Aussi `tiers.cle.groupe` (bloc), `victimes.lien.groupe`, `lien.groupe` (champ de structure). Un moteur peut, comme l'outil, réécrire toute étape **finale** `groupe` d'un chemin de noms en `<dernier nom>_group` avant d'évaluer. Ailleurs qu'après une question à choix, `.groupe` est une référence inconnue. |
 | `sys.profil`, `sys.sinistres.nature` | Variable de l'état du système ; champ des objets d'une liste. |
 | `tiers.nom` | Question `nom` du bloc instancié avec l'alias `tiers` (depuis l'hôte, ou dans le bloc). |
 | `nom` (dans le bloc) | Question `nom` du bloc lui-même ; une clé du questionnaire hôte reste accessible sans préfixe si le bloc n'a pas de question homonyme. |
@@ -512,8 +545,8 @@ avec les réponses connues tant que les pages question ont une réponse (`null` 
 À la première page question **sans** réponse, il ajoute toutes les pages encore atteignables depuis
 elle en ignorant les conditions (sans repasser par le chemin déjà projeté). La projection s'arrête aussi
 lorsqu'elle atteint une page déjà projetée (boucle refermée, par exemple `confirmation = false` qui
-renvoie au début) ou une page sans arête applicable (fin, blocage). Les réponses (et précisions
-« Autre ») des questions absentes de cet ensemble sont **effacées**.
+renvoie au début) ou une page sans arête applicable (fin, blocage). Les réponses (avec précisions
+« Autre » et groupes `<clé>_group`) des questions absentes de cet ensemble sont **effacées**.
 
 Ainsi, après un retour arrière où l'on change `type_sinistre` de `accident` à `vol`, la réponse
 `victimes` disparaît dès qu'on avance : la question n'est plus sur le chemin.
@@ -521,7 +554,8 @@ Ainsi, après un retour arrière où l'on change `type_sinistre` de `accident` �
 ### 11.6 Synthèse et retour pour modifier
 
 Une page `summary` liste, dans l'ordre de **première** visite, les questions de l'historique avant
-elle qui ont une réponse (y compris `null`, affichée vide) : intitulé et réponse courante.
+elle qui ont une réponse (y compris `null`, affichée vide) : intitulé et réponse courante. Une option
+d'un groupe s'affiche « Groupe — Option » (intitulé du groupe dans la langue affichée).
 
 Depuis une synthèse, l'utilisateur peut revenir à une question pour la modifier. « Revenir à la
 synthèse » avance alors (comme « Suivant », avec validation et effacement) sur les pages déjà vues et
@@ -560,7 +594,8 @@ en contenir : le moteur cible peut les vérifier à son tour.
 | `loopWithoutExit` | Boucle dont aucune arête ne sort. |
 | `exitNotConnected`, `unknownExit` | Sortie de bloc non raccordée ; arête visant une sortie inexistante. |
 | `libraryMissing` | Question, bloc ou jeu de libellés de bibliothèque introuvable. |
-| `missingTranslation` | Texte sans traduction dans une langue du projet. |
+| `missingTranslation` | Texte sans traduction dans une langue du projet (libellés de groupe compris). |
+| `duplicateGroup`, `reservedGroupCode`, `emptyGroup` | Groupes d'options d'une question : identifiant en double ; code `AUTRE` (réservé) ; groupe sans option (§7.3). |
 
 L'exemple fourni ne produit aucun problème.
 
@@ -577,6 +612,7 @@ L'exemple fourni ne produit aucun problème.
 | Filtre et `$$` : lien demandé s'il existe un sinistre antérieur | `e_date_lien` : `$count(sys.sinistres[date <= $$.date_sinistre]) > 0` |
 | Entrée dynamique (liste système d'objets) placée **avant** une option statique | `n_lien` |
 | Structure répétable, champ conditionné, libellé `{prenom}`, règles libres (`$age`) | `n_victimes` |
+| Groupes d'options : un groupe avec code (`SC`), un sans code ; même valeur `conjoint` dans les deux ; `qualite_declarant.groupe` dans une arête et un texte interpolé | `n_qualite`, `e_qualite_ayant_droit`, `n_ayant_droit` |
 | Libellé et aide à variantes, `$exists(victimes[hospitalise])`, nombre réel à 2 décimales | `n_montant` |
 | `$addDays` interpolé | `n_expertise` |
 | Booléen avec `default: false` | `n_tiers` |
@@ -612,6 +648,7 @@ doit les rejouer à l'identique.
   "answers": [
     { "step": "n_type", "value": "vol" },
     { "step": "n_bloc_tiers/bn_nom", "value": "Dupont" },
+    { "step": "n_qualite", "value": "conjoint", "group": "Ayant droit" },
     { "step": "n_canaux", "value": ["courrier", "other"], "other": "Par l'amicale" }
   ],
   "path": ["n_intro", "n_type", "…", "n_fin"],
@@ -623,12 +660,12 @@ doit les rejouer à l'identique.
 | --- | --- |
 | `questionnaire`, `scenario` | Id du questionnaire joué ; id du scénario qui fournit l'état du système. |
 | `today` | Date du jour à utiliser pour `$today()`, `$age`… |
-| `answers[]` | Réponses dans l'ordre de saisie : `step` (id de page ; dans un bloc `idInstance/idNœud`), `value`, `other?` (précision « Autre »). |
+| `answers[]` | Réponses dans l'ordre de saisie : `step` (id de page ; dans un bloc `idInstance/idNœud`), `value`, `other?` (précision « Autre »), `group?` (groupe de la sélection, rangé sous `<clé>_group`, §8). |
 | `path` | Pages visitées (questions, informations, synthèses, fin), boucles comprises, dans l'ordre. |
 | `outcome` | `outcome` du nœud `end` atteint. |
 
 Rejeu : partir de `start` ; sur chaque page jusqu'à la fin, si c'est une question et que la prochaine
-réponse en file la vise, l'enregistrer (avec sa précision) ; une question sans réponse en file garde sa
+réponse en file la vise, l'enregistrer (avec sa précision et son groupe) ; une question sans réponse en file garde sa
 réponse courante (deuxième passage dans une boucle : l'utilisateur valide sans changer). La réponse doit
 alors être valide (§9). Puis « Suivant » (§11.4), qui ne doit jamais être bloqué. À la fin, l'historique
 doit égaler `path`, toutes les réponses doivent avoir été consommées et l'issue doit égaler `outcome`.
@@ -637,8 +674,9 @@ doit égaler `path`, toutes les réponses doivent avoir été consommées et l'i
 
 Toute évolution incompatible incrémente `formatVersion` et s'accompagne d'une migration dans l'outil,
 des schémas, de ce document et de l'exemple. Les ajouts compatibles (nouvelle propriété facultative)
-sont documentés ici. Version actuelle : **2**.
+sont documentés ici. Version actuelle : **3**.
 
 | Version | Changement | Migration |
 | --- | --- | --- |
 | 2 | Options d'un choix : suite ordonnée d'entrées (statiques ou dynamiques) ; `source` disparaît (EVO-001). | `source` → entrée dynamique placée après les options statiques. |
+| 3 | Groupes d'options (`{ group, code?, when?, options }` dans `options[]`), réponse `<clé>_group`, référence `cle.groupe`, mot réservé `groupe` (EVO-003). | Aucune transformation (un document antérieur n'a pas de groupe) ; seul `formatVersion` change. |

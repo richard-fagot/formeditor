@@ -95,3 +95,34 @@ describe('interpolation et libellés', () => {
     expect(formatValue({ a: 1 })).toBe('{"a":1}');
   });
 });
+
+describe('référence au groupe de la sélection (EVO-003)', () => {
+  const g = {
+    lien: 'conjoint', lien_group: 'SC',
+    liens: ['conjoint', 'conjoint'], liens_group: ['SC', 'AA'],
+    decl: { lien: 'enfant', lien_group: 'Ayant droit' },
+    victime: { lien: 'conjoint', lien_group: 'SC' },
+    temoins: [{ lien: 'a', lien_group: 'SC' }, { lien: 'b', lien_group: 'AA' }],
+    autre: { groupe: { x: 1 } },
+  };
+  it('`cle.groupe` lit `cle_group` (question, alias de bloc, champ de structure, occurrences)', () => {
+    expect(evaluate('lien.groupe', g)).toBe('SC');
+    expect(evaluateCondition("lien.groupe = 'SC'", g)).toBe(true);
+    expect(evaluate('liens.groupe', g)).toEqual(['SC', 'AA']);
+    expect(evaluateCondition("'AA' in liens.groupe", g)).toBe(true);
+    expect(evaluate('decl.lien.groupe', g)).toBe('Ayant droit');
+    expect(evaluate('victime.lien.groupe', g)).toBe('SC');
+    expect(evaluate('temoins.lien.groupe', g)).toEqual(['SC', 'AA']);
+    expect(evaluate("$count(temoins[lien.groupe = 'SC'])", g)).toBe(1);
+    expect(evaluate('$$.lien.groupe', g)).toBe('SC');
+  });
+  it('seule une étape finale `groupe` est réécrite', () => {
+    expect(evaluate('autre.groupe.x', g)).toBe(1);
+  });
+  it('interpolation, références et renommage gardent l’écriture `.groupe`', () => {
+    expect(interpolate('Groupe : {lien.groupe}', g)).toBe('Groupe : SC');
+    expect(extractReferences("lien.groupe = 'SC'")).toEqual([['lien', 'groupe']]);
+    expect(renameReference("lien.groupe = 'SC' and lien = 'x'", ['lien'], 'qualite')).toBe("qualite.groupe = 'SC' and qualite = 'x'");
+    expect(checkSyntax('lien.groupe')).toBeUndefined();
+  });
+});

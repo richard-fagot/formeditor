@@ -14,7 +14,7 @@ function formatAnswer(q: StructureQuestion, value: unknown, env: RenderEnv): str
   const occs = q.repeat ? (Array.isArray(value) ? (value as Record<string, unknown>[]) : []) : occurrencesOf(q, value);
   return occs
     .map((occ) => visibleFields(q, occ, env)
-      .map((f) => env.questionType(f.type)?.formatAnswer(f, occ[f.key], env.scoped(occ), occ[`${f.key}_other`] as string | undefined) ?? '')
+      .map((f) => env.questionType(f.type)?.formatAnswer(f, occ[f.key], env.scoped(occ), occ[`${f.key}_other`] as string | undefined, occ[`${f.key}_group`]) ?? '')
       .filter(Boolean)
       .join(', '))
     .join(' ; ');

@@ -1,5 +1,5 @@
 import {
-  isDynamicEntry, isVariantLabel, type Edge, type Graph, type GraphNode, type Label, type LocalizedText,
+  isChoiceGroup, isDynamicEntry, isVariantLabel, type ChoiceEntry, type Edge, type Graph, type GraphNode, type Label, type LocalizedText,
   type Question, type StructureField, type Workspace,
 } from '../model';
 
@@ -79,18 +79,7 @@ export function mapQuestion<Q extends Question | StructureField>(q: Q, f: ExprMa
       break;
     case 'single':
     case 'multiple':
-      out.options = q.options.map((o, i) => {
-        const when = o.when ? { when: f(o.when, 'expr', at(`options[${i}].when`)) } : {};
-        if (!isDynamicEntry(o)) return { ...o, label: mapLabel(o.label, f, at(`options[${i}].label`)), ...when };
-        const rel = (p: string): ExprLocation => ({ ...at(`options[${i}].${p}`), relative: true, source: o.from });
-        return {
-          ...o,
-          from: f(o.from, 'expr', at(`options[${i}].from`)),
-          ...(o.label ? { label: f(o.label, 'expr', rel('label')) } : {}),
-          ...(o.value ? { value: f(o.value, 'expr', rel('value')) } : {}),
-          ...when,
-        };
-      });
+      out.options = q.options.map((o, i) => mapEntry(o, f, at, `options[${i}]`));
       break;
     case 'structure':
       out.fields = q.fields.map((fd) => mapQuestion(fd, f, { ...base, structure: q.key, property: `fields.${fd.key}` }));
@@ -99,6 +88,24 @@ export function mapQuestion<Q extends Question | StructureField>(q: Q, f: ExprMa
   }
   if ('other' in q && q.other?.label) out.other = { ...q.other, label: mapLabel(q.other.label, f, at('other.label')) };
   return out as Q;
+}
+
+/** Entrée d'un choix : option, entrée dynamique (noms relatifs) ou groupe (libellé, condition, ses entrées). */
+function mapEntry(o: ChoiceEntry, f: ExprMapper, at: (p: string) => ExprLocation, path: string): ChoiceEntry {
+  const when = o.when ? { when: f(o.when, 'expr', at(`${path}.when`)) } : {};
+  if (isChoiceGroup(o)) {
+    const options = o.options.map((x, j) => mapEntry(x, f, at, `${path}.options[${j}]`) as typeof x);
+    return { ...o, group: mapLabel(o.group, f, at(`${path}.group`)), ...when, options };
+  }
+  if (!isDynamicEntry(o)) return { ...o, label: mapLabel(o.label, f, at(`${path}.label`)), ...when };
+  const rel = (p: string): ExprLocation => ({ ...at(`${path}.${p}`), relative: true, source: o.from });
+  return {
+    ...o,
+    from: f(o.from, 'expr', at(`${path}.from`)),
+    ...(o.label ? { label: f(o.label, 'expr', rel('label')) } : {}),
+    ...(o.value ? { value: f(o.value, 'expr', rel('value')) } : {}),
+    ...when,
+  };
 }
 
 function mapNode(n: GraphNode, f: ExprMapper, owner: Owner): GraphNode {

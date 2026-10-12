@@ -12,7 +12,10 @@ export function usePreview(questionnaireId: string) {
   const uiLang = useStore((s) => s.uiLang);
   const contentLang = useStore((s) => s.contentLang);
   const lang = p?.lang ?? contentLang;
-  const input: RuntimeInput = useMemo(() => ({ ws, questionnaireId, sys: systemStateOf(ws, p) }), [ws, questionnaireId, p]);
+  const input: RuntimeInput = useMemo(
+    () => ({ ws, questionnaireId, sys: systemStateOf(ws, p), env: { defaultLang: ws.project.defaultLanguage } }),
+    [ws, questionnaireId, p],
+  );
   const session: Session = useMemo(() => {
     const s = p?.session;
     // Une session dont la page courante n'existe plus (graphe modifié) est recommencée.

@@ -9,6 +9,9 @@ Résolution des clés et espaces de noms, index des usages, renommage propagé. 
 - Portée : `questionnaireScope(ws, qId)`, `blockScope(ws, blockId, hostId?)`, `structureScope(outer, structure)`,
   `resolvePath(scope, path)` ; une variable système porte `type`, `description` et `values` (énumération) pour l'autocomplétion ; `questionOfNode(ws, node)` (question effective, libellé surchargé), `blockHosts`.
 - `findUsages(ws, path)`.
+- Groupes d'options (EVO-003) : la portée contient `<chemin>.groupe` (genre `group`) pour chaque question ou champ à choix
+  (questionnaire, `alias.cle.groupe`, `structure.champ.groupe`, champ frère `champ.groupe`) ; ailleurs `.groupe` est inconnu.
+  Le parcours visite libellé (`options[i].group`), condition et entrées de chaque groupe (`options[i].options[j].…`).
 - `renameKey(ws, target, newKey)` : `target` = question (`owner` + `nodeId`, `fieldId` pour un champ),
   alias d'instance de bloc, variable système (scénarios compris), ou champ d'une liste système (`systemField` :
   `sys.x.champ`, noms relatifs des entrées dynamiques dont `from` est `sys.x`, exemple et scénarios ; nom invalide ou pris → inchangé). Renvoie un nouveau `Workspace`.

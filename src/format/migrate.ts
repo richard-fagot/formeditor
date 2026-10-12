@@ -45,7 +45,22 @@ export const MIGRATIONS: Migrations = {
         return { ...doc, formatVersion: 2 };
     }
   },
+  /** EVO-003 : groupes d'options. Un document antérieur n'a pas de groupe : seul le numéro de version change. */
+  2: (doc) => bump(doc, 3),
 };
+
+/** Change seulement `formatVersion` (et celui des documents d'un bundle). */
+function bump(doc: Doc, v: number): Doc {
+  if (doc.kind !== 'bundle') return { ...doc, formatVersion: v };
+  return {
+    ...doc,
+    formatVersion: v,
+    ...(doc.library ? { library: versioned(doc.library, v) } : {}),
+    ...(Array.isArray(doc.questionnaires) ? { questionnaires: doc.questionnaires.map((q: Doc) => versioned(q, v)) } : {}),
+    ...(Array.isArray(doc.layouts) ? { layouts: doc.layouts.map((l: Doc) => versioned(l, v)) } : {}),
+    ...(doc.project ? { project: versioned(doc.project, v) } : {}),
+  };
+}
 
 /** Amène un document (unitaire ou bundle) à la version cible. */
 export function migrate(doc: Doc, migrations: Migrations = MIGRATIONS, target = FORMAT_VERSION): Doc {

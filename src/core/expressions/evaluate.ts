@@ -1,9 +1,12 @@
 import jsonata from 'jsonata';
 import { addDays, age, daysBetween, todayIso } from './dates';
+import { rewriteGroupRefs } from './group-ref';
 
 /** Environnement d'évaluation (date du jour figée pour les tests et la prévisualisation). */
 export interface EvalEnv {
   today?: string;
+  /** Langue par défaut du projet : identifiant d'un groupe d'options sans code (EVO-003). */
+  defaultLang?: string;
 }
 export type EvalContext = Record<string, unknown>;
 
@@ -50,7 +53,7 @@ function bindings(env: EvalEnv) {
 
 /** Évalue une expression ; lève une erreur en cas d'échec. */
 export function evaluateStrict(expr: string, ctx: EvalContext, env: EvalEnv = {}): unknown {
-  const c = compile(expr);
+  const c = compile(rewriteGroupRefs(expr));
   if (isError(c)) throw new Error(c.message);
   const value = c.evaluate(ctx, bindings(env));
   return normalize(value);

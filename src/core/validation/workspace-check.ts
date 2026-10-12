@@ -2,6 +2,7 @@ import { isValidKey, type Graph, type LocalizedText, type Question, type Workspa
 import { collectExpressions, questionOfNode, type Owner } from '../references';
 import { checkGraph } from './graph';
 import { checkReferences } from './refs-check';
+import { checkGroups } from './groups-check';
 import { issue, type Issue } from './issue';
 
 function checkKeys(ws: Workspace, g: Graph, owner: Owner, out: Issue[]) {
@@ -28,6 +29,7 @@ function checkKeys(ws: Workspace, g: Graph, owner: Owner, out: Issue[]) {
 }
 
 function checkQuestion(ws: Workspace, q: Question, owner: Owner, nodeId: string, out: Issue[]) {
+  checkGroups(ws, q, owner, nodeId, out);
   if ((q.type === 'boolean' || q.type === 'tristate') && q.labelSet && !ws.library.labelSets.some((l) => l.id === q.labelSet)) {
     out.push(issue('libraryMissing', owner, { nodeId }, { ref: q.labelSet }));
   }

@@ -1,5 +1,5 @@
 import { evaluate, evaluateCondition, type EvalContext, type EvalEnv } from '../expressions';
-import { OTHER_VALUE, type LocalizedText, type Question, type StructureField } from '../model';
+import { GROUP_SUFFIX, OTHER_GROUP, OTHER_VALUE, type LocalizedText, type Question, type StructureField } from '../model';
 import { choiceOptions } from '../runtime';
 import { defaultMessage } from './messages';
 
@@ -79,10 +79,14 @@ export function validateAnswer(
     }
     case 'single':
     case 'multiple': {
-      const visible = new Set(choiceOptions(q, ctx, env).map((o) => o.value));
-      if (q.other) visible.add(OTHER_VALUE);
+      // Option = (groupe, valeur) ; groupe lu sous `<clé>_group` dans le contexte. Groupe non renseigné : la valeur suffit.
+      const options = choiceOptions(q, ctx, env).map((o) => [o.group?.id ?? '', o.value] as const);
+      if (q.other) options.push([OTHER_GROUP, OTHER_VALUE]);
       const list = Array.isArray(value) ? value : [value];
-      if (list.some((v) => !visible.has(String(v)))) fail('option');
+      const groups = ctx[`${q.key}_${GROUP_SUFFIX}`];
+      const groupAt = (i: number) => (Array.isArray(groups) ? groups[i] : groups);
+      const known = (v: unknown, g: unknown) => options.some(([og, ov]) => ov === String(v) && (g === undefined || g === null || String(g) === og));
+      if (list.some((v, i) => !known(v, groupAt(i)))) fail('option');
       if (q.type === 'single') break;
       if (q.minSelected !== undefined && list.length < q.minSelected) fail('minSelected', q.minSelected);
       if (q.maxSelected !== undefined && list.length > q.maxSelected) fail('maxSelected', q.maxSelected);

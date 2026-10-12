@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ChoiceEntry, ChoiceOption } from '../../../core/model';
+import type { ChoiceItem, ChoiceOption } from '../../../core/model';
 import type { EditorEnv } from '../../../plugin-api';
 import { duplicateEntry, lineOf, moveEntry, reconcile } from './entries';
 
@@ -25,7 +25,7 @@ describe('saisie rapide des options', () => {
     expect(reconcile(['Vol simple', 'Incendie', 'Autre cas'], opts, env)[0]).toEqual({ value: 'vol', label: { fr: 'Vol simple', en: 'Theft' } });
   });
   it('n’attribue jamais la valeur réservée « other »', () => {
-    expect(reconcile(['Other'], [], env)[0]!.value).not.toBe('other');
+    expect((reconcile(['Other'], [], env)[0] as ChoiceOption).value).not.toBe('other');
   });
 });
 
@@ -46,7 +46,7 @@ describe('entrées dynamiques dans la saisie rapide (EVO-001)', () => {
     expect(lineOf({ value: 'x', label: { fr: '<x>' } }, env)).toBe('<x>');
   });
   it('conserve les réglages d’une entrée dynamique (libellé, valeur, condition) et suit son déplacement', () => {
-    const entries: ChoiceEntry[] = [{ from: 'sys.sinistres', label: 'nature', value: 'id', when: 'sys.x' }, opts[0]!];
+    const entries: ChoiceItem[] = [{ from: 'sys.sinistres', label: 'nature', value: 'id', when: 'sys.x' }, opts[0]!];
     expect(lineOf(entries[0]!, env)).toBe('$sys.sinistres');
     expect(reconcile(['Vol', '$sys.sinistres'], entries, env)).toEqual([entries[1], entries[0]]);
     // Référence modifiée sur la même ligne : réglages gardés.
@@ -55,7 +55,7 @@ describe('entrées dynamiques dans la saisie rapide (EVO-001)', () => {
     expect(reconcile(['Tiers', 'Vol'], entries, env)[0]).toEqual({ value: 'tiers', label: { fr: 'Tiers' } });
   });
   it('déplacer, dupliquer', () => {
-    const entries: ChoiceEntry[] = [{ from: 'sys.l' }, ...opts];
+    const entries: ChoiceItem[] = [{ from: 'sys.l' }, ...opts];
     expect(moveEntry(entries, 0, 3).map((e) => lineOf(e, env))).toEqual(['Vol', 'Incendie', 'Autre cas', '$sys.l']);
     expect(moveEntry(entries, 0, -1)).toBe(entries);
     const dup = duplicateEntry(entries, 0);
