@@ -21,7 +21,8 @@ sans cérémonie. Préférer la solution la plus simple qui respecte la spec.
 
 ## Avant de modifier du code
 
-1. Lire `docs/MAP.md` pour savoir quels modules sont concernés.
+1. Lire la « Matrice fonctionnalité → modules » de `docs/MAP.md`, puis seulement les lignes
+   des modules concernés (pas toute la carte).
 2. Lire le `README.md` de ces modules, puis seulement leur code.
 
 ## Architecture (spec §8)
@@ -36,6 +37,11 @@ sans cérémonie. Préférer la solution la plus simple qui respecte la spec.
 
 - `npm run check` = typage + Vitest + tests de référence + dependency-cruiser + build + test de fumée Playwright
   (Firefox et Chromium, `dist/index.html` ouvert en `file://`). Il doit être vert à la fin de chaque phase.
+- Pendant le travail, ne lancer que les tests ciblés : `npx vitest run <fichiers touchés>`,
+  `npx playwright test <spec> --project=chromium`. `npm run check` complet **une seule fois**,
+  à la fin, par le `realisateur` ; il indique le commit sur lequel il est vert.
+- Test instable préexistant : au-delà de 3 relances, le signaler dans le compte rendu
+  et dans `docs/ECARTS.md`, sans l'investiguer davantage.
 - `core` et `format` : écrire le test avant le code.
 - Tests de référence sur le questionnaire d'exemple : schéma, aller-retour import/export, chemin attendu par scénario.
   Un changement de comportement voulu met à jour le fichier attendu, jamais l'inverse en silence.
@@ -84,6 +90,14 @@ La session principale orchestre et ne code pas elle-même. Pour chaque phase de 
    `realisateur`, puis refaire relire. Trois allers-retours au plus ; au-delà, noter les écarts
    restants dans `docs/ECARTS.md` et continuer.
 4. Verdict CONFORME (ou seulement des mineurs) : fusionner dans `main`, push, phase suivante.
+5. Avant de fusionner, vérifier que le dernier commit de la branche est celui où le `realisateur`
+   a eu `npm run check` vert, ou que le `relecteur` a lancé le harnais complet ; sinon relancer
+   `npm run check` une fois.
+6. Écarts mineurs : l'orchestrateur corrige lui-même ceux qui ne touchent que la documentation ;
+   ceux qui touchent le code sont notés dans `docs/ECARTS.md`, et corrigés seulement à la demande
+   de l'utilisateur, par un seul passage du `realisateur` sans nouvelle relecture si `npm run check` est vert.
+7. Consignes aux sous-agents : courtes, elles renvoient aux fichiers (EVO, spec) au lieu de les
+   paraphraser, et ne demandent ni refactorisation ni amélioration annexe.
 
 Les points d'arrêt des démos restent valables.
 
@@ -92,11 +106,10 @@ Les points d'arrêt des démos restent valables.
 Une demande par fichier : `docs/evolutions/EVO-NNN-titre.md`, avec une ligne `Statut :`
 (à faire | en cours | fait AAAA-MM-JJ | abandonné). Pour chaque évolution « à faire », par numéro croissant :
 1. Branche `evo-NNN`, statut « en cours ».
-2. Mettre à jour `docs/spec.md` (le § concerné) pour qu'elle décrive le nouveau comportement.
-3. Confier la réalisation au sous-agent `realisateur`, avec la spec mise à jour et les critères
-   d'acceptation ; un test couvre chaque critère.
-4. Mettre à jour le guide (`docs/GUIDE.md`) pour les actions touchées, et sa date « jusqu'à EVO-NNN »
-   (fait par le `realisateur` dans le même commit que le changement de comportement).
-5. Faire relire par `relecteur` (guide compris), corriger si besoin.
-6. Fusionner, statut « fait » avec la date.
+2. Confier l'évolution au `realisateur` en une seule passe : analyse (si l'EVO la demande),
+   mise à jour de `docs/spec.md` (le § concerné), code, tests (un test par critère d'acceptation),
+   guide (`docs/GUIDE.md` et sa date « jusqu'à EVO-NNN », dans le même commit que le changement
+   de comportement). Si l'analyse conclut « à arbitrer », il s'arrête avant de coder et rend les options.
+3. Faire relire par `relecteur` (guide compris), corriger si besoin (règles de l'orchestration ci-dessus).
+4. Fusionner, statut « fait » avec la date.
 Si une demande contredit la spec sans que ce soit explicitement voulu, demander avant de coder.
