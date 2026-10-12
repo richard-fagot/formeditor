@@ -63,4 +63,12 @@ describe('systemRefAt (survol)', () => {
     expect(systemRefAt(text, 11)).toBeUndefined();
     expect(systemRefAt(text, text.length - 1)).toBeUndefined();
   });
+  it('rien dans une chaîne littérale, guillemets échappés compris', () => {
+    const lit = 'x = "sys.profil" or y = \'a\\\' sys.profil\' or sys.profil';
+    expect(systemRefAt(lit, 8)).toBeUndefined();
+    expect(systemRefAt(lit, lit.indexOf("sys.profil'") + 2)).toBeUndefined();
+    expect(systemRefAt(lit, lit.length - 2)).toEqual({ path: 'sys.profil', from: lit.length - 10, to: lit.length });
+    expect(systemRefAt('`sys.profil` = 1', 3)).toBeUndefined();
+    expect(systemRefAt('"a\nb" = sys.profil', 12)).toEqual({ path: 'sys.profil', from: 8, to: 18 }); // chaîne sur deux lignes
+  });
 });

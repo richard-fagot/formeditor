@@ -6,7 +6,8 @@ Saisie d'expressions JSONata et de libellés multilingues. Dépend de `core/expr
 - `ExpressionInput` : CodeMirror 6 sur une ligne ; coloration (`language.ts`), autocomplétion des clés de
   la portée et des fonctions (`completion.ts` : clé par préfixe **ou** libellé `caption` contenant le mot tapé, casse et
   accents ignorés, clés d'abord, filtrage maison `filter: false` ; libellé en `detail`, description en `info`),
-  infobulle au survol d'une référence `sys.…` (`hover.ts` : clé, libellé, description ; rien sans l'un ni l'autre),
+  infobulle au survol d'une référence `sys.…` (`hover.ts` : clé, libellé, description ; rien sans l'un ni l'autre, ni dans un littéral : chaîne,
+  nom entre accents graves, commentaire ; motif de chaîne `STRING_LITERAL` partagé avec `language.ts`),
   diagnostics en direct (syntaxe, référence inconnue).
   Entrée → `onSubmit`, Échap → quitte le champ.
 - `LabelEditor` : libellé multilingue (une saisie par langue) avec variantes conditionnelles `{variants, otherwise}`.

@@ -171,7 +171,8 @@ Rendu retenu :
   libellé (la condition sans libellé garde son comportement actuel). Le libellé est dans un `span` dédié
   (`data-edge-caption`) pour les tests.
 - **Infobulle** : attribut `title` natif de la pastille. Avec libellé : `title` = libellé complet, saut de
-  ligne, puis la condition (ou « sinon » si l'arête n'en a pas). Le libellé figure toujours dans l'infobulle,
+  ligne, puis la condition (ou « sinon » si l'arête n'en a pas). *Précisé par le correctif de relecture : « ? » si
+  la condition est vide, « sinon » parmi plusieurs sorties, rien pour une arête seule sans condition (spec §4.2).* Le libellé figure toujours dans l'infobulle,
   tronqué ou non : plus simple qu'une détection de débordement, et le critère « complet au survol s'il est
   tronqué » est satisfait. Sans libellé : `title={edge.when}` inchangé. L'infobulle est sur la pastille, pas
   sur le tracé (comme aujourd'hui).

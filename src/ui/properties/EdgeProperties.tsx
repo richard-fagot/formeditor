@@ -35,6 +35,7 @@ export function EdgeProperties({ graph, g, edge }: { graph: GraphRef; g: Graph; 
         <Input
           key={edge.id}
           data-testid="edge-caption"
+          data-edge-id={edge.id}
           value={edge.caption ?? ''}
           onChange={(e) => patchEdge(edge.id, { caption: e.target.value.replace(/[\r\n]+/g, ' ') || undefined })}
         />

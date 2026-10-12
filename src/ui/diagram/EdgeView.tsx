@@ -3,12 +3,13 @@ import { BaseEdge, EdgeLabelRenderer, getBezierPath, type EdgeProps } from '@xyf
 import { getGraph, useStore, useT } from '../../app/store';
 import { cn } from '../../ui-kit';
 import { useDiagram } from './DiagramContext';
+import { edgeConditionText, edgeTitle } from './edgeLabel';
 
 const MAX = 32;
 
 /**
  * Arête : condition en abrégé, rang si plusieurs arêtes sortent du même nœud, « sinon ».
- * Un libellé (`caption`, EVO-005) remplace la condition, tronqué en CSS ; l'infobulle donne libellé et condition.
+ * Un libellé (`caption`, EVO-005) remplace la condition, tronqué en CSS ; l'infobulle donne libellé et condition (règle commune : `edgeLabel.ts`).
  */
 export const EdgeView = memo(function EdgeView(props: EdgeProps) {
   const { graph, readOnly } = useDiagram();
@@ -21,7 +22,7 @@ export const EdgeView = memo(function EdgeView(props: EdgeProps) {
   const conditioned = list.length > 1 || edge.when !== undefined;
   const rank = list.indexOf(edge.id) + 1;
   const caption = edge.caption;
-  const text = edge.when ? (edge.when.length > MAX ? edge.when.slice(0, MAX) + '…' : edge.when) : edge.when === '' ? '?' : t('edge.else');
+  const text = edgeConditionText(edge.when, conditioned, t('edge.else'), MAX);
   return (
     <>
       <BaseEdge path={path} markerEnd={props.markerEnd} style={{ stroke: props.selected ? '#6366f1' : '#94a3b8', strokeWidth: props.selected ? 2 : 1.5 }} />
@@ -36,11 +37,11 @@ export const EdgeView = memo(function EdgeView(props: EdgeProps) {
               !edge.when && !caption && 'italic text-slate-400',
             )}
             onClick={() => !readOnly && useStore.getState().select({ graph, nodes: [], edge: edge.id })}
-            title={caption ? `${caption}\n${edge.when || t('edge.else')}` : edge.when}
+            title={edgeTitle(caption, edge.when, conditioned, t('edge.else'))}
           >
             {edge.exit && <span className="mr-1 text-amber-600">{edge.exit}</span>}
             {list.length > 1 && <span className="mr-1 text-slate-400">{rank}.</span>}
-            {caption ? <span data-edge-caption className="font-sans">{caption}</span> : conditioned && text}
+            {caption ? <span data-edge-caption className="font-sans">{caption}</span> : text}
           </div>
         </EdgeLabelRenderer>
       )}

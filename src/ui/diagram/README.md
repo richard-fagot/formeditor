@@ -20,7 +20,8 @@ Dépend de `app/store`, `app/commands` (liaison tracée à la souris : `edge.cre
 - Dépôt d'un élément de bibliothèque : inséré à la position du curseur (`screenToFlowPosition`).
 - `EdgeView` : condition abrégée, rang si plusieurs arêtes sortent du même nœud, « sinon », sortie de bloc. Libellé
   `caption` (EVO-005) : affiché à la place de la condition (`span[data-edge-caption]`, police normale), tronqué en CSS
-  (« … ») ; pastille aussi pour une arête seule libellée ; `title` = libellé puis condition (ou « sinon »).
+  (« … ») ; pastille aussi pour une arête seule libellée ; `title` = libellé puis condition selon la même
+  règle que la pastille (`edgeLabel.ts` : « ? » si vide, « sinon » parmi plusieurs sorties, rien pour une arête seule).
   La pastille garde `data-edge-label` (filtre de l'export d'image).
 - Le conteneur porte `data-graph-focus` : les raccourcis à une lettre agissent s'il a le focus (ou si le focus est
   sur un bouton hors dialogue, cf. `app/shortcuts`).

@@ -3,11 +3,15 @@ import { tags as t } from '@lezer/highlight';
 
 const KEYWORDS = /^(and|or|in|true|false|null)\b/;
 
+/** Chaîne littérale JSONata (guillemets doubles ou simples, `\` échappe), éventuellement non fermée. */
+export const STRING_LITERAL = String.raw`"(?:[^"\\]|\\.)*"?|'(?:[^'\\]|\\.)*'?`;
+const STRING = new RegExp(`^(?:${STRING_LITERAL})`);
+
 /** Coloration minimale de JSONata : chaînes, nombres, mots-clés, fonctions `$…`, chemins. */
 export const jsonataLanguage = StreamLanguage.define({
   token(stream) {
     if (stream.eatSpace()) return null;
-    if (stream.match(/^"(?:[^"\\]|\\.)*"?/) || stream.match(/^'(?:[^'\\]|\\.)*'?/)) return 'string';
+    if (stream.match(STRING)) return 'string';
     if (stream.match(/^-?\d+(\.\d+)?/)) return 'number';
     if (stream.match(KEYWORDS)) return 'keyword';
     if (stream.match(/^\$\w*/)) return 'variableName.special';
