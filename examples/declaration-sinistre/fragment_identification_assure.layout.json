@@ -1,0 +1,31 @@
+{
+  "formatVersion": 7,
+  "kind": "layout",
+  "graph": "frg_identification_assure",
+  "nodes": {
+    "fn_nom": {
+      "x": 0,
+      "y": 0
+    },
+    "fn_prenom": {
+      "x": 0,
+      "y": 160
+    },
+    "fn_date_naissance": {
+      "x": 0,
+      "y": 320
+    },
+    "fn_majeur": {
+      "x": 0,
+      "y": 480
+    },
+    "fn_num_secu": {
+      "x": 0,
+      "y": 640
+    },
+    "fn_representant_legal": {
+      "x": 320,
+      "y": 640
+    }
+  }
+}

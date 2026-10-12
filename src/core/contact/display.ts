@@ -21,7 +21,7 @@ export function displayFormatters(ws: Workspace): Record<string, DisplayFormatte
     if (f && !(q.key in out)) out[q.key] = f;
     if (q.type === 'structure') q.fields.forEach(add);
   };
-  const graphs = [...ws.questionnaires, ...ws.library.blocks];
+  const graphs = [...ws.questionnaires, ...ws.library.fragments];
   for (const g of graphs) for (const n of g.nodes) if (n.kind === 'question' && !('ref' in n)) add(n);
   ws.library.questions.forEach(add);
   return out;

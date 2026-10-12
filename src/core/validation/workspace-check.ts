@@ -1,4 +1,4 @@
-import { isValidKey, type Graph, type LocalizedText, type Question, type Workspace } from '../model';
+import { calledFragments, fragmentCallers, isValidKey, type Graph, type LocalizedText, type Question, type Workspace } from '../model';
 import { collectExpressions, questionOfNode, type Owner } from '../references';
 import { checkGraph } from './graph';
 import { checkReferences } from './refs-check';
@@ -16,8 +16,8 @@ function checkKeys(ws: Workspace, g: Graph, owner: Owner, out: Issue[]) {
     if (n.kind === 'question' && 'ref' in n && !ws.library.questions.some((q) => q.id === n.ref)) {
       out.push(issue('libraryMissing', owner, { nodeId: n.id }, { ref: n.ref }));
     }
-    if (n.kind === 'block') {
-      if (!ws.library.blocks.some((b) => b.id === n.ref)) out.push(issue('libraryMissing', owner, { nodeId: n.id }, { ref: n.ref }));
+    if (n.kind === 'fragment') {
+      if (!ws.library.fragments.some((f) => f.id === n.ref)) out.push(issue('libraryMissing', owner, { nodeId: n.id }, { ref: n.ref }));
       add(n.alias, n.id);
     }
     const q = questionOfNode(ws, n);
@@ -71,7 +71,7 @@ function checkTranslations(ws: Workspace, out: Issue[]) {
     if (missing.length) out.push(issue('missingTranslation', owner, { property }, { lang: missing.join(', '), property }));
   };
   ws.questionnaires.forEach((q) => text(q.title, { kind: 'questionnaire', id: q.id }, 'title'));
-  ws.library.blocks.forEach((b) => text(b.title, { kind: 'block', id: b.id }, 'title'));
+  ws.library.fragments.forEach((f) => text(f.title, { kind: 'fragment', id: f.id }, 'title'));
   for (const l of ws.library.labelSets) {
     const owner: Owner = { kind: 'libraryQuestion', id: l.id };
     text(l.yes, owner, `${l.key}.yes`);
@@ -88,10 +88,12 @@ export function checkWorkspace(ws: Workspace): Issue[] {
     checkKeys(ws, q, owner, out);
     out.push(...checkGraph(ws, q, owner));
   }
-  for (const b of ws.library.blocks) {
-    const owner: Owner = { kind: 'block', id: b.id };
-    checkKeys(ws, b, owner, out);
-    out.push(...checkGraph(ws, b, owner));
+  for (const f of ws.library.fragments) {
+    const owner: Owner = { kind: 'fragment', id: f.id };
+    checkKeys(ws, f, owner, out);
+    out.push(...checkGraph(ws, f, owner));
+    if (calledFragments(ws, f.id).has(f.id)) out.push(issue('fragmentCycle', owner));
+    if (!fragmentCallers(ws, f.id).length) out.push(issue('unusedFragment', owner));
   }
   for (const q of ws.library.questions) checkQuestion(ws, q, { kind: 'libraryQuestion', id: q.id }, q.id, out);
   checkSystem(ws, out);

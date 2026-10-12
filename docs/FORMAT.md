@@ -1,4 +1,4 @@
-# Format des questionnaires — version 6
+# Format des questionnaires — version 7
 
 Ce document décrit le format JSON produit par l'éditeur de questionnaires. Il s'adresse à l'équipe
 de développement (et à l'IA qui l'assiste) chargée de construire le moteur cible et les formulaires
@@ -29,15 +29,15 @@ libellés et interpolation — 6. Nœuds — 7. Questions — 8. Réponses — 9
 | Fichier | `kind` | Contenu | Utile au moteur |
 | --- | --- | --- | --- |
 | `projet.json` | `project` | Métadonnées, langues, dictionnaire de l'état du système, scénarios, liste des questionnaires. | oui |
-| `bibliotheque.json` | `library` | Questions, blocs et jeux de libellés réutilisables. | oui |
+| `bibliotheque.json` | `library` | Questions, fragments et jeux de libellés réutilisables. | oui |
 | `<clé>.json` | `questionnaire` | Un questionnaire : nœuds, arêtes, questions locales, références à la bibliothèque. | oui |
-| `<clé>.layout.json`, `bloc_<clé>.layout.json` | `layout` | Positions des nœuds dans l'éditeur. | **non** (à ignorer) |
+| `<clé>.layout.json`, `fragment_<clé>.layout.json` | `layout` | Positions des nœuds dans l'éditeur. | **non** (à ignorer) |
 | `<projet>.bundle.json` | `bundle` | `project`, `library`, `questionnaires[]`, `layouts[]` dans un seul fichier. | oui (même contenu) |
 
-- Chaque fichier (et le bundle) porte `formatVersion` (entier, actuellement `6`) et `kind`.
+- Chaque fichier (et le bundle) porte `formatVersion` (entier, actuellement `7`) et `kind`.
 - L'outil migre automatiquement à l'ouverture un fichier d'une version antérieure ; il refuse un fichier
   d'une version plus récente. Un moteur cible peut refuser toute version qu'il ne connaît pas.
-- Tout élément (projet, questionnaire, nœud, arête, question, bloc, variable, scénario, jeu de libellés)
+- Tout élément (projet, questionnaire, nœud, arête, question, fragment, variable, scénario, jeu de libellés)
   accepte une propriété `description` libre, destinée au lecteur humain ou à une IA, **sans effet** sur le
   comportement.
 - Une arête, une variable de l'état du système et un champ de liste d'objets acceptent aussi un
@@ -67,8 +67,8 @@ Squelette d'un questionnaire :
 ## 2. Identifiants et clés
 
 - **`id`** : identifiant technique, stable, opaque. Les id des nœuds, arêtes, questions et champs de
-  structure ne contiennent pas de `/` (réservé aux étapes de bloc, §11.3 ; imposé par le schéma) ; les
-  autres id (projet, questionnaire, bloc, jeu de libellés, scénario) ne sont pas contraints. Il sert aux liens structurels : arêtes (`from`, `to`), départ (`start`), références de
+  structure ne contiennent pas de `/` (réservé aux étapes de fragment, §11.3 ; imposé par le schéma) ; les
+  autres id (projet, questionnaire, fragment, jeu de libellés, scénario) ne sont pas contraints. Il sert aux liens structurels : arêtes (`from`, `to`), départ (`start`), références de
   bibliothèque (`ref`, `labelSet`), mise en page. **Jamais** dans une expression.
   Les id sont uniques dans leur graphe ; un nœud question local a le même id que sa question.
 - **`key`** : clé lisible en `snake_case` (`^[a-z][a-z0-9_]*$`). C'est elle qu'on écrit dans les
@@ -79,8 +79,8 @@ Unicité des clés (l'outil le vérifie, §13) :
 
 | Clés | Unique dans |
 | --- | --- |
-| Clés des questions d'un questionnaire (locales et de bibliothèque) **et** alias de ses instances de bloc | ce questionnaire |
-| Clés des questions d'un bloc | ce bloc |
+| Clés des questions d'un questionnaire (locales et de bibliothèque) **et** alias de ses nœuds fragment | ce questionnaire |
+| Clés des questions d'un fragment **et** alias de ses propres nœuds fragment | ce fragment |
 | Clés des questions de la bibliothèque | la bibliothèque |
 | Clés des champs d'une structure | cette structure |
 | Noms des variables système ; noms des champs d'une variable `list` | le dictionnaire ; la liste |
@@ -127,11 +127,11 @@ nommé (« UD avec 2 sinistres », « Contrat résilié »…). Les chemins atte
 | `key` | Clé `snake_case`, nom du fichier. |
 | `title` | Titre, texte multilingue simple (§5). |
 | `description?` | Libre. |
-| `start` | Id du nœud de départ. |
+| `start` | Id du nœud de départ ; peut être un nœud `fragment` (le parcours commence alors sur l'entrée du fragment, §11.3). |
 | `nodes[]` | Nœuds (§6). |
 | `edges[]` | Arêtes (§11.1) ; **leur ordre compte**. |
 
-Un bloc de bibliothèque (§12) est un graphe de même forme (`start`, `nodes`, `edges`).
+Un fragment de bibliothèque (§12) est un graphe de même forme (`nodes`, `edges`), **sans** `start` : son entrée est implicite ou donnée par `entry` (§11.3).
 
 ## 5. Textes, libellés et interpolation
 
@@ -156,7 +156,7 @@ Résolution d'un libellé : variante → langue (avec repli) → interpolation.
 
 | Propriétés de type **libellé** (variantes possibles, interpolées) | Propriétés **texte multilingue** |
 | --- | --- |
-| Question : `label`, `help`, `placeholder` ; option : `label` ; groupe d'options : `group` (§7.3) ; `other.label` ; `dontKnow.label` (§7.7) ; surcharge `label` d'une question de bibliothèque ; `info` : `title`, `text` ; `summary` : `title` ; `end` : `title`, `message` | Interpolées, sans variantes : `messages.<param>`, `constraints[].message` (§9). Non interpolées : `title` d'un questionnaire ou d'un bloc, `unit`, `repeat.addLabel`, `yes`/`no`/`unknown` d'un jeu de libellés, `label` d'une sortie de bloc |
+| Question : `label`, `help`, `placeholder` ; option : `label` ; groupe d'options : `group` (§7.3) ; `other.label` ; `dontKnow.label` (§7.7) ; surcharge `label` d'une question de bibliothèque ; `info` : `title`, `text` ; `summary` : `title` ; `end` : `title`, `message` | Interpolées, sans variantes : `messages.<param>`, `constraints[].message` (§9). Non interpolées : `title` d'un questionnaire ou d'un fragment, `unit`, `repeat.addLabel`, `yes`/`no`/`unknown` d'un jeu de libellés, `label` d'une sortie nommée |
 
 ### 5.3 Interpolation
 
@@ -180,11 +180,11 @@ le contexte de la page affichée (§10.2). Exemples : `Bonjour {sys.nom_assure}`
 | `kind` | Rôle | Propriétés (outre `id`, `description?`) | Page affichée |
 | --- | --- | --- | --- |
 | `question` | Saisie d'une réponse. | Question locale (§7) **ou** `ref` (id d'une question de bibliothèque) + `label?` qui surcharge son intitulé. | oui |
-| `block` | Instance d'un bloc de bibliothèque. | `ref` (id du bloc), `alias` (clé : préfixe des clés du bloc vues de l'hôte). | non : on entre dans le bloc |
+| `fragment` | Appel d'un fragment de bibliothèque, par référence (version 7, ex-`block`). | `ref` (id du fragment), `alias` (clé : préfixe des clés du fragment vues de l'appelant). | non : on entre dans le fragment |
 | `info` | Texte sans saisie. | `title?`, `text`. | oui |
 | `summary` | Récapitulatif des réponses (§11.6). | `title?`. | oui |
 | `end` | Fin de parcours. | `title?`, `message`, `outcome?` (issue métier libre : `submitted`, `ineligible`…). | oui (dernière) |
-| `exit` | Sortie nommée d'un bloc, **dans un bloc uniquement** (règle non vérifiée, §11.3). | `name` (clé, visée par `exit` des arêtes de l'instance), `label?` (texte pour le lecteur, sans effet). | non |
+| `exit` | Sortie nommée (facultative) d'un fragment, **dans un fragment uniquement** (règle non vérifiée, §11.3). | `name` (clé, visée par `exit` des arêtes du nœud fragment), `label?` (texte pour le lecteur, sans effet). | non |
 
 Question locale (le nœud porte la question) et question de bibliothèque :
 
@@ -408,7 +408,7 @@ Types de la version 6 (§7.8) : `"souscripteur": { "civilite": "MME", "mail": "J
 "telephone": "+32470123456", "telephone_pays": "BE", "adresse": "12 rue des Lilas 31000 Toulouse", "adresse_pays": "FR" }`.
 
 - Question d'un questionnaire (locale ou de bibliothèque) : sous sa clé.
-- Question d'un bloc : sous `<alias>.<clé>` (objet de l'alias de l'instance).
+- Question d'un fragment : sous `<alias>.<clé>` (objet de l'alias du nœud fragment) ; fragment appelé par un fragment : `<alias>.<sous-alias>.<clé>`. Deux appels du même fragment ont des alias distincts, donc des réponses distinctes.
 - Précision « Autre » : clé `<clé>_other`, à côté de la réponse.
 - Groupe de la sélection d'un choix (`single`, `multiple`, version 3) : clé `<clé>_group`, à côté de la réponse
   (la valeur, elle, est inchangée). Il vaut l'identifiant du groupe de l'option choisie (§7.3), `"AUTRE"` pour
@@ -517,7 +517,7 @@ L'expression est évaluée sur un objet racine :
 
 - les réponses (§8), **sans les valeurs `null`** (retirées en profondeur) ;
 - `sys` : l'état du système fourni par l'hôte ;
-- dans un bloc : les réponses du bloc **aussi** sans préfixe, prioritaires sur une clé homonyme de l'hôte ;
+- dans un fragment : les réponses de chaque appel traversé **aussi** sans préfixe, la plus interne prioritaire (celles du fragment, puis de son appelant s'il est lui-même un fragment…) sur une clé homonyme de l'appelant ;
 - dans un champ de structure (`when`, règles, libellés du champ) : les champs de l'occurrence sans
   préfixe, prioritaires ;
 - dans `label` / `value` d'une entrée dynamique : **uniquement** l'élément de la liste (`from` et `when`
@@ -533,12 +533,12 @@ Les fonctions de date utilisent la date du jour du moteur (figée par `today` da
 | `victimes.nom` | Champ d'une structure (pour une structure répétable : les valeurs de toutes les occurrences). |
 | `victimes[0].nom`, `$count(victimes)` | Occurrence d'une structure répétable (indice à partir de 0), nombre d'occurrences. |
 | `type_sinistre_other` | Précision « Autre » de `type_sinistre`. |
-| `qualite_declarant.groupe` | Groupe de la sélection d'un choix (version 3) : lit `qualite_declarant_group` (§8) — code du groupe, sinon son libellé dans la langue par défaut ; `"AUTRE"` pour « Autre » ; absent (`single`) ou `""` (`multiple`) hors groupe ; liste pour `multiple`. Aussi `tiers.cle.groupe` (bloc), `victimes.lien.groupe`, `lien.groupe` (champ de structure). Un moteur peut, comme l'outil, réécrire toute étape **finale** `groupe` d'un chemin de noms en `<dernier nom>_group` avant d'évaluer, en gardant les indices et filtres du dernier nom (`liens[0].groupe` → `liens_group[0]`). Ailleurs qu'après une question à choix, `.groupe` est une référence inconnue. |
+| `qualite_declarant.groupe` | Groupe de la sélection d'un choix (version 3) : lit `qualite_declarant_group` (§8) — code du groupe, sinon son libellé dans la langue par défaut ; `"AUTRE"` pour « Autre » ; absent (`single`) ou `""` (`multiple`) hors groupe ; liste pour `multiple`. Aussi `tiers.cle.groupe` (fragment), `victimes.lien.groupe`, `lien.groupe` (champ de structure). Un moteur peut, comme l'outil, réécrire toute étape **finale** `groupe` d'un chemin de noms en `<dernier nom>_group` avant d'évaluer, en gardant les indices et filtres du dernier nom (`liens[0].groupe` → `liens_group[0]`). Ailleurs qu'après une question à choix, `.groupe` est une référence inconnue. |
 | `montant_estime.nsp` | « Ne sais pas » choisie (version 5, §7.7) : `true` si `montant_estime_nsp` vaut `true`, `false` sinon (jamais absent). Aussi `tiers.cle.nsp`, `victimes[0].age.nsp`, `age.nsp` (champ de structure). Un moteur peut, comme l'outil, réécrire tout chemin de noms terminé par `.nsp` en `(<chemin>_nsp = true)` (`victimes[0].age.nsp` → `(victimes[0].age_nsp = true)`). Sur une structure répétable sans indice (`victimes.age.nsp`), la comparaison d'une liste vaut `false` : utiliser un indice ou un filtre (`victimes[age.nsp]`). Connu seulement sur une question dont `dontKnow` est activé ; ailleurs, référence inconnue. |
 | `telephone.pays` | Pays d'un téléphone ou d'une adresse (version 6, §7.8) : lit `telephone_pays` (§8), code ISO ; absent si non répondu. Aussi `tiers.cle.pays`, `souscripteur.telephone.pays`, `souscripteurs[0].telephone.pays`. L'outil réécrit tout chemin de noms terminé par `.pays` en `($exists(<chemin>_pays) ? <chemin>_pays : <chemin>.pays)` (`_pays` inséré après l'avant-dernier nom, comme `.groupe`) : un champ de structure nommé `pays` reste lisible (`pays` n'est pas réservé). Connu seulement après une question `phone` ou `address` ; ailleurs, référence inconnue. |
 | `sys.profil`, `sys.sinistres.nature` | Variable de l'état du système ; champ des objets d'une liste. |
-| `tiers.nom` | Question `nom` du bloc instancié avec l'alias `tiers` (depuis l'hôte, ou dans le bloc). |
-| `nom` (dans le bloc) | Question `nom` du bloc lui-même ; une clé du questionnaire hôte reste accessible sans préfixe si le bloc n'a pas de question homonyme. |
+| `tiers.nom` | Question `nom` du fragment appelé avec l'alias `tiers` (depuis l'appelant, ou dans le fragment). `ident.adresse.ville` : fragment `adresse` appelé par le fragment `ident`. |
+| `nom` (dans le fragment) | Question `nom` du fragment lui-même ; une clé de l'appelant reste accessible sans préfixe si le fragment n'a pas de question homonyme (« clé attendue de l'appelant », vérifiée chez chaque appelant, §13). |
 | `prenom` (dans un champ de `victimes`) | Champ de la même occurrence. |
 | `$$.cle` | Réponse `cle`, depuis la racine ; utile dans un filtre (§10.5). |
 
@@ -585,7 +585,7 @@ partir de la racine avec `$$` : `sys.sinistres[date <= $$.date_sinistre]`. Hors 
 
 ## 11. Navigation
 
-Le parcours est une suite de **pages** (nœuds `question`, `info`, `summary`, `end`). Les nœuds `block`
+Le parcours est une suite de **pages** (nœuds `question`, `info`, `summary`, `end`). Les nœuds `fragment`
 et `exit` ne sont jamais affichés : on les traverse.
 
 ### 11.1 Arêtes
@@ -604,33 +604,44 @@ Les conditions sont évaluées avec les réponses connues, celle de la page quit
 - **Convergence** : plusieurs arêtes peuvent viser le même nœud.
 - **Boucle** : une arête peut viser un nœud déjà visité ; les réponses déjà données sont proposées à
   nouveau et remplacées si elles changent (§8).
-- Une arête relie deux nœuds du même graphe (questionnaire ou bloc).
+- Une arête relie deux nœuds du même graphe (questionnaire ou fragment).
 
 ### 11.2 Départ et fin
 
-Le parcours commence au nœud `start` du questionnaire. Il se termine sur un nœud `end`, dont `outcome`
-indique l'issue métier au logiciel hôte. Un `end` placé dans un bloc termine tout le questionnaire.
+Le parcours commence au nœud `start` du questionnaire (sur l'entrée du fragment si `start` est un nœud `fragment`). Il se termine sur un nœud `end`, dont `outcome`
+indique l'issue métier au logiciel hôte. Un fragment ne contient pas de `end` ; dans un fichier antérieur (bloc migré), un `end` placé dans un fragment termine tout le questionnaire (signalé, §13).
 
-### 11.3 Blocs
+### 11.3 Fragments
 
-Un bloc (`library.blocks[]`) est un sous-graphe avec `start`, des questions et des nœuds `exit`.
+Un fragment (`library.fragments[]`, version 7) est un morceau de parcours sans départ ni fin : des questions,
+des pages, éventuellement des appels d'autres fragments et des sorties nommées (`exit`).
 
-- **Entrée** : atteindre une instance (`kind: "block"`) mène au nœud `start` du bloc.
-- **Étapes** : une page d'un bloc est identifiée par `<id de l'instance>/<id du nœud du bloc>`
-  (ex. `n_bloc_tiers/bn_nom`). Ses réponses sont rangées sous l'alias (§8).
-- **Sortie** : atteindre un nœud `exit` du bloc fait quitter l'instance : on applique la règle du §11.1
-  aux arêtes sortant de l'instance dont `exit` vaut le `name` de la sortie atteinte **ou** qui n'ont pas
-  d'`exit` (valables pour toute sortie). Leurs conditions sont évaluées dans le contexte de l'**hôte**
-  (réponses du bloc via `alias.cle`).
-- Un bloc ne contient pas d'instance de bloc, et un nœud `exit` n'apparaît que dans un bloc. Ces deux
-  règles ne sont imposées ni par le schéma ni par les vérifications du §13 : l'éditeur ne permet pas de
-  produire autre chose, mais un fichier écrit à la main pourrait les enfreindre, et le comportement est
-  alors indéfini (le moteur cible peut refuser le fichier). Un même bloc peut être instancié plusieurs fois, avec des
-  alias différents ; chaque instance a ses propres réponses.
+- **Entrée** : atteindre un nœud `fragment` mène à l'**entrée** du fragment : `entry` si elle est donnée
+  (et désigne un nœud), sinon le nœud du fragment sans arête entrante. S'il n'y en a pas ou plusieurs (et pas
+  d'`entry`), le moteur prend le premier de ces nœuds dans l'ordre de `nodes` (le premier nœud s'il n'y en a
+  aucun) ; l'éditeur le signale (`fragmentEntry`).
+- **Étapes** : une page d'un fragment est identifiée par `<id du nœud fragment>/<id du nœud du fragment>`
+  (ex. `n_bloc_tiers/bn_nom`) ; dans un fragment appelé par un fragment, `<id1>/<id2>/<id du nœud>`.
+  Ses réponses sont rangées sous l'alias (§8).
+- **Sortie implicite** : un nœud du fragment **sans arête sortante** est une sortie. Après sa page, on
+  applique la règle du §11.1 aux arêtes sortant du nœud fragment **sans** `exit`. Leurs conditions sont
+  évaluées dans le contexte de l'**appelant** (réponses du fragment via `alias.cle`, ex. `ident.majeur = false`).
+- **Sortie nommée** (facultative, héritée des blocs) : atteindre un nœud `exit` fait quitter le fragment :
+  on applique la règle du §11.1 aux arêtes sortant du nœud fragment dont `exit` vaut le `name` de la sortie
+  atteinte **ou** qui n'ont pas d'`exit` (valables pour toute sortie).
+- **Imbrication** : un fragment peut appeler un autre fragment. Si le nœud fragment intérieur n'a aucune
+  arête sortante, la sortie remonte : on applique la règle aux arêtes du nœud fragment extérieur. Un cycle
+  d'appels (A appelle B qui appelle A) est invalide (signalé, `fragmentCycle`) ; le moteur peut refuser le fichier.
+- Un nœud `exit` n'apparaît que dans un fragment. Cette règle n'est imposée ni par le schéma ni par les
+  vérifications du §13 : l'éditeur ne permet pas de produire autre chose, mais un fichier écrit à la main
+  pourrait l'enfreindre, et le comportement est alors indéfini. Un même fragment peut être appelé plusieurs
+  fois, avec des alias différents ; chaque appel a ses propres réponses.
 
 ```json
-{ "id": "e_bloc_identifie", "from": "n_bloc_tiers", "to": "n_circonstances", "exit": "identifie" },
-{ "id": "e_bloc_non_identifie", "from": "n_bloc_tiers", "to": "n_tiers_inconnu", "exit": "non_identifie" }
+{ "kind": "fragment", "id": "n_ident", "ref": "frg_identification_assure", "alias": "ident" },
+{ "id": "e_ident_mineur", "from": "n_ident", "to": "n_mineur", "when": "ident.majeur = false" },
+{ "id": "e_ident_montant", "from": "n_ident", "to": "n_montant_demande" },
+{ "id": "e_bloc_identifie", "from": "n_bloc_tiers", "to": "n_circonstances", "exit": "identifie" }
 ```
 
 ### 11.4 Avancer, revenir
@@ -674,9 +685,10 @@ lieu d'afficher la fin. La réponse n'est pas effacée : l'utilisateur la corrig
 ## 12. Bibliothèque (`bibliotheque.json`)
 
 - `questions[]` : questions réutilisables (§7), référencées par `{ "kind": "question", "id", "ref" }`.
-  Leur clé est vue sans préfixe dans le graphe qui les référence (questionnaire, ou bloc puis `alias.cle`).
-- `blocks[]` : `{ id, key, title, description?, start, nodes, edges }` (§11.3) ; nœuds : questions
-  (locales ou de bibliothèque), `info`, `summary`, `end`, `exit`.
+  Leur clé est vue sans préfixe dans le graphe qui les référence (questionnaire, ou fragment puis `alias.cle`).
+- `fragments[]` (version 7) : `{ id, key, title, description?, entry?, nodes, edges }` (§11.3) ; nœuds : questions
+  (locales ou de bibliothèque), `info`, `summary`, `fragment` (appel d'un autre fragment), `exit` ; pas de `start`
+  ni de `end`. Les questionnaires et fragments y font **référence** (`ref`) : une modification s'applique à tous les appelants.
 - `labelSets[]` : `{ id, key, kind: "boolean" | "tristate", yes, no, unknown? }` : libellés des valeurs
   `true`, `false` et `"unknown"` (tri-state) ; référencés par `labelSet` d'une question du même `kind`.
 
@@ -692,11 +704,13 @@ en contenir : le moteur cible peut les vérifier à son tour.
 | `unknownFilterReference` | Clé de question écrite nue dans un filtre (écrire `$$.cle`). |
 | `notGuaranteed` | Référence à une question qui n'est pas posée sur tous les chemins menant à l'expression (sauf dans `$exists(…)` ou dans le texte d'une variante dont la condition la teste). |
 | `duplicateKey`, `invalidKey` | Clé en double ou hors `snake_case` / réservée (§2). |
-| `missingStart`, `unreachable`, `deadEnd` | Départ introuvable, nœud inaccessible, nœud sans sortie qui n'est pas une fin. |
+| `missingStart`, `unreachable`, `deadEnd` | Départ introuvable, nœud inaccessible (depuis le départ, ou l'entrée d'un fragment), nœud sans sortie qui n'est pas une fin (hors fragment : ses nœuds sans arête sortante sont ses sorties). |
 | `noElse`, `multipleElse` | Plusieurs arêtes sortantes sans « sinon » ; plusieurs « sinon ». |
 | `loopWithoutExit` | Boucle dont aucune arête ne sort. |
-| `exitNotConnected`, `unknownExit` | Sortie de bloc non raccordée ; arête visant une sortie inexistante. |
-| `libraryMissing` | Question, bloc ou jeu de libellés de bibliothèque introuvable. |
+| `exitNotConnected`, `unknownExit`, `implicitExitNotConnected` | Sortie nommée d'un fragment non raccordée ; arête visant une sortie inexistante ; sorties implicites sans arête sans `exit`. |
+| `fragmentEntry`, `fragmentNoExit`, `fragmentCycle`, `unusedFragment`, `endInFragment` | Fragment sans entrée unique (et sans `entry`) ; sans sortie ; cycle d'appels ; appelé nulle part ; contenant une fin. |
+| `expectedKeyMissing` | Clé attendue par un fragment (référence hors de ses propres clés) absente chez un appelant : signalée dans cet appelant, sur le nœud fragment. |
+| `libraryMissing` | Question, fragment ou jeu de libellés de bibliothèque introuvable. |
 | `missingTranslation` | Texte sans traduction dans une langue du projet (libellés de groupe et `dontKnow.label` compris). |
 | `duplicateGroup`, `reservedGroupCode`, `emptyGroup` | Groupes d'options d'une question : identifiant en double ; code `AUTRE` ou `NSP` (réservés) ; groupe sans option (§7.3). |
 
@@ -704,7 +718,7 @@ L'exemple fourni ne produit aucun problème.
 
 ## 14. Exemple commenté
 
-`examples/declaration-sinistre/` : déclaration d'un sinistre par un adhérent connecté (langues `fr`, `en`).
+`examples/declaration-sinistre/` : déclaration d'un sinistre par un adhérent connecté (langues `fr`, `en`), et demande de remboursement (`demande_remboursement.json`, version 7).
 
 | Fonctionnalité | Où |
 | --- | --- |
@@ -719,13 +733,14 @@ L'exemple fourni ne produit aucun problème.
 | Libellé et aide à variantes, `$exists(victimes[hospitalise])`, nombre réel à 2 décimales | `n_montant` |
 | `$addDays` interpolé | `n_expertise` |
 | Booléen avec `default: false` | `n_tiers` |
-| Bloc avec alias, deux sorties nommées, structure non répétable, tri-state à jeu de libellés, accès à une clé de l'hôte (`{date_sinistre}`) | `n_bloc_tiers` → `blk_identite_tiers` |
+| Fragment **au milieu** du parcours, avec alias, deux sorties nommées, structure non répétable, tri-state à jeu de libellés, accès à une clé de l'appelant (`{date_sinistre}`) | `n_bloc_tiers` → `blk_identite_tiers` |
+| Fragment **en première position** (`start` sur le nœud fragment), sorties implicites (`num_secu`, `representant_legal`), arête de l'appelant `ident.majeur = false` (version 7) | `q_remboursement` : `n_ident` → `frg_identification_assure` ; chemins `remboursement_majeur.json`, `remboursement_mineur.json` |
 | `required` calculé ; aide à variantes (`type_sinistre_other`, `$daysBetween`) | `n_circonstances` |
 | Choix multiple avec « Autre » ; `'telephone' in canaux_contact` | `n_canaux`, `e_canaux_tel` |
 | Question de bibliothèque à intitulé surchargé | `n_tel` → `lq_telephone` |
 | Synthèse, confirmation à jeu de libellés booléen, boucle de correction, fin à variantes | `n_synthese`, `n_confirmation`, `e_confirmation_retour`, `n_fin` |
 | « Ne sais pas » (version 5) : nombre obligatoire avec minimum et libellé traduit ; choix multiple obligatoire avec « Autre » et libellé par défaut ; `montant_estime.nsp` dans une arête | `n_montant`, `n_canaux`, `e_montant_expertise` ; chemin `amicale_ne_sais_pas.json` |
-| Libellés de lecture `caption` (version 4) : arête conditionnée, « sinon », arête de sortie de bloc ; variable et champ de liste | `e_qualite_ayant_droit`, `e_qualite_montant`, `e_bloc_non_identifie` ; `sys.type_adherent`, `sys.sinistres` (`nature`) |
+| Libellés de lecture `caption` (version 4) : arête conditionnée, « sinon », arête de sortie nommée ; variable et champ de liste | `e_qualite_ayant_droit`, `e_qualite_montant`, `e_bloc_non_identifie` ; `sys.type_adherent`, `sys.sinistres` (`nature`) |
 | Mail, téléphone, adresse, civilité (version 6) : structure de bibliothèque non utilisée par le questionnaire (civilité obligatoire, téléphone mobile, adresse à vérifier) | `lq_souscripteur` (bibliothèque) |
 
 Après la date, on demande le lien avec un sinistre existant s'il y en a un d'antérieur, puis on va aux
@@ -767,7 +782,7 @@ doit les rejouer à l'identique.
 | --- | --- |
 | `questionnaire`, `scenario` | Id du questionnaire joué ; id du scénario qui fournit l'état du système. |
 | `today` | Date du jour à utiliser pour `$today()`, `$age`… |
-| `answers[]` | Réponses dans l'ordre de saisie : `step` (id de page ; dans un bloc `idInstance/idNœud`), `value`, `other?` (précision « Autre »), `group?` (groupe de la sélection, rangé sous `<clé>_group`, §8), `dontKnow?` (`true` : « Ne sais pas » choisie, sans `value` ; valeur, groupe et marqueur posés comme au §7.7). |
+| `answers[]` | Réponses dans l'ordre de saisie : `step` (id de page ; dans un fragment `idNœudFragment/idNœud`), `value`, `other?` (précision « Autre »), `group?` (groupe de la sélection, rangé sous `<clé>_group`, §8), `dontKnow?` (`true` : « Ne sais pas » choisie, sans `value` ; valeur, groupe et marqueur posés comme au §7.7). |
 | `path` | Pages visitées (questions, informations, synthèses, fin), boucles comprises, dans l'ordre. |
 | `outcome` | `outcome` du nœud `end` atteint. |
 
@@ -781,7 +796,7 @@ doit égaler `path`, toutes les réponses doivent avoir été consommées et l'i
 
 Toute évolution incompatible incrémente `formatVersion` et s'accompagne d'une migration dans l'outil,
 des schémas, de ce document et de l'exemple. Les ajouts compatibles (nouvelle propriété facultative)
-sont documentés ici. Version actuelle : **6**.
+sont documentés ici. Version actuelle : **7**.
 
 | Version | Changement | Migration |
 | --- | --- | --- |
@@ -790,3 +805,4 @@ sont documentés ici. Version actuelle : **6**.
 | 4 | Libellé de lecture `caption` (chaîne, une ligne) sur l'arête, la variable de l'état du système et le champ de liste d'objets (EVO-005). | Aucune transformation (un document antérieur n'a pas de libellé) ; seul `formatVersion` change. |
 | 5 | Option « Ne sais pas » `dontKnow` (toute question sauf structure), réponse `<clé>_nsp`, groupe réservé `NSP`, référence `cle.nsp`, mot réservé `nsp` (EVO-006). | Aucune transformation (propriété absente = désactivée) ; seul `formatVersion` change. |
 | 6 | Types `email`, `phone`, `address`, `civility` et leurs paramètres, réponse `<clé>_pays`, référence `cle.pays`, contrôles intégrés `email`, `phone`, `lineType`, `address`, `postalCode` (EVO-007). | Aucune transformation (un document antérieur n'utilise pas ces types) ; seul `formatVersion` change. |
+| 7 | Fragments de questionnaire (EVO-008) : `library.blocks` → `library.fragments` (`entry?`, sans `start`), nœud `block` → `fragment`, sorties implicites (nœuds sans arête sortante), départ possible sur un nœud fragment, imbrication. | Chaque bloc devient un fragment (mêmes id, clé, titre, nœuds, arêtes, sorties nommées ; `start` devient `entry` seulement s'il n'est pas l'unique nœud sans arête entrante) ; chaque nœud `block` devient `fragment`. Navigation inchangée pour un projet antérieur, sauf un nœud de bloc sans arête sortante (impasse déjà signalée en v6) : il arrêtait le parcours, il reprend désormais sur les arêtes sortantes du nœud fragment chez l'appelant. |

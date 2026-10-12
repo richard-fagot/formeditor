@@ -1,7 +1,7 @@
 import { checkSyntax, extractReferences, filterReferences, templateExpressions, templateReferences, type RefPath } from '../expressions';
-import { OTHER_VALUE, type Graph, type Question, type Workspace } from '../model';
+import { fragmentCallers, OTHER_VALUE, type Graph, type Question, type Workspace } from '../model';
 import {
-  blockHosts, blockScope, collectExpressions, questionnaireScope, questionOfNode, resolvePath, structureScope,
+  collectExpressions, fragmentScope, questionnaireScope, questionOfNode, resolvePath, structureScope,
   type FoundExpression, type Owner, type RefInfo, type Scope,
 } from '../references';
 import { generated, guaranteedBefore, type Guarantees } from './guarantee';
@@ -10,9 +10,9 @@ import { issue, type Issue } from './issue';
 const refsOf = (f: FoundExpression, skipExists = false): RefPath[] =>
   f.kind === 'expr' ? extractReferences(f.text, { skipExists }) : templateReferences(f.text, { skipExists });
 
-/** Question-racine désignée par une référence : `cle` ou `alias.cle` (sans le suffixe « Autre »). */
+/** Question-racine désignée par une référence : `cle`, `alias.cle` ou `a.b.cle` (sans le suffixe « Autre »). */
 function rootOf(path: RefPath, info: RefInfo): string {
-  const parts = info.alias ? [info.alias, path[1]!] : [path[0]!];
+  const parts = info.alias ? [info.alias, path[info.alias.split('.').length]!] : [path[0]!];
   const last = parts.length - 1;
   if (info.kind === 'other') parts[last] = parts[last]!.replace(new RegExp(`_${OTHER_VALUE}$`), '');
   return parts.join('.');
@@ -24,7 +24,7 @@ export function checkReferences(ws: Workspace): Issue[] {
   const cached = (k: string, make: () => Scope) => scopes.get(k) ?? (scopes.set(k, make()), scopes.get(k)!);
   const graphs = new Map<string, Graph>([
     ...ws.questionnaires.map((q) => [`questionnaire:${q.id}`, q] as const),
-    ...ws.library.blocks.map((b) => [`block:${b.id}`, b] as const),
+    ...ws.library.fragments.map((f) => [`fragment:${f.id}`, f] as const),
   ]);
   const guarantees = new Map<string, Guarantees>();
   const guaranteed = (key: string) => guarantees.get(key) ?? (guarantees.set(key, guaranteedBefore(ws, graphs.get(key)!)), guarantees.get(key)!);
@@ -33,22 +33,56 @@ export function checkReferences(ws: Workspace): Issue[] {
     if (owner.kind === 'libraryQuestion') return ws.library.questions.find((q) => q.id === owner.id);
     return graphs.get(`${owner.kind}:${owner.id}`)?.nodes.map((n) => questionOfNode(ws, n)).find((q) => q?.key === key);
   };
-  /** Portées dans lesquelles l'expression doit se résoudre (une par hôte pour un bloc ou une question de bibliothèque). */
+  const withStructure = (f: FoundExpression, base: Scope[]) => {
+    const s = f.loc.structure ? structureOf(f.loc.owner, f.loc.structure) : undefined;
+    return s ? base.map((sc) => structureScope(sc, s)) : base;
+  };
+  /** Portées dans lesquelles l'expression doit se résoudre (une par appelant pour une question de bibliothèque). */
   const scopesFor = (f: FoundExpression): Scope[] => {
     const o = f.loc.owner;
     let base: Scope[];
     if (o.kind === 'questionnaire') base = [cached(`q:${o.id}`, () => questionnaireScope(ws, o.id))];
-    else if (o.kind === 'block') {
-      const hosts = blockHosts(ws, o.id);
-      base = (hosts.length ? hosts : [undefined]).map((h) => cached(`b:${o.id}:${h}`, () => blockScope(ws, o.id, h)));
-    } else {
+    else if (o.kind === 'fragment') base = [cached(`f:${o.id}`, () => fragmentScope(ws, o.id))];
+    else {
       const users = ws.questionnaires.filter((q) => q.nodes.some((n) => n.kind === 'question' && 'ref' in n && n.ref === o.id));
       base = users.map((q) => cached(`q:${q.id}`, () => questionnaireScope(ws, q.id)));
       if (!base.length) base = [new Map()];
     }
-    const s = f.loc.structure ? structureOf(o, f.loc.structure) : undefined;
-    return s ? base.map((sc) => structureScope(sc, s)) : base;
+    return withStructure(f, base);
   };
+  /**
+   * Fragment (EVO-008) : une référence hors de ses propres clés est une clé attendue de chaque appelant ;
+   * absente chez un appelant → `expectedKeyMissing` dans cet appelant, sur chaque nœud qui appelle le fragment.
+   * Renvoie les références que ne fournit aucun appelant (« inconnues » dans le fragment).
+   */
+  const checkExpected = (f: FoundExpression, refs: RefPath[]): RefPath[] => {
+    const o = f.loc.owner;
+    const own = withStructure(f, [cached(`f:${o.id}:own`, () => fragmentScope(ws, o.id, []))])[0]!;
+    const expected = refs.filter((r) => !resolvePath(own, r));
+    if (!expected.length) return [];
+    const key = ws.library.fragments.find((x) => x.id === o.id)?.key ?? o.id;
+    const callers = fragmentCallers(ws, o.id);
+    const unknown = new Set(expected.map((r) => r.join('.')));
+    for (const c of callers) {
+      const scope = withStructure(f, [cached(`f:${o.id}:${c.kind}:${c.id}`, () => fragmentScope(ws, o.id, [c]))])[0]!;
+      const owner: Owner = c.kind === 'questionnaire' ? { kind: 'questionnaire', id: c.id } : { kind: 'fragment', id: c.id };
+      const calls = graphs.get(`${c.kind}:${c.id}`)?.nodes.filter((n) => n.kind === 'fragment' && n.ref === o.id) ?? [];
+      for (const r of new Set(expected.map((x) => x.join('.')))) {
+        if (resolvePath(scope, r.split('.'))) {
+          unknown.delete(r);
+          continue;
+        }
+        for (const n of calls) {
+          const id = `${owner.kind}|${owner.id}|${n.id}|${r}`;
+          if (reported.has(id)) continue;
+          reported.add(id);
+          out.push(issue('expectedKeyMissing', owner, { nodeId: n.id }, { ref: r, fragment: key }));
+        }
+      }
+    }
+    return [...unknown].map((r) => r.split('.'));
+  };
+  const reported = new Set<string>();
 
   for (const f of collectExpressions(ws)) {
     const where = { nodeId: f.loc.nodeId, edgeId: f.loc.edgeId, property: f.loc.property };
@@ -63,7 +97,7 @@ export function checkReferences(ws: Workspace): Issue[] {
       continue;
     }
     const scopes = scopesFor(f);
-    const unknown = refsOf(f).filter((r) => scopes.some((s) => !resolvePath(s, r)));
+    const unknown = f.loc.owner.kind === 'fragment' ? checkExpected(f, refsOf(f)) : refsOf(f).filter((r) => scopes.some((s) => !resolvePath(s, r)));
     // Nom d'un filtre qui est une clé de question : suggérer `$$.cle` (racine du contexte).
     const fromFilter = new Map(exprs.flatMap(filterReferences).map((x) => [x.path.join('.'), x.name]));
     for (const r of new Set(unknown.map((x) => x.join('.')))) {
@@ -112,9 +146,9 @@ function checkGuaranteed(
     const before = guaranteed(cp.gkey).get(at);
     if (!before) continue; // nœud inaccessible : déjà signalé
     const known = new Set([...before, ...generated(ws, g, at, edge)]);
-    const ownKeys = o.kind === 'block' ? new Set(g.nodes.map((n) => questionOfNode(ws, n)?.key)) : undefined;
+    const ownKeys = o.kind === 'fragment' ? new Set(g.nodes.map((n) => questionOfNode(ws, n)?.key)) : undefined;
     for (const root of new Set(roots)) {
-      if (ownKeys && !ownKeys.has(root)) continue; // clé de l'hôte vue depuis un bloc : non vérifiée
+      if (ownKeys && !ownKeys.has(root)) continue; // clé de l'appelant vue depuis un fragment : non vérifiée
       if (!known.has(root)) out.push(issue('notGuaranteed', cp.owner, { nodeId: cp.nodeId, edgeId: cp.edgeId, property: f.loc.property }, { ref: root }));
     }
   }

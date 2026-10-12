@@ -18,7 +18,7 @@ export const SETTINGS_MESSAGES = {
   'settings.missingFilter': { fr: 'Langue', en: 'Language' },
   'settings.allLanguages': { fr: 'Toutes', en: 'All' },
   'settings.owner.questionnaire': { fr: 'Questionnaire', en: 'Questionnaire' },
-  'settings.owner.block': { fr: 'Bloc', en: 'Block' },
+  'settings.owner.fragment': { fr: 'Fragment', en: 'Fragment' },
   'settings.owner.libraryQuestion': { fr: 'Bibliothèque', en: 'Library' },
   'settings.owner.system': { fr: 'État du système', en: 'System state' },
   'settings.shortcuts': { fr: 'Raccourcis clavier', en: 'Keyboard shortcuts' },

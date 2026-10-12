@@ -19,11 +19,13 @@ const selectedNode = () => {
   const id = st().selection.nodes.length === 1 ? st().selection.nodes[0] : undefined;
   return id ? graph()?.nodes.find((n) => n.id === id) : undefined;
 };
-/** Un logigramme est affiché : questionnaire en vue logigramme, ou bloc de la bibliothèque. */
+/** Un logigramme est affiché : questionnaire en vue logigramme, ou fragment de la bibliothèque. */
 export const inDiagram = () => {
   const r = ref();
-  return !!r && (r.kind === 'block' || (st().view[r.id] ?? 'diagram') === 'diagram');
+  return !!r && (r.kind === 'fragment' || (st().view[r.id] ?? 'diagram') === 'diagram');
 };
+/** Logigramme d'un questionnaire (départ et fins n'existent pas dans un fragment). */
+const inQuestionnaireDiagram = () => inDiagram() && ref()?.kind === 'questionnaire';
 
 function edit(r: GraphRef, recipe: Parameters<ReturnType<typeof st>['edit']>[1]) {
   st().edit(scopeOf(r), recipe);
@@ -93,7 +95,7 @@ export function graphCommands(): Command[] {
     { id: 'node.newBranch', label: 'node.newBranch', keys: ['Shift+N'], scope: 'graph', enabled: () => inDiagram() && !!selectedNode(), run: () => createAfter(newQuestion, true) },
     { id: 'node.newInfo', label: 'node.newInfo', keys: ['Alt+i'], scope: 'graph', enabled: inDiagram, run: page('info') },
     { id: 'node.newSummary', label: 'node.newSummary', keys: ['Alt+s'], scope: 'graph', enabled: inDiagram, run: page('summary') },
-    { id: 'node.newEnd', label: 'node.newEnd', keys: ['Alt+f'], scope: 'graph', enabled: inDiagram, run: page('end') },
+    { id: 'node.newEnd', label: 'node.newEnd', keys: ['Alt+f'], scope: 'graph', enabled: inQuestionnaireDiagram, run: page('end') },
     ...typeCommands,
     {
       id: 'node.toggleRequired', label: 'node.toggleRequired', keys: ['o'], scope: 'graph', enabled: isLocalQuestion,
@@ -136,11 +138,14 @@ export function graphCommands(): Command[] {
       },
     },
     {
-      id: 'node.setStart', label: 'node.setStart', keys: [], scope: 'graph', enabled: () => !!selectedNode(),
+      id: 'node.setStart', label: 'node.setStart', keys: [], scope: 'graph', enabled: () => ref()?.kind === 'questionnaire' && !!selectedNode(),
       run: () => {
         const r = ref()!;
         const id = selectedNode()!.id;
-        edit(r, (ws) => void (getGraph(ws, r)!.start = id));
+        edit(r, (ws) => {
+          const q = ws.questionnaires.find((x) => x.id === r.id);
+          if (q) q.start = id;
+        });
       },
     },
     {

@@ -5,3 +5,4 @@ export { checkGraph } from './graph';
 export { guaranteedBefore } from './guarantee';
 export { describeIssue, type Issue, type IssueCode } from './issue';
 export { DEFAULT_MESSAGES, defaultMessage } from './messages';
+export { expectedKeys } from './expected';

@@ -1,4 +1,5 @@
 import { evaluate } from '../expressions';
+import type { Graph } from '../model';
 import { buildContext, countryPath, dontKnowPath, getAnswer, groupPath, otherPath, withAnswer, type Answers } from './context';
 import { firstStep, reachableSteps, successor } from './navigate';
 import { resolveStep, type RuntimeInput, type Step } from './steps';
@@ -115,11 +116,7 @@ export function prune(input: RuntimeInput, answers: Answers): Answers {
   const keep = projectedSteps(input, answers);
   let out = answers;
   const host = input.ws.questionnaires.find((q) => q.id === input.questionnaireId)!;
-  const allSteps = host.nodes.flatMap((n) => {
-    if (n.kind !== 'block') return [n.id];
-    const b = input.ws.library.blocks.find((x) => x.id === n.ref);
-    return b ? b.nodes.map((bn) => `${n.id}/${bn.id}`) : [];
-  });
+  const allSteps = stepIds(input, host, '', new Set());
   const kept = new Set([...keep].map((id) => resolveStep(input, id)?.answerPath?.join('.')).filter(Boolean));
   for (const id of allSteps) {
     const path = resolveStep(input, id)?.answerPath;
@@ -127,6 +124,15 @@ export function prune(input: RuntimeInput, answers: Answers): Answers {
     for (const p of [path, otherPath(path), groupPath(path), dontKnowPath(path), countryPath(path)]) out = withAnswer(out, p, undefined);
   }
   return out;
+}
+
+/** Toutes les étapes d'un graphe, fragments appelés compris (`seen` : garde contre un cycle d'appels). */
+function stepIds(input: RuntimeInput, g: Graph, prefix: string, seen: Set<string>): string[] {
+  return g.nodes.flatMap((n) => {
+    if (n.kind !== 'fragment') return [prefix + n.id];
+    const f = seen.has(n.ref) ? undefined : input.ws.library.fragments.find((x) => x.id === n.ref);
+    return f ? stepIds(input, f, `${prefix}${n.id}/`, new Set([...seen, n.ref])) : [];
+  });
 }
 
 export interface SummaryEntry {

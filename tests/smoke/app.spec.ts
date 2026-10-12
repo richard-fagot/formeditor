@@ -249,7 +249,7 @@ test('types au clavier, saisie rapide des options, champs de structure, jeu de l
   expect(errors).toEqual([]);
 });
 
-test('bibliothèque : glisser une question, insérer un bloc (I), déplier, grouper (Ctrl+G), éditer le bloc', async ({ page }) => {
+test('bibliothèque : glisser une question, insérer un fragment (I), déplier, extraire (Ctrl+G), éditer le fragment', async ({ page }) => {
   const errors = await open(page);
   await page.keyboard.press('Control+k');
   await page.keyboard.type('exemple');
@@ -276,10 +276,10 @@ test('bibliothèque : glisser une question, insérer un bloc (I), déplier, grou
   await expect(nodes.filter({ hasText: 'Téléphone portable' })).toHaveCount(0);
   await expect(label).toHaveValue(original);
 
-  // Insérer un bloc par la palette (I) : nouvelle instance avec un alias libre.
+  // Insérer un fragment par la palette (I) : nouveau nœud fragment avec un alias libre.
   await page.getByTestId('diagram').focus();
   await page.keyboard.press('i');
-  await expect(page.getByPlaceholder('Insérer une question ou un bloc…')).toBeFocused();
+  await expect(page.getByPlaceholder('Insérer une question ou un fragment…')).toBeFocused();
   await page.keyboard.type('identite_tiers');
   await page.keyboard.press('Enter');
   await expect(nodes).toHaveCount(count + 2);
@@ -287,28 +287,30 @@ test('bibliothèque : glisser une question, insérer un bloc (I), déplier, grou
   await expect(instance).toHaveCount(1);
   await expect(page.getByLabel('Alias')).toHaveValue('identite_tiers');
 
-  // Déplier l'instance en lecture seule.
-  await instance.getByTestId('block-expand').click();
-  await expect(instance.getByTestId('block-content')).toContainText('identite_tiers.nom');
+  // Déplier le nœud fragment en lecture seule.
+  await instance.getByTestId('fragment-expand').click();
+  await expect(instance.getByTestId('fragment-content')).toContainText('identite_tiers.nom');
 
-  // Grouper la question déposée (reliée à l'instance insérée à sa suite) : bloc avec une sortie.
+  // Extraire la question déposée (reliée au nœud inséré à sa suite) : fragment avec une sortie.
   await nodes.filter({ hasText: 'telephone' }).last().click();
   await page.keyboard.press('Control+g');
-  await expect(nodes.filter({ hasText: 'Nouveau bloc' })).toHaveCount(1);
+  await expect(nodes.filter({ hasText: 'Nouveau fragment' })).toHaveCount(1);
 
-  // Le bloc créé s'édite dans l'onglet Bibliothèque : ajouter une sortie au clavier (palette).
+  // Le fragment créé s'édite dans son onglet : ajouter une sortie au clavier (palette).
   await page.getByLabel('Alias').focus();
-  await page.getByRole('button', { name: 'Ouvrir dans la bibliothèque' }).click();
-  await expect(page.getByTestId('block-view')).toBeVisible();
-  await expect(page.getByTestId('block-view').locator('.react-flow__node')).toHaveCount(2);
-  await expect(page.getByTestId('block-view').locator('.react-flow__node').filter({ hasText: 'Sortie' })).toContainText('identite_tiers');
-  await page.getByTestId('block-view').getByTestId('diagram').click({ position: { x: 20, y: 20 } });
+  await page.getByTestId('properties').getByRole('button', { name: 'Ouvrir le fragment' }).click();
+  const view = page.getByTestId('fragment-view');
+  await expect(view).toBeVisible();
+  await expect(view.locator('.react-flow__node')).toHaveCount(2);
+  await expect(view.locator('.react-flow__node').filter({ hasText: 'Sortie' })).toContainText('identite_tiers');
+  await view.getByTestId('diagram').click({ position: { x: 20, y: 20 } });
   await page.keyboard.press('Control+k');
-  await page.keyboard.type('Nouvelle sortie de bloc');
+  await page.keyboard.type('Nouvelle sortie nommée');
   await page.keyboard.press('Enter');
-  await expect(page.getByTestId('block-view').locator('.react-flow__node')).toHaveCount(3);
+  await expect(view.locator('.react-flow__node')).toHaveCount(3);
 
   // Question de bibliothèque : propriétés complètes dans l'onglet Bibliothèque, usages listés.
+  await page.getByRole('tablist').getByRole('button', { name: 'Bibliothèque', exact: true }).click();
   await page.getByTestId('library-entry').filter({ hasText: 'telephone' }).click();
   await expect(page.getByTestId('library-question')).toContainText('Utilisé dans');
   await expect(page.getByTestId('library-question').getByLabel('Clé', { exact: true })).toHaveValue('telephone');

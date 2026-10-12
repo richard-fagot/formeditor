@@ -30,7 +30,7 @@ JSONata** (1.8, synchrone). Dépend de `core/model`.
 - Dates : `todayIso`, `addDays`, `daysBetween`, `age` ; exposées dans JSONata comme `$today()`, `$addDays`, `$daysBetween`, `$age`.
 
 ## Contexte d'évaluation
-Objet des réponses par clé + `sys` (état du système) + un objet par alias de bloc. Construit par `core/runtime`.
+Objet des réponses par clé + `sys` (état du système) + un objet par alias de fragment (imbriqué pour un fragment appelé par un fragment). Construit par `core/runtime`.
 `env.today` fige la date du jour (tests, prévisualisation).
 
 ## Pièges

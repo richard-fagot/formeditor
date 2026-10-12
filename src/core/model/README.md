@@ -1,6 +1,6 @@
 # core/model
 
-Types du domaine (projet, questionnaire, nœud, arête, question, bloc, variable, scénario) et quelques
+Types du domaine (projet, questionnaire, nœud, arête, question, fragment, variable, scénario) et quelques
 utilitaires purs. Aucun import externe : c'est la base de tous les autres modules.
 
 ## API
@@ -17,11 +17,14 @@ utilitaires purs. Aucun import externe : c'est la base de tous les autres module
   `AddressQuestion` (`defaultCountry?`, `countries?`, `minLength?`, `maxLength?`, `verify?`), `CivilityQuestion` (`labels?`, `short?`,
   `undisclosed?`) ; `COUNTRY_SUFFIX` / `COUNTRY_REF` (`pays` : `<clé>_pays`, `cle.pays`), `DEFAULT_COUNTRY` (`FR`), `hasCountry`,
   `CIVILITY_CODES`, `CIVILITY_LABELS` (longs / courts, fr / en), `civilityCodes(q)`, `civilityLabel(q, code)`.
-- `node.ts` : `GraphNode` (union par `kind` : question locale ou de bibliothèque, block, info, summary, end, exit),
+- `node.ts` : `GraphNode` (union par `kind` : question locale ou de bibliothèque, fragment (`FragmentNode` : `ref`, `alias`), info, summary, end, exit),
   `isLocalQuestion`, `isLibraryQuestion`.
 - `graph.ts` : `Edge` (dont `caption?`, libellé de lecture, EVO-005), `Graph`.
-- `documents.ts` : `Questionnaire`, `Library`, `Block`, `LabelSet`, `Project`, `SystemVariable` (dont `caption?`), `Scenario`,
-  `Layout`, `Workspace` (projet complet en mémoire), `Bundle`, `FORMAT_VERSION` (6).
+- `documents.ts` : `Questionnaire` (porte `start`), `Library` (`fragments`), `Fragment` (`entry?`, pas de `start`), `LabelSet`, `Project`, `SystemVariable` (dont `caption?`), `Scenario`,
+  `Layout`, `Workspace` (projet complet en mémoire), `Bundle`, `FORMAT_VERSION` (7).
+- `graph.ts` : `Graph` = `nodes` + `edges` (sans départ).
+- `fragment.ts` (EVO-008) : `fragmentRoots` (nœuds sans arête entrante), `fragmentEntry` (`entry`, sinon premier candidat, sinon premier nœud),
+  `fragmentExits` (nœuds sans arête sortante), `graphStart` (départ ou entrée), `calledFragments`, `createsCycle`, `fragmentCallers`.
 - `keys.ts` : `deriveKey` (« Date du sinistre » → `date_sinistre`), `uniqueKey`, `isValidKey`, `newId`, `RESERVED_KEYS` (dont `groupe`, `nsp`).
 
 ## Invariants
@@ -34,4 +37,4 @@ utilitaires purs. Aucun import externe : c'est la base de tous les autres module
 - `StructureField` exclut le type `structure` (pas de structure imbriquée).
 
 ## Tests
-`keys.test.ts`.
+`keys.test.ts`, `fragment.test.ts`.

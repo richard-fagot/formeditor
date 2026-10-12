@@ -24,6 +24,6 @@ export function setQuestionLabel(ws: Workspace, ref: GraphRef, nodeId: string, l
   const others = usedKeys(ws, g).filter((k) => k !== node.key);
   const key = uniqueKey(deriveKey(text), others);
   if (key === node.key) return ws;
-  const owner = ref.kind === 'questionnaire' ? { kind: 'questionnaire' as const, id: ref.id } : { kind: 'block' as const, id: ref.id };
+  const owner = ref.kind === 'questionnaire' ? { kind: 'questionnaire' as const, id: ref.id } : { kind: 'fragment' as const, id: ref.id };
   return renameKey(ws, { kind: 'question', owner, nodeId }, key);
 }

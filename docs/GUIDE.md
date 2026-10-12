@@ -1,5 +1,5 @@
 # Guide utilisateur — Éditeur de questionnaires
-Mis à jour le 2026-10-12 — jusqu'à EVO-007
+Mis à jour le 2026-10-12 — jusqu'à EVO-008
 
 ## Mode d'emploi du guide
 
@@ -13,14 +13,20 @@ Mis à jour le 2026-10-12 — jusqu'à EVO-007
 
 - **Projet** : tout le travail (questionnaires, bibliothèque, état du système, scénarios, langues) ; un seul ouvert à la fois.
 - **Questionnaire** : un graphe de nœuds reliés par des arêtes ; un onglet par questionnaire.
-- **Nœud** : question, page d'information, page de synthèse, fin, instance de bloc (ou sortie, dans un bloc).
-- **Départ** : nœud par lequel commence le parcours (badge « Départ »). Le premier nœud créé l'est d'office.
+- **Nœud** : question, page d'information, page de synthèse, fin, nœud fragment (ou sortie nommée, dans un fragment).
+- **Départ** : nœud par lequel commence le parcours d'un questionnaire (badge « Départ »). Le premier nœud créé l'est d'office ;
+  ce peut être un nœud fragment.
 - **Arête** : liaison d'un nœud vers un autre, avec une condition facultative et un rang ; sans condition, c'est le « sinon ».
   Elle peut porter un **libellé** de lecture (« Ayant droit adhérent »), affiché à la place de la condition.
 - **Rang** : ordre d'évaluation des arêtes qui sortent d'un même nœud ; la première condition vraie l'emporte.
 - **Clé** : nom lisible d'une question en snake_case (`date_sinistre`), utilisé dans les expressions.
-- **Bibliothèque** : questions, blocs et jeux de libellés réutilisables du projet, utilisés par référence (pas de copie).
-- **Bloc** : sous-graphe de la bibliothèque avec un départ et des **sorties** nommées ; placé dans un questionnaire, c'est une **instance** avec un **alias** (`tiers.nom`).
+- **Bibliothèque** : questions, fragments et jeux de libellés réutilisables du projet, utilisés par référence (pas de copie).
+- **Fragment** : morceau de parcours de la bibliothèque, édité comme un questionnaire mais **sans départ ni fin** : il
+  commence à son **entrée** (le nœud sans arête entrante, badge « Entrée ») et rend la main à l'appelant à chaque
+  **sortie** (nœud sans arête sortante). Un questionnaire l'appelle par un **nœud fragment** avec un **alias** (`ident.nom`).
+  Il remplace le « bloc » des versions précédentes : un projet ancien s'ouvre avec ses blocs devenus fragments.
+- **Fragment ou bloc ?** Il n'y a plus que des fragments : un ancien bloc garde ses **sorties nommées** (facultatives), un
+  fragment neuf n'en a pas besoin, chacun de ses nœuds sans arête sortante est une sortie.
 - **Jeu de libellés** : libellés d'un booléen (« Oui / Non ») ou d'un tri-state (« Oui / Non / Ne sait pas »).
 - **État du système** : variables fournies par le logiciel hôte (`sys.profil`), déclarées dans un dictionnaire ; chacune
   peut porter un **libellé** de lecture (« Profil de l'utilisateur connecté »).
@@ -50,7 +56,7 @@ Mis à jour le 2026-10-12 — jusqu'à EVO-007
   `<nom_du_projet>.bundle.json`, qui contient tout (questionnaires, bibliothèque, mises en page). `[cmd: project.export]`
 - **Exporter les fichiers unitaires** — Icône fichier JSON de la barre de projet (info-bulle « Exporter les fichiers unitaires »)
   ou palette. Télécharge `projet.json`, `bibliotheque.json`, `<clé>.json` et `<clé>.layout.json` par questionnaire,
-  `bloc_<clé>.layout.json` par bloc ; le navigateur peut demander d'autoriser les téléchargements multiples. `[cmd: project.exportFiles]`
+  `fragment_<clé>.layout.json` par fragment ; le navigateur peut demander d'autoriser les téléchargements multiples. `[cmd: project.exportFiles]`
 - **Savoir si le projet est exporté** — Pastille à côté du nom du projet : « Modifications non exportées » (orange) ou
   « Tout est exporté » (vert). Elle repasse au vert après un export.
 - **Renommer le projet** — Cliquer sur le nom en haut à gauche et le modifier. Il donne son nom au bundle exporté. `[cmd: project.rename]`
@@ -66,7 +72,7 @@ Mis à jour le 2026-10-12 — jusqu'à EVO-007
   souvent réservés par le navigateur). `[cmd: tab.show]`
   `[cmd: tab.next]` `[cmd: tab.prev]`
 - **Fermer un onglet** — Survoler l'onglet et cliquer sa croix (« Fermer l’onglet »), ou palette « Fermer l’onglet » (onglet
-  actif). Fermer un questionnaire ne le supprime pas. `[cmd: tab.close]`
+  actif). Fermer un questionnaire ou un fragment ne le supprime pas. `[cmd: tab.close]`
 - **Rouvrir un questionnaire fermé** — Cliquer son titre en gris après le bouton « + » des onglets, ou palette « Rouvrir un
   questionnaire fermé » (rouvre le premier fermé). `[cmd: tab.open]`
 - **Ouvrir la bibliothèque** — Onglet « Bibliothèque », bouton « Bibliothèque » à droite de la barre d'onglets s'il est fermé,
@@ -97,7 +103,7 @@ Mis à jour le 2026-10-12 — jusqu'à EVO-007
   texte par défaut « Texte d’information », à modifier dans le panneau de propriétés. `[cmd: node.newInfo]`
 - **Créer une page de synthèse à la suite** — `Alt+S` ou palette « Nouvelle page de synthèse » (titre « Récapitulatif »). `[cmd: node.newSummary]`
 - **Créer une fin à la suite** — `Alt+F` ou palette « Nouvelle fin » (message « Merci, votre réponse est enregistrée. »).
-  Plusieurs fins sont possibles. `[cmd: node.newEnd]`
+  Plusieurs fins sont possibles. Indisponible dans un fragment. `[cmd: node.newEnd]`
 - **Modifier l'intitulé d'une question sur le logigramme** — Double-clic sur la question, ou la sélectionner puis `Entrée`
   (palette « Éditer l’intitulé »). `Entrée` valide, `Shift+Entrée` va à la ligne, `Échap` annule. Si la clé suivait
   l'intitulé, elle est redérivée et renommée partout. Sans effet sur les autres types de nœuds. `[cmd: node.editLabel]`
@@ -121,21 +127,23 @@ Mis à jour le 2026-10-12 — jusqu'à EVO-007
   (aperçus, conditions, badges), sans contrôles, fond quadrillé, poignées ni surbrillance de sélection ; fond blanc,
   marge, résolution 2×. Fichier téléchargé : `<projet> - <questionnaire> - AAAAMMJJ.png` (titre dans la langue des
   contenus affichée ; `\ / : * ? " < > |` remplacés par `_`). Les choix sont retenus dans le navigateur. Disponible dans la
-  vue Logigramme d'un questionnaire non vide (pas pour un bloc de la bibliothèque ni la vue côte à côte).
+  vue Logigramme d'un questionnaire non vide (pas pour un fragment ni la vue côte à côte).
   `[cmd: view.exportImage]` `[cmd: view.exportImageRun]`
 - **Ajuster la vue au graphe** — `F` (logigramme), palette « Ajuster la vue », ou bouton cadre des contrôles en bas à gauche. `[cmd: view.fit]`
 - **Zoomer, se déplacer dans le logigramme** — Molette pour zoomer, glisser le fond pour se déplacer ; boutons « + » / « − » en bas à gauche.
 - **Définir le départ** — Sélectionner le nœud, bouton « Définir comme départ » (section « Départ ») du panneau de propriétés,
-  ou palette « Définir comme départ ». `[cmd: node.setStart]`
+  ou palette « Définir comme départ ». Le départ peut être un nœud fragment : le parcours commence alors par la première
+  question du fragment. Indisponible dans un fragment (voir « Définir l'entrée d'un fragment », §10). `[cmd: node.setStart]`
 - **Dupliquer des nœuds** — Sélectionner un ou plusieurs nœuds puis `Ctrl+D` (logigramme) ou palette « Dupliquer ». Les copies
   sont décalées et sélectionnées ; les arêtes entre nœuds copiés sont copiées, pas les autres ; clés et alias rendus uniques. `[cmd: node.duplicate]`
 - **Supprimer des nœuds** — Sélectionner puis `Suppr` (Delete) ou `Retour arrière` (Backspace) (logigramme), ou palette « Supprimer la sélection ».
-  Leurs arêtes disparaissent aussi ; si le départ est supprimé, le premier nœud restant le devient. Annulable. `[cmd: node.delete]`
-- **Annuler** — `Ctrl+Z` ou palette « Annuler ». Un historique par questionnaire, un pour la bibliothèque, un pour le projet
+  Leurs arêtes disparaissent aussi ; si le départ est supprimé, le premier nœud restant le devient (dans un fragment, une
+  entrée réglée supprimée redevient implicite). Annulable. `[cmd: node.delete]`
+- **Annuler** — `Ctrl+Z` ou palette « Annuler ». Un historique par questionnaire, un pour la bibliothèque (fragments compris), un pour le projet
   (état du système, scénarios, langues, nom) : `Ctrl+Z` agit sur celui de l'onglet affiché. Pendant une saisie, `Ctrl+Z`
   annule seulement la frappe dans le champ. `[cmd: edit.undo]`
 - **Rétablir** — `Ctrl+Shift+Z` ou `Ctrl+Y`, ou palette « Rétablir ». `[cmd: edit.redo]`
-- **Lire les badges d'un nœud** — « Départ » ; « * » obligatoire (« * ? » : obligatoire sous condition) ; « + autre » ;
+- **Lire les badges d'un nœud** — « Départ » (« Entrée » dans un fragment) ; « * » obligatoire (« * ? » : obligatoire sous condition) ; « + autre » ;
   « bib. » élément de bibliothèque ; « trad. » traduction manquante ; « ⚠ n » problèmes (rouge si erreur).
 
 ## 4. Logigramme — arêtes et conditions
@@ -151,26 +159,30 @@ Mis à jour le 2026-10-12 — jusqu'à EVO-007
   « Libellé », « Condition », rang.
 - **Donner un libellé à une arête** — Sélectionner l'arête, taper dans le champ « Libellé » (au-dessus de « Condition ») :
   texte libre sur une ligne, une seule langue (ex. « Ayant droit adhérent », « Sinon »). Possible avec ou sans condition,
-  y compris pour une arête de sortie de bloc. Le logigramme l'affiche **à la place** de la condition ; la condition reste
+  y compris pour une arête qui sort d'un nœud fragment. Le logigramme l'affiche **à la place** de la condition ; la condition reste
   lisible au survol de l'étiquette. Vider le champ retire le libellé (la condition s'affiche de nouveau). Saisie et
   effacement s'annulent par `Ctrl+Z` une fois sorti du champ (ou palette « Annuler »). Le libellé ne change rien au parcours et n'apparaît jamais dans le wizard.
 - **Modifier la condition d'une arête** — Sélectionner l'arête puis `C` (logigramme), ou taper dans le champ « Condition ».
   Avec un nœud sélectionné, `C` ouvre la condition de la première arête qui **arrive** sur ce nœud. `Entrée` rend le focus
   au logigramme. Vider le champ fait de l'arête un « sinon ». `[cmd: edge.editCondition]`
 - **Lire l'étiquette d'une arête** — Condition abrégée (32 caractères) ; « sinon » en italique pour une arête sans condition ;
-  « ? » pour une condition encore vide ; « 2. » : rang quand plusieurs arêtes sortent du nœud ; nom de sortie pour un bloc.
+  « ? » pour une condition encore vide ; « 2. » : rang quand plusieurs arêtes sortent du nœud ; nom de la sortie nommée d'un fragment.
   Avec un libellé : le libellé (police normale) au lieu de la condition, tronqué par « … » s'il est trop long ; au survol,
   le libellé complet puis la condition telle que l'étiquette l'afficherait sans libellé (« ? » si encore vide, « sinon »
-  parmi plusieurs sorties, rien pour une arête seule sans condition). Une arête seule sans condition, hors sortie de bloc,
-  n'a d'étiquette que si elle a un libellé ; une arête de sortie de bloc a toujours une étiquette (nom de la sortie).
+  parmi plusieurs sorties, rien pour une arête seule sans condition). Une arête seule sans condition, hors sortie nommée,
+  n'a d'étiquette que si elle a un libellé ; une arête de sortie nommée a toujours une étiquette (nom de la sortie).
 - **Changer l'ordre d'évaluation des arêtes** — Sélectionner l'arête puis `Alt+↑` / `Alt+↓` (logigramme), boutons « Évaluer
   plus tôt » / « Évaluer plus tard » du panneau, ou palette. Le rang est rappelé sous « Condition » (« Rang 1 sur 3 »). `[cmd: edge.moveUp]` `[cmd: edge.moveDown]`
 - **Supprimer une arête** — Sélectionner l'arête puis `Suppr`, ou bouton « Supprimer » du panneau de l'arête. `[cmd: node.delete]`
 - **Changer la cible d'une arête** — Impossible directement : supprimer l'arête et en tracer une nouvelle.
 - **Faire une boucle ou une convergence** — Relier un nœud vers un nœud déjà atteint (même au-dessus). La réponse donnée
   au nouveau passage remplace la précédente.
-- **Raccorder une sortie de bloc** — Sur une instance de bloc, tirer depuis la poignée orange de la sortie voulue (son nom
-  est écrit au-dessus). Ou, sur l'arête, choisir la sortie dans « Sortie du bloc » (« Toute sortie » : valable pour toutes). `[cmd: edge.create]`
+- **Reprendre après un fragment** — Tirer une liaison depuis la poignée du bas du nœud fragment : à chaque sortie du
+  fragment (nœud sans arête sortante), le parcours suit ces arêtes, par rang, comme pour une question. Leur condition peut
+  tester les réponses du fragment (`ident.majeur = false`). `[cmd: edge.create]`
+- **Raccorder une sortie nommée d'un fragment** — Si le fragment a des sorties nommées (ancien bloc), le nœud fragment a
+  une poignée orange par sortie (son nom est écrit au-dessus) : tirer depuis celle voulue. Ou, sur l'arête, choisir la
+  sortie dans « Sortie du fragment » (« Toute sortie » : valable pour toutes). `[cmd: edge.create]`
 
 ## 5. Questions — propriétés communes
 
@@ -351,9 +363,11 @@ Concerne le choix unique et le choix multiple. Le booléen et le tri-state n'ont
   `sys.sinistres.nature`) : une infobulle donne la clé, le libellé et la description. Rien ne s'affiche si la variable n'a
   ni libellé ni description, ni dans une chaîne entre guillemets (`"sys.profil"`) ou un nom entre accents graves.
 - **Désigner une valeur** — `cle` : réponse du questionnaire ; `structure.champ` : sous-champ ; `victimes[0].nom` : occurrence
-  (à partir de 0) ; `sys.variable`, `sys.liste.champ` : état du système ; `alias.cle` : question d'une instance de bloc ;
+  (à partir de 0) ; `sys.variable`, `sys.liste.champ` : état du système ; `alias.cle` : question d'un fragment appelé avec cet alias (`ident.date_naissance` ; fragment dans un fragment :
+  `ident.adresse.ville`) — dans le fragment lui-même, ses questions s'écrivent sans préfixe (`date_naissance`) et celles de
+  l'appelant aussi (clés attendues de l'appelant) ;
   `cle_other` : précision « Autre » ; `$$.cle` : réponse lue depuis la racine (dans un filtre).
-- **Lire le groupe de l'option choisie** — `ma_question.groupe` (choix unique ou multiple, aussi `alias.cle.groupe`,
+- **Lire le groupe de l'option choisie** — `ma_question.groupe` (choix unique ou multiple, aussi `alias.cle.groupe` (fragment),
   `structure.champ.groupe`) : code du groupe, sinon son libellé dans la langue par défaut ; `AUTRE` si « Autre (préciser) »
   est choisie ; vide pour une option sans groupe. Choix multiple : liste des groupes, dans l'ordre des valeurs cochées.
   `ma_question` donne toujours la valeur seule. Ex. : `qualite_declarant.groupe = 'SC'`, `'AA' in liens.groupe`.
@@ -403,14 +417,17 @@ Concerne le choix unique et le choix multiple. Le booléen et le tri-state n'ont
 - **Borner une réponse** — Par les réglages du type (§6) : longueurs, motif, dates, minimum / maximum, sélections, occurrences.
 - **Voir une contrainte en action** — Prévisualisation : les messages s'affichent en rouge sous la question après « Suivant ».
 
-## 10. Bibliothèque et blocs
+## 10. Bibliothèque et fragments
 
-- **Afficher / masquer le panneau latéral de la bibliothèque** — Affiché par défaut à gauche du logigramme. Bouton
-  « Bibliothèque » de la barre du logigramme (info-bulle « Afficher / masquer le panneau Bibliothèque ») ou palette.
-  Champ « Filtrer la bibliothèque… ». `[cmd: view.libraryPanel]`
-- **Insérer un bloc ou une question de la bibliothèque** — Sélectionner le nœud après lequel insérer, puis `I` (logigramme)
-  ou palette « Insérer depuis la bibliothèque » ; choisir l'élément (« Insérer une question ou un bloc… »). Il est relié
-  comme avec `N`. Aussi : palette `Ctrl+K`, entrées « Insérer : <nom> ». `[cmd: library.insert]` `[cmd: library.insertItem]`
+- **Afficher / masquer le panneau latéral de la bibliothèque** — Affiché par défaut à gauche du logigramme (questionnaire
+  ou fragment). Bouton « Bibliothèque » de la barre du logigramme ou du bandeau du fragment (info-bulle « Afficher / masquer
+  le panneau Bibliothèque ») ou palette. Champ « Filtrer la bibliothèque… ». `[cmd: view.libraryPanel]`
+- **Insérer un fragment ou une question de la bibliothèque** — Sélectionner le nœud après lequel insérer, puis `I` (logigramme)
+  ou palette « Insérer depuis la bibliothèque » ; choisir l'élément (« Insérer une question ou un fragment… »). Il est relié
+  comme avec `N` (entre le nœud et son successeur unique). Aussi : palette `Ctrl+K`, entrées « Insérer : <nom> ». Un
+  fragment inséré devient **un seul nœud** (« Fragment », nom, alias, « n question(s) », « bib. »), avec un alias libre
+  (sa clé, suffixée si elle est prise). Dans un fragment, les fragments qui créeraient un **cycle d'appels** (lui-même, ou
+  un fragment qui l'appelle déjà) ne sont pas proposés ; l'insertion est refusée (« Insertion refusée »). `[cmd: library.insert]` `[cmd: library.insertItem]`
 - **Insérer depuis le panneau latéral** — Glisser l'élément sur le logigramme : il est posé à cet endroit, sans liaison ;
   ou double-clic (ou `Entrée`) : inséré à la suite du nœud sélectionné. `[cmd: library.insertItem]`
 - **Créer une question de bibliothèque** — Onglet « Bibliothèque », « + » de la rubrique « Questions » (« Nouvelle question
@@ -419,24 +436,54 @@ Concerne le choix unique et le choix multiple. Le booléen et le tri-state n'ont
   la bibliothèque ». Le nœud devient une référence (même clé). Absent si la clé existe déjà dans la bibliothèque. `[cmd: node.toLibrary]`
 - **Reformuler une question de bibliothèque dans un questionnaire** — Sélectionner la référence (badge « bib. ») : seul
   « Intitulé » est modifiable (« Intitulé surchargé localement. ») ; « Reprendre l’intitulé de la bibliothèque » annule la surcharge.
-- **Ouvrir l'élément d'une référence ou d'une instance** — Bouton « Ouvrir dans la bibliothèque » du panneau, ou palette. `[cmd: node.openInLibrary]`
+- **Ouvrir la question d'une référence** — Bouton « Ouvrir dans la bibliothèque » du panneau, ou palette. `[cmd: node.openInLibrary]`
 - **Afficher un élément de la bibliothèque** — Onglet « Bibliothèque », cliquer l'élément dans la liste de gauche (« Jeux de
-  libellés », « Questions », « Blocs »). « Utilisé dans : … » liste les questionnaires et blocs qui l'emploient. `[cmd: library.show]`
-- **Supprimer un élément de la bibliothèque** — L'afficher, bouton « Supprimer ». Sans confirmation : ses références
-  deviennent « Élément de bibliothèque introuvable ». `Ctrl+Z` dans l'onglet Bibliothèque l'annule. `[cmd: library.delete]`
-- **Créer un bloc** — « + » de la rubrique « Blocs » (« Nouveau bloc ») ou palette « Nouveau bloc ». Son logigramme s'édite
-  dans l'onglet Bibliothèque avec les mêmes touches (`N`, `Shift+N`, `I`…), sans panneau latéral ; un bloc ne contient pas
-  de bloc. `[cmd: library.newBlock]`
-- **Régler un bloc** — En-tête : « Titre du bloc », « Clé du bloc », « Description (pour l’équipe de dev) ».
-- **Ajouter une sortie à un bloc** — Dans le logigramme du bloc, palette « Nouvelle sortie de bloc » : nœud « Sortie » relié au
-  nœud sélectionné, nommé `sortie`, `sortie_2`… Régler « Nom de la sortie » (snake_case ; renommer suit dans les instances)
-  et « Libellé (facultatif) ». `[cmd: node.newExit]`
-- **Grouper des nœuds en bloc** — Sélectionner les nœuds d'un questionnaire puis `Ctrl+G` (logigramme) ou palette « Grouper la
-  sélection en bloc ». Crée un bloc « Nouveau bloc » et remplace la sélection par une instance (une sortie par destination extérieure).
-  Refusé si la sélection a plusieurs entrées (« Regroupement en bloc impossible »). Annulable. `[cmd: node.group]`
-- **Renommer l'alias d'une instance** — Sélectionner l'instance, champ « Alias » (préfixe `alias.cle`) ; propagé aux expressions.
-- **Voir le contenu d'une instance** — Bouton « ▸ Déplier » sur le nœud du bloc (lecture seule) ; « Replier » pour refermer.
-- **Placer deux fois le même bloc** — L'insérer deux fois : chaque instance reçoit un alias distinct et ses propres réponses.
+  libellés », « Questions », « Fragments »). Une question s'affiche à droite (« Utilisé dans : … » liste les questionnaires
+  et fragments qui l'emploient) ; un fragment s'ouvre dans son onglet. `[cmd: library.show]`
+- **Supprimer un élément de la bibliothèque** — L'afficher (question) ou ouvrir son onglet (fragment), bouton « Supprimer ».
+  Sans confirmation : ses références deviennent « Élément de bibliothèque introuvable ». `Ctrl+Z` dans l'onglet
+  Bibliothèque l'annule. `[cmd: library.delete]`
+- **Créer un fragment** — Onglet « Bibliothèque », « + » de la rubrique « Fragments » (« Nouveau fragment »), ou palette
+  « Nouveau fragment ». Il s'ouvre dans un **onglet** (icône ambre), avec un bandeau « Fragment de la bibliothèque · n
+  appelant(s) : … » (ou « aucun appelant »), et s'édite **comme un questionnaire** : mêmes touches (`N`, `Shift+N`, `I`,
+  `E`, `Ctrl+D`…), même panneau de propriétés, panneau latéral de la bibliothèque, « Problèmes ». « Définir comme départ »
+  et « Nouvelle fin » y sont indisponibles ; un fragment n'a pas de sous-onglet « Prévisualisation » (il se prévisualise
+  dans un questionnaire qui l'appelle). `[cmd: library.newFragment]`
+- **Régler un fragment** — Sous le bandeau : « Titre du fragment », « Clé du fragment », « Description (pour l’équipe de dev) ».
+- **Comprendre l'entrée et les sorties d'un fragment** — L'**entrée** est le nœud sans arête entrante (badge « Entrée ») :
+  c'est la première page du fragment. Les **sorties** sont tous les nœuds sans arête sortante : après leur page, le
+  parcours reprend sur les arêtes du nœud fragment dans l'appelant.
+- **Définir l'entrée d'un fragment** — Utile si le fragment boucle sur son premier nœud ou a plusieurs nœuds sans arête
+  entrante (« Fragment sans entrée unique »). Sélectionner le nœud, bouton « Définir comme entrée du fragment » (section
+  « Entrée ») ou palette. Sur l'entrée réglée, le bouton « Revenir à l’entrée implicite » la retire (la palette aussi). `[cmd: node.setEntry]`
+- **Ajouter une sortie nommée à un fragment** — Facultatif (les sorties implicites suffisent). Dans le logigramme du
+  fragment, palette « Nouvelle sortie nommée » : nœud « Sortie » relié au nœud sélectionné, nommé `sortie`, `sortie_2`…
+  Régler « Nom de la sortie » (snake_case ; renommer suit dans les appelants) et « Libellé (facultatif) ». Chez l'appelant,
+  le nœud fragment a alors une poignée par sortie nommée (§4). `[cmd: node.newExit]`
+- **Extraire une sélection en fragment** — Sélectionner des nœuds d'un questionnaire puis `Ctrl+G` (logigramme) ou palette
+  « Extraire la sélection en fragment ». Crée un fragment « Nouveau fragment » et remplace la sélection par un nœud fragment
+  (une sortie nommée par destination extérieure ; références de l'appelant préfixées par l'alias). Refusé si la sélection a
+  plusieurs entrées, ou contient une fin ou une sortie (« Extraction en fragment impossible »). Annulable. `[cmd: node.group]`
+- **Appeler un fragment au milieu du parcours** — L'insérer après le nœud voulu (`I`), puis continuer à la suite du nœud
+  fragment (`N`, ou une liaison depuis sa poignée). Dans la prévisualisation, les questions du fragment s'enchaînent entre
+  les deux comme si elles étaient saisies dans le questionnaire.
+- **Commencer un questionnaire par un fragment** — Sélectionner le nœud fragment, « Définir comme départ » (§3) : la
+  prévisualisation commence par la première question du fragment.
+- **Lire les propriétés d'un nœud fragment** — Le sélectionner : section « Appel de fragment » : fragment référencé (nom,
+  clé), « Alias », « Sorties du fragment » (clé des nœuds de sortie, `→ nom` pour une sortie nommée), « Clés attendues de
+  l’appelant » (clés de l'appelant lues par le fragment ; « absente » en rouge si ce questionnaire ne les a pas), bouton
+  « Ouvrir le fragment ».
+- **Renommer l'alias d'un nœud fragment** — Champ « Alias » (préfixe `alias.cle`), validé en quittant le champ ou par
+  `Entrée` ; propagé aux expressions de l'appelant (et des appelants de l'appelant). Un alias déjà utilisé dans le graphe
+  (clé d'une question ou autre alias) est refusé : « Clé invalide : snake_case, unique. », l'ancien alias revient.
+- **Ouvrir le fragment d'un nœud fragment** — Bouton « Ouvrir le fragment ↗ » sur le nœud, bouton « Ouvrir le fragment »
+  du panneau, ou palette « Ouvrir le fragment ». Une modification du fragment vaut pour tous ses appelants. `[cmd: node.openFragment]`
+- **Voir le contenu d'un nœud fragment** — Bouton « ▸ Déplier » sur le nœud (lecture seule : questions `alias.cle`, appels
+  `alias.sous_alias`, sorties nommées) ; « Replier » pour refermer.
+- **Appeler deux fois le même fragment** — L'insérer deux fois : chaque nœud reçoit un alias distinct (`assure`,
+  `conjoint`) et ses propres réponses (`assure.nom`, `conjoint.nom`).
+- **Faire appeler un fragment par un autre** — Dans l'onglet du fragment, l'insérer comme dans un questionnaire (`I`) ;
+  ses questions sont vues `alias.cle` dans le fragment et `alias.sous_alias.cle` chez l'appelant extérieur.
 - **Créer un jeu de libellés** — Onglet « Bibliothèque », entrée « Jeux de libellés », boutons « + Booléen » / « + Tri-state »,
   ou palette « Nouveau jeu de libellés booléen » / « … tri-state ». Puis « Clé », « Vrai (oui) », « Faux (non) »,
   « Troisième valeur (ne sait pas) ». `[cmd: labelSet.addBoolean]` `[cmd: labelSet.addTristate]`
@@ -484,11 +531,15 @@ Concerne le choix unique et le choix multiple. Le booléen et le tri-state n'ont
   Une option d'un groupe s'y affiche « Groupe — Option » (ex. « Victime directe — Conjoint ») ; « Ne sais pas », par son libellé.
 - **Comprendre un retour forcé avant la fin** — Une réponse devenue invalide (option disparue après un changement d'état du
   système…) empêche d'atteindre la fin : le wizard ramène à la question avec son message jusqu'à correction.
-- **Retrouver le nœud d'une page** — Cliquer la page : le nœud est sélectionné dans le logigramme (visible en revenant au logigramme).
+- **Retrouver le nœud d'une page** — Cliquer la page : le nœud est sélectionné dans le logigramme (visible en revenant au logigramme) ;
+  pour une page d'un fragment, le nœud fragment du questionnaire.
+- **Parcourir un fragment** — Ses pages s'enchaînent sans rupture avec celles du questionnaire ; « Précédent » traverse le
+  fragment normalement. Sa réponse est rangée sous l'alias (`ident.nom` dans « Valeurs courantes »).
 - **Afficher le débogage** — Bouton « Débogage » ou palette : « Chemin parcouru », « Conditions évaluées (page courante) »
   (arête suivie surlignée, `true` / `false` / « sinon » / « erreur »), « Valeurs courantes » (réponses et `sys` ; le groupe
   de l'option choisie apparaît sous `<clé>_group`, « Ne sais pas » sous `<clé>_nsp`, le pays d'un téléphone ou d'une adresse
-  sous `<clé>_pays`, à côté de la valeur normalisée). `[cmd: preview.toggleDebug]`
+  sous `<clé>_pays`, à côté de la valeur normalisée). Sur une page d'un fragment, un bandeau « Dans le fragment : »
+  donne le chemin des alias et le nom du fragment ; le chemin parcouru écrit ses questions `alias.cle`. `[cmd: preview.toggleDebug]`
 - **Changer la langue de la prévisualisation** — Liste « Langue » de la barre, ou palette « Langue de la prévisualisation
   suivante » (plusieurs langues). Un bandeau compte les textes non traduits, affichés dans la langue par défaut. `[cmd: preview.lang]`
 - **Comprendre « parcours bloqué »** — « Aucune arête ne s’applique : parcours bloqué. » : aucune condition vraie et pas de
@@ -530,10 +581,21 @@ ou palette « Problèmes ») ; un clic sur un problème sélectionne le nœud ou
 - **Référence inconnue « x » : dans un filtre, un nom désigne un champ de l’élément…** → écrire `$$.cle` pour une réponse.
 - **Clé en double « … »** — Deux questions (ou variables) avec la même clé → renommer l'une (« Clé » ou « Nom »).
 - **Clé invalide « … » (snake_case attendu)** — Minuscules, chiffres et `_`, commençant par une lettre → renommer.
-- **Nœud inaccessible depuis le départ** — Aucune arête n'y mène → le relier, le supprimer ou changer le départ.
-- **Nœud sans sortie qui n’est pas une fin** — Ajouter une arête sortante ou une fin (`Alt+F`).
-- **Sortie « … » du bloc non raccordée** — Tirer une liaison depuis la poignée de cette sortie sur l'instance.
-- **Sortie « … » inconnue dans le bloc** — La sortie a été renommée ou supprimée → choisir une sortie dans « Sortie du bloc » de l'arête.
+- **Nœud inaccessible depuis le départ** — Aucune arête n'y mène (depuis l'entrée, dans un fragment) → le relier, le supprimer ou changer le départ.
+- **Nœud sans sortie qui n’est pas une fin** — Ajouter une arête sortante ou une fin (`Alt+F`). Jamais signalé dans un fragment :
+  ses nœuds sans arête sortante sont ses sorties.
+- **Sortie « … » du fragment non raccordée** — Tirer une liaison depuis la poignée de cette sortie nommée sur le nœud fragment.
+- **Sortie « … » inconnue dans le fragment** — La sortie a été renommée ou supprimée → choisir une sortie dans « Sortie du fragment » de l'arête.
+- **Sorties du fragment non raccordées : aucune arête sans nom de sortie** — Ajouter une arête sans sortie nommée (« Toute sortie »).
+- **Fragment sans entrée unique (n nœuds sans arête entrante)** — Relier les nœuds isolés, ou « Définir comme entrée du
+  fragment » sur le bon nœud (§10). En attendant, le parcours entre par le premier de ces nœuds.
+- **Fragment sans sortie (aucun nœud sans arête sortante)** — Le fragment boucle sans fin → laisser au moins un nœud sans arête sortante.
+- **Cycle d’appels : ce fragment s’appelle lui-même** — A appelle B qui appelle A → supprimer l'un des nœuds fragment.
+- **Fragment inutilisé** — Aucun questionnaire ni fragment ne l'appelle → l'insérer, ou le supprimer.
+- **Fin dans un fragment : le parcours s’y termine** — Hérité d'un ancien bloc → remplacer la fin par une sortie (nœud sans arête sortante).
+- **Clé « … » attendue par le fragment « … » absente** — Signalé dans le questionnaire qui appelle le fragment, sur le
+  nœud fragment : le fragment lit une clé de son appelant que celui-ci n'a pas → ajouter la question à l'appelant, ou
+  corriger le fragment. Si aucun appelant ne la fournit, le fragment affiche aussi « Référence inconnue ».
 - **Boucle sans sortie possible** — Ajouter une arête qui quitte la boucle (condition ou « sinon »).
 - **Plusieurs sorties sans « sinon »** — Le parcours peut se bloquer → vider la condition d'une des arêtes ou en ajouter une sans condition.
 - **Plusieurs arêtes sans condition : seule la première sert** — Donner une condition aux autres ou les supprimer.
@@ -554,11 +616,13 @@ ou palette « Problèmes ») ; un clic sur un problème sélectionne le nœud ou
 - **Copier / coller des nœuds**, y compris entre questionnaires : non disponible (dupliquer avec `Ctrl+D` dans le même graphe ;
   pour partager, passer par la bibliothèque).
 - **Changer la cible ou l'origine d'une arête** : la supprimer et la retracer.
-- **Imbriquer** : pas de bloc dans un bloc, pas de structure dans une structure ; une sortie n'existe que dans un bloc.
+- **Imbriquer** : pas de structure dans une structure ; une sortie nommée n'existe que dans un fragment ; un fragment ne
+  peut pas s'appeler lui-même, même indirectement (un fragment peut en appeler un autre).
+- **Prévisualiser un fragment seul** : il se prévisualise dans un questionnaire qui l'appelle (pas de départ ni de fin).
 - **Glisser-déposer des options ou des champs** : utiliser les flèches.
 - **Construire une condition à la souris** : les expressions s'écrivent en texte ; seuls la syntaxe et les noms sont vérifiés, pas les types.
 - **Conserver les itérations d'une boucle** : un nouveau passage remplace la réponse ; utiliser une structure répétable.
-- **Modifier plusieurs nœuds à la fois** dans le panneau de propriétés (seuls dupliquer, supprimer, grouper agissent sur une sélection).
+- **Modifier plusieurs nœuds à la fois** dans le panneau de propriétés (seuls dupliquer, supprimer, extraire en fragment agissent sur une sélection).
 - **Rechercher / remplacer** dans les textes ; **traduire automatiquement**.
 - **Exporter autre chose que du JSON et l'image PNG du logigramme** (pas de PDF, de formulaire final).
 - **Exporter le logigramme en SVG** : un SVG produit par capture de l'écran n'est qu'un bloc HTML enveloppé (`foreignObject`),
@@ -569,7 +633,8 @@ ou palette « Problèmes ») ; un clic sur un problème sélectionne le nœud ou
 - **Vérifier qu'une adresse ou un mail existe** (boîte, voie) : seuls les formats sont contrôlés ; « Adresse à vérifier »
   est un indicateur pour l'équipe de dev, aucun service n'est appelé.
 - **Accepter un mail avec accents** (adresses internationalisées RFC 6531 / 6532) : refusé.
-- **Importer un seul bloc ou une seule question de bibliothèque** : `bibliotheque.json` remplace toute la bibliothèque.
+- **Importer un seul fragment ou une seule question de bibliothèque** : `bibliotheque.json` remplace toute la bibliothèque.
+- **Extraire en fragment une sélection d'un fragment**, ou qui contient une fin : l'extraction part d'un questionnaire.
 
 ## Index des raccourcis
 
@@ -632,16 +697,18 @@ ou palette « Problèmes ») ; un clic sur un problème sélectionne le nœud ou
 | Nouveau jeu de libellés tri-state | — | `labelSet.addTristate` |
 | Supprimer le jeu de libellés | — | `labelSet.delete` |
 | Nouvelle question de bibliothèque | — | `library.newQuestion` |
-| Nouveau bloc | — | `library.newBlock` |
+| Nouveau fragment | — | `library.newFragment` |
 | Bibliothèque | — | `library.show` |
 | Supprimer de la bibliothèque | — | `library.delete` |
 | Insérer depuis la bibliothèque | `I` | `library.insert` |
 | Insérer depuis la bibliothèque | — | `library.insertItem` |
 | Afficher / masquer le panneau Bibliothèque | — | `view.libraryPanel` |
-| Grouper la sélection en bloc | `Ctrl+G` | `node.group` |
+| Extraire la sélection en fragment | `Ctrl+G` | `node.group` |
 | Placer la question dans la bibliothèque | — | `node.toLibrary` |
 | Ouvrir dans la bibliothèque | — | `node.openInLibrary` |
-| Nouvelle sortie de bloc | — | `node.newExit` |
+| Ouvrir le fragment | — | `node.openFragment` |
+| Définir comme entrée du fragment | — | `node.setEntry` |
+| Nouvelle sortie nommée | — | `node.newExit` |
 | Nouvelle variable de l’état du système | — | `system.addVariable` |
 | Supprimer la variable | — | `system.deleteVariable` |
 | Renommer la variable | — | `system.renameVariable` |

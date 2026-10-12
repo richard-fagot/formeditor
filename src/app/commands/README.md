@@ -22,11 +22,15 @@ Catalogue unique des actions utilisateur (spec §4.4). Palette, menus et raccour
   (glisser sur le logigramme), `questionnaire.properties`, `questionnaire.setTitle` / `rename` / `setDescription`,
   `project.rename`.
 - `library-commands.ts` : jeux de libellés (`labelSet.addBoolean`, `labelSet.addTristate`, `labelSet.delete` avec l'id).
-- `library-item-commands.ts` : `library.newQuestion`, `library.newBlock`, `library.show` / `library.delete` (`arg` = `{ kind, id }`),
+- `library-item-commands.ts` : `library.newQuestion`, `library.newFragment` (ouvre l'onglet `f:<id>`), `library.show` (question : onglet
+  Bibliothèque ; fragment : son onglet) / `library.delete` (`arg` = `{ kind, id }` ; ferme l'onglet du fragment),
   `library.insert` (I : palette en mode bibliothèque), `library.insertItem` (`{ kind, id, graph?, position? }` : à la suite de
   la sélection, ou à la position d'un dépôt), `view.libraryPanel`, `node.group` (Ctrl+G, questionnaire seulement ;
-  transaction questionnaire + bibliothèque via `edit`), `node.toLibrary`, `node.openInLibrary`, `node.newExit` (bloc seulement).
-- Les commandes du graphe agissent sur le graphe actif (`activeGraphRef`) : questionnaire, ou bloc affiché dans l'onglet Bibliothèque.
+  transaction questionnaire + bibliothèque via `edit` ; « Extraire la sélection en fragment », refus avec message : plusieurs entrées, fin ou sortie),
+  `node.toLibrary`, `node.openInLibrary` (question de bibliothèque), `node.openFragment` (nœud fragment), `node.setEntry` (fragment seulement :
+  règle `entry`, ou la retire sur l'entrée réglée), `node.newExit` (fragment seulement). `library.insertItem` refuse un cycle d'appels (message `insert.cycle`).
+- Les commandes du graphe agissent sur le graphe actif (`activeGraphRef`) : questionnaire, ou fragment ouvert dans son onglet. Dans un
+  fragment, `node.setStart` et `node.newEnd` sont indisponibles.
 - `system-commands.ts` : `system.addVariable` (ouvre l'onglet, focus sur le nom), `system.deleteVariable`, `system.renameVariable`, `system.renameField`
   (`{ name, next }` ; transaction `transact` : un seul Ctrl+Z annule tout le renommage), `scenario.add` (sans paramètre : valeurs d'exemple ; avec un id :
   copie), `scenario.delete`, `preview.saveScenario` (prévisualisation affichée ; `arg` = nom), `preview.toggleSystem`, `preview.toggleDebug`.
@@ -45,7 +49,7 @@ Catalogue unique des actions utilisateur (spec §4.4). Palette, menus et raccour
 `system-commands.test.ts` (dictionnaire, scénarios, enregistrement depuis la prévisualisation, panneaux) ;
 `settings-commands.test.ts` (langues, langue de la prévisualisation, raccourcis, vue côte à côte, mise en page) ;
 `image-file.test.ts` (nom du fichier image, commandes d'export, entrée du guide) ;
-`library-commands.test.ts` (insertion, dépôt, regroupement et annulation, édition d'un bloc, sortie nommée, question vers la bibliothèque).
+`library-commands.test.ts` (insertion, dépôt, regroupement et annulation, fragment : onglet, entrée, cycle refusé, ouverture, sortie nommée ; question vers la bibliothèque ; entrée du guide EVO-008).
 
 ## Ajouter une action
 Ajouter un objet `Command` dans le fichier adéquat, la clé de libellé dans `app/i18n/messages.ts`, puis l’entrée balisée

@@ -5,3 +5,4 @@ export * from './node';
 export * from './graph';
 export * from './documents';
 export * from './keys';
+export * from './fragment';

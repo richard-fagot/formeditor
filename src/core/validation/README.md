@@ -21,12 +21,13 @@ Dépend de `core/model`, `core/expressions`, `core/references`, `core/runtime` (
 - `messageParams(question)` : paramètres dont le message est personnalisable pour cette question.
 - `checkWorkspace(ws)` → `Issue[]` : `code`, `severity`, `owner`, `nodeId?`, `edgeId?`, `property?`, `params`.
 - `describeIssue(issue, lang)` : texte fr/en.
-- `checkGraph`, `guaranteedBefore` (analyse « posée sur tous les chemins »).
+- `checkGraph`, `guaranteedBefore` (analyse « posée sur tous les chemins »), `expectedKeys(ws, fragmentId)` (clés attendues de l'appelant, triées).
 
 ## Vérifications (codes)
 `invalidExpression`, `unknownReference`, `unknownFilterReference` (clé de question nue dans un filtre : `$$.cle` suggéré), `duplicateKey`, `invalidKey`, `unreachable`, `deadEnd`,
 `exitNotConnected`, `unknownExit`, `loopWithoutExit`, `noElse`, `multipleElse`, `notGuaranteed`,
-`missingTranslation`, `libraryMissing`, `missingStart`, `duplicateGroup`, `reservedGroupCode`, `emptyGroup`
+`missingTranslation`, `libraryMissing`, `missingStart`, `duplicateGroup`, `reservedGroupCode`, `emptyGroup`,
+`implicitExitNotConnected`, `fragmentEntry`, `fragmentNoExit`, `fragmentCycle`, `unusedFragment`, `endInFragment`, `expectedKeyMissing`
 (groupes d'options, `groups-check.ts` ; identifiant statique = code, sinon libellé « sinon » dans la langue par défaut).
 
 ## Choix
@@ -36,8 +37,14 @@ Dépend de `core/model`, `core/expressions`, `core/references`, `core/runtime` (
 - `missingStart` n'est pas signalé sur un graphe vide (questionnaire neuf) ; le premier nœud ajouté devient le départ (`app/store`).
 - `notGuaranteed` ignore les références testées par `$exists(…)` et, dans une variante de libellé, celles
   déjà présentes dans la condition de la variante.
-- Expressions d'un bloc : vérifiées dans chaque hôte ; seules ses propres clés sont soumises à `notGuaranteed`.
+- Expressions d'un fragment : une référence hors de ses propres clés (et de `sys`) est une **clé attendue de l'appelant** (`expectedKeys`) ;
+  absente chez un appelant → `expectedKeyMissing` dans cet appelant, sur chaque nœud qui appelle le fragment ; absente chez tous
+  (ou sans appelant) → aussi `unknownReference` dans le fragment. Seules ses propres clés sont soumises à `notGuaranteed`.
+- Fragments (EVO-008, `graph.ts`) : `fragmentEntry` (pas d'entrée unique sans `entry`), `fragmentNoExit`, `endInFragment`,
+  `implicitExitNotConnected` ; pas de `deadEnd` ni de `missingStart` dans un fragment (ses nœuds sans arête sortante sont ses
+  sorties) ; nœud fragment sans arête : `deadEnd` dans un questionnaire, sortie implicite dans un fragment. `workspace-check.ts` :
+  `fragmentCycle`, `unusedFragment`. `guarantee.ts` : clés garanties à toutes les sorties empruntées, `alias.` (imbriqué) ; garde contre un cycle.
 - Le typage des expressions se limite à la syntaxe et à l'existence des références.
 
 ## Tests
-`validation.test.ts` (l'exemple ne doit produire **aucun** problème), `groups.test.ts`, `dont-know.test.ts`, `contact.test.ts`.
+`validation.test.ts` (l'exemple ne doit produire **aucun** problème), `groups.test.ts`, `dont-know.test.ts`, `contact.test.ts`, `fragments.test.ts`.

@@ -10,7 +10,7 @@ L'outil sert à **spécifier** des questionnaires métier (déclarations de sini
 - Spécifier chaque question : type, valeurs proposées, contraintes, conditions, libellés multilingues.
 - Produire un **format JSON propre et documenté**, destiné à une équipe de développement qui génère les formulaires avec l'IA. Il est livré avec un JSON Schema et une documentation lisible par une IA.
 - Rouvrir un projet pour le poursuivre : le JSON est le format de sauvegarde. La mise en page du logigramme est stockée à part.
-- Réutiliser des questions et des blocs entre questionnaires d'un même projet via une bibliothèque, par référence.
+- Réutiliser des questions et des fragments de questionnaire entre questionnaires d'un même projet via une bibliothèque, par référence.
 
 **Bonus, mais attendu.** Une prévisualisation en wizard (une question par page), claire et moderne, avec pages d'information, de synthèse et de fin. Elle sert aux démonstrations métier pour obtenir une validation fonctionnelle sur une base plus concrète qu'un logigramme. L'état du système y est simulable par saisie libre ou par scénarios nommés.
 
@@ -22,11 +22,11 @@ L'outil sert à **spécifier** des questionnaires métier (déclarations de sini
 | --- | --- |
 | Projet | Conteneur de tout le reste : questionnaires, bibliothèque unique, dictionnaire de l'état du système, jeux de libellés, scénarios, langues. |
 | Questionnaire | Graphe orienté de nœuds reliés par des arêtes conditionnées. Peut converger et boucler. |
-| Nœud | Élément du graphe : question, instance de bloc, page d'information, page de synthèse, fin de parcours. Chaque nœud correspond à une ou plusieurs pages du wizard. |
+| Nœud | Élément du graphe : question, appel de fragment, page d'information, page de synthèse, fin de parcours. Chaque nœud correspond à une ou plusieurs pages du wizard. |
 | Arête | Transition d'un nœud vers un autre. Elle porte une condition facultative, un ordre d'évaluation et un libellé facultatif de lecture (EVO-005). |
 | Question | Élément de saisie : intitulé, type, clé, caractère obligatoire, options, contraintes. |
-| Bloc | Sous-graphe de nœuds réutilisable, défini dans la bibliothèque et référencé dans les questionnaires par une instance nommée (alias). |
-| Bibliothèque | Unique par projet. Contient les questions, blocs et jeux de libellés réutilisables. Les questionnaires y font **référence** (pas de copie). |
+| Fragment | Morceau de parcours réutilisable (EVO-008), défini dans la bibliothèque et édité exactement comme un questionnaire, mais **sans départ ni fin** : il commence à son entrée et rend la main à l'appelant à chacune de ses sorties. Un questionnaire (ou un autre fragment) l'appelle par référence au moyen d'un nœud fragment portant un alias. Il remplace le « bloc » des versions antérieures. |
+| Bibliothèque | Unique par projet. Contient les questions, fragments et jeux de libellés réutilisables. Les questionnaires y font **référence** (pas de copie). |
 | État du système | Variables fournies par le logiciel hôte (profil connecté, résultats de services…). Déclarées une fois au niveau du projet et partagées par tous les questionnaires. Typées, éventuellement listes d'objets. Chaque variable (et chaque champ d'une liste d'objets) peut porter un libellé facultatif de lecture (EVO-005). |
 | Référence | Désignation d'une valeur : réponse à une question, sous-champ, variable système. Utilisable dans les conditions, les libellés et les sources de valeurs. Remplace le « champ paramétré » de la version initiale. |
 | Expression | Formule booléenne ou calculée, écrite en texte, qui combine des références. |
@@ -39,20 +39,21 @@ Principe directeur : **rien n'est imposé au créateur**. L'ordre des nœuds est
 
 ### 3.1 Le graphe
 
-- Un questionnaire a un **nœud de départ** unique.
+- Un questionnaire a un **nœud de départ** unique. Il peut être un nœud fragment : le parcours commence alors sur l'entrée du fragment (EVO-008).
 - Chaque nœud a zéro ou plusieurs arêtes sortantes. Chacune porte une condition facultative et un rang.
-- **Libellé d'arête** (EVO-005) : toute arête, conditionnée ou non, issue ou non d'une sortie de bloc, peut porter un libellé facultatif qui dit l'intention métier (« Ayant droit adhérent », « Sinon »). Texte libre sur une ligne, sans interpolation, en une seule langue : il sert à la lecture de la spécification et n'est jamais affiché à l'utilisateur final. Il n'a **aucun effet sur la navigation** (seuls la condition et le rang comptent) et ne s'utilise pas dans les expressions.
+- **Libellé d'arête** (EVO-005) : toute arête, conditionnée ou non, issue ou non d'un nœud fragment, peut porter un libellé facultatif qui dit l'intention métier (« Ayant droit adhérent », « Sinon »). Texte libre sur une ligne, sans interpolation, en une seule langue : il sert à la lecture de la spécification et n'est jamais affiché à l'utilisateur final. Il n'a **aucun effet sur la navigation** (seuls la condition et le rang comptent) et ne s'utilise pas dans les expressions.
 - Navigation : les arêtes sortantes sont évaluées par rang ; la première dont la condition est vraie est suivie. Une arête sans condition joue le rôle de « sinon ».
 - **Convergence** : plusieurs arêtes peuvent pointer vers le même nœud.
 - **Boucle** : une arête peut pointer vers un nœud déjà visité. Lors d'un nouveau passage, la réponse remplace la précédente : aucune itération n'est conservée. Pour saisir plusieurs victimes, on utilise une structure répétable (§3.4), pas une boucle.
 - Une condition peut porter sur toute réponse déjà donnée et sur l'état du système.
+- **Fragment** (EVO-008) : son **entrée** est le nœud sans arête entrante ; s'il n'y en a pas (le fragment boucle sur son premier nœud) ou s'il y en a plusieurs, l'outil le signale et une **entrée explicite** (« Définir comme entrée du fragment ») lève l'ambiguïté ; à défaut, le parcours entre par le premier de ces nœuds dans l'ordre des nœuds (le premier nœud s'il n'y en a aucun). Ses **sorties** sont tous ses nœuds sans arête sortante : quand le parcours en atteint une, il reprend sur les arêtes sortantes du nœud fragment dans l'appelant, évaluées par rang (celles sans nom de sortie). Une **sortie nommée** (nœud « Sortie », facultatif, hérité des blocs) reprend sur les arêtes de l'appelant marquées de son nom ou sans nom. Ces arêtes peuvent tester les réponses du fragment (`ident.majeur = false`). Un nœud fragment sans arête sortante, à l'intérieur d'un fragment, est lui-même une sortie de ce fragment.
 
 ### 3.2 Types de nœuds
 
 | Nœud | Rôle |
 | --- | --- |
 | Question | Une page du wizard, une saisie. |
-| Instance de bloc | Référence à un bloc de la bibliothèque, avec un alias. Se déplie en plusieurs pages. |
+| Fragment (appel) | Référence à un fragment de la bibliothèque, avec un alias. Se déplie en plusieurs pages, enchaînées sans rupture. |
 | Information | Page de texte sans saisie (introduction, avertissement, consigne). Texte conditionnable et interpolable. |
 | Synthèse | Récapitulatif automatique des réponses du parcours effectif jusqu'ici. Chaque réponse est modifiable par retour à la question concernée. Plusieurs synthèses possibles, à n'importe quel endroit. |
 | Fin | Terminaison du parcours avec un message conditionnable (soumission, non-éligibilité, réorientation…). Plusieurs fins possibles. |
@@ -125,9 +126,9 @@ Portée et espaces de noms :
 | `ma_question.nsp` | « Ne sais pas » choisie (EVO-006) : `true` si oui, `false` sinon (jamais vide). `ma_question` est alors vide (absent ; liste vide pour un choix multiple), comme une question sans réponse ; `ma_question.groupe` vaut le code réservé `NSP`. Connu seulement sur une question dont l'option est activée (aussi `alias.cle.nsp`, `structure.champ.nsp`). `nsp` est un mot réservé. |
 | `ma_question.pays` | Pays d'un téléphone ou d'une adresse (EVO-007) : code ISO 3166-1 alpha-2 (`FR`, `BE`), rangé à côté de la réponse ; vide si non répondu. Aussi `alias.cle.pays`, `structure.champ.pays`. Inconnu sur les autres types ; un champ de structure nommé `pays` reste désigné par `structure.pays` (`pays` n'est pas réservé). |
 | `sys.profil` | Variable de l'état du système. |
-| `decl.date_sinistre` | Question d'un bloc instancié avec l'alias `decl`, vue depuis le questionnaire. À l'intérieur du bloc, sa clé s'écrit sans préfixe. |
+| `ident.date_naissance` | Question d'un fragment appelé avec l'alias `ident`, vue depuis l'appelant (EVO-008). À l'intérieur du fragment, sa clé s'écrit sans préfixe. Fragment appelé par un fragment : `ident.adresse.ville` depuis l'appelant extérieur. |
 
-Unicité : une clé est unique dans son questionnaire, et unique dans son bloc pour les questions d'un bloc.
+Unicité : une clé (ou un alias) est unique dans son questionnaire, et unique dans son fragment pour les questions d'un fragment. Deux appels du même fragment ont deux alias distincts, donc des réponses distinctes (`assure.nom`, `conjoint.nom`).
 
 ### 3.6 Conditions et expressions
 
@@ -144,13 +145,16 @@ Unicité : une clé est unique dans son questionnaire, et unique dans son bloc p
 - Une contrainte libre, sous forme d'expression booléenne, couvre les règles croisées entre plusieurs réponses.
 - **Contrôles intégrés** (EVO-007) des types mail, téléphone, adresse et civilité : ce ne sont pas des contraintes à écrire. Chacun a un message par défaut, multilingue et surchargeable comme les autres : `email` (« Adresse mail invalide. »), `phone` (« Numéro de téléphone invalide. », aussi pour un pays non autorisé), `lineType` (« Numéro mobile attendu. » / « Numéro fixe attendu. »), `address` (« Adresse invalide : une ligne de 5–200 caractères, avec au moins une lettre. »), `postalCode` (« Code postal manquant. »).
 
-### 3.8 Bibliothèque et blocs
+### 3.8 Bibliothèque et fragments
 
-- Une seule bibliothèque par projet. Elle contient des questions, des blocs et des jeux de libellés.
+- Une seule bibliothèque par projet. Elle contient des questions, des fragments et des jeux de libellés.
 - Un questionnaire utilise un élément de bibliothèque **par référence** : une modification dans la bibliothèque s'applique partout. L'utilisateur reste garant de la cohérence. Le libellé est surchargeable localement, ex. « Date du sinistre » reformulée en « Date du décès » : la question, sa clé et son sens restent ceux de la bibliothèque, seule la formulation est adaptée.
-- Un **bloc** est un sous-graphe avec un nœud d'entrée et une ou plusieurs **sorties nommées**. Dans le questionnaire, l'instance de bloc apparaît comme un nœud. Ses sorties se raccordent comme des arêtes. Il est dépliable en lecture seule et éditable dans la bibliothèque.
-- Un même bloc peut être instancié plusieurs fois dans un questionnaire, avec des alias différents.
-- Les expressions d'un bloc accèdent librement à ses propres questions, à toutes les questions du questionnaire qui l'accueille (par leur clé) et à l'état du système. Proposition : en cas de clé identique, la question du bloc prime. Comme un même bloc peut être placé dans plusieurs questionnaires, ses références sont vérifiées dans chacun d'eux (§4.6).
+- Un **fragment** (EVO-008) est un morceau de parcours qui s'édite **exactement comme un questionnaire** (même logigramme, mêmes raccourcis, même panneau de propriétés), dans son propre onglet, avec un bandeau qui indique qu'il s'agit d'un fragment et le nombre de ses appelants. Il peut contenir tous les types de nœuds **sauf le départ et la fin** (« Définir comme départ » et « Nouvelle fin » y sont indisponibles). Entrée et sorties : §3.1. C'est le questionnaire appelant qui décide où le parcours commence et se termine.
+- Dans l'appelant, le fragment apparaît comme **un seul nœud** (le « nœud fragment ») ; ses arêtes sortantes reprennent le parcours après lui. Il est dépliable en lecture seule. Le départ d'un questionnaire peut être posé sur lui (fragment en première position).
+- Un même fragment peut être appelé plusieurs fois dans un questionnaire et dans plusieurs questionnaires, chaque fois avec un **alias** unique dans l'appelant (refusé s'il est déjà pris) qui préfixe ses clés. Une modification du fragment s'applique à tous ses appelants.
+- **Imbrication** : un fragment peut appeler un autre fragment ; un **cycle d'appels** (A appelle B qui appelle A, ou A s'appelle lui-même) est refusé à l'insertion et signalé.
+- Les expressions d'un fragment accèdent librement à ses propres questions, à celles de l'appelant (par leur clé : ce sont ses **clés attendues de l'appelant**) et à l'état du système. En cas de clé identique, la question du fragment prime. Comme un même fragment peut être appelé par plusieurs questionnaires, ses références sont vérifiées chez chacun d'eux : une clé attendue absente est signalée **dans cet appelant**, sans bloquer (§4.6).
+- **Fragment ou bloc** : le fragment remplace le bloc des versions antérieures (un seul concept). À l'ouverture d'un projet antérieur, chaque bloc devient un fragment (son départ devient l'entrée explicite seulement s'il n'est pas l'unique nœud sans arête entrante), ses sorties nommées sont conservées et chaque instance devient un nœud fragment.
 
 ### 3.9 Internationalisation
 
@@ -170,7 +174,7 @@ Objectif : pas de clicodrome. Chaque action courante doit se faire au clavier ou
 - **Onglets de questionnaires** : plusieurs questionnaires ouverts en même temps. On passe de l'un à l'autre par onglet ou par raccourci. La bibliothèque et le dictionnaire de l'état du système ont aussi leur onglet.
 - **Vue côte à côte** (souhaitable) : deux questionnaires affichés en parallèle pour comparer.
 - Dans un onglet de questionnaire, deux sous-onglets : **Logigramme** et **Prévisualisation**.
-- Le logigramme est divisé en deux zones : à gauche le graphe, à droite le **panneau de propriétés** de l'objet sélectionné (question, arête, bloc, champ de structure, page). Un panneau « Problèmes », repliable, liste les avertissements (§4.6).
+- Le logigramme est divisé en deux zones : à gauche le graphe, à droite le **panneau de propriétés** de l'objet sélectionné (question, arête, nœud fragment, champ de structure, page). Un panneau « Problèmes », repliable, liste les avertissements (§4.6).
 - **Barre du logigramme** : mise en page automatique, ajuster la vue, **exporter le logigramme en image** (§6.4).
 
 ### 4.2 Représentation des nœuds
@@ -190,9 +194,11 @@ Une question est un rectangle : intitulé en gras en haut, clé en discret, puis
 | Structure | Miniature des champs, tronquée par « … ». Mention « × n » si répétable. |
 | « Ne sais pas » (EVO-006) | Choix, booléen, tri-state : son libellé en italique, en dernier. Texte, date, nombre : « + Ne sais pas » en italique après l'aperçu du type. |
 
-Badges discrets : obligatoire, « Autre », condition, référence bibliothèque, traduction manquante. Les autres nœuds (bloc, information, synthèse, fin) ont chacun une forme distincte. Les arêtes affichent leur condition en abrégé et leur rang si plusieurs sortent d'un nœud.
+Badges discrets : obligatoire, « Autre », condition, référence bibliothèque, traduction manquante. Les autres nœuds (fragment, information, synthèse, fin) ont chacun une forme distincte.
 
-**Libellé d'arête** (EVO-005) : saisi dans le panneau de propriétés de l'arête, au-dessus de la condition. Avec libellé, l'arête affiche le libellé **à la place** de la condition (rang et nom de sortie de bloc conservés), y compris pour une arête seule sans condition ; tronqué par « … » s'il dépasse la largeur de l'étiquette. Le survol de l'étiquette affiche le libellé complet et la condition telle que l'étiquette l'afficherait sans libellé (« ? » si elle est encore vide, « sinon » si elle n'en a pas parmi plusieurs sorties, rien pour une arête seule sans condition). Sans libellé, affichage inchangé. L'export en image (§6.4) montre l'étiquette telle qu'affichée. Saisie et effacement sont annulables.
+**Nœud fragment** (EVO-008) : rectangle ambre en pointillés ; nom du fragment, alias, badge « référence bibliothèque » (« bib. »), nombre de questions (fragments appelés compris), bouton « Ouvrir le fragment » ; dépliable en lecture seule. Le départ d'un questionnaire porte le badge « Départ » ; dans un fragment, son entrée porte le badge « Entrée ». Panneau de propriétés du nœud fragment : fragment référencé, alias, liste des sorties du fragment, clés attendues de l'appelant (celles qu'il ne fournit pas sont marquées « absente »). Les arêtes affichent leur condition en abrégé et leur rang si plusieurs sortent d'un nœud.
+
+**Libellé d'arête** (EVO-005) : saisi dans le panneau de propriétés de l'arête, au-dessus de la condition. Avec libellé, l'arête affiche le libellé **à la place** de la condition (rang et nom de sortie nommée conservés), y compris pour une arête seule sans condition ; tronqué par « … » s'il dépasse la largeur de l'étiquette. Le survol de l'étiquette affiche le libellé complet et la condition telle que l'étiquette l'afficherait sans libellé (« ? » si elle est encore vide, « sinon » si elle n'en a pas parmi plusieurs sorties, rien pour une arête seule sans condition). Sans libellé, affichage inchangé. L'export en image (§6.4) montre l'étiquette telle qu'affichée. Saisie et effacement sont annulables.
 
 ### 4.3 Édition rapide
 
@@ -200,11 +206,12 @@ Badges discrets : obligatoire, « Autre », condition, référence bibliothèque
 - **Type au clavier** : un raccourci par type, appliqué au nœud sélectionné.
 - **Édition en place** de l'intitulé (double-clic ou Entrée) ; la clé est dérivée automatiquement.
 - **Saisie rapide des options** : une option par ligne, collage multi-lignes accepté ; `# Libellé` ouvre un groupe, `* ` ou `- ` en tête est une puce facultative (§3.4).
-- **Palette de commandes** (Ctrl+K) : toutes les actions, la recherche de nœud par clé ou intitulé, l'insertion depuis la bibliothèque.
-- **Glisser depuis la bibliothèque** : panneau latéral filtrable.
+- **Palette de commandes** (Ctrl+K) : toutes les actions, la recherche de nœud par clé ou intitulé, l'insertion depuis la bibliothèque (questions et fragments ; dans un fragment, les fragments qui créeraient un cycle d'appels ne sont pas proposés).
+- **Glisser depuis la bibliothèque** : panneau latéral filtrable (questionnaire et fragment).
+- **Fragment** (EVO-008) : création depuis la bibliothèque (« Nouveau fragment ») ou par extraction d'une sélection d'un questionnaire ; ouverture dans un onglet ; insertion par la palette, le raccourci d'insertion (I) ou le glisser.
 - **Mise en page automatique** à la demande, positions manuelles conservées sinon. Environ 30 nœuds par questionnaire.
 - **Annuler / rétablir** illimité, par questionnaire.
-- Duplication, copier/coller de nœuds entre questionnaires, regroupement d'une sélection en bloc.
+- Duplication, copier/coller de nœuds entre questionnaires, **extraction d'une sélection en fragment** (une seule entrée ; ni fin ni sortie nommée dans la sélection ; une sortie nommée par destination extérieure ; les références de l'appelant sont préfixées par l'alias).
 
 ### 4.4 Raccourcis
 
@@ -224,7 +231,7 @@ Tous les raccourcis sont **paramétrables** dans un écran dédié. Chaque actio
 | Éditer l'intitulé | Entrée |
 | Éditer la condition de l'arête | C |
 | Naviguer entre nœuds reliés | flèches |
-| Grouper la sélection en bloc | Ctrl+G |
+| Extraire la sélection en fragment | Ctrl+G |
 | Dupliquer | Ctrl+D |
 | Annuler / rétablir | Ctrl+Z / Ctrl+Shift+Z |
 | Mise en page auto / ajuster la vue | L / F |
@@ -249,6 +256,7 @@ C'est un écran de projet. On y déclare chaque variable : nom, libellé, type (
 - Nœud avec plusieurs sorties sans « sinon ».
 - Référence à une question **qui n'est pas garantie d'avoir été posée** sur tous les chemins menant au nœud.
 - Expression invalide ou mal typée, traduction manquante, élément de bibliothèque introuvable.
+- Fragments (EVO-008) : fragment sans entrée unique (sans entrée explicite), fragment sans sortie, cycle d'appels, alias en double (clé en double), clé attendue absente chez un appelant (signalée dans cet appelant, sur le nœud fragment), fragment inutilisé, fin dans un fragment (projet antérieur), sortie nommée non raccordée ou inconnue. Les nœuds sans arête sortante d'un fragment sont ses sorties, pas des impasses.
 
 ## 5. Prévisualisation
 
@@ -262,6 +270,7 @@ La prévisualisation exécute le questionnaire avec le même moteur de parcours 
   - **édition libre** des valeurs, avec possibilité d'enregistrer le résultat comme nouveau scénario ;
   - changement d'état en cours de parcours, avec réévaluation immédiate.
 - **Panneau de débogage** (facultatif) : chemin parcouru, valeurs courantes, conditions évaluées.
+- **Fragments** (EVO-008) : les pages d'un fragment s'enchaînent sans rupture avec celles de l'appelant ; le panneau de débogage indique qu'on est dans le fragment (chemin des alias et nom du fragment) et montre ses réponses sous leur clé préfixée (`ident.nom`) ; le retour arrière traverse le fragment normalement ; un clic sur une page d'un fragment sélectionne le nœud fragment du questionnaire.
 - Changement de langue.
 - Un clic sur une page de la prévisualisation sélectionne le nœud correspondant dans le logigramme.
 
@@ -274,9 +283,9 @@ Un format propre est retenu par défaut. Aucun standard existant (SurveyJS, Form
 | Fichier | Contenu | Destinataire |
 | --- | --- | --- |
 | `projet.json` | Métadonnées, langues, dictionnaire de l'état du système, scénarios, liste des questionnaires. | Outil et dev |
-| `bibliotheque.json` | Questions, blocs, jeux de libellés réutilisables. | Outil et dev |
+| `bibliotheque.json` | Questions, fragments, jeux de libellés réutilisables. | Outil et dev |
 | `<questionnaire>.json` | Nœuds, arêtes, questions locales, références à la bibliothèque. | Outil et dev |
-| `<questionnaire>.layout.json` | Positions, tailles, état de repli. Séparé pour ne pas polluer la spec. | Outil seulement |
+| `<questionnaire>.layout.json`, `fragment_<clé>.layout.json` | Positions, tailles, état de repli. Séparé pour ne pas polluer la spec. | Outil seulement |
 | `<projet>.bundle.json` | Tous les fichiers ci-dessus dans un seul fichier, pour sauvegarde et partage. | Outil |
 
 L'import accepte un bundle ou des fichiers unitaires. L'export propose les deux.
@@ -286,6 +295,7 @@ L'import accepte un bundle ou des fichiers unitaires. L'export propose les deux.
 - **Versionné** (`formatVersion`). L'outil migre automatiquement les anciennes versions à l'ouverture.
 - **Lisible par une IA** : clés lisibles, expressions écrites avec les clés, descriptions facultatives sur chaque élément, aucune donnée de présentation.
 - **Libellés de lecture** (EVO-005) : propriété facultative `caption` (chaîne simple sur une ligne, non traduite) sur l'arête, la variable de l'état du système et le champ d'une liste d'objets ; exportée pour l'équipe de dev, sans effet sur le comportement. Format version 4 ; un fichier antérieur se migre sans transformation.
+- **Fragments** (EVO-008) : `bibliotheque.json` porte `fragments` (sans départ ; `entry` facultative) ; nœud d'appel `{ kind: "fragment", ref, alias }` ; le départ d'un questionnaire peut le viser. Format version 7 ; un fichier antérieur se migre (blocs → fragments, instances → nœuds fragment).
 - **« Ne sais pas »** (EVO-006) : propriété facultative `dontKnow` (`{}` ou `{ "label": … }`) d'une question ou d'un champ de structure ; réponse « Ne sais pas » = valeur vide et marqueur `<clé>_nsp: true` (groupe `NSP` pour un choix). Format version 5 ; un fichier antérieur se migre sans transformation (propriété absente = désactivée).
 - **Livré avec** :
   - un **JSON Schema** par type de fichier ;
@@ -305,7 +315,7 @@ Le logigramme d'un questionnaire s'exporte en **image PNG**, pour l'insérer dan
 
 - **Commande** « Exporter le logigramme en image » (palette, raccourci X, bouton de la barre du logigramme). Disponible dans la vue Logigramme d'un questionnaire non vide.
 - **Dialogue d'options** : périmètre (logigramme entier, ou sélection seule si des nœuds sont sélectionnés : nœuds sélectionnés et arêtes entre eux), titre du questionnaire en en-tête (coché par défaut). Les derniers choix sont retenus dans le navigateur ; `Entrée` lance l'export.
-- **Contenu** : tout le logigramme quels que soient le zoom et la portion visible, tel qu'affiché (aperçus, conditions abrégées, blocs repliés ou dépliés, badges), **sans** mini-carte, contrôles, fond quadrillé, poignées ni surbrillance de sélection.
+- **Contenu** : tout le logigramme quels que soient le zoom et la portion visible, tel qu'affiché (aperçus, conditions abrégées, fragments repliés ou dépliés, badges), **sans** mini-carte, contrôles, fond quadrillé, poignées ni surbrillance de sélection.
 - **Rendu** : fond blanc, thème clair, marge autour du contenu, résolution au moins 2× la taille à 100 %.
 - **Fichier** téléchargé : `<projet> - <questionnaire> - AAAAMMJJ.png` ; les caractères interdits dans un nom de fichier sont remplacés par `_`.
 - **Pas de SVG** : un SVG produit par capture du HTML n'est qu'un `foreignObject`, que les outils bureautiques n'affichent pas.
@@ -350,7 +360,7 @@ L'architecture combine un **noyau métier pur**, sans interface et testé en TDD
 
 | Module | Responsabilité | Dépend de |
 | --- | --- | --- |
-| `core/model` | Types du domaine (projet, questionnaire, nœud, arête, question, bloc, variable, scénario). Aucun import externe. | — |
+| `core/model` | Types du domaine (projet, questionnaire, nœud, arête, question, fragment, variable, scénario). Aucun import externe. | — |
 | `core/expressions` | Analyse, évaluation, extraction des références, interpolation des libellés. Adaptateur JSONata isolé ici. | model |
 | `core/references` | Résolution des clés et espaces de noms, index des usages, renommage propagé. | model, expressions |
 | `core/runtime` | Moteur de parcours : arêtes, boucles, répétitions, historique, retour arrière. | model, expressions |
@@ -358,7 +368,7 @@ L'architecture combine un **noyau métier pur**, sans interface et testé en TDD
 | `core/validation` | Contraintes de champs et vérifications de graphe (§4.6). | model, expressions, references, contact |
 | `format` | Sérialisation, JSON Schema, migrations, import/export, bundle. | model |
 | `plugins/question-types/<type>` | Pour chaque type : modèle, valeurs par défaut, contraintes, aperçu logigramme, panneau de propriétés, rendu wizard, fragment de schéma, doc. | core, ui-kit |
-| `plugins/node-kinds/<kind>` | Même découpage pour question, bloc, information, synthèse, fin. | core, ui-kit |
+| `plugins/node-kinds/<kind>` | Même découpage pour question, fragment, information, synthèse, fin, sortie. | core, ui-kit |
 | `registry` | Enregistrement des plugins ; seul point de connaissance de la liste des types. | plugins |
 | `app/store` | État applicatif : projet, onglets, sélection, annuler/rétablir. | core |
 | `app/commands` | Catalogue unique des actions (id, libellé, gestionnaire). | store |
@@ -370,7 +380,7 @@ L'architecture combine un **noyau métier pur**, sans interface et testé en TDD
 | `ui/diagram` | Intégration de l'éditeur de graphe, mise en page auto. Délègue le rendu des nœuds au registre. | app, registry |
 | `ui/properties` | Cadre du panneau de propriétés ; le contenu vient des plugins. | app, registry |
 | `ui/expression-editor` | Saisie d'expression avec autocomplétion. | expressions, references |
-| `ui/library` | Bibliothèque, blocs, jeux de libellés. | app |
+| `ui/library` | Bibliothèque, onglet d'un fragment, jeux de libellés. | app |
 | `ui/system-state` | Dictionnaire des variables et scénarios. | app |
 | `ui/preview` | Wizard, panneau d'état du système, débogage. Délègue le rendu des champs au registre. | runtime, registry |
 

@@ -30,7 +30,7 @@ interface DiagramProps {
   readOnly?: boolean;
 }
 
-/** Logigramme d'un graphe (questionnaire ou bloc) : React Flow piloté par le store. */
+/** Logigramme d'un graphe (questionnaire ou fragment) : React Flow piloté par le store. */
 export function Diagram(props: DiagramProps) {
   return (
     <ReactFlowProvider>
@@ -62,13 +62,13 @@ function DiagramInner({ graph, issues, readOnly }: DiagramProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [g?.nodes, layout, selection.nodes, readOnly],
   );
-  const blocks = useStore((s) => s.ws.library.blocks);
+  const fragments = useStore((s) => s.ws.library.fragments);
   const edges: RFEdge[] = useMemo(() => {
     // Sortie inconnue (renommée, supprimée) : l'arête part de la poignée par défaut, reste visible et corrigeable.
     const exitsOf = (nodeId: string) => {
       const n = g?.nodes.find((x) => x.id === nodeId);
-      const b = n?.kind === 'block' ? blocks.find((x) => x.id === n.ref) : undefined;
-      return b?.nodes.flatMap((x) => (x.kind === 'exit' ? [x.name] : [])) ?? [];
+      const f = n?.kind === 'fragment' ? fragments.find((x) => x.id === n.ref) : undefined;
+      return f?.nodes.flatMap((x) => (x.kind === 'exit' ? [x.name] : [])) ?? [];
     };
     return (g?.edges ?? []).map((e) => ({
         id: e.id,
@@ -79,7 +79,7 @@ function DiagramInner({ graph, issues, readOnly }: DiagramProps) {
         selected: !readOnly && selection.edge === e.id,
         markerEnd: { type: MarkerType.ArrowClosed, color: !readOnly && selection.edge === e.id ? '#6366f1' : '#94a3b8' },
       }));
-  }, [g?.edges, g?.nodes, blocks, selection.edge, readOnly]);
+  }, [g?.edges, g?.nodes, fragments, selection.edge, readOnly]);
 
   const issuesByNode = useMemo(() => {
     const m = new Map<string, Issue[]>();

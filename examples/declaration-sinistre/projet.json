@@ -1,5 +1,5 @@
 {
-  "formatVersion": 6,
+  "formatVersion": 7,
   "kind": "project",
   "id": "p_sinistres",
   "name": "Déclarations de sinistre",
@@ -128,6 +128,10 @@
     {
       "id": "q_declaration",
       "file": "declaration_sinistre.json"
+    },
+    {
+      "id": "q_remboursement",
+      "file": "demande_remboursement.json"
     }
   ]
 }

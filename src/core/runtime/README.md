@@ -5,8 +5,9 @@ Dépend de `core/model`, `core/expressions`.
 
 ## API
 - `RuntimeInput` : `{ ws, questionnaireId, sys, env? }`.
-- Étapes : id `nodeId` ou `instanceId/nodeId` (dans un bloc). `resolveStep(input, id)` → `Step`
-  (nœud, graphe, instance et bloc éventuels, question effective, `answerPath`).
+- Étapes : id `nodeId`, `appelId/nodeId` dans un fragment, `a1/a2/nodeId` dans un fragment appelé par un fragment (EVO-008).
+  `resolveStep(input, id)` → `Step` (nœud, graphe, `instances` : appels traversés, `instance` / `fragment` : le plus interne,
+  question effective, `answerPath` = alias puis clé).
 - `start(input)`, `next(input, s)`, `back(s)`, `goTo(s, stepId)` (retour depuis une synthèse, empilé),
   `setAnswer(input, s, value, other?)`, `currentStep(input, s)`.
 - `summaryEntries(input, s)` : réponses du parcours effectif avant la page courante.
@@ -15,7 +16,7 @@ Dépend de `core/model`, `core/expressions`.
 - `edgeTrace(input, answers, stepId)` : arêtes sortantes évaluées dans l'ordre (`true` / `false` / `else` / `error`)
   et arête retenue (débogage).
 - `progress(input, s)` : progression indicative (0..1).
-- `buildContext(input, answers, stepId?)` : contexte d'évaluation (réponses + `sys` + clés du bloc sans préfixe ;
+- `buildContext(input, answers, stepId?)` : contexte d'évaluation (réponses + `sys` + clés de chaque appel traversé sans préfixe, la plus interne prioritaire ;
   les valeurs `null` sont retirées en profondeur, `answers` garde `null`).
 - `choiceOptions(question, ctx, env?)` : options visibles d'un choix : chaque entrée dont `when` est vraie est
   déployée à sa position (statique : une option ; dynamique : une par élément de `from`, dans l'ordre de la source ;
@@ -32,7 +33,10 @@ Dépend de `core/model`, `core/expressions`.
 
 ## Règles
 - Arêtes : première conditionnée vraie dans l'ordre, sinon l'arête sans condition ; aucune → `blocked`.
-- Réponses d'un bloc rangées sous `answers[alias]` ; précision « Autre » sous `<cle>_other` ; groupe de la sélection
+- Fragments (EVO-008) : entrée = `fragmentEntry` (`core/model`) ; un nœud sans arête sortante d'un fragment en sort (arêtes du nœud
+  fragment sans `exit`, contexte de l'appelant) ; un nœud `exit` nommé sort par les arêtes `exit` = son nom ou sans nom ; un nœud
+  fragment sans arête dans un fragment remonte à l'appelant ; profondeur bornée (garde contre un cycle d'appels).
+- Réponses d'un fragment rangées sous `answers[alias]` (imbriqué : `answers[a][b]`) ; précision « Autre » sous `<cle>_other` ; groupe de la sélection
   d'un choix sous `<cle>_group` (identifiant, `AUTRE`, liste parallèle aux valeurs pour un choix multiple).
 - `next` : question laissée vide → `null` ; valeur par défaut (`defaultExpr` puis `default`) posée à l'arrivée.
 - Effacement : après chaque `next`, le chemin projeté est recalculé depuis le départ ; à la première
@@ -41,4 +45,4 @@ Dépend de `core/model`, `core/expressions`.
 - Pas de validation des réponses ici : voir `core/validation` (`validateAnswer`).
 
 ## Tests
-`runtime.test.ts`, `trace.test.ts`, `options.test.ts`, `groups.test.ts`, `dont-know.test.ts`, `country.test.ts` ; `tests/reference/paths.test.ts` rejoue `examples/*/chemins/*.json`.
+`runtime.test.ts`, `fragments.test.ts` (milieu, départ, sorties, `ident.majeur = false`, deux usages, imbrication, entrée réglée), `trace.test.ts`, `options.test.ts`, `groups.test.ts`, `dont-know.test.ts`, `country.test.ts` ; `tests/reference/paths.test.ts` rejoue `examples/*/chemins/*.json`.

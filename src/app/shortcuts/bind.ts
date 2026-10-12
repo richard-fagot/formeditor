@@ -13,10 +13,10 @@ export function isTyping(el: Element | null, opts: { dialog?: boolean } = {}): b
     || !!h.closest(opts.dialog ? '.cm-editor, [role=dialog]' : '.cm-editor');
 }
 
-/** Un logigramme est-il affiché (questionnaire en vue logigramme, ou bloc dans l'onglet Bibliothèque) ? */
+/** Un logigramme est-il affiché (questionnaire en vue logigramme, ou fragment dans son onglet) ? */
 function diagramShown(): boolean {
   const s = useStore.getState();
-  if (s.activeTab === 'library') return s.libraryItem?.kind === 'block';
+  if (s.activeTab.startsWith('f:')) return true;
   return s.activeTab.startsWith('q:') && (s.view[s.activeTab.slice(2)] ?? 'diagram') === 'diagram';
 }
 

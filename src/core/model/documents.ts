@@ -2,7 +2,7 @@ import type { Graph } from './graph';
 import type { LangCode, LocalizedText } from './text';
 import type { Question } from './question';
 
-export const FORMAT_VERSION = 6;
+export const FORMAT_VERSION = 7;
 
 export interface Questionnaire extends Graph {
   formatVersion: number;
@@ -11,13 +11,21 @@ export interface Questionnaire extends Graph {
   key: string;
   title: LocalizedText;
   description?: string;
+  /** Nœud de départ (peut être un nœud fragment : le parcours commence sur l'entrée du fragment). */
+  start: string;
 }
 
-export interface Block extends Graph {
+/**
+ * Fragment de questionnaire (EVO-008) : morceau de parcours sans départ ni fin, appelé par référence.
+ * Entrée : `entry` si réglée, sinon le nœud sans arête entrante ; sorties : nœuds sans arête sortante.
+ */
+export interface Fragment extends Graph {
   id: string;
   key: string;
   title: LocalizedText;
   description?: string;
+  /** Nœud d'entrée explicite (repli quand l'entrée implicite est absente ou ambiguë). */
+  entry?: string;
 }
 
 export interface LabelSet {
@@ -35,7 +43,7 @@ export interface Library {
   formatVersion: number;
   kind: 'library';
   questions: Question[];
-  blocks: Block[];
+  fragments: Fragment[];
   labelSets: LabelSet[];
 }
 
@@ -89,7 +97,7 @@ export interface NodeLayout {
 export interface Layout {
   formatVersion: number;
   kind: 'layout';
-  /** Id du questionnaire ou du bloc. */
+  /** Id du questionnaire ou du fragment. */
   graph: string;
   nodes: Record<string, NodeLayout>;
 }

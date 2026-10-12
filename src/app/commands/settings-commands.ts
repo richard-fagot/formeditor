@@ -103,8 +103,8 @@ function previewed() {
   return q && st().view[q.id] === 'preview' ? q : undefined;
 }
 
-/** Un logigramme modifiable est-il affiché (questionnaire en vue logigramme, ou bloc de la bibliothèque) ? */
+/** Un logigramme modifiable est-il affiché (questionnaire en vue logigramme, ou fragment de la bibliothèque) ? */
 function diagramShown(): boolean {
   const r = activeGraphRef(st());
-  return !!r && (r.kind === 'block' || (st().view[r.id] ?? 'diagram') === 'diagram');
+  return !!r && (r.kind === 'fragment' || (st().view[r.id] ?? 'diagram') === 'diagram');
 }

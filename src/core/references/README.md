@@ -6,8 +6,10 @@ Résolution des clés et espaces de noms, index des usages, renommage propagé. 
 - Parcours : `mapWorkspace(ws, mapper)`, `mapGraph`, `mapQuestion`, `collectExpressions(ws)`. Le `mapper`
   reçoit chaque texte (`'expr'` ou `'template'`) avec sa localisation (`ExprLocation` : propriétaire,
   nœud/arête, propriété, `structure` si champ de structure, `relative` si évalué par élément d'une entrée dynamique — `label` / `value` de `options[i]`, avec `source` = son `from`).
-- Portée : `questionnaireScope(ws, qId)`, `blockScope(ws, blockId, hostId?)`, `structureScope(outer, structure)`,
-  `resolvePath(scope, path)` ; une variable système (et un champ de liste) porte `type`, `description`, `caption` (libellé, EVO-005) et `values` (énumération) pour l'autocomplétion ; `questionOfNode(ws, node)` (question effective, libellé surchargé), `blockHosts`.
+- Portée : `questionnaireScope(ws, qId)`, `fragmentScope(ws, fragmentId, callers?)` (`callers` : appelants retenus, type `Caller` ;
+  défaut : tous, un fragment appelant apporte ses propres appelants ; `[]` : clés du fragment et `sys` seulement), `structureScope(outer, structure)`,
+  `resolvePath(scope, path)` ; une variable système (et un champ de liste) porte `type`, `description`, `caption` (libellé, EVO-005) et `values` (énumération) pour l'autocomplétion ; `questionOfNode(ws, node)` (question effective, libellé surchargé).
+  Fragments imbriqués (EVO-008) : `alias.sous_alias.cle`, `RefInfo.alias` = chemin des alias (`ident.adr`) ; garde contre un cycle d'appels.
 - `findUsages(ws, path)`.
 - Groupes d'options (EVO-003) : la portée contient `<chemin>.groupe` (genre `group`) pour chaque question ou champ à choix
   (questionnaire, `alias.cle.groupe`, `structure.champ.groupe`, champ frère `champ.groupe`) ; ailleurs `.groupe` est inconnu.
@@ -18,21 +20,21 @@ Résolution des clés et espaces de noms, index des usages, renommage propagé. 
   `address`. Les libellés d'une civilité (modifiés ou par défaut, propriété `labels.<code>`) sont parcourus (traductions
   manquantes) ; seuls les libellés modifiés sont réécrits.
 - `renameKey(ws, target, newKey)` : `target` = question (`owner` + `nodeId`, `fieldId` pour un champ),
-  alias d'instance de bloc, variable système (scénarios compris), ou champ d'une liste système (`systemField` :
+  alias d'un nœud fragment (`{ kind: 'alias', owner, nodeId }` : questionnaire ou fragment ; réécrit aussi chez les appelants), variable système (scénarios compris), ou champ d'une liste système (`systemField` :
   `sys.x.champ`, noms relatifs des entrées dynamiques dont `from` est `sys.x`, exemple et scénarios ; nom invalide ou pris → inchangé). Renvoie un nouveau `Workspace`.
 - `qualifyKeys(ws, owner, keys, alias)` : préfixe par `alias.` les références à `keys` (et `cle_other`) dans les
-  expressions de `owner` (questions déplacées dans un bloc instancié sous cet alias).
+  expressions de `owner` (questions déplacées dans un fragment appelé sous cet alias).
 
 ## Règles de visibilité
 - Question d'un questionnaire : clé nue dans ce questionnaire.
-- Question d'un bloc : clé nue dans le bloc, `alias.cle` chez chaque hôte.
-- Question de bibliothèque : clé nue dans chaque graphe qui la référence (et via alias si c'est un bloc).
+- Question d'un fragment : clé nue dans le fragment, `alias.cle` chez chaque appelant, `a.b.cle` chez l'appelant d'un appelant (renommage propagé partout).
+- Question de bibliothèque : clé nue dans chaque graphe qui la référence (et via alias si c'est un fragment).
 - Champ de structure : nu dans les champs frères, `structure.champ` ailleurs.
 - Un champ de même nom masque la clé racine dans les expressions de sa structure.
 
 ## Limites assumées
-- Renommer une question de l'hôte ne modifie pas les blocs qui y font référence par clé nue
-  (le bloc est partagé) : la vérification « référence inconnue » le signale.
+- Renommer une question de l'appelant ne modifie pas les fragments qui y font référence par clé nue
+  (le fragment est partagé) : la vérification « clé attendue absente » le signale chez l'appelant.
 
 ## Tests
-`references.test.ts` (sur l'exemple), `groups.test.ts`, `dont-know.test.ts`.
+`references.test.ts` (sur l'exemple), `groups.test.ts`, `dont-know.test.ts`, `fragments.test.ts` (portée imbriquée, renommage chez les appelants).

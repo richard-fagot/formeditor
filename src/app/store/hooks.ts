@@ -10,10 +10,10 @@ export function useT() {
   return useMemo(() => makeTranslate(lang), [lang]);
 }
 
-/** Graphe édité dans l'onglet actif : questionnaire, ou bloc affiché dans l'onglet Bibliothèque. */
+/** Graphe édité dans l'onglet actif : questionnaire, ou fragment ouvert dans son onglet. */
 export function activeGraphRef(s: Store): GraphRef | undefined {
   if (s.activeTab.startsWith('q:')) return { kind: 'questionnaire', id: s.activeTab.slice(2) };
-  if (s.activeTab === 'library' && s.libraryItem?.kind === 'block') return { kind: 'block', id: s.libraryItem.id };
+  if (s.activeTab.startsWith('f:')) return { kind: 'fragment', id: s.activeTab.slice(2) };
   return undefined;
 }
 

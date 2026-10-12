@@ -4,7 +4,8 @@ import { restoreSnapshot, takeSnapshot, type Scope, type ScopeHistory } from './
 import type { GraphRef } from './graph';
 import type { LibraryItem } from './library-edits';
 
-export type TabId = `q:${string}` | 'library' | 'system' | 'settings';
+/** Onglets : questionnaire `q:<id>`, fragment de la bibliothèque `f:<id>` (EVO-008), bibliothèque, état du système, paramètres. */
+export type TabId = `q:${string}` | `f:${string}` | 'library' | 'system' | 'settings';
 
 /** Partie de l'état applicatif touchée par annuler / rétablir. */
 interface TravelState {
@@ -55,18 +56,18 @@ export function travel(s: TravelState, scope: Scope, from: 'past' | 'future'): v
 
 /**
  * Après annuler / rétablir : ferme les onglets des questionnaires disparus (création annulée), rouvre ceux
- * qui réapparaissent (création rétablie) ; sélection, bloc affiché dans la bibliothèque et vue côte à côte suivent.
+ * qui réapparaissent (création rétablie), ferme ceux des fragments disparus ; sélection, élément de la bibliothèque et vue côte à côte suivent.
  */
 function syncTabs(s: TravelState, before: Set<string>): void {
   const now = new Set(s.ws.questionnaires.map((q) => q.id));
-  const gone = (tab: TabId) => tab.startsWith('q:') && !now.has(tab.slice(2));
+  const fragments = new Set(s.ws.library.fragments.map((f) => f.id));
+  const gone = (tab: TabId) => (tab.startsWith('q:') && !now.has(tab.slice(2))) || (tab.startsWith('f:') && !fragments.has(tab.slice(2)));
   const i = s.tabs.indexOf(s.activeTab);
   s.tabs = s.tabs.filter((tab) => !gone(tab));
   for (const id of now) if (!before.has(id) && !s.tabs.includes(`q:${id}`)) s.tabs.push(`q:${id}`);
   if (!s.tabs.includes(s.activeTab)) s.activeTab = s.tabs[Math.max(0, Math.min(i, s.tabs.length) - 1)] ?? 'library';
   if (s.selection.graph?.kind === 'questionnaire' && !now.has(s.selection.graph.id)) s.selection = { nodes: [] };
-  const blocks = new Set(s.ws.library.blocks.map((b) => b.id));
-  if (s.selection.graph?.kind === 'block' && !blocks.has(s.selection.graph.id)) s.selection = { nodes: [] };
-  if (s.libraryItem?.kind === 'block' && !blocks.has(s.libraryItem.id)) s.libraryItem = undefined;
+  if (s.selection.graph?.kind === 'fragment' && !fragments.has(s.selection.graph.id)) s.selection = { nodes: [] };
+  if (s.libraryItem?.kind === 'fragment' && !fragments.has(s.libraryItem.id)) s.libraryItem = undefined;
   if (s.compare && !now.has(s.compare)) s.compare = undefined;
 }

@@ -12,7 +12,7 @@ const e = (from: string, to: string, when?: string, exit?: string): Edge =>
 function input(nodes: GraphNode[], edges: Edge[], extra: Partial<Workspace['library']> = {}): RuntimeInput {
   const ws = {
     project: { formatVersion: 1, kind: 'project', id: 'p', name: 'p', languages: ['fr'], defaultLanguage: 'fr', systemState: [], scenarios: [], questionnaires: [] },
-    library: { formatVersion: 1, kind: 'library', questions: [], blocks: [], labelSets: [], ...extra },
+    library: { formatVersion: 1, kind: 'library', questions: [], fragments: [], labelSets: [], ...extra },
     questionnaires: [{ formatVersion: 1, kind: 'questionnaire', id: 'q', key: 'q', title: { fr: 'q' }, start: nodes[0]!.id, nodes, edges }],
     layouts: [],
   } as Workspace;
@@ -99,18 +99,18 @@ describe('boucle et effacement hors chemin', () => {
   });
 });
 
-describe('blocs', () => {
+describe('fragments à sorties nommées (anciens blocs)', () => {
   const block = {
-    id: 'blk', key: 'blk', title: { fr: 'B' }, start: 'bn',
+    id: 'blk', key: 'blk', title: { fr: 'B' },
     nodes: [q('bn', 'nom'), q('bc', 'connu', 'boolean'), { kind: 'exit', id: 'x1', name: 'oui' }, { kind: 'exit', id: 'x2', name: 'non' }] as GraphNode[],
     edges: [e('bn', 'bc'), e('bc', 'x1', 'connu = true and type = 1'), e('bc', 'x2')],
   };
   const inp = input(
-    [q('t', 'type', 'number'), { kind: 'block', id: 'i', ref: 'blk', alias: 'tiers' }, q('apres', 'apres'), end],
+    [q('t', 'type', 'number'), { kind: 'fragment', id: 'i', ref: 'blk', alias: 'tiers' }, q('apres', 'apres'), end],
     [e('t', 'i'), e('i', 'apres', undefined, 'oui'), e('i', 'fin', undefined, 'non'), e('apres', 'fin')],
-    { blocks: [block] },
+    { fragments: [block] },
   );
-  it('déroule le bloc, range ses réponses sous l’alias, sort par la sortie nommée', () => {
+  it('déroule le fragment, range ses réponses sous l’alias, sort par la sortie nommée', () => {
     let s = start(inp);
     s = next(inp, setAnswer(inp, s, 1));
     expect(currentStep(inp, s).id).toBe('i/bn');

@@ -4,13 +4,13 @@ import { nodeKind } from '../../registry';
 import { useT } from '../../app/store';
 import { Badge, cn } from '../../ui-kit';
 
-/** Libellé court d'une étape : clé de la question (préfixée par l'alias dans un bloc), sinon type de nœud. */
+/** Libellé court d'une étape : clé de la question (préfixée par les alias dans un fragment), sinon type de nœud. */
 function stepName(input: RuntimeInput, id: string, uiLang: string): string {
   const step = resolveStep(input, id);
   if (!step) return id;
   if (step.answerPath) return step.answerPath.join('.');
   const kind = tr(nodeKind(step.node.kind).name, uiLang);
-  return step.instance ? `${step.instance.alias} · ${kind}` : kind;
+  return step.instances.length ? `${step.instances.map((i) => i.alias).join('.')} · ${kind}` : kind;
 }
 
 /** Débogage : chemin parcouru, conditions des arêtes sortantes de la page courante, valeurs courantes. */
@@ -19,10 +19,20 @@ export function DebugPanel({ input, session, uiLang }: { input: RuntimeInput; se
   const current = session.history.at(-1)!;
   const trace = edgeTrace(input, session.answers, current);
   const step = resolveStep(input, current);
-  const target = (to: string) => stepName(input, step?.instance ? `${step.instance.id}/${to}` : to, uiLang);
+  const prefix = current.slice(0, current.lastIndexOf('/') + 1);
+  const target = (to: string) => stepName(input, prefix + to, uiLang);
+  // Dans un fragment (EVO-008) : chemin des alias et nom du fragment le plus interne.
+  const inFragment = step?.fragment && step.instances.length
+    ? `${step.instances.map((i) => i.alias).join('.')} (${step.fragment.title[uiLang] ?? step.fragment.title[input.ws.project.defaultLanguage] ?? step.fragment.key})`
+    : undefined;
   const h = 'text-[11px] font-semibold uppercase tracking-wider text-slate-400';
   return (
     <div className="space-y-4 text-xs" data-testid="debug-panel">
+      {inFragment && (
+        <p className="rounded border border-amber-200 bg-amber-50 px-2 py-1 text-amber-800" data-testid="debug-fragment">
+          {t('preview.inFragment')} <span className="font-mono">{inFragment}</span>
+        </p>
+      )}
       <section className="space-y-1">
         <h4 className={h}>{t('preview.path')}</h4>
         <ol className="space-y-0.5 font-mono">

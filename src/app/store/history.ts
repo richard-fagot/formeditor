@@ -28,7 +28,7 @@ const MAX_ENTRIES = 500;
 
 export function takeSnapshot(ws: Workspace, scope: Scope): Snapshot {
   if (scope === 'library') {
-    const ids = new Set(ws.library.blocks.map((b) => b.id));
+    const ids = new Set(ws.library.fragments.map((f) => f.id));
     return { scope, library: ws.library, layouts: ws.layouts.filter((l) => ids.has(l.graph)) };
   }
   if (scope === 'project') return { scope, project: ws.project };
@@ -45,9 +45,12 @@ export function takeSnapshot(ws: Workspace, scope: Scope): Snapshot {
 /** Remet en place un instantané dans `ws` (brouillon immer). */
 export function restoreSnapshot(ws: Workspace, s: Snapshot): void {
   if (s.scope === 'library') {
-    const ids = new Set([...ws.library.blocks.map((b) => b.id), ...s.library.blocks.map((b) => b.id)]);
+    const ids = new Set([...ws.library.fragments.map((f) => f.id), ...s.library.fragments.map((f) => f.id)]);
     ws.library = s.library;
-    ws.layouts = [...ws.layouts.filter((l) => !ids.has(l.graph)), ...s.layouts];
+    // Mises en page des fragments remises à leur place (ordre du tableau conservé), les nouvelles à la fin.
+    const saved = new Map(s.layouts.map((l) => [l.graph, l]));
+    const kept = ws.layouts.flatMap((l) => (!ids.has(l.graph) ? [l] : saved.has(l.graph) ? [saved.get(l.graph)!] : []));
+    ws.layouts = [...kept, ...s.layouts.filter((l) => !kept.includes(l))];
     return;
   }
   if (s.scope === 'project') {
@@ -60,8 +63,11 @@ export function restoreSnapshot(ws: Workspace, s: Snapshot): void {
     if (i >= 0) ws.questionnaires[i] = s.questionnaire;
     else ws.questionnaires.push(s.questionnaire);
   } else if (i >= 0) ws.questionnaires.splice(i, 1);
-  ws.layouts = ws.layouts.filter((l) => l.graph !== id);
-  if (s.layout) ws.layouts.push(s.layout);
+  // Mise en page remise à sa place (ordre du tableau conservé : bundle identique après annulation).
+  const l = ws.layouts.findIndex((x) => x.graph === id);
+  if (s.layout && l >= 0) ws.layouts[l] = s.layout;
+  else if (s.layout) ws.layouts.push(s.layout);
+  else if (l >= 0) ws.layouts.splice(l, 1);
   const e = ws.project.questionnaires.findIndex((x) => x.id === id);
   if (s.entry && e >= 0) ws.project.questionnaires[e] = s.entry;
 }

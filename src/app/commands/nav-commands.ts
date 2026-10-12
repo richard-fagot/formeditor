@@ -1,3 +1,4 @@
+import { graphStart } from '../../core/model';
 import { activeGraphRef, getGraph, scopeOf, useStore } from '../store';
 import type { Command } from './types';
 
@@ -10,7 +11,7 @@ function navigate(dir: 'down' | 'up' | 'left' | 'right') {
   if (!r || !g) return;
   const current = st().selection.nodes[0];
   if (!current) {
-    if (g.nodes[0]) st().select({ graph: r, nodes: [g.start || g.nodes[0].id] });
+    if (g.nodes[0]) st().select({ graph: r, nodes: [graphStart(g) || g.nodes[0].id] });
     return;
   }
   let target: string | undefined;
@@ -25,7 +26,7 @@ function navigate(dir: 'down' | 'up' | 'left' | 'right') {
   if (target) st().select({ graph: r, nodes: [target] });
 }
 
-/** Historique visé : onglet Bibliothèque, sinon le graphe actif. */
+/** Historique visé : onglet Bibliothèque, sinon le graphe actif (fragment : historique de la bibliothèque). */
 const scope = () => (st().activeTab === 'library' ? 'library' : scopeOf(activeGraphRef(st())));
 
 export function navCommands(): Command[] {

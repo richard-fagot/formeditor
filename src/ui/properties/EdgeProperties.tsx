@@ -8,7 +8,7 @@ import { Button, Field, Input, Section, Select } from '../../ui-kit';
 import { ExpressionInput } from '../expression-editor';
 import { useGraphEdit } from './useGraphEdit';
 
-/** Propriétés d'une arête : libellé (EVO-005), condition (vide = « sinon »), rang, sortie de bloc. */
+/** Propriétés d'une arête : libellé (EVO-005), condition (vide = « sinon »), rang, sortie nommée d'un fragment. */
 export function EdgeProperties({ graph, g, edge }: { graph: GraphRef; g: Graph; edge: Edge }) {
   const t = useT();
   const env = useEditorEnv();
@@ -20,11 +20,11 @@ export function EdgeProperties({ graph, g, edge }: { graph: GraphRef; g: Graph; 
     const n = g.nodes.find((x) => x.id === id);
     if (!n) return id;
     const q = questionOfNode(env.ws, n);
-    return q ? `${previewText(q.label, env)} (${q.key})` : n.kind === 'block' ? n.alias : n.kind;
+    return q ? `${previewText(q.label, env)} (${q.key})` : n.kind === 'fragment' ? n.alias : n.kind;
   };
   const from = g.nodes.find((n) => n.id === edge.from);
-  const block = from?.kind === 'block' ? env.ws.library.blocks.find((b) => b.id === from.ref) : undefined;
-  const exits = block?.nodes.flatMap((n) => (n.kind === 'exit' ? [n.name] : [])) ?? [];
+  const fragment = from?.kind === 'fragment' ? env.ws.library.fragments.find((f) => f.id === from.ref) : undefined;
+  const exits = fragment?.nodes.flatMap((n) => (n.kind === 'exit' ? [n.name] : [])) ?? [];
   return (
     <Section title={t('props.edge')}>
       <div className="space-y-1 text-xs text-slate-500">

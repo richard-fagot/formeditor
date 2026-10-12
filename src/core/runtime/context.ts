@@ -2,18 +2,24 @@ import { COUNTRY_SUFFIX, DONT_KNOW_GROUP, DONT_KNOW_SUFFIX, GROUP_SUFFIX, OTHER_
 import type { EvalContext } from '../expressions';
 import { resolveStep, type RuntimeInput } from './steps';
 
-/** Réponses : par clé ; les réponses d'un bloc sont rangées sous son alias. */
+/** Réponses : par clé ; les réponses d'un fragment sont rangées sous son alias (imbriqué : `a.b.cle`). */
 export type Answers = Record<string, unknown>;
 
 /**
- * Contexte d'évaluation à une étape : réponses, `sys`, et dans un bloc ses propres clés sans préfixe (prioritaires).
+ * Contexte d'évaluation à une étape : réponses, `sys`, et dans un fragment les clés de chaque appel traversé
+ * sans préfixe, la plus interne prioritaire (celles du fragment, puis de son appelant…).
  * Les réponses `null` (facultative laissée vide) en sont retirées, en profondeur : `$exists(cle)` est alors faux.
  */
 export function buildContext(input: RuntimeInput, answers: Answers, stepId?: string): EvalContext {
   const step = stepId ? resolveStep(input, stepId) : undefined;
   const clean = withoutNulls(answers) as Answers;
-  const own = step?.instance ? (clean[step.instance.alias] as Answers | undefined) : undefined;
-  return { ...clean, ...(own && typeof own === 'object' ? own : {}), sys: input.sys };
+  let ctx: Answers = { ...clean };
+  let level: unknown = clean;
+  for (const i of step?.instances ?? []) {
+    level = level && typeof level === 'object' ? (level as Answers)[i.alias] : undefined;
+    if (level && typeof level === 'object') ctx = { ...ctx, ...(level as Answers) };
+  }
+  return { ...ctx, sys: input.sys };
 }
 
 /** Copie sans les propriétés de valeur `null` (objets imbriqués et éléments de listes compris). */

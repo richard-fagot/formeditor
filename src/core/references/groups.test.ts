@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { exampleWorkspace } from '../../../tests/reference/example';
 import type { Question, Workspace } from '../model';
-import { blockScope, collectExpressions, findUsages, questionnaireScope, renameKey, resolvePath, structureScope } from './index';
+import { fragmentScope, collectExpressions, findUsages, questionnaireScope, renameKey, resolvePath, structureScope } from './index';
 
 const ws = exampleWorkspace();
 const Q = { kind: 'questionnaire', id: 'q_declaration' } as const;
@@ -26,13 +26,13 @@ describe('référence au groupe `.groupe` (EVO-003)', () => {
   });
   it('après une question à choix d’un bloc : `alias.cle.groupe` chez l’hôte, `cle.groupe` dans le bloc', () => {
     const w = structuredClone(ws);
-    const block = w.library.blocks[0]!;
+    const block = w.library.fragments[0]!;
     block.nodes.push({ kind: 'question', id: 'bn_lien', key: 'lien', label: { fr: 'Lien' }, type: 'single', options: [] });
     const host = questionnaireScope(w, 'q_declaration');
     expect(resolvePath(host, ['tiers', 'lien', 'groupe'])).toMatchObject({ kind: 'group', alias: 'tiers', nodeId: 'bn_lien' });
     expect(resolvePath(host, ['tiers', 'nom', 'groupe'])).toBeUndefined();
-    expect(resolvePath(blockScope(w, block.id), ['lien', 'groupe'])?.kind).toBe('group');
-    expect(resolvePath(blockScope(w, block.id), ['nom', 'groupe'])).toBeUndefined();
+    expect(resolvePath(fragmentScope(w, block.id), ['lien', 'groupe'])?.kind).toBe('group');
+    expect(resolvePath(fragmentScope(w, block.id), ['nom', 'groupe'])).toBeUndefined();
   });
   it('les libellés et conditions des groupes sont collectés', () => {
     const w = structuredClone(ws);

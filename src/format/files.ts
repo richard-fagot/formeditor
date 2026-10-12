@@ -31,9 +31,9 @@ export function exportFiles(ws: Workspace): FileContent[] {
     const layout = ws.layouts.find((l) => l.graph === q.id);
     if (layout) files.push({ name: layoutFileFor(file), text: serialize(layout) });
   }
-  for (const b of ws.library.blocks) {
-    const layout = ws.layouts.find((l) => l.graph === b.id);
-    if (layout) files.push({ name: `bloc_${b.key}.layout.json`, text: serialize(layout) });
+  for (const f of ws.library.fragments) {
+    const layout = ws.layouts.find((l) => l.graph === f.id);
+    if (layout) files.push({ name: `fragment_${f.key}.layout.json`, text: serialize(layout) });
   }
   return files;
 }

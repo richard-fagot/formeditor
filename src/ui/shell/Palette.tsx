@@ -1,19 +1,19 @@
 import { Command as Cmdk } from 'cmdk';
-import { activeGraphRef, getGraph, useEditorEnv, useStore, useT, type GraphRef } from '../../app/store';
+import { activeGraphRef, getGraph, insertionCycle, useEditorEnv, useStore, useT, type GraphRef } from '../../app/store';
 import { command, commands, labelOf, runCommand } from '../../app/commands';
 import { formatKey, keysOf } from '../../app/shortcuts';
 import { questionOfNode } from '../../core/references';
 import { previewText } from '../../plugin-api';
 import { Dialog, Kbd } from '../../ui-kit';
 
-/** Éléments de bibliothèque insérables dans le graphe (pas de bloc dans un bloc). */
+/** Éléments de bibliothèque insérables dans le graphe (sans les fragments qui créeraient un cycle d'appels). */
 function libraryItems(env: ReturnType<typeof useEditorEnv>, ref: GraphRef | undefined) {
   const lib = env.ws.library;
   return [
     ...lib.questions.map((q) => ({ kind: 'question' as const, id: q.id, key: q.key, title: previewText(q.label, env) || q.key })),
-    ...(ref?.kind === 'questionnaire'
-      ? lib.blocks.map((b) => ({ kind: 'block' as const, id: b.id, key: b.key, title: b.title[env.contentLang] ?? b.title[env.defaultLang] ?? b.key }))
-      : []),
+    ...lib.fragments
+      .filter((f) => !ref || !insertionCycle(env.ws, ref, { kind: 'fragment', id: f.id }))
+      .map((f) => ({ kind: 'fragment' as const, id: f.id, key: f.key, title: f.title[env.contentLang] ?? f.title[env.defaultLang] ?? f.key })),
   ];
 }
 
@@ -36,7 +36,7 @@ export function Palette() {
   const nodes = (libraryMode ? [] : g?.nodes ?? []).map((n) => {
     const q = questionOfNode(env.ws, n);
     const label = q?.label ?? (('title' in n && n.title) || ('text' in n && n.text) || ('message' in n && n.message) || undefined);
-    const text = n.kind === 'block' ? n.alias : n.kind === 'exit' ? n.name : previewText(label, env);
+    const text = n.kind === 'fragment' ? n.alias : n.kind === 'exit' ? n.name : previewText(label, env);
     return { id: n.id, text: text || n.kind, key: q?.key ?? n.kind };
   });
   return (
@@ -62,7 +62,7 @@ export function Palette() {
                 <Cmdk.Item key={x.id} value={`${libraryMode ? '' : t('library.insert')} ${x.title} ${x.key} ${x.id}`} className={ITEM}
                   onSelect={() => { close(); runCommand('library.insertItem', { kind: x.kind, id: x.id }); refocus(); }}>
                   <span className="truncate">{libraryMode ? x.title : t('library.insertItem', { name: x.title })}</span>
-                  <span className="font-mono text-[11px] text-slate-400">{x.kind === 'block' ? `▣ ${x.key}` : x.key}</span>
+                  <span className="font-mono text-[11px] text-slate-400">{x.kind === 'fragment' ? `▣ ${x.key}` : x.key}</span>
                 </Cmdk.Item>
               ))}
             </Cmdk.Group>

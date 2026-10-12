@@ -317,7 +317,7 @@
           "description": "Question de la bibliothèque, par référence ; libellé surchargeable."
         },
         {
-          "description": "Instance d'un bloc de la bibliothèque : ses clés sont vues de l'hôte sous `alias.cle`.",
+          "description": "Instance (appel) d'un fragment de la bibliothèque, par référence : ses clés sont vues de l'appelant sous `alias.cle`.",
           "type": "object",
           "required": [
             "kind",
@@ -334,7 +334,7 @@
               "type": "string"
             },
             "kind": {
-              "const": "block"
+              "const": "fragment"
             },
             "ref": {
               "type": "string"
@@ -425,7 +425,7 @@
           }
         },
         {
-          "description": "Sortie nommée d'un bloc (uniquement dans un bloc de la bibliothèque).",
+          "description": "Sortie nommée d'un fragment (facultative, uniquement dans un fragment de la bibliothèque).",
           "type": "object",
           "required": [
             "kind",
@@ -480,7 +480,7 @@
         },
         "exit": {
           "type": "string",
-          "description": "Arête sortant d'une instance de bloc : nom de la sortie du bloc concernée ; absente = toute sortie."
+          "description": "Arête sortant d'un nœud fragment : nom de la sortie nommée concernée ; absente = toute sortie (sorties implicites comprises)."
         },
         "caption": {
           "$ref": "#/$defs/caption"

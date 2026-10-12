@@ -73,24 +73,27 @@ describe('modification propagée hors de sa portée', () => {
     expect(JSON.stringify(useStore.getState().ws.questionnaires)).toContain('date_deces');
     useStore.getState().undo('library');
     expect(JSON.stringify(useStore.getState().ws) === before).toBe(true);
-    // Question d'un bloc, vue chez l'hôte sous `tiers.nom`.
-    useStore.getState().edit('library', (w) => renameKey(w, { kind: 'question', owner: { kind: 'block', id: 'blk_identite_tiers' }, nodeId: 'bn_nom' }, 'nom_tiers'));
+    // Question d'un fragment, vue chez l'appelant sous `tiers.nom`.
+    useStore.getState().edit('library', (w) => renameKey(w, { kind: 'question', owner: { kind: 'fragment', id: 'blk_identite_tiers' }, nodeId: 'bn_nom' }, 'nom_tiers'));
     expect(JSON.stringify(useStore.getState().ws.questionnaires)).toContain('tiers.nom_tiers');
     useStore.getState().undo('library');
     expect(JSON.stringify(useStore.getState().ws) === before).toBe(true);
   });
 });
 
-describe('annuler la création d’un bloc', () => {
-  it('vide la sélection et l’élément affiché qui désignaient le bloc disparu', async () => {
-    const { addBlock } = await import('./index');
+describe('annuler la création d’un fragment', () => {
+  it('ferme son onglet, vide la sélection et l’élément affiché qui le désignaient', async () => {
+    const { addFragment } = await import('./index');
     useStore.getState().loadWorkspace(blankWorkspace());
     let id = '';
-    useStore.getState().edit('library', (ws) => void (id = addBlock(ws, { fr: 'Bloc' })));
-    useStore.setState({ activeTab: 'library', libraryItem: { kind: 'block', id }, selection: { graph: { kind: 'block', id }, nodes: [] } });
+    useStore.getState().edit('library', (ws) => void (id = addFragment(ws, { fr: 'Fragment' })));
+    useStore.getState().openTab(`f:${id}`);
+    useStore.setState({ libraryItem: { kind: 'fragment', id }, selection: { graph: { kind: 'fragment', id }, nodes: [] } });
     useStore.getState().undo('library');
     const s = useStore.getState();
-    expect(s.ws.library.blocks).toEqual([]);
+    expect(s.ws.library.fragments).toEqual([]);
+    expect(s.tabs).not.toContain(`f:${id}`);
+    expect(s.activeTab).not.toBe(`f:${id}`);
     expect(s.libraryItem).toBeUndefined();
     expect(s.selection.graph).toBeUndefined();
   });

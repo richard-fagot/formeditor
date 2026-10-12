@@ -119,7 +119,8 @@ function Wizard({ questionnaireId, preview }: { questionnaireId: string; preview
   const errorMap: Record<string, string[]> = {};
   for (const e of errors) (errorMap[e.path] ??= []).push(env.label(e.message));
   const isEnd = step.node.kind === 'end';
-  const hostNodeId = step.instance?.id ?? step.node.id;
+  // Page d'un fragment : le clic sélectionne le nœud fragment du questionnaire (appel le plus externe).
+  const hostNodeId = step.instances[0]?.id ?? step.node.id;
   const returnTo = state?.returnTo && state.returnTo !== step.id && session.history.includes(state.returnTo) ? state.returnTo : undefined;
 
   /** Avance (validation d'abord) ; `move` calcule la nouvelle session. */

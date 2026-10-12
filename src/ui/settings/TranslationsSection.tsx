@@ -5,7 +5,7 @@ import { runCommand } from '../../app/commands';
 import { getGraph, useStore, useT, type GraphRef } from '../../app/store';
 import { Select } from '../../ui-kit';
 
-/** Va à l'objet concerné : onglet du questionnaire (logigramme) ou de la bibliothèque, nœud sélectionné. */
+/** Va à l'objet concerné : onglet du questionnaire (logigramme), du fragment ou de la bibliothèque, nœud sélectionné. */
 function goTo(i: Issue) {
   const st = useStore.getState();
   const o = i.owner;
@@ -14,9 +14,9 @@ function goTo(i: Issue) {
     runCommand('tab.show', `q:${o.id}`);
     if (useStore.getState().view[o.id] === 'preview') runCommand('view.toggle');
     graph = { kind: 'questionnaire', id: o.id };
-  } else if (o.kind === 'block') {
-    runCommand('library.show', { kind: 'block', id: o.id });
-    graph = { kind: 'block', id: o.id };
+  } else if (o.kind === 'fragment') {
+    runCommand('library.show', { kind: 'fragment', id: o.id });
+    graph = { kind: 'fragment', id: o.id };
   } else if (o.kind === 'libraryQuestion') {
     const isQuestion = st.ws.library.questions.some((q) => q.id === o.id);
     runCommand('library.show', isQuestion ? { kind: 'question', id: o.id } : undefined);
@@ -35,14 +35,14 @@ export function TranslationsSection() {
   const shown = only ? issues.filter((i) => i.params.lang?.split(', ').includes(only)) : issues;
   const ownerName = (i: Issue) => {
     const o = i.owner;
-    const g = o.kind === 'questionnaire' || o.kind === 'block' ? getGraph(ws, { kind: o.kind, id: o.id }) : undefined;
+    const g = o.kind === 'questionnaire' || o.kind === 'fragment' ? getGraph(ws, { kind: o.kind, id: o.id }) : undefined;
     const title = g && 'title' in g ? (g.title as Record<string, string>) : undefined;
     const lib = o.kind === 'libraryQuestion' ? ws.library.questions.find((q) => q.id === o.id)?.key ?? ws.library.labelSets.find((l) => l.id === o.id)?.key : undefined;
-    return `${t(`settings.owner.${o.kind}` as 'settings.owner.block')} · ${title?.[lang] ?? title?.[ws.project.defaultLanguage] ?? lib ?? o.id}`;
+    return `${t(`settings.owner.${o.kind}` as 'settings.owner.fragment')} · ${title?.[lang] ?? title?.[ws.project.defaultLanguage] ?? lib ?? o.id}`;
   };
   const nodeName = (i: Issue) => {
     const o = i.owner;
-    if (!i.nodeId || (o.kind !== 'questionnaire' && o.kind !== 'block')) return '';
+    if (!i.nodeId || (o.kind !== 'questionnaire' && o.kind !== 'fragment')) return '';
     const n = getGraph(ws, { kind: o.kind, id: o.id })?.nodes.find((x) => x.id === i.nodeId);
     return n ? questionOfNode(ws, n)?.key ?? n.kind : i.nodeId;
   };

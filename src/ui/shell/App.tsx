@@ -3,7 +3,7 @@ import { restoreSession, startAutosave } from '../../app/persistence';
 import { bindShortcuts } from '../../app/shortcuts';
 import { useStore, useT } from '../../app/store';
 import { Button, Dialog } from '../../ui-kit';
-import { Library } from '../library';
+import { FragmentView, Library } from '../library';
 import { SystemState } from '../system-state';
 import { Settings } from '../settings';
 import { Palette } from './Palette';
@@ -37,6 +37,7 @@ export function App() {
       <Tabs />
       <main className="min-h-0 flex-1">
         {active.startsWith('q:') && <QuestionnaireView key={active} id={active.slice(2)} />}
+        {active.startsWith('f:') && <FragmentView key={active} id={active.slice(2)} />}
         {active === 'library' && <Library />}
         {active === 'system' && <SystemState />}
         {active === 'settings' && <Settings />}

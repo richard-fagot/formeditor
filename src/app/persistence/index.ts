@@ -33,7 +33,10 @@ export async function restoreSession(): Promise<boolean> {
       st.uiLang = saved.uiLang ?? 'fr';
       st.keymap = saved.keymap ?? {};
       if (saved.imageOptions) st.imageOptions = { scope: saved.imageOptions.scope === 'selection' ? 'selection' : 'all', title: saved.imageOptions.title !== false };
-      st.tabs = saved.tabs?.filter((t) => !t.startsWith('q:') || workspace.questionnaires.some((q) => `q:${q.id}` === t)) ?? st.tabs;
+      // Onglets de questionnaires et de fragments (EVO-008) disparus : écartés.
+      const exists = (t: TabId) => (t.startsWith('q:') ? workspace.questionnaires.some((q) => `q:${q.id}` === t)
+        : t.startsWith('f:') ? workspace.library.fragments.some((f) => `f:${f.id}` === t) : true);
+      st.tabs = saved.tabs?.filter(exists) ?? st.tabs;
       if (st.tabs.includes(saved.activeTab)) st.activeTab = saved.activeTab;
     });
     return true;

@@ -103,7 +103,7 @@ describe('interpolation : mises en forme par clé (EVO-007)', () => {
       ] },
       { kind: 'question', id: 'n2', key: 'nom', label: { fr: 'Nom' }, type: 'text' },
     ] }],
-    library: { questions: [{ id: 'l1', key: 'civ', label: { fr: 'C' }, type: 'civility' }], blocks: [] },
+    library: { questions: [{ id: 'l1', key: 'civ', label: { fr: 'C' }, type: 'civility' }], fragments: [] },
   } as unknown as Workspace;
   const display = displayFormatters(ws);
   it('civilité : libellé (modifié ou par défaut) ; téléphone : format international ; autres types : rien', () => {

@@ -1,18 +1,18 @@
 import {
-  deriveKey, FORMAT_VERSION, newId, uniqueKey, type Edge, type Graph, type GraphNode, type Layout, type Workspace,
+  deriveKey, FORMAT_VERSION, newId, uniqueKey, type Edge, type Graph, type GraphNode, type Layout, type Questionnaire, type Workspace,
 } from '../../core/model';
 import { questionOfNode } from '../../core/references';
 
-/** Graphe édité : un questionnaire ou un bloc de la bibliothèque. */
+/** Graphe édité : un questionnaire ou un fragment de la bibliothèque. */
 export interface GraphRef {
-  kind: 'questionnaire' | 'block';
+  kind: 'questionnaire' | 'fragment';
   id: string;
 }
 
 export const NODE_SPACING = { x: 300, y: 150 };
 
 export function getGraph(ws: Workspace, ref: GraphRef): Graph | undefined {
-  return ref.kind === 'questionnaire' ? ws.questionnaires.find((q) => q.id === ref.id) : ws.library.blocks.find((b) => b.id === ref.id);
+  return ref.kind === 'questionnaire' ? ws.questionnaires.find((q) => q.id === ref.id) : ws.library.fragments.find((f) => f.id === ref.id);
 }
 
 export function layoutOf(ws: Workspace, graphId: string): Layout {
@@ -26,19 +26,23 @@ export function layoutOf(ws: Workspace, graphId: string): Layout {
 
 /** Clés déjà utilisées dans un graphe (questions et alias). */
 export function usedKeys(ws: Workspace, g: Graph): string[] {
-  return g.nodes.flatMap((n) => (n.kind === 'block' ? [n.alias] : [questionOfNode(ws, n)?.key ?? []].flat()));
+  return g.nodes.flatMap((n) => (n.kind === 'fragment' ? [n.alias] : [questionOfNode(ws, n)?.key ?? []].flat()));
 }
+
+/** Départ d'un questionnaire (un fragment n'en a pas : son entrée est implicite ou `entry`). */
+const asQuestionnaire = (g: Graph) => ('start' in g ? (g as Questionnaire) : undefined);
 
 export function freshKey(ws: Workspace, g: Graph, label: string): string {
   return uniqueKey(deriveKey(label), usedKeys(ws, g));
 }
 
-/** Ajoute un nœud, relié depuis `after` s'il est donné ; devient le départ si le graphe était vide. */
+/** Ajoute un nœud, relié depuis `after` s'il est donné ; devient le départ d'un questionnaire vide. */
 export function insertNode(ws: Workspace, ref: GraphRef, node: GraphNode, after?: string, when?: string): void {
   const g = getGraph(ws, ref);
   if (!g) return;
   g.nodes.push(node);
-  if (!g.nodes.some((n) => n.id === g.start)) g.start = node.id;
+  const q = asQuestionnaire(g);
+  if (q && !g.nodes.some((n) => n.id === q.start)) q.start = node.id;
   const layout = layoutOf(ws, ref.id).nodes;
   const from = after ? layout[after] : undefined;
   if (after && g.nodes.some((n) => n.id === after)) {
@@ -67,7 +71,9 @@ export function removeNodes(ws: Workspace, ref: GraphRef, ids: string[]): void {
   if (!g) return;
   g.nodes = g.nodes.filter((n) => !ids.includes(n.id));
   g.edges = g.edges.filter((e) => !ids.includes(e.from) && !ids.includes(e.to));
-  if (ids.includes(g.start)) g.start = g.nodes[0]?.id ?? '';
+  const q = asQuestionnaire(g);
+  if (q && ids.includes(q.start)) q.start = g.nodes[0]?.id ?? '';
+  if ('entry' in g && ids.includes(g.entry as string)) delete (g as { entry?: string }).entry;
   const layout = layoutOf(ws, ref.id).nodes;
   ids.forEach((id) => delete layout[id]);
 }
@@ -112,7 +118,7 @@ export function duplicateNodes(ws: Workspace, ref: GraphRef, ids: string[]): str
     const copy = JSON.parse(JSON.stringify(n)) as GraphNode & { key?: string; alias?: string };
     copy.id = newId('n');
     if (copy.kind === 'question' && !('ref' in copy) && copy.key) copy.key = uniqueKey(copy.key, usedKeys(ws, g));
-    if (copy.kind === 'block') copy.alias = uniqueKey(copy.alias!, usedKeys(ws, g));
+    if (copy.kind === 'fragment') copy.alias = uniqueKey(copy.alias!, usedKeys(ws, g));
     g.nodes.push(copy);
     map.set(n.id, copy.id);
     const p = layout[n.id] ?? { x: 0, y: 0 };

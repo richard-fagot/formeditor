@@ -2,8 +2,8 @@
 export { mapWorkspace, mapGraph, mapQuestion, collectExpressions } from './visit';
 export type { Owner, ExprLocation, ExprMapper, FoundExpression } from './visit';
 export {
-  questionnaireScope, blockScope, blockHosts, structureScope, resolvePath, questionOfNode,
-  type Scope, type RefInfo, type RefKind,
+  questionnaireScope, fragmentScope, structureScope, resolvePath, questionOfNode,
+  type Scope, type RefInfo, type RefKind, type Caller,
 } from './scope';
 export { renameKey, qualifyKeys, type RenameTarget } from './rename';
 export { findUsages } from './usages';
