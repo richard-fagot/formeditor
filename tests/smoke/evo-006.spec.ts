@@ -28,11 +28,11 @@ test('EVO-006 : « Ne sais pas » sur l’exemple (choix, groupes, nombre obliga
   // Choix unique avec « Autre » : activation par la palette.
   await page.getByTestId('rf__node-n_type').click();
   await palette(page, 'Activer « Ne sais pas »');
-  // Question à groupes : activation par le panneau, libellé modifié.
+  // Question à groupes : activation par le panneau, libellé modifié et interpolé.
   await page.getByTestId('rf__node-n_qualite').click();
   const editor = page.getByTestId('dont-know-editor');
   await editor.getByLabel('Option « Ne sais pas »').check();
-  await editor.getByRole('textbox').first().fill('Je ne sais pas');
+  await editor.getByRole('textbox').first().fill('Je ne sais pas ({type_sinistre})');
 
   const preview = page.getByTestId('preview');
   const next = page.getByTestId('preview-next');
@@ -54,7 +54,7 @@ test('EVO-006 : « Ne sais pas » sur l’exemple (choix, groupes, nombre obliga
   await next.click();
 
   // Groupes : « Ne sais pas » après tous les groupes, hors groupe ; `.groupe` = NSP, marqueur `_nsp`.
-  await expect(preview.locator('[role=radiogroup] label').last()).toHaveText('Je ne sais pas');
+  await expect(preview.locator('[role=radiogroup] label').last()).toHaveText('Je ne sais pas (accident)');
   await expect(preview.getByTestId('choice-group').getByText('Je ne sais pas')).toHaveCount(0);
   await preview.getByText('Je ne sais pas').click();
   await expect(debug).toContainText('"qualite_declarant": null');
@@ -92,7 +92,7 @@ test('EVO-006 : « Ne sais pas » sur l’exemple (choix, groupes, nombre obliga
   await next.click();
   const summary = page.getByTestId('summary');
   await expect(summary).toContainText('Je ne sais pas encore');
-  await expect(summary).toContainText('Je ne sais pas');
+  await expect(summary).toContainText('Je ne sais pas (accident)');
   expect(errors).toEqual([]);
 });
 
@@ -107,8 +107,11 @@ test('EVO-006 : date avec « Ne sais pas » (aperçu, case sous le champ, champ 
   await page.keyboard.press('d');
   const node = page.locator('.react-flow__node').first();
   await expect(node).toContainText('<date>');
-  await page.getByTestId('dont-know-editor').getByLabel('Option « Ne sais pas »').check();
+  // Palette juste après la création : la commande s'applique, la saisie de l'intitulé ne se rouvre pas.
+  await palette(page, 'Activer « Ne sais pas »');
   await expect(node).toContainText('<date> + Ne sais pas');
+  await expect(page.getByLabel('intitulé')).toHaveCount(0);
+  await expect(node).toContainText('Date du sinistre');
 
   await diagram.focus();
   await page.keyboard.press('p');

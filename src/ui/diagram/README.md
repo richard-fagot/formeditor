@@ -35,6 +35,7 @@ Dépend de `app/store`, `app/commands` (liaison tracée à la souris : `edge.cre
   `.react-flow__viewport` avec `transform` forcé (boîte des nœuds ∪ tracés d'arêtes, marge 40 px), fond blanc, `pixelRatio` 2
   (réduit et signalé au-delà de 16 384 px), poignées filtrées ; « sélection » : filtre sur `data-id` des nœuds / arêtes et
   `data-edge-label` des libellés. Titre dessiné sur un second canvas. Pièges : sélection vidée puis restaurée, transitions
-  coupées (`[data-exporting]`, `index.css`), attente d'une tâche + une image avant capture (sinon image blanche ou surbrillance figée).
+  coupées (`[data-exporting]`, `index.css`), attente d'une tâche + une image avant capture, puis de la remesure des nœuds
+  (recréés sans `measured` au changement de sélection, donc masqués) : sinon image blanche ou surbrillance figée.
   Seulement pour le logigramme modifiable d'un questionnaire. Test : `tests/smoke/evo-004.spec.ts`.
 - Suppression par la commande (touche Suppr), jamais par React Flow (`deleteKeyCode=null`).
