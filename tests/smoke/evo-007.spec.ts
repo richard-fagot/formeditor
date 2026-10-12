@@ -38,7 +38,7 @@ test('EVO-007 : structure « souscripteur » — ordre des contrôles, normalisa
   // Ordre : Madame / Monsieur, nom, mail, indicatif puis numéro, pays puis ligne d'adresse.
   const kinds = await preview.locator('fieldset').locator('input, select')
     .evaluateAll((els) => els.map((e) => (e.tagName === 'SELECT' ? (e as HTMLElement).dataset.testid : (e as HTMLInputElement).type)));
-  expect(kinds).toEqual(['radio', 'radio', 'text', 'email', 'phone-country', 'tel', 'address-country', 'text']);
+  expect(kinds).toEqual(['radio', 'radio', 'text', 'text', 'phone-country', 'tel', 'address-country', 'text']);
   await expect(preview.getByTestId('civility').locator('label')).toHaveText(['Madame', 'Monsieur']);
   const indicatif = preview.getByTestId('phone-country');
   await expect(indicatif).toHaveValue('FR');
@@ -56,6 +56,12 @@ test('EVO-007 : structure « souscripteur » — ordre des contrôles, normalisa
   await expect(debug).toContainText('"mail": "Jean.Dupont@exemple.fr"');
   await mail.fill('jean@@exemple.fr');
   await mail.press('Tab');
+  await expect(preview.getByRole('alert')).toHaveText('Adresse mail invalide.');
+  // Domaine accentué : saisi tel quel (pas de conversion punycode par le navigateur) et refusé.
+  await mail.fill('jean@exémple.fr');
+  await mail.press('Tab');
+  await expect(mail).toHaveValue('jean@exémple.fr');
+  await expect(debug).toContainText('"mail": "jean@exémple.fr"');
   await expect(preview.getByRole('alert')).toHaveText('Adresse mail invalide.');
   await mail.fill('jean+test@exemple.fr');
   await mail.press('Tab');
