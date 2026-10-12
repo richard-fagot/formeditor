@@ -16,6 +16,8 @@ Règles :
 - Tests : ciblés pendant le travail (Vitest sur les fichiers touchés, Playwright Chromium sur la spec
   concernée) ; `npm run check` complet une seule fois, à la fin.
 - Test instable préexistant : au-delà de 3 relances, le signaler, ne pas l'investiguer.
+- Pas de répétitions ni de tests sous charge (`--repeat-each`, workers multipliés) ; un échec qui
+  n'apparaît que sous charge est hors périmètre, même si une consigne le suggère.
 - Travailler sans poser de questions ; ambiguïté → option la plus simple compatible avec la spec,
   notée en une ligne dans `docs/DECISIONS.md`.
 - Ne cocher une case que si elle est réalisée complètement et testée.

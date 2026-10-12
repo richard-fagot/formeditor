@@ -42,6 +42,8 @@ sans cérémonie. Préférer la solution la plus simple qui respecte la spec.
   à la fin, par le `realisateur` ; il indique le commit sur lequel il est vert.
 - Test instable préexistant : au-delà de 3 relances, le signaler dans le compte rendu
   et dans `docs/ECARTS.md`, sans l'investiguer davantage.
+- Pas de répétitions ni de tests sous charge (`--repeat-each`, workers multipliés…) : l'outil tourne seul
+  sur une machine non chargée ; un échec qui n'apparaît que sous charge est hors périmètre.
 - `core` et `format` : écrire le test avant le code.
 - Tests de référence sur le questionnaire d'exemple : schéma, aller-retour import/export, chemin attendu par scénario.
   Un changement de comportement voulu met à jour le fichier attendu, jamais l'inverse en silence.
