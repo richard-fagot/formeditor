@@ -2,7 +2,7 @@
 
 Logigramme d'un graphe (questionnaire, ou bloc de la bibliothèque) avec React Flow (@xyflow/react).
 Dépend de `app/store`, `app/commands` (liaison tracée à la souris : `edge.create` ; dépôt : `library.insertItem`),
-`registry`, `core`, `ui-kit`, `ui/properties` (`usePluginEnv` : environnement de l'éditeur + `questionType` du registre).
+`registry`, `core`, `ui-kit`, `html-to-image`, `ui/properties` (`usePluginEnv` : environnement de l'éditeur + `questionType` du registre).
 
 ## API
 - `Diagram({ graph, issues, readOnly? })` ; `readOnly` (vue côte à côte) : ni sélection, ni glisser, ni liaison, ni dépôt, pas de focus.
@@ -25,4 +25,11 @@ Dépend de `app/store`, `app/commands` (liaison tracée à la souris : `edge.cre
 - Graphe vide : invitation « Ajouter une question » (commande `node.newQuestion`, raccourci affiché).
 - Mise en page automatique (`autoLayout.ts` : `computeLayout`, ELK.js `elk.bundled.js`, couches de haut en bas ;
   `useAutoLayout` : réagit à `layoutRequest`, tailles mesurées par React Flow, un point d'historique, vue ajustée). Test : `autoLayout.test.ts`.
+- Export en image (EVO-004, `useImageExport.ts`, `ImageDialog.tsx`) : le dialogue (derniers choix, `Entrée` = exporter) appelle
+  `view.exportImageRun` ; le hook réagit à `imageRequest` : `html-to-image` (`toCanvas`, version 1.11.11 épinglée) sur
+  `.react-flow__viewport` avec `transform` forcé (boîte des nœuds ∪ tracés d'arêtes, marge 40 px), fond blanc, `pixelRatio` 2
+  (réduit et signalé au-delà de 16 384 px), poignées filtrées ; « sélection » : filtre sur `data-id` des nœuds / arêtes et
+  `data-edge-label` des libellés. Titre dessiné sur un second canvas. Pièges : sélection vidée puis restaurée, transitions
+  coupées (`[data-exporting]`, `index.css`), attente d'une tâche + une image avant capture (sinon image blanche ou surbrillance figée).
+  Seulement pour le logigramme modifiable d'un questionnaire. Test : `tests/smoke/evo-004.spec.ts`.
 - Suppression par la commande (touche Suppr), jamais par React Flow (`deleteKeyCode=null`).

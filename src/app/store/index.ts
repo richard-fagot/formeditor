@@ -1,5 +1,5 @@
 // API publique du module app/store : état applicatif, édition, annuler/rétablir par questionnaire.
-export { useStore, scopeOf, blankWorkspace, type Store, type AppState, type TabId, type Selection, type PreviewState, type PaletteMode } from './store';
+export { useStore, scopeOf, blankWorkspace, type Store, type AppState, type TabId, type Selection, type PreviewState, type PaletteMode, type ImageOptions } from './store';
 export type { Scope } from './history';
 export {
   getGraph, layoutOf, insertNode, connect, removeNodes, removeEdge, moveEdge, updateNode, duplicateNodes,

@@ -61,6 +61,20 @@ export interface AppState {
   libraryPanel: boolean;
   /** Panneaux repliables de la prévisualisation : état du système, débogage. */
   previewPanels: { system: boolean; debug: boolean };
+  /** Image du logigramme (EVO-004) : derniers choix du dialogue (préférence de l'outil, sauvegardée avec la session). */
+  imageOptions: ImageOptions;
+  /** Dialogue d'options de l'export d'image ouvert. */
+  imageDialog: boolean;
+  /** Demande d'export de l'image du logigramme affiché (compteur) ; exécutée par `ui/diagram`. */
+  imageRequest: number;
+  /** Export d'image en cours (indicateur). */
+  imageBusy: boolean;
+}
+
+/** Options de l'export d'image : périmètre (tout le logigramme ou la sélection), titre en en-tête. */
+export interface ImageOptions {
+  scope: 'all' | 'selection';
+  title: boolean;
 }
 
 export interface AppActions {
@@ -125,6 +139,10 @@ export const useStore = create<Store>()(
     layoutRequest: 0,
     libraryPanel: true,
     previewPanels: { system: true, debug: false },
+    imageOptions: { scope: 'all', title: true },
+    imageDialog: false,
+    imageRequest: 0,
+    imageBusy: false,
 
     edit(scope, recipe, key) {
       const ws = get().ws;

@@ -9,7 +9,8 @@ Cadre de l'application. Dépend de `app/*`, `ui/*`, `ui-kit`.
   langue de l'interface, indicateur « modifications non exportées », bouton de palette.
 - `Tabs` : questionnaires ouverts (fermer, rouvrir), nouveau questionnaire, bibliothèque (`ui/library`), état du système (`ui/system-state`),
   paramètres (`ui/settings`, ouverts par le bouton engrenage de la barre).
-- `QuestionnaireView` : sous-onglets Logigramme / Prévisualisation ; boutons mise en page automatique (`view.layout`) et vue
+- `QuestionnaireView` : sous-onglets Logigramme / Prévisualisation ; boutons mise en page automatique (`view.layout`), image du logigramme
+  (`view.exportImage`, grisé sur un questionnaire vide ou pendant l'export : « Export en cours… ») et vue
   côte à côte (`view.compare`) ; panneau latéral de la bibliothèque (`ui/library`, affiché / masqué par `view.libraryPanel`,
   masqué pendant la vue côte à côte), graphe + panneau Problèmes (`ui/diagram`), propriétés à droite.
 - `ComparePane` : vue côte à côte, logigramme d'un autre questionnaire en lecture seule (`Diagram readOnly`), choix du questionnaire, fermeture.

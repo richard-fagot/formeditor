@@ -114,6 +114,7 @@ export const MESSAGES = {
   'common.yes': { fr: 'Oui', en: 'Yes' },
   'common.no': { fr: 'Non', en: 'No' },
   'common.close': { fr: 'Fermer', en: 'Close' },
+  'common.cancel': { fr: 'Annuler', en: 'Cancel' },
   'common.lang': { fr: 'Langue de l’interface', en: 'Interface language' },
   'common.contentLang': { fr: 'Langue du contenu', en: 'Content language' },
   'library.questions': { fr: 'Questions', en: 'Questions' },

@@ -32,6 +32,8 @@ Dépend de `core`, `format`, `app/i18n`, `plugin-api` (utilitaires).
   les textes saisis restent), `setDefaultLanguage`.
 - Affichage : `layoutRequest` (compteur : mise en page automatique demandée au logigramme affiché), `compare` (vue côte à côte :
   questionnaire affiché en lecture seule à droite), onglet `settings`.
+- Image du logigramme (EVO-004) : `imageOptions` (`ImageOptions` : `scope` `all` | `selection`, `title` ; sauvegardées avec la session),
+  `imageDialog` (dialogue d'options ouvert), `imageRequest` (compteur : export demandé à `ui/diagram`), `imageBusy` (export en cours).
 - `setQuestionLabel` : change l'intitulé et, si la clé était dérivée de l'ancien, la redérive et propage.
 - Hooks : `useT()`, `useEditorEnv()` (environnement de l'éditeur sans `questionType`, ajouté par `ui/*` via `usePluginEnv`), `activeGraphRef`, `activeQuestionnaire`.
 

@@ -11,6 +11,8 @@ import { getGraph, layoutOf, scopeOf, useStore, useT, type GraphRef } from '../.
 import { Button, Kbd } from '../../ui-kit';
 import { DiagramContext } from './DiagramContext';
 import { useAutoLayout } from './useAutoLayout';
+import { useImageExport } from './useImageExport';
+import { ImageDialog } from './ImageDialog';
 import { NodeView, type NodeData } from './NodeView';
 import { EdgeView } from './EdgeView';
 
@@ -105,6 +107,9 @@ function DiagramInner({ graph, issues, readOnly }: DiagramProps) {
   }, [fitRequest, graph.id]);
 
   useAutoLayout(graph, readOnly);
+  // Export en image : logigramme modifiable d'un questionnaire seulement (ni bloc, ni vue côte à côte).
+  const exportable = !readOnly && graph.kind === 'questionnaire';
+  useImageExport(graph, container, exportable);
 
   // Garde le nœud sélectionné visible (navigation au clavier, création chaînée).
   useEffect(() => {
@@ -179,6 +184,7 @@ function DiagramInner({ graph, issues, readOnly }: DiagramProps) {
           <Controls showInteractive={false} />
         </ReactFlow>
         {g && g.nodes.length === 0 && !readOnly && <EmptyHint />}
+        {exportable && <ImageDialog graph={graph} />}
       </div>
     </DiagramContext.Provider>
   );

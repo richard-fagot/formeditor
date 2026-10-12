@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { BookOpen, Columns2, Network } from 'lucide-react';
+import { BookOpen, Columns2, ImageDown, Network } from 'lucide-react';
 import { checkWorkspace } from '../../core/validation';
 import { useStore, useT, type GraphRef } from '../../app/store';
 import { runCommand } from '../../app/commands';
@@ -18,6 +18,8 @@ export function QuestionnaireView({ id }: { id: string }) {
   const panel = useStore((s) => s.libraryPanel);
   const compare = useStore((s) => (s.compare && s.compare !== id && s.ws.questionnaires.some((q) => q.id === s.compare) ? s.compare : undefined));
   const canCompare = useStore((s) => s.ws.questionnaires.length > 1);
+  const empty = useStore((s) => !s.ws.questionnaires.find((q) => q.id === id)?.nodes.length);
+  const busy = useStore((s) => s.imageBusy);
   const graph: GraphRef = useMemo(() => ({ kind: 'questionnaire', id }), [id]);
   const issues = useMemo(() => checkWorkspace(ws).filter((i) => i.owner.kind === 'questionnaire' && i.owner.id === id), [ws, id]);
   const sub = (v: 'diagram' | 'preview', label: string) => (
@@ -37,6 +39,13 @@ export function QuestionnaireView({ id }: { id: string }) {
             className="ml-auto flex items-center gap-1 rounded px-2 py-1 text-xs text-slate-500 hover:bg-slate-100"
             onClick={() => runCommand('view.layout')}>
             <Network className="size-3.5" />{t('view.layout')}
+          </button>
+        )}
+        {view === 'diagram' && (
+          <button type="button" data-testid="export-image" title={t('image.export')} disabled={empty || busy}
+            className="flex items-center gap-1 rounded px-2 py-1 text-xs text-slate-500 hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-transparent"
+            onClick={() => runCommand('view.exportImage')}>
+            <ImageDown className="size-3.5" />{busy ? t('image.busy') : t('image.short')}
           </button>
         )}
         {view === 'diagram' && canCompare && (

@@ -8,7 +8,8 @@ Catalogue unique des actions utilisateur (spec §4.4). Palette, menus et raccour
   `scope` (`global` | `graph` : actif seulement focus sur le logigramme), `allowInInput`, `hidden`, `enabled()`, `run(arg?)`.
   `arg` : paramètre fourni par un bouton ou un champ (onglet, langue, valeur saisie) ; les commandes qui
   l'exigent sont `hidden` (absentes de la palette).
-- `download`.
+- `download(name, texte | Blob)` ; `imageFileName(projet, titre, date)` (`<projet> - <titre> - AAAAMMJJ.png`, caractères
+  interdits → `_`), `imageTitle(questionnaire, langue, langueParDéfaut)` (`image-file.ts`, fonctions pures).
 
 ## Fichiers
 - `project-commands.ts` : projet (nouveau, ouvrir/importer, exemple, exporter), onglets, palette.
@@ -33,6 +34,9 @@ Catalogue unique des actions utilisateur (spec §4.4). Palette, menus et raccour
   `preview.lang` (langue de la prévisualisation affichée ; sans paramètre : la suivante), raccourcis (`shortcut.set` avec
   `{ id, keys }`, `shortcut.reset` avec un id ou sans paramètre pour tout rétablir), `view.layout` (L, logigramme affiché :
   incrémente `layoutRequest`), `view.compare` (`arg` = questionnaire comparé ; sans paramètre : bascule).
+- `image-commands.ts` (EVO-004) : `view.exportImage` (X, logigramme ; questionnaire non vide en vue Logigramme) ouvre le
+  dialogue ; `view.exportImageRun` (cachée, `arg` = `{ scope, title }`) mémorise les choix, ferme le dialogue et incrémente
+  `imageRequest`, que `ui/diagram` exécute (capture).
 - `nav-commands.ts` : flèches, annuler/rétablir (portée `global` : actifs hors du logigramme, pas pendant une saisie ; onglet Bibliothèque → historique `library`), ajuster la vue, logigramme ↔ prévisualisation.
 - `example.ts` : exemple embarqué ; `files.ts` : téléchargement et sélection de fichiers.
 
@@ -40,6 +44,7 @@ Catalogue unique des actions utilisateur (spec §4.4). Palette, menus et raccour
 `commands.test.ts` (jeux de libellés, onglets, langues, rang et suppression d'arête, propriétés du questionnaire) ;
 `system-commands.test.ts` (dictionnaire, scénarios, enregistrement depuis la prévisualisation, panneaux) ;
 `settings-commands.test.ts` (langues, langue de la prévisualisation, raccourcis, vue côte à côte, mise en page) ;
+`image-file.test.ts` (nom du fichier image, commandes d'export, entrée du guide) ;
 `library-commands.test.ts` (insertion, dépôt, regroupement et annulation, édition d'un bloc, sortie nommée, question vers la bibliothèque).
 
 ## Ajouter une action
