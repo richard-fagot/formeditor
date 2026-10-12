@@ -1,7 +1,7 @@
 # EVO-009 — Copier une question dans la bibliothèque et masquer des champs d'une question structurée
 
 Statut : en cours
-Dépend de : EVO-XXX (bibliothèque de questions : création, référence d'une question de bibliothèque dans un questionnaire) et EVO-YYY (questions de type structuré) — à compléter
+Dépend de : spec §3.8 (bibliothèque de questions : création, référence d'une question de bibliothèque dans un questionnaire) et spec §3.4 (questions de type structure) — existants
 
 ## Besoin
 
@@ -65,7 +65,7 @@ Affichage attendu : dans le questionnaire B, le wizard ne présente que Nom, Pr�
 ## Impacts attendus
 
 - **Format JSON** : nouvelle `formatVersion` et migration (aucun champ masqué par défaut), JSON Schema, `docs/FORMAT.md` (propriété de masquage sur une instance de question structurée), exemple mis à jour avec une instance « identite » réduite.
-- **Spec** : §… (bibliothèque de questions), §… (questions structurées), §… (validation des expressions).
+- **Spec** : §3.8 (bibliothèque de questions), §3.4 (questions structurées), §3.6 et §4.6 (validation des expressions).
 - **Guide** : sections bibliothèque et questions structurées.
 
 ## Analyse demandée avant de coder
@@ -79,3 +79,38 @@ Ajouter une section « Analyse » en bas de ce fichier :
 5. Interaction avec le caractère obligatoire : un champ obligatoire en bibliothèque peut-il être masqué ? Cible proposée : oui, le masquage l'emporte (le champ n'est pas demandé).
 
 Faisable sans ambiguïté bloquante → choix notés dans l'analyse et `docs/DECISIONS.md`, puis réalisation. Sinon → statut « à arbitrer », options et conséquences, arrêt sans coder.
+
+## Analyse
+
+Prérequis vérifiés : la bibliothèque de questions (création, référence `{ kind: "question", ref }`, intitulé surchargeable,
+spec §3.8) et le type structure (spec §3.4) existent. Une commande `node.toLibrary` (« Placer la question dans la
+bibliothèque ») existe déjà : elle déplace une question locale en gardant sa clé, et est absente si la clé est prise.
+Conclusion : **faisable sans arbitrage**.
+
+1. **Faisabilité et modules** (d'après `docs/MAP.md`) : `core/model` (propriété `hiddenFields` du nœud référence,
+   question effective d'une instance), `core/references` (`questionOfNode` applique le masquage ; renommage d'un champ
+   suivi dans `hiddenFields` ; chemins des champs masqués), `core/runtime` (`effectiveQuestion` : champs masqués ni
+   présentés ni exigés), `core/validation` (nouveau code `hiddenField`), `format` (version 8, schéma, migration 7 → 8),
+   `app/store` (`moveToLibrary` avec clé choisie, `setFieldHidden`), `app/commands` (`node.toLibrary` renommée
+   « Copier dans la bibliothèque », dialogue de clé), `app/i18n`, `ui/properties` (bouton, cases « affiché »),
+   `ui/diagram` (badge « n / m champs »), `ui/shell` (dialogue), `docs/FORMAT.md`, `docs/GUIDE.md`, exemple.
+2. **Définition / instance** : une instance de bibliothèque n'a pas de clé propre ; elle est désignée par la clé de la
+   définition. La copie garde la clé : les expressions et conditions restent valides **sans réécriture** (cible
+   atteinte), l'id du nœud, sa place, ses arêtes (conditions) et sa mise en page sont conservés. Si la clé est déjà
+   prise dans la bibliothèque, l'utilisateur choisit une autre clé (libre dans la bibliothèque et dans le graphe) ;
+   la clé de la question locale est alors renommée avant la copie, avec **réécriture automatique** des références
+   (renommage propagé existant) et **rapport** des expressions modifiées.
+3. **Stockage du masquage** : `hiddenFields: string[]` (clés des champs masqués) sur le nœud référence ; absent = tous
+   affichés. Migration 7 → 8 sans transformation. Une clé qui ne désigne plus aucun champ est ignorée sans erreur ;
+   renommer un champ dans la bibliothèque renomme aussi l'entrée dans `hiddenFields` des instances. Si plus aucun
+   champ n'est affiché (champ supprimé en bibliothèque), le masquage est ignoré (tous affichés).
+4. **Export pour l'équipe de dev** : l'export **conserve** la référence et `hiddenFields` (aucune résolution). Le format
+   est le modèle de l'outil (aller-retour identique, une seule définition à maintenir) ; la résolution est une règle
+   simple documentée dans `docs/FORMAT.md` (§6, §7.6).
+5. **Caractère obligatoire** : un champ obligatoire peut être masqué ; le masquage l'emporte (le champ n'est ni présenté
+   ni exigé, ses contraintes ne s'appliquent pas).
+
+Choix complémentaires : la vérification `hiddenField` (erreur) porte sur les références du graphe qui contient
+l'instance (`identite.mail`, `alias.identite.mail` chez l'appelant d'un fragment) ; une référence à un champ masqué
+depuis la définition elle-même (condition d'un champ frère) n'est pas signalée (définition partagée). L'avertissement
+au masquage liste les expressions du même graphe qui référencent le champ.
