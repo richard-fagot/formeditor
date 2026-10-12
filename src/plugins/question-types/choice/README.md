@@ -21,6 +21,8 @@ même dossier : ils partagent l'éditeur d'options et la saisie (DECISIONS.md).
   multilingue à variantes ; dynamique : `from`, puis `label` et `value` saisis dans la portée des sous-champs
   de la liste ; condition `when` pour les deux). Les modifications passent par `update` du panneau de propriétés
   (historique, comme les autres paramètres de type).
+- « Ne sais pas » (EVO-006) : `DontKnowEditor` juste après « Autre » ; dans la saisie, dernière option après « Autre », hors des
+  sections (exclusive : `onDontKnow`, toute sélection passe par `onChange` et l'annule) ; aperçu : dernière ligne en italique.
 - `other-editor.tsx` : option « Autre (préciser) » (libellé éditable, précision obligatoire).
 - `selection.ts` (pur, testé) : choix proposés (`itemsOf` : intitulé de section = libellé du groupe résolu par
   `env.label`, traduit et interpolé), sections, sélection réaffichée (`selectedOf`), réponse d'un choix multiple

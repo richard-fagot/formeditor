@@ -24,6 +24,9 @@ Dépend de `core/model`, `core/expressions`.
   `groupId(g, ctx, env)` : code, sinon libellé dans `env.defaultLang`, interpolé.
 - `setAnswer(input, s, value, other?, group?)` range le groupe sous `<clé>_group` (`groupPath`) ; `prune` l'efface avec
   la réponse ; `SummaryEntry.group`.
+- « Ne sais pas » (EVO-006) : `setAnswer(…, group?, dontKnow?)` range le marqueur `<clé>_nsp: true` (`dontKnowPath`) ; toute autre
+  réponse l'efface ; `prune` l'efface avec la réponse ; `SummaryEntry.dontKnow`. `dontKnowAnswer(q)` : valeur (`null`, `[]` pour un
+  choix multiple) et groupe (`NSP` pour un choix) d'une réponse « Ne sais pas ».
 - `successor`, `chooseEdge`, `firstStep`, `prune`, `projectedSteps`, `getAnswer`, `withAnswer`, `otherPath`.
 
 ## Règles
@@ -37,4 +40,4 @@ Dépend de `core/model`, `core/expressions`.
 - Pas de validation des réponses ici : voir `core/validation` (`validateAnswer`).
 
 ## Tests
-`runtime.test.ts`, `trace.test.ts`, `options.test.ts`, `groups.test.ts` ; `tests/reference/paths.test.ts` rejoue `examples/*/chemins/*.json`.
+`runtime.test.ts`, `trace.test.ts`, `options.test.ts`, `groups.test.ts`, `dont-know.test.ts` ; `tests/reference/paths.test.ts` rejoue `examples/*/chemins/*.json`.

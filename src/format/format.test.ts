@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { FORMAT_VERSION, type ChoiceEntry, type Questionnaire } from '../core/model';
 import { validateDocument } from './validate';
-import { migrate, type Migrations } from './migrate';
+import { migrate, MIGRATIONS, type Migrations } from './migrate';
 import { serialize } from './serialize';
 import { exportBundle, exportFiles, importFiles } from './files';
 import { newWorkspace } from './workspace';
@@ -201,13 +201,9 @@ describe('migration 3 → 4 (EVO-005 : libellés `caption`)', () => {
     return { ...ws, questionnaires: [q] };
   };
 
-  it('le format courant est la version 4', () => {
-    expect(FORMAT_VERSION).toBe(4);
-  });
-
   it('un document version 3 est migré sans transformation (bundle compris) et reste valide', () => {
     const v3 = { ...minimalQuestionnaire(), formatVersion: 3 };
-    expect(migrate(v3)).toEqual({ ...v3, formatVersion: 4 });
+    expect(migrate(v3, MIGRATIONS, 4)).toEqual({ ...v3, formatVersion: 4 });
     const ws = newWorkspace('P', 'fr');
     const bundle = { ...JSON.parse(exportBundle({ ...ws, questionnaires: [v3] })), formatVersion: 3 };
     bundle.project.formatVersion = 3;
@@ -215,8 +211,8 @@ describe('migration 3 → 4 (EVO-005 : libellés `caption`)', () => {
     bundle.questionnaires[0].formatVersion = 3;
     const back = importFiles([{ name: 'ancien.bundle.json', text: JSON.stringify(bundle) }]);
     expect(back.errors).toEqual([]);
-    expect(back.workspace!.questionnaires[0]!.formatVersion).toBe(4);
-    expect(back.workspace!.project.formatVersion).toBe(4);
+    expect(back.workspace!.questionnaires[0]!.formatVersion).toBe(FORMAT_VERSION);
+    expect(back.workspace!.project.formatVersion).toBe(FORMAT_VERSION);
     expect(back.workspace!.questionnaires[0]!.edges).toEqual([]);
   });
 
@@ -242,6 +238,53 @@ describe('migration 3 → 4 (EVO-005 : libellés `caption`)', () => {
       expect(back.errors).toEqual([]);
       expect(back.workspace!.questionnaires[0]!.edges).toEqual(ws.questionnaires[0]!.edges);
       expect(back.workspace!.project.systemState).toEqual(ws.project.systemState);
+    }
+  });
+});
+
+describe('migration 4 → 5 (EVO-006 : option « Ne sais pas »)', () => {
+  const withDontKnow = () => {
+    const q = minimalQuestionnaire();
+    q.nodes = [
+      { kind: 'question', id: 'n1', key: 'nom', label: { fr: 'Nom' }, type: 'text', dontKnow: {} },
+      { kind: 'question', id: 'n2', key: 'lien', label: { fr: 'Lien' }, type: 'single', options: [{ value: 'a', label: { fr: 'A' } }], other: {},
+        dontKnow: { label: { fr: 'Inconnu ({nom})', en: 'Unknown' } } },
+      { kind: 'question', id: 'n3', key: 'v', label: { fr: 'V' }, type: 'structure', fields: [{ id: 'f1', key: 'age', label: { fr: 'Âge' }, type: 'number', dontKnow: {} }] },
+    ];
+    return { ...newWorkspace('P', 'fr'), questionnaires: [q] };
+  };
+
+  it('le format courant est la version 5', () => {
+    expect(FORMAT_VERSION).toBe(5);
+  });
+
+  it('un document version 4 est migré sans transformation (bundle compris) : aucune « Ne sais pas »', () => {
+    const v4 = { ...minimalQuestionnaire(), formatVersion: 4 };
+    expect(migrate(v4)).toEqual({ ...v4, formatVersion: 5 });
+    const bundle = { ...JSON.parse(exportBundle({ ...newWorkspace('P', 'fr'), questionnaires: [v4] })), formatVersion: 4 };
+    for (const k of ['project', 'library']) bundle[k].formatVersion = 4;
+    bundle.questionnaires[0].formatVersion = 4;
+    const back = importFiles([{ name: 'ancien.bundle.json', text: JSON.stringify(bundle) }]);
+    expect(back.errors).toEqual([]);
+    expect(back.workspace!.questionnaires[0]!.formatVersion).toBe(5);
+    expect(JSON.stringify(back.workspace)).not.toContain('dontKnow');
+  });
+
+  it('accepte « Ne sais pas » sur une question et un champ de structure, la refuse sur une structure', () => {
+    const ws = withDontKnow();
+    expect(validateDocument(ws.questionnaires[0]!)).toEqual([]);
+    (ws.questionnaires[0]!.nodes[2] as unknown as Record<string, unknown>).dontKnow = {};
+    expect(validateDocument(ws.questionnaires[0]!).length).toBeGreaterThan(0);
+    const bad = withDontKnow();
+    (bad.questionnaires[0]!.nodes[0] as unknown as Record<string, unknown>).dontKnow = { x: 1 };
+    expect(validateDocument(bad.questionnaires[0]!).length).toBeGreaterThan(0);
+  });
+
+  it('export puis réimport : activation, libellé et traductions identiques', () => {
+    const ws = withDontKnow();
+    for (const back of [importFiles(exportFiles(ws)), importFiles([{ name: 'p.bundle.json', text: exportBundle(ws) }])]) {
+      expect(back.errors).toEqual([]);
+      expect(back.workspace!.questionnaires[0]!.nodes).toEqual(ws.questionnaires[0]!.nodes);
     }
   });
 });

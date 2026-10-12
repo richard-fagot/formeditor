@@ -14,7 +14,7 @@ Catalogue unique des actions utilisateur (spec §4.4). Palette, menus et raccour
 ## Fichiers
 - `project-commands.ts` : projet (nouveau, ouvrir/importer, exemple, exporter), onglets, palette.
 - `graph-commands.ts` : création chaînée (N, Shift+N, Alt+I/S/F), types (générés depuis `registry`),
-  obligatoire, « Autre », intitulé, condition, relier (`node.connect`, `node.connectTo`), départ, dupliquer,
+  obligatoire, « Autre », « Ne sais pas » (`node.toggleDontKnow`, sans raccourci), intitulé, condition, relier (`node.connect`, `node.connectTo`), départ, dupliquer,
   supprimer (`node.delete` : nœuds sélectionnés, sinon l'arête sélectionnée).
 - `shell-commands.ts` : `tab.open` (rouvrir un questionnaire fermé), `tab.show`, `tab.close`, `lang.content`, `lang.ui`
   (sans paramètre : langue suivante).

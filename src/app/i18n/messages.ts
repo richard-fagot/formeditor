@@ -53,6 +53,7 @@ export const MESSAGES = {
   'node.editLabel': { fr: 'Éditer l’intitulé', en: 'Edit label' },
   'node.toggleRequired': { fr: 'Basculer obligatoire', en: 'Toggle required' },
   'node.toggleOther': { fr: 'Activer « Autre (préciser) »', en: 'Toggle “Other (specify)”' },
+  'node.toggleDontKnow': { fr: 'Activer « Ne sais pas »', en: 'Toggle “Don’t know”' },
   'node.delete': { fr: 'Supprimer la sélection', en: 'Delete selection' },
   'node.duplicate': { fr: 'Dupliquer', en: 'Duplicate' },
   'node.setStart': { fr: 'Définir comme départ', en: 'Set as start' },

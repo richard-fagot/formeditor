@@ -1,5 +1,5 @@
 {
-  "formatVersion": 4,
+  "formatVersion": 5,
   "kind": "questionnaire",
   "id": "q_declaration",
   "key": "declaration_sinistre",
@@ -320,6 +320,12 @@
       "unit": {
         "fr": "€",
         "en": "€"
+      },
+      "dontKnow": {
+        "label": {
+          "fr": "Je ne sais pas encore",
+          "en": "I don't know yet"
+        }
       }
     },
     {
@@ -435,7 +441,8 @@
           "fr": "Autre moyen (préciser)",
           "en": "Other means (specify)"
         }
-      }
+      },
+      "dontKnow": {}
     },
     {
       "kind": "question",
@@ -563,7 +570,7 @@
       "id": "e_montant_expertise",
       "from": "n_montant",
       "to": "n_expertise",
-      "when": "montant_estime > sys.plafond_expertise"
+      "when": "montant_estime > sys.plafond_expertise or montant_estime.nsp"
     },
     {
       "id": "e_montant_tiers",

@@ -1,7 +1,7 @@
 import { Pencil } from 'lucide-react';
 import type { SummaryNode } from '../../core/model';
 import { goTo, summaryEntries, type RuntimeInput, type Session } from '../../core/runtime';
-import type { RenderEnv } from '../../plugin-api';
+import { dontKnowLabel, type RenderEnv } from '../../plugin-api';
 import { questionType } from '../../registry';
 import { useT, type PreviewState } from '../../app/store';
 import { makeRenderEnv } from './usePreview';
@@ -36,7 +36,8 @@ export function Summary({ node, stepId, input, session, env, lang, uiLang, updat
               }}>
               <dt className="text-sm text-slate-500">{makeRenderEnv(input, session, e.stepId, lang, uiLang).label(e.step.question?.label)}</dt>
               <dd className="flex items-center gap-2 text-right text-sm font-medium text-slate-800">
-                {p?.formatAnswer(e.step.question!, e.value, env, e.other as string | undefined, e.group)}
+                {e.dontKnow ? makeRenderEnv(input, session, e.stepId, lang, uiLang).label(dontKnowLabel(e.step.question!))
+                  : p?.formatAnswer(e.step.question!, e.value, env, e.other as string | undefined, e.group)}
                 <Pencil className="size-3 shrink-0 text-slate-300 group-hover:text-indigo-500" />
               </dd>
             </button>

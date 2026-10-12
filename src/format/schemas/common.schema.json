@@ -199,6 +199,16 @@
         }
       }
     },
+    "dontKnowOption": {
+      "description": "Option « Ne sais pas » (EVO-006) : présente = activée. Libellé comme celui d'une option (défaut « Ne sais pas »). Réponse : valeur vide (`null`, `[]` pour `multiple`), marqueur `<clé>_nsp: true`.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "$ref": "#/$defs/label"
+        }
+      }
+    },
     "question": {
       "description": "Question de la bibliothèque.",
       "allOf": [
@@ -637,7 +647,13 @@
       },
       "required": [
         "fields"
-      ]
+      ],
+      "not": {
+        "description": "Pas d'option « Ne sais pas » sur une structure (ses champs peuvent l'avoir).",
+        "required": [
+          "dontKnow"
+        ]
+      }
     },
     "questionCore": {
       "description": "Propriétés communes à toutes les questions, puis paramètres propres au type (params_<type>).",
@@ -704,6 +720,9 @@
               }
             }
           }
+        },
+        "dontKnow": {
+          "$ref": "#/$defs/dontKnowOption"
         }
       },
       "allOf": [

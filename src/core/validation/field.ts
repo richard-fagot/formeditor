@@ -1,5 +1,5 @@
 import { evaluate, evaluateCondition, type EvalContext, type EvalEnv } from '../expressions';
-import { GROUP_SUFFIX, OTHER_GROUP, OTHER_VALUE, type LocalizedText, type Question, type StructureField } from '../model';
+import { DONT_KNOW_SUFFIX, GROUP_SUFFIX, hasDontKnow, OTHER_GROUP, OTHER_VALUE, type LocalizedText, type Question, type StructureField } from '../model';
 import { choiceOptions } from '../runtime';
 import { defaultMessage } from './messages';
 
@@ -30,11 +30,14 @@ function validDate(s: string): boolean {
  * Valide une réponse. `ctx` est le contexte d'évaluation, réponse courante comprise (sous sa clé).
  * `other` : précision de l'option « Autre » ; `group` : groupe de la sélection d'un choix (`<clé>_group`, lu à côté
  * de la réponse par l'appelant, jamais dans `ctx` où une clé homonyme peut venir d'ailleurs ; absent : la valeur suffit).
+ * `dontKnow` : marqueur « Ne sais pas » (`<clé>_nsp`, lu de même) ; si l'option est activée, aucune vérification (EVO-006).
  */
 export function validateAnswer(
   q: Question | StructureField, value: unknown, ctx: EvalContext, env: EvalEnv = {}, other?: unknown, path = '', group?: unknown,
+  dontKnow?: unknown,
 ): FieldError[] {
   const errors: FieldError[] = [];
+  if (dontKnow === true && hasDontKnow(q)) return errors;
   const fail = (param: string, arg?: unknown) =>
     errors.push({ path, param, message: q.messages?.[param] ?? defaultMessage(param, arg) });
 
@@ -127,7 +130,9 @@ function validateStructure(
     for (const f of q.fields) {
       if (f.when && !evaluateCondition(f.when, octx, env)) continue;
       const fpath = q.repeat ? `${path}[${i}].${f.key}` : `${path}.${f.key}`;
-      errors.push(...validateAnswer(f, occ?.[f.key], octx, env, occ?.[`${f.key}_${OTHER_VALUE}`], fpath, occ?.[`${f.key}_${GROUP_SUFFIX}`]));
+      errors.push(...validateAnswer(
+        f, occ?.[f.key], octx, env, occ?.[`${f.key}_${OTHER_VALUE}`], fpath, occ?.[`${f.key}_${GROUP_SUFFIX}`], occ?.[`${f.key}_${DONT_KNOW_SUFFIX}`],
+      ));
     }
   });
 }

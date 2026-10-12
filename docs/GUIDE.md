@@ -1,5 +1,5 @@
 # Guide utilisateur — Éditeur de questionnaires
-Mis à jour le 2026-10-12 — jusqu'à EVO-005
+Mis à jour le 2026-10-12 — jusqu'à EVO-006
 
 ## Mode d'emploi du guide
 
@@ -186,11 +186,23 @@ libres » et « Description (pour l’équipe de dev) ». Chaque saisie est enre
   dans le questionnaire. Le renommage met à jour toutes les expressions qui l'utilisent.
 - **Changer le type d'une question** — Liste « Type » du panneau, ou raccourci du type (§6). Intitulé, clé, aide,
   obligation et contraintes sont conservés ; la valeur par défaut et les réglages de l'ancien type sont perdus (sauf
-  options entre choix unique et multiple, et « Autre » entre types qui l'acceptent).
+  options entre choix unique et multiple, « Autre » entre types qui l'acceptent, et « Ne sais pas » sauf vers une structure).
 - **Rendre une question obligatoire** — Case « Obligatoire », ou `O` (logigramme ; palette « Basculer obligatoire »). `O`
   bascule : sur une question déjà obligatoire (même sous condition), il retire l'obligation. `[cmd: node.toggleRequired]`
 - **Rendre une question obligatoire sous condition** — Case « Obligatoire » décochée, champ « Obligatoire si… (expression,
   facultatif) » : ex. `type_sinistre = 'accident'`.
+- **Ajouter « Ne sais pas »** — Case « Option « Ne sais pas » » du panneau (section du type : juste après « Autre
+  (préciser) » pour les choix, le booléen et le tri-state ; en fin de section pour texte, date et nombre ; aussi dans un
+  champ de structure, jamais sur la structure elle-même), ou palette « Activer « Ne sais pas » » (bascule, question locale
+  sélectionnée). Désactivée par défaut. `[cmd: node.toggleDontKnow]`
+- **Régler « Ne sais pas »** — « Libellé de l'option » (défaut « Ne sais pas ») : multilingue, `{…}` interpolé, variantes
+  conditionnelles, traductions manquantes signalées, comme une option. Effet dans le wizard :
+  - choix unique ou multiple, booléen, tri-state : dernière option, après « Autre (préciser) », hors de tout groupe ;
+    exclusive (la cocher décoche les autres options, cocher une autre option la décoche) ;
+  - texte, date, nombre : case « Ne sais pas » sous le champ ; cochée, le champ est vidé et désactivé ; décochée, il revient vide.
+  Cochée, elle satisfait une question obligatoire et aucun contrôle (format, min/max, longueur, contraintes) ne s'applique.
+  Logigramme : dernière ligne en italique (choix), « + Ne sais pas » en italique après l'aperçu (saisie). Pas de table de
+  décision dans l'outil : rien d'autre à régler.
 - **Ajouter un texte d'aide** — Champ « Aide » (affiché sous l'intitulé dans le wizard ; variantes possibles).
 - **Ajouter un texte indicatif dans le champ** — « Texte indicatif » (types texte et nombre seulement).
 - **Donner une valeur par défaut** — « Valeur par défaut » : texte brut pour texte, date (`2026-01-31`) et choix unique
@@ -271,7 +283,7 @@ Concerne le choix unique et le choix multiple. Le booléen et le tri-state n'ont
   titrée ; un groupe dont aucune option n'est visible n'est pas affiché. « Autre (préciser) » reste en dernier, hors groupe.
 - **Régler un groupe** — Sous le champ des options, chaque groupe a sa ligne (« # Libellé (groupe) »), juste avant celles de
   ses options. La déplier : libellé multilingue (variantes, `{…}` possibles, comme une option), « Code du groupe » (ex. `SC` ;
-  vide : le groupe est identifié par son libellé dans la langue par défaut ; `AUTRE` est réservé), « Condition d'affichage du groupe ».
+  vide : le groupe est identifié par son libellé dans la langue par défaut ; `AUTRE` et `NSP` sont réservés), « Condition d'affichage du groupe ».
 - **Déplacer ou supprimer un groupe** — Flèches de la ligne du groupe (« Monter le groupe (avec ses options) », « Descendre le
   groupe (avec ses options) ») : le groupe se déplace avec ses options. Croix « Supprimer le groupe et ses options » (`Ctrl+Z`
   pour annuler). Pour changer une option de groupe, déplacer sa ligne dans « Options (une par ligne) » : ses réglages sont gardés.
@@ -315,6 +327,11 @@ Concerne le choix unique et le choix multiple. Le booléen et le tri-state n'ont
   est choisie ; vide pour une option sans groupe. Choix multiple : liste des groupes, dans l'ordre des valeurs cochées.
   `ma_question` donne toujours la valeur seule. Ex. : `qualite_declarant.groupe = 'SC'`, `'AA' in liens.groupe`.
   `groupe` est un mot réservé : aucune clé ne peut s'appeler `groupe`.
+- **Tester « Ne sais pas »** — `ma_question.nsp` (aussi `alias.cle.nsp`, `structure.champ.nsp`, `victimes[0].champ.nsp`) :
+  `true` si « Ne sais pas » est choisie, `false` sinon (jamais vide). `ma_question` est alors vide (`$exists` faux, liste
+  vide `[]` pour un choix multiple), comme une question sans réponse : `.nsp` permet de les distinguer. `ma_question.groupe`
+  vaut `NSP` (code réservé, comme `AUTRE`). Connu seulement si l'option est activée (sinon « Référence inconnue »).
+  Ex. : `montant_estime > sys.plafond_expertise or montant_estime.nsp`. `nsp` est un mot réservé.
 - **Combiner** — `=`, `!=`, `<`, `<=`, `>`, `>=` (nombres et dates `AAAA-MM-JJ`) ; `and`, `or`, `$not(…)` ; `'x' in liste` ;
   `$exists(cle)` (est renseigné) ; `$count(…)`, `$sum(…)` ; filtre `liste[champ = 'x']` ; `&` concatène ;
   `a ? b : c` ; `+ - * / %`. Chaînes entre `'…'`.
@@ -335,6 +352,7 @@ Concerne le choix unique et le choix multiple. Le booléen et le tri-state n'ont
   9. `sys.sinistres[date <= $$.date_sinistre]` (dans un filtre, un nom nu est un champ de l'élément)
   10. `Montant pour {$count(victimes)} victime(s)` (interpolation dans un libellé)
   11. `qualite_declarant.groupe = 'SC'` (groupe de l'option choisie)
+  12. `montant_estime.nsp` (« Ne sais pas » choisie)
 
 ## 9. Contraintes et messages d'erreur
 
@@ -424,13 +442,13 @@ Concerne le choix unique et le choix multiple. Le booléen et le tri-state n'ont
 - **Recommencer le parcours** — Bouton « Recommencer » de la barre de prévisualisation (réponses effacées).
 - **Modifier une réponse depuis la synthèse** — Sur une page de synthèse, cliquer la réponse (crayon) : retour à la question ;
   après correction, « Revenir à la synthèse ». Les réponses sorties du chemin sont effacées.
-  Une option d'un groupe s'y affiche « Groupe — Option » (ex. « Victime directe — Conjoint »).
+  Une option d'un groupe s'y affiche « Groupe — Option » (ex. « Victime directe — Conjoint ») ; « Ne sais pas », par son libellé.
 - **Comprendre un retour forcé avant la fin** — Une réponse devenue invalide (option disparue après un changement d'état du
   système…) empêche d'atteindre la fin : le wizard ramène à la question avec son message jusqu'à correction.
 - **Retrouver le nœud d'une page** — Cliquer la page : le nœud est sélectionné dans le logigramme (visible en revenant au logigramme).
 - **Afficher le débogage** — Bouton « Débogage » ou palette : « Chemin parcouru », « Conditions évaluées (page courante) »
   (arête suivie surlignée, `true` / `false` / « sinon » / « erreur »), « Valeurs courantes » (réponses et `sys` ; le groupe
-  de l'option choisie apparaît sous `<clé>_group`). `[cmd: preview.toggleDebug]`
+  de l'option choisie apparaît sous `<clé>_group`, « Ne sais pas » sous `<clé>_nsp`). `[cmd: preview.toggleDebug]`
 - **Changer la langue de la prévisualisation** — Liste « Langue » de la barre, ou palette « Langue de la prévisualisation
   suivante » (plusieurs langues). Un bandeau compte les textes non traduits, affichés dans la langue par défaut. `[cmd: preview.lang]`
 - **Comprendre « parcours bloqué »** — « Aucune arête ne s’applique : parcours bloqué. » : aucune condition vraie et pas de
@@ -483,7 +501,7 @@ ou palette « Problèmes ») ; un clic sur un problème sélectionne le nœud ou
 - **Traduction manquante (…) : …** — Saisir le texte dans la langue indiquée (§13). Vaut aussi pour le libellé d'un groupe d'options.
 - **Groupe d’options en double « … »** — Deux groupes d'une question ont le même code (ou, sans code, le même libellé) →
   donner un « Code du groupe » distinct (§7).
-- **Code de groupe réservé « … » (« Autre (préciser) »)** — Le code `AUTRE` désigne « Autre (préciser) » → choisir un autre code.
+- **Code de groupe réservé « … » (« Autre (préciser) » ou « Ne sais pas »)** — Les codes `AUTRE` (« Autre (préciser) ») et `NSP` (« Ne sais pas ») sont réservés → choisir un autre code.
 - **Groupe d’options sans option « … »** — Ajouter des options sous la ligne `#` du groupe, ou supprimer le groupe.
 - **Élément de bibliothèque introuvable « … »** — Référence vers un élément supprimé → supprimer le nœud ou réinsérer un élément.
 - **Nœud de départ introuvable** — « Définir comme départ » sur un nœud (§3).
@@ -547,6 +565,7 @@ ou palette « Problèmes ») ; un clic sur un problème sélectionne le nœud ou
 | Type : Structure | `S` | `node.type.structure` |
 | Basculer obligatoire | `O` | `node.toggleRequired` |
 | Activer « Autre (préciser) » | `A` | `node.toggleOther` |
+| Activer « Ne sais pas » | — | `node.toggleDontKnow` |
 | Éditer l’intitulé | `Entrée` | `node.editLabel` |
 | Éditer la condition de l’arête | `C` | `edge.editCondition` |
 | Relier à un nœud… | `E` | `node.connect` |

@@ -1,5 +1,5 @@
 import { evaluate } from '../expressions';
-import { buildContext, getAnswer, groupPath, otherPath, withAnswer, type Answers } from './context';
+import { buildContext, dontKnowPath, getAnswer, groupPath, otherPath, withAnswer, type Answers } from './context';
 import { firstStep, reachableSteps, successor } from './navigate';
 import { resolveStep, type RuntimeInput, type Step } from './steps';
 
@@ -26,14 +26,16 @@ export function currentStep(input: RuntimeInput, s: Session): Step {
 
 /**
  * Enregistre la réponse de la question courante, sa précision « Autre » et, pour un choix, le groupe de la
- * sélection (`<clé>_group` : identifiant, ou liste parallèle aux valeurs ; absent hors groupe).
+ * sélection (`<clé>_group` : identifiant, ou liste parallèle aux valeurs ; absent hors groupe) et le marqueur
+ * « Ne sais pas » (`<clé>_nsp: true`, EVO-006 ; absent sinon : toute autre réponse l'efface).
  */
-export function setAnswer(input: RuntimeInput, s: Session, value: unknown, other?: string, group?: unknown): Session {
+export function setAnswer(input: RuntimeInput, s: Session, value: unknown, other?: string, group?: unknown, dontKnow?: boolean): Session {
   const step = currentStep(input, s);
   if (!step.answerPath) return s;
   let answers = withAnswer(s.answers, step.answerPath, value);
   answers = withAnswer(answers, otherPath(step.answerPath), other || undefined);
   answers = withAnswer(answers, groupPath(step.answerPath), group ?? undefined);
+  answers = withAnswer(answers, dontKnowPath(step.answerPath), dontKnow ? true : undefined);
   return { ...s, answers };
 }
 
@@ -118,7 +120,7 @@ export function prune(input: RuntimeInput, answers: Answers): Answers {
   for (const id of allSteps) {
     const path = resolveStep(input, id)?.answerPath;
     if (!path || kept.has(path.join('.'))) continue;
-    for (const p of [path, otherPath(path), groupPath(path)]) out = withAnswer(out, p, undefined);
+    for (const p of [path, otherPath(path), groupPath(path), dontKnowPath(path)]) out = withAnswer(out, p, undefined);
   }
   return out;
 }
@@ -130,6 +132,8 @@ export interface SummaryEntry {
   other?: unknown;
   /** Groupe de la sélection d'un choix (`<clé>_group`). */
   group?: unknown;
+  /** « Ne sais pas » choisie (`<clé>_nsp`, EVO-006). */
+  dontKnow?: true;
 }
 
 /** Réponses du parcours effectif jusqu'à la page courante, dans l'ordre de première visite. */
@@ -143,7 +147,11 @@ export function summaryEntries(input: RuntimeInput, s: Session): SummaryEntry[] 
     const value = getAnswer(s.answers, step.answerPath);
     if (value === undefined) continue;
     const group = getAnswer(s.answers, groupPath(step.answerPath));
-    out.push({ stepId: id, step, value, other: getAnswer(s.answers, otherPath(step.answerPath)), ...(group === undefined ? {} : { group }) });
+    const dontKnow = getAnswer(s.answers, dontKnowPath(step.answerPath)) === true;
+    out.push({
+      stepId: id, step, value, other: getAnswer(s.answers, otherPath(step.answerPath)),
+      ...(group === undefined ? {} : { group }), ...(dontKnow ? { dontKnow: true as const } : {}),
+    });
   }
   return out;
 }

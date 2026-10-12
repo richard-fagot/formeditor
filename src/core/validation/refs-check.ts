@@ -84,8 +84,9 @@ function checkGuaranteed(
   const roots = refsOf(f, true)
     .filter((r) => !guardRefs.has(r.join('.')))
     .flatMap((ref) => {
-      // `cle.groupe` : même règle que la question `cle`.
-      const r = resolvePath(scope, ref)?.kind === 'group' ? ref.slice(0, -1) : ref;
+      // `cle.groupe`, `cle.nsp` : même règle que la question `cle`.
+      const kind = resolvePath(scope, ref)?.kind;
+      const r = kind === 'group' || kind === 'dontKnow' ? ref.slice(0, -1) : ref;
       const info = resolvePath(scope, r);
       if (!info || info.kind === 'system' || info.kind === 'alias') return [];
       if (f.loc.structure && info.kind === 'field' && !r[0]!.includes('.') && info.path === r[0]) return []; // champ frère

@@ -1,5 +1,6 @@
 import { Plus, Trash2 } from 'lucide-react';
-import { GROUP_SUFFIX, OTHER_VALUE, type StructureField, type StructureQuestion } from '../../../core/model';
+import { DONT_KNOW_SUFFIX, GROUP_SUFFIX, OTHER_VALUE, type StructureField, type StructureQuestion } from '../../../core/model';
+import { dontKnowAnswer } from '../../../core/runtime';
 import { tr, type FieldProps, type RenderEnv } from '../../../plugin-api';
 import { Button } from '../../../ui-kit';
 
@@ -21,10 +22,15 @@ export function occurrencesOf(q: StructureQuestion, value: unknown): Occurrence[
 export const visibleFields = (q: StructureQuestion, occ: Occurrence, env: RenderEnv) =>
   q.fields.filter((f) => !f.when || env.scoped(occ).condition(f.when));
 
-/** Occurrence avec la réponse d'un champ, sa précision « Autre » et le groupe de la sélection d'un choix (`<clé>_group`). */
-function setField(occ: Occurrence, f: StructureField, value: unknown, other?: string, group?: unknown): Occurrence {
+/**
+ * Occurrence avec la réponse d'un champ, sa précision « Autre », le groupe de la sélection d'un choix (`<clé>_group`)
+ * et le marqueur « Ne sais pas » (`<clé>_nsp`, EVO-006).
+ */
+function setField(occ: Occurrence, f: StructureField, value: unknown, other?: string, group?: unknown, dontKnow?: boolean): Occurrence {
   const next: Occurrence = { ...occ, [f.key]: value === undefined ? null : value };
-  const extra: [string, unknown][] = [[`${f.key}_${OTHER_VALUE}`, other], [`${f.key}_${GROUP_SUFFIX}`, group]];
+  const extra: [string, unknown][] = [
+    [`${f.key}_${OTHER_VALUE}`, other], [`${f.key}_${GROUP_SUFFIX}`, group], [`${f.key}_${DONT_KNOW_SUFFIX}`, dontKnow || undefined],
+  ];
   for (const [k, v] of extra) {
     if (v !== undefined && v !== null) next[k] = v;
     else delete next[k];
@@ -67,8 +73,12 @@ export function StructureInput({ question, value, onChange, errors, env, inputId
                   {f.help && <p className="text-xs text-slate-500">{scoped.label(f.help)}</p>}
                   {plugin && (
                     <plugin.Field question={f} value={occ[f.key] ?? undefined} other={occ[`${f.key}_${OTHER_VALUE}`] as string | undefined} group={occ[`${f.key}_${GROUP_SUFFIX}`]}
-                      errors={{ '': fieldErrors }} env={scoped} inputId={id}
-                      onChange={(v, o, g) => commit(occs.map((x, j) => (j === i ? setField(x, f, v, o, g) : x)))} />
+                      errors={{ '': fieldErrors }} env={scoped} inputId={id} dontKnow={occ[`${f.key}_${DONT_KNOW_SUFFIX}`] === true}
+                      onChange={(v, o, g) => commit(occs.map((x, j) => (j === i ? setField(x, f, v, o, g) : x)))}
+                      onDontKnow={(on) => {
+                        const a = dontKnowAnswer(f);
+                        commit(occs.map((x, j) => (j !== i ? x : on ? setField(x, f, a.value, undefined, a.group, true) : setField(x, f, null))));
+                      }} />
                   )}
                   {fieldErrors.map((m, k) => <p key={k} className="text-sm text-rose-600" role="alert">{m}</p>)}
                 </div>

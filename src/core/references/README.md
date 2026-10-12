@@ -12,6 +12,8 @@ Résolution des clés et espaces de noms, index des usages, renommage propagé. 
 - Groupes d'options (EVO-003) : la portée contient `<chemin>.groupe` (genre `group`) pour chaque question ou champ à choix
   (questionnaire, `alias.cle.groupe`, `structure.champ.groupe`, champ frère `champ.groupe`) ; ailleurs `.groupe` est inconnu.
   Le parcours visite libellé (`options[i].group`), condition et entrées de chaque groupe (`options[i].options[j].…`).
+- « Ne sais pas » (EVO-006) : la portée contient `<chemin>.nsp` (genre `dontKnow`, type `boolean`) pour une question ou un
+  champ dont l'option est activée ; le libellé `dontKnow.label` est parcouru (renommage, traductions manquantes).
 - `renameKey(ws, target, newKey)` : `target` = question (`owner` + `nodeId`, `fieldId` pour un champ),
   alias d'instance de bloc, variable système (scénarios compris), ou champ d'une liste système (`systemField` :
   `sys.x.champ`, noms relatifs des entrées dynamiques dont `from` est `sys.x`, exemple et scénarios ; nom invalide ou pris → inchangé). Renvoie un nouveau `Workspace`.
@@ -30,4 +32,4 @@ Résolution des clés et espaces de noms, index des usages, renommage propagé. 
   (le bloc est partagé) : la vérification « référence inconnue » le signale.
 
 ## Tests
-`references.test.ts` (sur l'exemple).
+`references.test.ts` (sur l'exemple), `groups.test.ts`, `dont-know.test.ts`.

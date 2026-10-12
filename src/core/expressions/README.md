@@ -8,6 +8,9 @@ JSONata** (1.8, synchrone). Dépend de `core/model`.
   est réécrite en `<dernier>_group` (`lien.groupe` → `lien_group`, `decl.lien.groupe` → `decl.lien_group`, indices et filtres
   conservés : `liens[0].groupe` → `liens_group[0]`) ; la syntaxe,
   `extractReferences` et `renameReference` voient l'écriture d'origine (`['lien','groupe']`).
+- « Ne sais pas » (EVO-006, `dont-know-ref.ts`) : tout chemin de noms terminé par `.nsp` est réécrit en `(<chemin>_nsp = true)`
+  avant évaluation (`victimes[0].age.nsp` → `(victimes[0].age_nsp = true)`) : vrai ou faux, jamais vide ; références et renommage
+  voient l'écriture d'origine.
 - `EvalEnv` : `today?`, `defaultLang?` (langue par défaut : identifiant d'un groupe d'options sans code, `core/runtime`).
 - `evaluate(expr, ctx, env?)` → valeur ou `undefined` si erreur ; `evaluateStrict` lève ; `evaluateCondition` → `true` seulement si l'expression vaut `true`.
 - `checkSyntax(expr)` → `{ message, position }` ou `undefined` ; `compile` (avec cache).
@@ -29,4 +32,4 @@ Objet des réponses par clé + `sys` (état du système) + un objet par alias de
 - JSONata renvoie des « séquences » : `evaluateStrict` les convertit en tableaux simples.
 
 ## Tests
-`expressions.test.ts`.
+`expressions.test.ts`, `dont-know.test.ts`.
