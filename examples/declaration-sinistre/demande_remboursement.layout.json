@@ -1,0 +1,23 @@
+{
+  "formatVersion": 7,
+  "kind": "layout",
+  "graph": "q_remboursement",
+  "nodes": {
+    "n_ident": {
+      "x": 0,
+      "y": 0
+    },
+    "n_mineur": {
+      "x": 320,
+      "y": 160
+    },
+    "n_montant_demande": {
+      "x": 0,
+      "y": 320
+    },
+    "n_fin_remboursement": {
+      "x": 0,
+      "y": 480
+    }
+  }
+}

@@ -66,8 +66,8 @@ describe('fin de parcours bloquée par une réponse devenue invalide (EVO-001)',
 describe('groupe de la sélection (EVO-003) : lu à côté de la réponse validée', () => {
   const w = structuredClone(ws);
   const qualite = w.questionnaires[0]!.nodes.find((n) => n.id === 'n_qualite')!;
-  // Question homonyme dans le bloc : sa réponse est rangée sous `tiers`.
-  w.library.blocks[0]!.nodes.push({ ...structuredClone(qualite), id: 'bn_qualite' });
+  // Question homonyme dans le fragment : sa réponse est rangée sous `tiers`.
+  w.library.fragments[0]!.nodes.push({ ...structuredClone(qualite), id: 'bn_qualite' });
   const input: RuntimeInput = { ws: w, questionnaireId: 'q_declaration', sys, env: { defaultLang: 'fr' } };
   const params = (answers: Record<string, unknown>, step: string) => answerErrors(input, answers, step).map((e) => e.param);
 
@@ -76,7 +76,7 @@ describe('groupe de la sélection (EVO-003) : lu à côté de la réponse valid�
     expect(params({ qualite_declarant: 'enfant', qualite_declarant_group: 'Ayant droit' }, 'n_qualite')).toEqual(['option']);
   });
 
-  it('question d’un bloc : le groupe homonyme de l’hôte ne s’applique pas', () => {
+  it('question d’un fragment : le groupe homonyme de l’appelant ne s’applique pas', () => {
     const host = { qualite_declarant: 'conjoint', qualite_declarant_group: 'Ayant droit' };
     expect(params({ ...host, tiers: { qualite_declarant: 'enfant' } }, 'n_bloc_tiers/bn_qualite')).toEqual([]);
     expect(params({ ...host, tiers: { qualite_declarant: 'enfant', qualite_declarant_group: 'SC' } }, 'n_bloc_tiers/bn_qualite')).toEqual([]);

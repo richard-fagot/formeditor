@@ -1,9 +1,10 @@
 import { memo, useEffect, useRef, useState } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
-import { OTHER_TYPES, isLibraryQuestion, isVariantLabel, type GraphNode, type Label } from '../../core/model';
+import { OTHER_TYPES, graphStart, isLibraryQuestion, isVariantLabel, type GraphNode, type Label } from '../../core/model';
 import { questionOfNode } from '../../core/references';
 import { previewText } from '../../plugin-api';
 import { nodeKind, questionType } from '../../registry';
+import { runCommand } from '../../app/commands';
 import { getGraph, scopeOf, setQuestionLabel, useStore, useT } from '../../app/store';
 import { usePluginEnv } from '../properties';
 import { Badge, cn } from '../../ui-kit';
@@ -15,7 +16,8 @@ export type NodeData = { nodeId: string };
 export const NodeView = memo(function NodeView({ data, selected }: NodeProps & { data: NodeData }) {
   const { graph, issuesByNode, readOnly } = useDiagram();
   const node = useStore((s) => getGraph(s.ws, graph)?.nodes.find((n) => n.id === data.nodeId));
-  const isStart = useStore((s) => getGraph(s.ws, graph)?.start === data.nodeId);
+  // Départ d'un questionnaire, ou entrée (implicite ou réglée) d'un fragment.
+  const isStart = useStore((s) => { const g = getGraph(s.ws, graph); return !!g && graphStart(g) === data.nodeId; });
   const env = usePluginEnv();
   const t = useT();
   const focus = useStore((s) => s.focusRequest);
@@ -26,10 +28,17 @@ export const NodeView = memo(function NodeView({ data, selected }: NodeProps & {
   const issues = issuesByNode.get(node.id) ?? [];
   const badges = (
     <>
-      {isStart && <Badge tone="indigo">{t('node.start')}</Badge>}
+      {isStart && <Badge tone="indigo">{t(graph.kind === 'fragment' ? 'node.entry' : 'node.start')}</Badge>}
       {question?.required && <Badge tone="slate" title={typeof question.required === 'string' ? question.required : undefined}>{typeof question.required === 'string' ? '* ?' : '*'}</Badge>}
       {question && OTHER_TYPES.includes(question.type) && 'other' in question && question.other && <Badge>{t('node.badgeOther')}</Badge>}
-      {(isLibraryQuestion(node) || node.kind === 'block') && <Badge tone="amber" title={t('node.libraryBadge')}>bib.</Badge>}
+      {(isLibraryQuestion(node) || node.kind === 'fragment') && <Badge tone="amber" title={t('node.libraryBadge')}>bib.</Badge>}
+      {node.kind === 'fragment' && !readOnly && (
+        <button type="button" data-testid="fragment-open" title={t('node.openFragment')}
+          className="nodrag rounded border border-amber-300 px-1 text-[10px] text-amber-800 hover:bg-amber-100"
+          onClick={(e) => { e.stopPropagation(); runCommand('library.show', { kind: 'fragment', id: node.ref }); }}>
+          {t('node.openFragment')} ↗
+        </button>
+      )}
       {issues.some((i) => i.code === 'missingTranslation') && <Badge tone="amber">trad.</Badge>}
       {issues.some((i) => i.code !== 'missingTranslation') && (
         <Badge tone={issues.some((i) => i.severity === 'error') ? 'rose' : 'amber'} title={issues.map((i) => i.code).join(', ')}>
@@ -39,8 +48,8 @@ export const NodeView = memo(function NodeView({ data, selected }: NodeProps & {
     </>
   );
   const Shape = plugin.Shape;
-  const block = node.kind === 'block' ? env.ws.library.blocks.find((b) => b.id === node.ref) : undefined;
-  const exits = block?.nodes.flatMap((n) => (n.kind === 'exit' ? [n.name] : [])) ?? [];
+  const fragment = node.kind === 'fragment' ? env.ws.library.fragments.find((f) => f.id === node.ref) : undefined;
+  const exits = fragment?.nodes.flatMap((n) => (n.kind === 'exit' ? [n.name] : [])) ?? [];
   return (
     <div
       className={cn(
@@ -60,7 +69,7 @@ export const NodeView = memo(function NodeView({ data, selected }: NodeProps & {
   );
 });
 
-/** Une poignée par sortie nommée d'un bloc : la liaison tirée depuis une poignée porte le nom de la sortie. */
+/** Une poignée par sortie nommée d'un fragment : la liaison tirée depuis une poignée porte le nom de la sortie. */
 function ExitHandles({ exits }: { exits: string[] }) {
   return (
     <>

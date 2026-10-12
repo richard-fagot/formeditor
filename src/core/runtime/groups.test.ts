@@ -46,7 +46,7 @@ describe('choiceOptions : groupes', () => {
 function wsOf(q: SingleChoiceQuestion | MultipleChoiceQuestion): Workspace {
   return {
     project: { formatVersion: 3, kind: 'project', id: 'p', name: 'P', languages: ['fr'], defaultLanguage: 'fr', questionnaires: [], systemState: [], scenarios: [] },
-    library: { formatVersion: 3, kind: 'library', questions: [], blocks: [], labelSets: [] },
+    library: { formatVersion: 3, kind: 'library', questions: [], fragments: [], labelSets: [] },
     questionnaires: [{
       formatVersion: 3, kind: 'questionnaire', id: 'q', key: 'q', title: { fr: 'Q' }, start: 'n1',
       nodes: [{ kind: 'question', ...q }, { kind: 'end', id: 'sc', message: { fr: 'SC' }, outcome: 'sc' }, { kind: 'end', id: 'autre', message: { fr: 'X' }, outcome: 'autre' }],

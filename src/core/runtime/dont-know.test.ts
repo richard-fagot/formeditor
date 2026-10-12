@@ -6,7 +6,7 @@ import { buildContext, dontKnowAnswer, dontKnowPath, getAnswer, next, prune, set
 function inputOf(q: Question): RuntimeInput {
   const ws = {
     project: { formatVersion: 5, kind: 'project', id: 'p', name: 'P', languages: ['fr'], defaultLanguage: 'fr', questionnaires: [], systemState: [], scenarios: [] },
-    library: { formatVersion: 5, kind: 'library', questions: [], blocks: [], labelSets: [] },
+    library: { formatVersion: 5, kind: 'library', questions: [], fragments: [], labelSets: [] },
     questionnaires: [{
       formatVersion: 5, kind: 'questionnaire', id: 'q', key: 'q', title: { fr: 'Q' }, start: 'n1',
       nodes: [

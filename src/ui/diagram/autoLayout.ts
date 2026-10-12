@@ -1,5 +1,5 @@
 import ELK from 'elkjs/lib/elk.bundled.js';
-import type { Graph } from '../../core/model';
+import { graphStart, type Graph } from '../../core/model';
 
 export type Size = { width: number; height: number };
 export type Positions = Record<string, { x: number; y: number }>;
@@ -9,11 +9,12 @@ const elk = new ELK();
 
 /**
  * Mise en page automatique (ELK, algorithme en couches, de haut en bas) : positions du coin supérieur gauche
- * de chaque nœud. Les cycles sont gérés par ELK ; le départ est placé en premier.
+ * de chaque nœud. Les cycles sont gérés par ELK ; le départ (l'entrée d'un fragment) est placé en premier.
  */
-export async function computeLayout(graph: Graph, sizes: Record<string, Size> = {}): Promise<Positions> {
+export async function computeLayout(graph: Graph | (Graph & { start: string }), sizes: Record<string, Size> = {}): Promise<Positions> {
   const ids = new Set(graph.nodes.map((n) => n.id));
-  const ordered = [...graph.nodes].sort((a, b) => Number(b.id === graph.start) - Number(a.id === graph.start));
+  const start = graphStart(graph);
+  const ordered = [...graph.nodes].sort((a, b) => Number(b.id === start) - Number(a.id === start));
   const result = await elk.layout({
     id: 'root',
     layoutOptions: {

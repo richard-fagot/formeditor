@@ -6,7 +6,7 @@ import { Field, Input, LocalizedTextInput } from '../../../ui-kit';
 const T = {
   name: { fr: 'Sortie', en: 'Exit' },
   exitName: { fr: 'Nom de la sortie', en: 'Exit name' },
-  hint: { fr: 'Nom technique (snake_case) : les arêtes des instances du bloc le visent.', en: 'Technical name (snake_case): edges of the block instances target it.' },
+  hint: { fr: 'Nom technique (snake_case) : les arêtes des appels du fragment le visent.', en: 'Technical name (snake_case): edges of the fragment calls target it.' },
   invalid: { fr: 'Nom invalide (snake_case).', en: 'Invalid name (snake_case).' },
   label: { fr: 'Libellé (facultatif)', en: 'Label (optional)' },
 };
@@ -24,7 +24,7 @@ function NameInput({ value, onCommit }: { value: string; onCommit(v: string): vo
   );
 }
 
-/** Sortie nommée d'un bloc (uniquement dans un bloc). */
+/** Sortie nommée d'un fragment (facultative, uniquement dans un fragment). */
 export const exitKind: NodeKindPlugin<ExitNode> = {
   kind: 'exit',
   name: T.name,

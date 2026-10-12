@@ -1,6 +1,6 @@
 import {
-  COUNTRY_REF, DONT_KNOW_REF, hasCountry, GROUP_REF, hasDontKnow, isLibraryQuestion, OTHER_VALUE, type Graph, type Label, type Question, type QuestionType,
-  type StructureField, type SystemVariable, type VariableType, type Workspace,
+  COUNTRY_REF, DONT_KNOW_REF, fragmentCallers, hasCountry, GROUP_REF, hasDontKnow, isLibraryQuestion, OTHER_VALUE, type Graph, type Label, type Question,
+  type QuestionType, type StructureField, type SystemVariable, type VariableType, type Workspace,
 } from '../model';
 
 /**
@@ -20,9 +20,9 @@ export interface RefInfo {
   caption?: string;
   /** Valeurs possibles d'une variable système de type énumération. */
   values?: string[];
-  /** Nœud qui porte la question (dans le graphe de l'hôte ou du bloc). */
+  /** Nœud qui porte la question (dans le graphe de l'appelant ou du fragment). */
   nodeId?: string;
-  /** Pour une question de bloc : alias de l'instance. */
+  /** Pour une question de fragment : chemin des alias (`ident`, `ident.adr` pour un fragment imbriqué). */
   alias?: string;
 }
 
@@ -64,16 +64,21 @@ function addSystem(scope: Scope, vars: SystemVariable[], prefix = 'sys') {
   }
 }
 
-/** Ajoute les questions d'un graphe ; `alias` préfixe les clés (instance de bloc vue de l'hôte). */
-function addGraph(scope: Scope, ws: Workspace, g: Graph, alias?: string) {
-  const prefix = alias ? `${alias}.` : '';
+/**
+ * Ajoute les questions d'un graphe ; `prefix` (chemin des alias) préfixe les clés d'un fragment vu de l'appelant.
+ * Les fragments appelés sont parcourus récursivement (`seen` : garde contre un cycle d'appels).
+ */
+function addGraph(scope: Scope, ws: Workspace, g: Graph, prefix: string[] = [], seen = new Set<string>()) {
+  const alias = prefix.join('.');
+  const p = alias ? `${alias}.` : '';
   for (const n of g.nodes) {
     const q = questionOfNode(ws, n);
-    if (q) addQuestion(scope, q, prefix, { nodeId: n.id, ...(alias ? { alias } : {}) });
-    if (n.kind === 'block' && !alias) {
-      scope.set(n.alias, { path: n.alias, kind: 'alias', nodeId: n.id, alias: n.alias });
-      const block = ws.library.blocks.find((b) => b.id === n.ref);
-      if (block) addGraph(scope, ws, block, n.alias);
+    if (q) addQuestion(scope, q, p, { nodeId: n.id, ...(alias ? { alias } : {}) });
+    if (n.kind === 'fragment' && !seen.has(n.ref)) {
+      const path = p + n.alias;
+      scope.set(path, { path, kind: 'alias', nodeId: n.id, alias: path });
+      const f = ws.library.fragments.find((x) => x.id === n.ref);
+      if (f) addGraph(scope, ws, f, [...prefix, n.alias], new Set([...seen, n.ref]));
     }
   }
 }
@@ -86,21 +91,25 @@ export function questionnaireScope(ws: Workspace, questionnaireId: string): Scop
   return scope;
 }
 
-/** Hôtes d'un bloc : questionnaires qui l'instancient. */
-export function blockHosts(ws: Workspace, blockId: string): string[] {
-  return ws.questionnaires.filter((q) => q.nodes.some((n) => n.kind === 'block' && n.ref === blockId)).map((q) => q.id);
-}
+/** Graphe appelant d'un fragment. */
+export type Caller = { kind: 'questionnaire' | 'fragment'; id: string };
 
 /**
- * Portée à l'intérieur d'un bloc : ses questions (prioritaires), celles de l'hôte, l'état du système.
- * Sans hôte précisé : union de tous les hôtes (autocomplétion).
+ * Portée à l'intérieur d'un fragment : ses questions et celles des fragments qu'il appelle (prioritaires),
+ * celles de ses appelants (par défaut tous : union pour l'autocomplétion ; un fragment appelant apporte
+ * à son tour ses propres appelants), l'état du système.
  */
-export function blockScope(ws: Workspace, blockId: string, hostId?: string): Scope {
+export function fragmentScope(ws: Workspace, fragmentId: string, callers?: Caller[], seen = new Set<string>()): Scope {
   const scope: Scope = new Map();
-  for (const h of hostId ? [hostId] : blockHosts(ws, blockId)) questionnaireScope(ws, h).forEach((v, k) => scope.set(k, v));
+  const inner = new Set([...seen, fragmentId]);
+  for (const c of callers ?? fragmentCallers(ws, fragmentId)) {
+    if (c.kind === 'fragment' && inner.has(c.id)) continue;
+    const s = c.kind === 'questionnaire' ? questionnaireScope(ws, c.id) : fragmentScope(ws, c.id, undefined, inner);
+    s.forEach((v, k) => scope.set(k, v));
+  }
   addSystem(scope, ws.project.systemState);
-  const block = ws.library.blocks.find((b) => b.id === blockId);
-  if (block) addGraph(scope, ws, block);
+  const f = ws.library.fragments.find((x) => x.id === fragmentId);
+  if (f) addGraph(scope, ws, f, [], new Set([fragmentId]));
   return scope;
 }
 

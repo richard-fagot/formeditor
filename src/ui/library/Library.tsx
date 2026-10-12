@@ -4,18 +4,17 @@ import { runCommand } from '../../app/commands';
 import { useStore, useT, type LibraryItem } from '../../app/store';
 import { Button, cn } from '../../ui-kit';
 import { usePluginEnv } from '../properties';
-import { BlockView } from './BlockView';
 import { LabelSets } from './LabelSets';
 import { LibraryQuestionView } from './LibraryQuestionView';
 import { itemTitle } from './items';
 
-/** Onglet Bibliothèque : liste des éléments à gauche, élément affiché à droite (sans élément : jeux de libellés). */
+/** Onglet Bibliothèque : liste des éléments à gauche, question affichée à droite (sans élément : jeux de libellés) ; un fragment s'ouvre dans son onglet. */
 export function Library() {
   const t = useT();
   const env = usePluginEnv();
   const item = useStore((s) => s.libraryItem);
   const lib = env.ws.library;
-  const exists = item && (item.kind === 'question' ? lib.questions : lib.blocks).some((x) => x.id === item.id);
+  const exists = item?.kind === 'question' && lib.questions.some((x) => x.id === item.id);
   const entry = (it: LibraryItem | undefined, label: string, sub?: string) => (
     <li key={it?.id ?? 'labelSets'}>
       <button type="button" data-testid="library-entry"
@@ -27,7 +26,7 @@ export function Library() {
       </button>
     </li>
   );
-  const heading = (icon: ReactNode, label: string, cmd?: 'library.newQuestion' | 'library.newBlock') => (
+  const heading = (icon: ReactNode, label: string, cmd?: 'library.newQuestion' | 'library.newFragment') => (
     <div className="mt-4 flex items-center gap-1 px-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
       {icon}{label}
       {cmd && <Button size="sm" variant="ghost" className="ml-auto" aria-label={t(cmd)} title={t(cmd)}
@@ -41,12 +40,11 @@ export function Library() {
         <ul>{entry(undefined, t('library.labelSets'), String(lib.labelSets.length))}</ul>
         {heading(<FileQuestion className="size-3" />, t('library.questions'), 'library.newQuestion')}
         <ul>{lib.questions.map((q) => entry({ kind: 'question', id: q.id }, itemTitle(env, { kind: 'question', id: q.id }), q.key))}</ul>
-        {heading(<Boxes className="size-3" />, t('library.blocks'), 'library.newBlock')}
-        <ul>{lib.blocks.map((b) => entry({ kind: 'block', id: b.id }, itemTitle(env, { kind: 'block', id: b.id }), b.key))}</ul>
+        {heading(<Boxes className="size-3" />, t('library.fragments'), 'library.newFragment')}
+        <ul>{lib.fragments.map((f) => entry({ kind: 'fragment', id: f.id }, itemTitle(env, { kind: 'fragment', id: f.id }), f.key))}</ul>
       </nav>
       <div className="min-w-0 flex-1">
-        {exists && item.kind === 'question' && <LibraryQuestionView key={item.id} id={item.id} />}
-        {exists && item.kind === 'block' && <BlockView key={item.id} id={item.id} />}
+        {exists && <LibraryQuestionView key={item.id} id={item.id} />}
         {!exists && (
           <div className="h-full overflow-y-auto px-6 py-6">
             <div className="mx-auto max-w-4xl"><LabelSets /></div>

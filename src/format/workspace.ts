@@ -1,7 +1,7 @@
 import { FORMAT_VERSION, newId, type Bundle, type Library, type Workspace } from '../core/model';
 
 export function emptyLibrary(): Library {
-  return { formatVersion: FORMAT_VERSION, kind: 'library', questions: [], blocks: [], labelSets: [] };
+  return { formatVersion: FORMAT_VERSION, kind: 'library', questions: [], fragments: [], labelSets: [] };
 }
 
 export function newWorkspace(name: string, lang = 'fr'): Workspace {

@@ -1,8 +1,8 @@
 import { newId, uniqueKey, type GraphNode } from '../../core/model';
 import { nodeKind } from '../../registry';
 import {
-  activeGraphRef, addBlock, canMoveToLibrary, addLibraryQuestion, deleteLibraryItem, getGraph, groupEntries, groupIntoBlock, insertNode, moveToLibrary, placeNode,
-  referenceNode, scopeOf, useStore, type GraphRef, type LibraryItem,
+  activeGraphRef, addFragment, canExtract, canMoveToLibrary, addLibraryQuestion, deleteLibraryItem, getGraph, groupEntries, groupIntoFragment, insertNode,
+  insertionCycle, moveToLibrary, placeNode, referenceNode, scopeOf, useStore, type GraphRef, type LibraryItem,
 } from '../store';
 import { makeTranslate } from '../i18n';
 import { createAfter, inDiagram } from './graph-commands';
@@ -17,10 +17,17 @@ const selected = () => {
   return r && id ? getGraph(st().ws, r)?.nodes.find((n) => n.id === id) : undefined;
 };
 const isItem = (x: unknown): x is LibraryItem =>
-  !!x && typeof x === 'object' && ((x as LibraryItem).kind === 'question' || (x as LibraryItem).kind === 'block') && typeof (x as LibraryItem).id === 'string';
+  !!x && typeof x === 'object' && ((x as LibraryItem).kind === 'question' || (x as LibraryItem).kind === 'fragment') && typeof (x as LibraryItem).id === 'string';
 
-/** Affiche un élément dans l'onglet Bibliothèque (sans élément : les jeux de libellés). */
+/**
+ * Affiche un élément : une question dans l'onglet Bibliothèque (sans élément : les jeux de libellés),
+ * un fragment dans son propre onglet (EVO-008).
+ */
 export function showLibraryItem(item?: LibraryItem) {
+  if (item?.kind === 'fragment') {
+    st().openTab(`f:${item.id}`);
+    return;
+  }
   st().openTab('library');
   st().set((s) => void (s.libraryItem = item));
 }
@@ -30,7 +37,14 @@ function insertItem(arg: unknown) {
   const r = (arg as { graph?: GraphRef }).graph ?? ref();
   const g = r && getGraph(st().ws, r);
   if (!r || !g || !isItem(arg)) return;
-  const node = referenceNode(st().ws, g, arg, newId('n'));
+  if (insertionCycle(st().ws, r, arg)) {
+    const tt = t();
+    const f = st().ws.library.fragments.find((x) => x.id === arg.id);
+    const name = f ? (f.title[st().contentLang] ?? f.key) : arg.id;
+    st().set((s) => void (s.notice = { title: tt('insert.refused'), lines: [tt('insert.cycle', { name })] }));
+    return;
+  }
+  const node = referenceNode(st().ws, r, arg, newId('n'));
   if (!node) return;
   const position = (arg as { position?: { x: number; y: number } }).position;
   if (!position) return createAfter(() => node, false, false);
@@ -41,7 +55,7 @@ function insertItem(arg: unknown) {
   st().select({ graph: r, nodes: [node.id] });
 }
 
-/** Questions et blocs de la bibliothèque : création, affichage, insertion, regroupement, sorties. */
+/** Questions et fragments de la bibliothèque : création, affichage, insertion, extraction, entrée, sorties. */
 export function libraryItemCommands(): Command[] {
   return [
     {
@@ -53,11 +67,11 @@ export function libraryItemCommands(): Command[] {
       },
     },
     {
-      id: 'library.newBlock', label: 'library.newBlock', keys: [], scope: 'global',
+      id: 'library.newFragment', label: 'library.newFragment', keys: [], scope: 'global',
       run: () => {
         let id = '';
-        st().edit('library', (ws) => void (id = addBlock(ws, { [st().contentLang]: t()('library.newBlockTitle') })));
-        showLibraryItem({ kind: 'block', id });
+        st().edit('library', (ws) => void (id = addFragment(ws, { [st().contentLang]: t()('library.newFragmentTitle') })));
+        showLibraryItem({ kind: 'fragment', id });
       },
     },
     { id: 'library.show', label: 'tab.library', keys: [], scope: 'global', hidden: true, run: (item) => showLibraryItem(isItem(item) ? item : undefined) },
@@ -66,12 +80,13 @@ export function libraryItemCommands(): Command[] {
       run: (item) => {
         if (!isItem(item)) return;
         st().edit('library', (ws) => deleteLibraryItem(ws, item));
+        if (item.kind === 'fragment') st().closeTab(`f:${item.id}`);
         if (st().libraryItem?.id === item.id) showLibraryItem();
       },
     },
     {
       id: 'library.insert', label: 'library.insert', keys: ['i'], scope: 'graph',
-      enabled: () => inDiagram() && (st().ws.library.questions.length > 0 || st().ws.library.blocks.length > 0),
+      enabled: () => inDiagram() && (st().ws.library.questions.length > 0 || st().ws.library.fragments.length > 0),
       run: () => st().set((s) => void (s.palette = { open: true, mode: 'library' })),
     },
     // `arg` : { kind, id, graph?, position? } — palette, panneau latéral ou dépôt sur le logigramme.
@@ -87,17 +102,21 @@ export function libraryItemCommands(): Command[] {
         const r = ref()!;
         const ids = st().selection.nodes;
         const entries = groupEntries(st().ws, r, ids);
+        const tt = t();
+        if (!canExtract(st().ws, r, ids)) {
+          st().set((s) => void (s.notice = { title: tt('group.refused'), lines: [tt('group.forbidden')] }));
+          return;
+        }
         if (entries.length > 1) {
-          const tt = t();
           const g = getGraph(st().ws, r)!;
           const name = (id: string) => { const n = g.nodes.find((x) => x.id === id); return n && 'key' in n ? String(n.key) : id; };
           st().set((s) => void (s.notice = { title: tt('group.refused'), lines: [tt('group.multipleEntries', { list: entries.map(name).join(', ') })] }));
           return;
         }
-        const title = { [st().contentLang]: t()('library.newBlockTitle') };
-        const res = groupIntoBlock(JSON.parse(JSON.stringify(st().ws)), r, ids, title);
+        const title = { [st().contentLang]: tt('library.newFragmentTitle') };
+        const res = groupIntoFragment(JSON.parse(JSON.stringify(st().ws)), r, ids, title);
         if (!res) return;
-        // Le bloc créé touche aussi la bibliothèque : `edit` en fait une transaction (annulable depuis l'un ou l'autre onglet).
+        // Le fragment créé touche aussi la bibliothèque : `edit` en fait une transaction (annulable depuis l'un ou l'autre onglet).
         st().edit(scopeOf(r), () => res.ws);
         st().select({ graph: r, nodes: [res.instanceId] });
       },
@@ -113,14 +132,32 @@ export function libraryItemCommands(): Command[] {
     },
     {
       id: 'node.openInLibrary', label: 'node.openInLibrary', keys: [], scope: 'graph',
-      enabled: () => { const n = selected(); return !!n && (n.kind === 'block' || (n.kind === 'question' && 'ref' in n)); },
+      enabled: () => { const n = selected(); return !!n && n.kind === 'question' && 'ref' in n; },
+      run: () => showLibraryItem({ kind: 'question', id: (selected() as GraphNode & { ref: string }).ref }),
+    },
+    {
+      // Nœud fragment sélectionné : ouvre le fragment dans son onglet.
+      id: 'node.openFragment', label: 'node.openFragment', keys: [], scope: 'graph',
+      enabled: () => selected()?.kind === 'fragment',
+      run: () => showLibraryItem({ kind: 'fragment', id: (selected() as GraphNode & { ref: string }).ref }),
+    },
+    {
+      // Entrée explicite d'un fragment ; sur l'entrée déjà réglée : retour à l'entrée implicite.
+      id: 'node.setEntry', label: 'node.setEntry', keys: [], scope: 'graph',
+      enabled: () => ref()?.kind === 'fragment' && !!selected(),
       run: () => {
-        const n = selected() as GraphNode & { ref: string };
-        showLibraryItem({ kind: n.kind === 'block' ? 'block' : 'question', id: n.ref });
+        const r = ref()!;
+        const id = selected()!.id;
+        st().edit(scopeOf(r), (ws) => {
+          const f = ws.library.fragments.find((x) => x.id === r.id);
+          if (!f) return;
+          if (f.entry === id) delete f.entry;
+          else f.entry = id;
+        });
       },
     },
     {
-      id: 'node.newExit', label: 'node.newExit', keys: [], scope: 'graph', enabled: () => ref()?.kind === 'block',
+      id: 'node.newExit', label: 'node.newExit', keys: [], scope: 'graph', enabled: () => ref()?.kind === 'fragment',
       run: () => {
         const g = getGraph(st().ws, ref()!)!;
         const names = g.nodes.flatMap((n) => (n.kind === 'exit' ? [n.name] : []));

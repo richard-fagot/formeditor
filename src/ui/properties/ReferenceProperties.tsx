@@ -1,6 +1,8 @@
+import { useMemo } from 'react';
 import { ExternalLink, RotateCcw } from 'lucide-react';
-import type { BlockNode, LibraryQuestionNode } from '../../core/model';
-import { renameKey } from '../../core/references';
+import { fragmentExits, type FragmentNode, type GraphNode, type LibraryQuestionNode } from '../../core/model';
+import { fragmentScope, questionOfNode, renameKey, resolvePath } from '../../core/references';
+import { expectedKeys } from '../../core/validation';
 import { previewText } from '../../plugin-api';
 import { runCommand } from '../../app/commands';
 import { getGraph, scopeOf, useStore, useT, usedKeys, type GraphRef } from '../../app/store';
@@ -35,26 +37,53 @@ export function LibraryQuestionProperties({ graph, node }: { graph: GraphRef; no
   );
 }
 
-/** Instance de bloc : alias (renommage propagé dans le questionnaire), sorties, ouverture du bloc. */
-export function BlockInstanceProperties({ graph, node }: { graph: GraphRef; node: BlockNode }) {
+/** Appel de fragment : fragment référencé, alias (renommage propagé), sorties, clés attendues de l'appelant, ouverture. */
+export function FragmentCallProperties({ graph, node }: { graph: GraphRef; node: FragmentNode }) {
   const t = useT();
   const env = usePluginEnv();
-  const block = env.ws.library.blocks.find((b) => b.id === node.ref);
+  const fragment = env.ws.library.fragments.find((f) => f.id === node.ref);
   const g = getGraph(env.ws, graph);
   const taken = g ? usedKeys(env.ws, g).filter((k) => k !== node.alias) : [];
-  const exits = block?.nodes.flatMap((n) => (n.kind === 'exit' ? [n.name] : [])) ?? [];
+  const exits = fragment ? fragmentExits(fragment) : [];
+  const owner = graph.kind === 'questionnaire' ? { kind: 'questionnaire' as const, id: graph.id } : { kind: 'fragment' as const, id: graph.id };
+  const expected = useMemo(() => {
+    if (!fragment) return [];
+    const scope = fragmentScope(env.ws, fragment.id, [graph]);
+    return expectedKeys(env.ws, fragment.id).map((k) => ({ key: k, missing: !resolvePath(scope, k.split('.')) }));
+  }, [env.ws, fragment, graph]);
   const rename = (alias: string) =>
-    useStore.getState().edit(scopeOf(graph), (ws) => renameKey(ws, { kind: 'alias', questionnaireId: graph.id, nodeId: node.id }, alias), `${node.id}:alias`);
+    useStore.getState().edit(scopeOf(graph), (ws) => renameKey(ws, { kind: 'alias', owner, nodeId: node.id }, alias), `${node.id}:alias`);
+  const exitName = (n: GraphNode) => {
+    if (n.kind === 'exit') return `→ ${n.name}`;
+    const q = questionOfNode(env.ws, n);
+    return q ? q.key : n.kind === 'fragment' ? n.alias : n.kind;
+  };
   return (
-    <Section title={t('props.block')}>
-      <div className="text-sm font-medium text-slate-700">{block ? (block.title[env.contentLang] ?? block.title[env.defaultLang] ?? block.key) : '?'}</div>
+    <Section title={t('props.fragment')}>
+      <div className="text-sm font-medium text-slate-700" data-testid="fragment-ref">
+        {fragment ? (fragment.title[env.contentLang] ?? fragment.title[env.defaultLang] ?? fragment.key) : '?'}
+        {fragment && <span className="ml-2 font-mono text-xs text-slate-400">{fragment.key}</span>}
+      </div>
+      <p className="text-xs text-amber-700">{t('props.fragmentLibrary')}</p>
       <Field label={t('props.alias')} hint={t('props.aliasHint')} htmlFor="prop-alias">
         <KeyInput id="prop-alias" value={node.alias} taken={taken} invalidText={t('props.keyInvalid')} onCommit={rename} />
       </Field>
-      <Field label={t('props.exits')} hint={t('props.exitsHint')}>
-        <div className="flex flex-wrap gap-1 font-mono text-xs">{exits.map((x) => <span key={x} className="rounded bg-amber-100 px-1.5 py-0.5 text-amber-800">{x}</span>)}</div>
+      <Field label={t('props.fragmentExits')} hint={t('props.fragmentExitsHint')}>
+        <div className="flex flex-wrap gap-1 font-mono text-xs" data-testid="fragment-exits">
+          {exits.map((x) => <span key={x.id} className="rounded bg-amber-100 px-1.5 py-0.5 text-amber-800">{exitName(x)}</span>)}
+        </div>
       </Field>
-      <Button size="sm" onClick={open}><ExternalLink className="size-3" />{t('node.openInLibrary')}</Button>
+      <Field label={t('props.expectedKeys')}>
+        <ul className="space-y-0.5 font-mono text-xs" data-testid="fragment-expected">
+          {!expected.length && <li className="font-sans text-slate-400">{t('props.expectedNone')}</li>}
+          {expected.map((x) => (
+            <li key={x.key} className={x.missing ? 'text-rose-700' : 'text-slate-600'}>
+              {x.key}{x.missing && <span className="ml-1 font-sans">({t('props.expectedMissing')})</span>}
+            </li>
+          ))}
+        </ul>
+      </Field>
+      <Button size="sm" onClick={() => runCommand('node.openFragment')}><ExternalLink className="size-3" />{t('node.openFragment')}</Button>
     </Section>
   );
 }

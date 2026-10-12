@@ -89,7 +89,7 @@ describe('migration 1 → 2 (EVO-001 : entrées d’options ordonnées)', () => 
     const lib = migrate(JSON.parse(fixture('bibliotheque-v1.json').text));
     expect(validateDocument(lib)).toEqual([]);
     expect((lib.questions as Record<string, unknown>[])[0]!.options).toEqual([{ value: 'x', label: { fr: 'X' } }, { from: 'sys.liste' }]);
-    expect(nodes((lib.blocks as Record<string, unknown>[])[0]!)[0]!.options).toEqual([{ from: 'sys.liste', value: 'id' }]);
+    expect(nodes((lib.fragments as Record<string, unknown>[])[0]!)[0]!.options).toEqual([{ from: 'sys.liste', value: 'id' }]);
   });
 
   it('un projet enregistré avant l’évolution se charge (fichiers ou bundle v1), dynamiques en fin de liste', () => {
@@ -299,16 +299,15 @@ describe('migration 5 → 6 (EVO-007 : types mail, téléphone, adresse, civilit
     return { ...newWorkspace('P', 'fr'), questionnaires: [q] };
   };
 
-  it('le format courant est la version 6 ; un document version 5 est migré sans transformation', () => {
-    expect(FORMAT_VERSION).toBe(6);
+  it('un document version 5 est migré sans transformation vers la version 6', () => {
     const v5 = { ...minimalQuestionnaire(), formatVersion: 5 };
-    expect(migrate(v5)).toEqual({ ...v5, formatVersion: 6 });
+    expect(migrate(v5, MIGRATIONS, 6)).toEqual({ ...v5, formatVersion: 6 });
     const bundle = { ...JSON.parse(exportBundle({ ...newWorkspace('P', 'fr'), questionnaires: [v5] })), formatVersion: 5 };
     for (const k of ['project', 'library']) bundle[k].formatVersion = 5;
     bundle.questionnaires[0].formatVersion = 5;
     const back = importFiles([{ name: 'ancien.bundle.json', text: JSON.stringify(bundle) }]);
     expect(back.errors).toEqual([]);
-    expect(back.workspace!.questionnaires[0]!.formatVersion).toBe(6);
+    expect(back.workspace!.questionnaires[0]!.formatVersion).toBe(FORMAT_VERSION);
   });
 
   it('accepte les quatre types et leurs paramètres, refuse un paramètre étranger ou un code pays invalide', () => {
@@ -332,6 +331,87 @@ describe('migration 5 → 6 (EVO-007 : types mail, téléphone, adresse, civilit
     for (const back of [importFiles(exportFiles(ws)), importFiles([{ name: 'p.bundle.json', text: exportBundle(ws) }])]) {
       expect(back.errors).toEqual([]);
       expect(back.workspace!.questionnaires[0]!.nodes).toEqual(ws.questionnaires[0]!.nodes);
+    }
+  });
+});
+
+describe('migration 6 → 7 (EVO-008 : fragments de questionnaire)', () => {
+  /** Projet version 6 : un bloc (départ, sorties nommées) instancié au milieu d'un questionnaire. */
+  const v6Bundle = () => {
+    const ws = newWorkspace('P', 'fr');
+    const q = { ...minimalQuestionnaire(), formatVersion: 6 } as unknown as Record<string, unknown>;
+    q.nodes = [
+      { kind: 'question', id: 'n1', key: 'motif', label: { fr: 'Motif' }, type: 'text' },
+      { kind: 'block', id: 'i1', ref: 'b1', alias: 'ident' },
+      { kind: 'end', id: 'fin', message: { fr: 'Fin' } },
+    ];
+    q.edges = [{ id: 'e1', from: 'n1', to: 'i1' }, { id: 'e2', from: 'i1', to: 'fin', exit: 'ok' }];
+    const bloc = (id: string, start: string, edges: unknown[]) => ({
+      id, key: id, title: { fr: id }, start,
+      nodes: [
+        { kind: 'question', id: 'a', key: 'nom', label: { fr: 'Nom' }, type: 'text' },
+        { kind: 'question', id: 'b', key: 'prenom', label: { fr: 'Prénom' }, type: 'text' },
+        { kind: 'exit', id: 'x', name: 'ok' },
+      ],
+      edges,
+    });
+    const bundle = JSON.parse(exportBundle({ ...ws, questionnaires: [q as never] }));
+    bundle.formatVersion = 6;
+    bundle.project.formatVersion = 6;
+    const { fragments: _f, ...library } = bundle.library;
+    bundle.library = { ...library, formatVersion: 6, blocks: [
+      bloc('b1', 'a', [{ id: 'be1', from: 'a', to: 'b' }, { id: 'be2', from: 'b', to: 'x' }]),
+      // Bloc qui boucle sur son départ : aucun nœud sans arête entrante → `entry` conservée.
+      bloc('b2', 'b', [{ id: 'be1', from: 'a', to: 'b' }, { id: 'be2', from: 'b', to: 'a' }, { id: 'be3', from: 'b', to: 'x' }]),
+    ] };
+    bundle.questionnaires[0].formatVersion = 6;
+    return bundle;
+  };
+
+  it('le format courant est la version 7', () => {
+    expect(FORMAT_VERSION).toBe(7);
+  });
+
+  it('un projet version 6 se charge : blocs → fragments, instances → nœuds fragment, départ → entrée si nécessaire', () => {
+    const back = importFiles([{ name: 'ancien.bundle.json', text: JSON.stringify(v6Bundle()) }]);
+    expect(back.errors).toEqual([]);
+    const ws = back.workspace!;
+    expect(ws.library.formatVersion).toBe(7);
+    expect(JSON.stringify(ws)).not.toContain('"block"');
+    expect(ws.library.fragments.map((f) => [f.id, f.entry])).toEqual([['b1', undefined], ['b2', 'b']]);
+    expect(ws.library.fragments[0]).not.toHaveProperty('start');
+    expect(ws.questionnaires[0]!.nodes[1]).toEqual({ kind: 'fragment', id: 'i1', ref: 'b1', alias: 'ident' });
+    expect(ws.questionnaires[0]!.edges[1]).toEqual({ id: 'e2', from: 'i1', to: 'fin', exit: 'ok' });
+  });
+
+  it('fichiers unitaires version 6 (bibliothèque seule) : même migration', () => {
+    const lib = migrate(v6Bundle().library);
+    expect(validateDocument(lib)).toEqual([]);
+    expect(lib).not.toHaveProperty('blocks');
+    expect((lib.fragments as { key: string }[]).map((f) => f.key)).toEqual(['b1', 'b2']);
+  });
+
+  it('refuse un bloc ou un départ de fragment dans un document version 7', () => {
+    const ws = importFiles([{ name: 'p.bundle.json', text: JSON.stringify(v6Bundle()) }]).workspace!;
+    const lib = JSON.parse(JSON.stringify(ws.library));
+    lib.fragments[0].start = 'a';
+    expect(validateDocument(lib).length).toBeGreaterThan(0);
+    const q = JSON.parse(JSON.stringify(ws.questionnaires[0]));
+    q.nodes[1].kind = 'block';
+    expect(validateDocument(q).length).toBeGreaterThan(0);
+  });
+
+  it('export puis réimport : fragments, instances, alias, entrée et départ sur un fragment identiques', () => {
+    const ws = importFiles([{ name: 'p.bundle.json', text: JSON.stringify(v6Bundle()) }]).workspace!;
+    ws.questionnaires[0]!.start = 'i1';
+    ws.layouts.push({ formatVersion: FORMAT_VERSION, kind: 'layout', graph: 'b2', nodes: { a: { x: 1, y: 2 } } });
+    const files = exportFiles(ws);
+    expect(files.map((f) => f.name)).toContain('fragment_b2.layout.json');
+    for (const back of [importFiles(files), importFiles([{ name: 'p.bundle.json', text: exportBundle(ws) }])]) {
+      expect(back.errors).toEqual([]);
+      expect(back.workspace!.library.fragments).toEqual(ws.library.fragments);
+      expect(back.workspace!.questionnaires).toEqual(ws.questionnaires);
+      expect(back.workspace!.layouts).toEqual(ws.layouts);
     }
   });
 });

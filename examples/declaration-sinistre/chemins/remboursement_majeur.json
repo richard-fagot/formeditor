@@ -1,0 +1,16 @@
+{
+  "description": "Demande de remboursement : départ sur le fragment « identification_assure » (alias ident), assuré majeur : sortie par num_secu, reprise sur l'arête « sinon » du nœud fragment.",
+  "questionnaire": "q_remboursement",
+  "scenario": "sc_ud_2_sinistres",
+  "today": "2026-10-10",
+  "answers": [
+    { "step": "n_ident/fn_nom", "value": "Durand" },
+    { "step": "n_ident/fn_prenom", "value": "Claire" },
+    { "step": "n_ident/fn_date_naissance", "value": "1980-05-12" },
+    { "step": "n_ident/fn_majeur", "value": true },
+    { "step": "n_ident/fn_num_secu", "value": "2800575123456" },
+    { "step": "n_montant_demande", "value": 150 }
+  ],
+  "path": ["n_ident/fn_nom", "n_ident/fn_prenom", "n_ident/fn_date_naissance", "n_ident/fn_majeur", "n_ident/fn_num_secu", "n_montant_demande", "n_fin_remboursement"],
+  "outcome": "submitted"
+}

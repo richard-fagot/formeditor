@@ -10,16 +10,15 @@ export interface Edge {
   from: string;
   to: string;
   when?: Expression;
-  /** Pour une arête sortant d'une instance de bloc : nom de la sortie du bloc. */
+  /** Pour une arête sortant d'un nœud fragment : nom de la sortie nommée du fragment (absent : toute sortie). */
   exit?: string;
   /** Libellé de lecture (une ligne, une seule langue), affiché à la place de la condition ; sans effet sur la navigation. */
   caption?: string;
   description?: string;
 }
 
-/** Graphe orienté : questionnaire ou bloc. */
+/** Graphe orienté : questionnaire (avec un départ) ou fragment (entrée implicite). */
 export interface Graph {
-  start: string;
   nodes: GraphNode[];
   edges: Edge[];
 }

@@ -1,5 +1,5 @@
 {
-  "formatVersion": 6,
+  "formatVersion": 7,
   "kind": "questionnaire",
   "id": "q_declaration",
   "key": "declaration_sinistre",
@@ -353,7 +353,7 @@
       "default": false
     },
     {
-      "kind": "block",
+      "kind": "fragment",
       "id": "n_bloc_tiers",
       "ref": "blk_identite_tiers",
       "alias": "tiers"

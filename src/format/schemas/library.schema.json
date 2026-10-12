@@ -7,7 +7,7 @@
     "formatVersion",
     "kind",
     "questions",
-    "blocks",
+    "fragments",
     "labelSets"
   ],
   "additionalProperties": false,
@@ -24,7 +24,7 @@
         "$ref": "common.schema.json#/$defs/question"
       }
     },
-    "blocks": {
+    "fragments": {
       "type": "array",
       "items": {
         "type": "object",
@@ -32,7 +32,6 @@
           "id",
           "key",
           "title",
-          "start",
           "nodes",
           "edges"
         ],
@@ -50,8 +49,9 @@
           "description": {
             "type": "string"
           },
-          "start": {
-            "type": "string"
+          "entry": {
+            "type": "string",
+            "description": "Nœud d'entrée explicite (repli quand l'entrée implicite est absente ou ambiguë)."
           },
           "nodes": {
             "type": "array",
@@ -65,7 +65,8 @@
               "$ref": "common.schema.json#/$defs/edge"
             }
           }
-        }
+        },
+        "description": "Fragment de questionnaire : morceau de parcours sans départ ni fin. Entrée : `entry`, sinon le nœud sans arête entrante ; sorties : nœuds sans arête sortante."
       }
     },
     "labelSets": {

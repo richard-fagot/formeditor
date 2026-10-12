@@ -6,7 +6,7 @@ import { buildContext, countryPath, next, prune, setAnswer, start, withAnswer, t
 function input(): RuntimeInput {
   const ws = {
     project: { formatVersion: 6, kind: 'project', id: 'p', name: 'P', languages: ['fr'], defaultLanguage: 'fr', questionnaires: [], systemState: [], scenarios: [] },
-    library: { formatVersion: 6, kind: 'library', questions: [], blocks: [], labelSets: [] },
+    library: { formatVersion: 6, kind: 'library', questions: [], fragments: [], labelSets: [] },
     questionnaires: [{
       formatVersion: 6, kind: 'questionnaire', id: 'q', key: 'q', title: { fr: 'Q' }, start: 'n1',
       nodes: [

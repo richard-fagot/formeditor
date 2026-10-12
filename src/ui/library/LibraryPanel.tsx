@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Boxes, FileQuestion } from 'lucide-react';
 import { runCommand } from '../../app/commands';
-import { useT, type GraphRef, type LibraryItem } from '../../app/store';
+import { insertionCycle, useT, type GraphRef, type LibraryItem } from '../../app/store';
 import { Input } from '../../ui-kit';
 import { LIBRARY_MIME } from '../diagram';
 import { usePluginEnv } from '../properties';
@@ -9,7 +9,8 @@ import { itemTitle } from './items';
 
 /**
  * Panneau latéral filtrable de la bibliothèque, à côté du logigramme : glisser un élément sur le graphe
- * l'insère à cet endroit ; double-clic (ou Entrée) l'insère à la suite du nœud sélectionné.
+ * l'insère à cet endroit ; double-clic (ou Entrée) l'insère à la suite du nœud sélectionné. Dans un fragment,
+ * les fragments dont l'insertion créerait un cycle d'appels (lui-même compris) ne sont pas proposés.
  */
 export function LibraryPanel({ graph }: { graph: GraphRef }) {
   const t = useT();
@@ -18,8 +19,8 @@ export function LibraryPanel({ graph }: { graph: GraphRef }) {
   const lib = env.ws.library;
   const items: (LibraryItem & { title: string; key: string })[] = [
     ...lib.questions.map((q) => ({ kind: 'question' as const, id: q.id, key: q.key })),
-    ...(graph.kind === 'questionnaire' ? lib.blocks.map((b) => ({ kind: 'block' as const, id: b.id, key: b.key })) : []),
-  ].map((x) => ({ ...x, title: itemTitle(env, x) }));
+    ...lib.fragments.map((f) => ({ kind: 'fragment' as const, id: f.id, key: f.key })),
+  ].filter((x) => !insertionCycle(env.ws, graph, x)).map((x) => ({ ...x, title: itemTitle(env, x) }));
   const f = filter.trim().toLowerCase();
   const shown = f ? items.filter((x) => `${x.title} ${x.key}`.toLowerCase().includes(f)) : items;
   const insert = (x: LibraryItem) => runCommand('library.insertItem', { kind: x.kind, id: x.id, graph });
@@ -41,7 +42,7 @@ export function LibraryPanel({ graph }: { graph: GraphRef }) {
               }}
               onDoubleClick={() => insert(x)}
               onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), insert(x))}>
-              {x.kind === 'block' ? <Boxes className="mt-0.5 size-3 shrink-0 text-amber-600" /> : <FileQuestion className="mt-0.5 size-3 shrink-0 text-slate-400" />}
+              {x.kind === 'fragment' ? <Boxes className="mt-0.5 size-3 shrink-0 text-amber-600" /> : <FileQuestion className="mt-0.5 size-3 shrink-0 text-slate-400" />}
               <span className="min-w-0">
                 <span className="block truncate text-slate-700">{x.title}</span>
                 <span className="block font-mono text-[10px] text-slate-400">{x.key}</span>

@@ -1,5 +1,5 @@
 import {
-  deriveKey, newId, uniqueKey, type Graph, type GraphNode, type Label, type LocalizedText, type Question, type Workspace,
+  createsCycle, deriveKey, newId, uniqueKey, type GraphNode, type Label, type LocalizedText, type Question, type Workspace,
 } from '../../core/model';
 import { renameKey } from '../../core/references';
 import { previewText } from '../../plugin-api';
@@ -7,7 +7,7 @@ import { getGraph, layoutOf, updateNode, usedKeys, type GraphRef } from './graph
 
 /** Élément de la bibliothèque affiché ou inséré. */
 export interface LibraryItem {
-  kind: 'question' | 'block';
+  kind: 'question' | 'fragment';
   id: string;
 }
 
@@ -21,11 +21,11 @@ export function addLibraryQuestion(ws: Workspace, label: LocalizedText): string 
   return id;
 }
 
-/** Ajoute un bloc vide à la bibliothèque. */
-export function addBlock(ws: Workspace, title: LocalizedText): string {
-  const id = newId('blk');
-  const key = uniqueKey(deriveKey(firstText(title)) || 'bloc', ws.library.blocks.map((b) => b.key));
-  ws.library.blocks.push({ id, key, title, start: '', nodes: [], edges: [] });
+/** Ajoute un fragment vide à la bibliothèque. */
+export function addFragment(ws: Workspace, title: LocalizedText): string {
+  const id = newId('frg');
+  const key = uniqueKey(deriveKey(firstText(title)) || 'fragment', ws.library.fragments.map((f) => f.key));
+  ws.library.fragments.push({ id, key, title, nodes: [], edges: [] });
   return id;
 }
 
@@ -33,17 +33,24 @@ export function addBlock(ws: Workspace, title: LocalizedText): string {
 export function deleteLibraryItem(ws: Workspace, item: LibraryItem): void {
   if (item.kind === 'question') ws.library.questions = ws.library.questions.filter((q) => q.id !== item.id);
   else {
-    ws.library.blocks = ws.library.blocks.filter((b) => b.id !== item.id);
+    ws.library.fragments = ws.library.fragments.filter((f) => f.id !== item.id);
     ws.layouts = ws.layouts.filter((l) => l.graph !== item.id);
   }
 }
 
-/** Nœud qui référence un élément de bibliothèque (pas de bloc dans un bloc) ; alias libre pour un bloc. */
-export function referenceNode(ws: Workspace, g: Graph, item: LibraryItem, id: string): GraphNode | undefined {
+/** Insérer le fragment `item` dans le graphe `ref` créerait-il un cycle d'appels (fragment dans lui-même, A → B → A) ? */
+export function insertionCycle(ws: Workspace, ref: GraphRef, item: LibraryItem): boolean {
+  return item.kind === 'fragment' && ref.kind === 'fragment' && createsCycle(ws, ref.id, item.id);
+}
+
+/** Nœud qui référence un élément de bibliothèque ; alias libre pour un fragment ; refusé si cycle d'appels. */
+export function referenceNode(ws: Workspace, ref: GraphRef, item: LibraryItem, id: string): GraphNode | undefined {
+  const g = getGraph(ws, ref);
+  if (!g) return undefined;
   if (item.kind === 'question') return ws.library.questions.some((q) => q.id === item.id) ? { kind: 'question', id, ref: item.id } : undefined;
-  const block = ws.library.blocks.find((b) => b.id === item.id);
-  if (!block || ws.library.blocks.some((b) => b === g)) return undefined;
-  return { kind: 'block', id, ref: block.id, alias: uniqueKey(block.key, usedKeys(ws, g)) };
+  const f = ws.library.fragments.find((x) => x.id === item.id);
+  if (!f || insertionCycle(ws, ref, item)) return undefined;
+  return { kind: 'fragment', id, ref: f.id, alias: uniqueKey(f.key, usedKeys(ws, g)) };
 }
 
 /** Position d'un nœud (dépôt par glisser). */
@@ -87,15 +94,15 @@ export function setLibraryQuestionLabel(ws: Workspace, id: string, label: Label 
   return key === q.key ? ws : renameKey(ws, { kind: 'question', owner: { kind: 'libraryQuestion', id }, nodeId: id }, key);
 }
 
-/** Renomme une sortie de bloc et les arêtes des instances qui la visent. */
-export function renameExit(ws: Workspace, blockId: string, nodeId: string, name: string): void {
-  const block = ws.library.blocks.find((b) => b.id === blockId);
-  const exit = block?.nodes.find((n) => n.id === nodeId);
+/** Renomme une sortie nommée d'un fragment et les arêtes des appels qui la visent (questionnaires et fragments). */
+export function renameExit(ws: Workspace, fragmentId: string, nodeId: string, name: string): void {
+  const fragment = ws.library.fragments.find((f) => f.id === fragmentId);
+  const exit = fragment?.nodes.find((n) => n.id === nodeId);
   if (!exit || exit.kind !== 'exit') return;
   const old = exit.name;
   exit.name = name;
-  for (const q of ws.questionnaires) {
-    const instances = new Set(q.nodes.filter((n) => n.kind === 'block' && n.ref === blockId).map((n) => n.id));
-    for (const e of q.edges) if (instances.has(e.from) && e.exit === old) e.exit = name;
+  for (const g of [...ws.questionnaires, ...ws.library.fragments]) {
+    const calls = new Set(g.nodes.filter((n) => n.kind === 'fragment' && n.ref === fragmentId).map((n) => n.id));
+    for (const e of g.edges) if (calls.has(e.from) && e.exit === old) e.exit = name;
   }
 }

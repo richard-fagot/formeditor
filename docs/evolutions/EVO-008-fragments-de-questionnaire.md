@@ -148,3 +148,40 @@ Ajouter une section « Analyse » en bas de ce fichier :
 
 Faisable sans ambiguïté bloquante → choix notés dans l'analyse et `docs/DECISIONS.md`, puis
 réalisation. Sinon → statut « à arbitrer », options et conséquences, arrêt sans coder.
+
+## Analyse
+
+Conclusion : **faisable sans arbitrage**. Le fragment **remplace** le bloc (un seul concept) ; choix
+ci-dessous, reportés dans `docs/DECISIONS.md`.
+
+1. **Faisabilité, modules impactés** (`docs/MAP.md`, ligne « Questions et blocs de bibliothèque ») :
+   `core/model` (types, entrée et sorties d'un fragment, appels), `format` (schéma, migration 6 → 7,
+   fichiers de mise en page), `core/references` (portée et renommage imbriqués), `core/runtime`
+   (étapes `i1/i2/nœud`, entrée, sorties implicites), `core/validation` (nouvelles vérifications),
+   `app/store` (onglet `f:<id>`, insertion, refus de cycle, extraction), `app/commands`, `app/i18n`,
+   `plugins/node-kinds/fragment` (ex-`block`), `registry`, `ui/shell` (onglet), `ui/library`, `ui/diagram`,
+   `ui/properties`, `ui/preview` (débogage), `ui/settings` (traductions), exemple, spec, FORMAT, guide.
+2. **Fragment ou bloc** : aujourd'hui le bloc s'édite déjà avec le même logigramme, les mêmes
+   commandes et le même panneau (dans l'onglet Bibliothèque) ; il ne s'en distingue que par un départ
+   explicite, des sorties nommées obligatoires, l'absence d'imbrication et l'emplacement de l'édition.
+   Le fragment n'est donc qu'un bloc édité dans un onglet, à entrée et sorties implicites, imbricable :
+   **un seul concept, le fragment**, qui remplace le bloc. Migration : chaque bloc devient un fragment
+   (même id, clé, titre, nœuds, arêtes, sorties nommées ; `start` devient `entry` seulement s'il n'est
+   pas l'unique nœud sans arête entrante), chaque instance `kind: "block"` devient `kind: "fragment"`.
+   « Grouper la sélection en bloc » devient « Extraire la sélection en fragment » (même raccourci).
+3. **Entrée** : implicite, le nœud sans arête entrante. Repli : propriété facultative `entry` (« nœud
+   d'entrée »), réglée par la commande « Définir comme entrée du fragment » (distincte du départ d'un
+   questionnaire). Sans `entry` et avec zéro ou plusieurs nœuds sans arête entrante, l'outil le signale
+   et le parcours entre par le premier de ces nœuds dans l'ordre des nœuds (le premier nœud s'il n'y en
+   a aucun).
+4. **Sorties** : implicites, tout nœud sans arête sortante ; le parcours y reprend sur les arêtes
+   sortantes du nœud fragment qui ne portent pas de nom de sortie, évaluées par rang. Les **sorties
+   nommées** des blocs sont conservées (facultatives) : un nœud « Sortie » nommé `x` reprend sur les
+   arêtes de l'appelant marquées `exit: "x"` ou sans nom de sortie (règle actuelle). Un nœud fragment
+   sans arête sortante dans un fragment est lui-même une sortie implicite de ce fragment (imbrication).
+5. **Stockage** : `bibliotheque.json` → `fragments[]` (`id`, `key`, `title`, `description?`, `entry?`,
+   `nodes`, `edges`, sans `start`) ; nœud d'instance `{ kind: "fragment", id, ref, alias }` (référence
+   par id, pas de copie) ; le `start` d'un questionnaire peut viser ce nœud. Réponses rangées sous
+   `alias` (imbriqué : `a.b.cle`). Mise en page : `fragment_<clé>.layout.json`. `formatVersion` 7 ;
+   migration 6 → 7 décrite au point 2. Une fin dans un fragment (bloc migré) reste valide au format
+   et terminera le parcours ; elle est signalée.

@@ -14,7 +14,8 @@ export interface Issue {
   params: Record<string, string>;
 }
 
-const ERRORS = new Set<IssueCode>(['invalidExpression', 'unknownReference', 'unknownFilterReference', 'duplicateKey', 'invalidKey', 'libraryMissing', 'missingStart', 'unknownExit', 'duplicateGroup', 'reservedGroupCode']);
+const ERRORS = new Set<IssueCode>(['invalidExpression', 'unknownReference', 'unknownFilterReference', 'duplicateKey', 'invalidKey', 'libraryMissing', 'missingStart', 'unknownExit', 'duplicateGroup', 'reservedGroupCode',
+  'fragmentCycle', 'expectedKeyMissing']);
 
 export function issue(code: IssueCode, owner: Owner, where: Partial<Issue> = {}, params: Record<string, string> = {}): Issue {
   return { code, severity: ERRORS.has(code) ? 'error' : 'warning', owner, ...where, params };

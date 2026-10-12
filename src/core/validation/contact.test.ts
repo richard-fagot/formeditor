@@ -66,7 +66,7 @@ describe('contrôles intégrés des types mail, téléphone, adresse, civilité 
 describe('vérifications du projet (EVO-007)', () => {
   const ws = (languages: string[], nodes: unknown[], edgeWhen: string) => ({
     project: { formatVersion: 6, kind: 'project', id: 'p', name: 'P', languages, defaultLanguage: 'fr', questionnaires: [], systemState: [], scenarios: [] },
-    library: { formatVersion: 6, kind: 'library', questions: [], blocks: [], labelSets: [] },
+    library: { formatVersion: 6, kind: 'library', questions: [], fragments: [], labelSets: [] },
     questionnaires: [{
       formatVersion: 6, kind: 'questionnaire', id: 'q', key: 'q', title: Object.fromEntries(languages.map((l) => [l, 'Q'])), start: 'n1',
       nodes: [...nodes, { kind: 'end', id: 'fin', message: Object.fromEntries(languages.map((l) => [l, 'Fin'])) }],

@@ -10,7 +10,7 @@ const edges = [e('a', 'fin'), e('a', 'b', 'a > sys.seuil'), e('a', 'c', 'a >'), 
 const inp: RuntimeInput = {
   ws: {
     project: { formatVersion: 1, kind: 'project', id: 'p', name: 'p', languages: ['fr'], defaultLanguage: 'fr', systemState: [], scenarios: [], questionnaires: [] },
-    library: { formatVersion: 1, kind: 'library', questions: [], blocks: [], labelSets: [] },
+    library: { formatVersion: 1, kind: 'library', questions: [], fragments: [], labelSets: [] },
     questionnaires: [{ formatVersion: 1, kind: 'questionnaire', id: 'q', key: 'q', title: { fr: 'q' }, start: 'a', nodes, edges }],
     layouts: [],
   } as Workspace,

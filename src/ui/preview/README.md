@@ -27,7 +27,9 @@ Dépend de `core`, `registry`, `app/store`, `app/commands`, `ui-kit`, `ui/system
   (première réponse invalide du chemin projeté), `guardEnd` : avant d'afficher une fin (après « Suivant », « Revenir
   à la synthèse » ou un changement de l'état du système), le wizard ramène à la première réponse invalide du chemin
   (`goTo`, erreurs affichées, réponse conservée) ; le parcours ne peut pas se terminer tant qu'elle n'est pas corrigée.
-- `DebugPanel.tsx` : chemin parcouru, conditions des arêtes sortantes de la page courante (`edgeTrace`), valeurs courantes.
+- `DebugPanel.tsx` : bandeau « Dans le fragment : » (chemin des alias et nom du fragment, EVO-008), chemin parcouru (`alias.cle`), conditions des
+  arêtes sortantes de la page courante (`edgeTrace`), valeurs courantes.
+- Page d'un fragment : le clic sélectionne le nœud fragment du questionnaire (`step.instances[0]`).
 
 ## Pièges
 - `data-testid="preview"` couvre la colonne du wizard seulement (pas le panneau latéral) : les tests de fumée

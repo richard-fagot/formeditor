@@ -7,10 +7,10 @@ export {
 } from './graph';
 export { setQuestionLabel } from './question-edits';
 export {
-  addLibraryQuestion, addBlock, deleteLibraryItem, referenceNode, placeNode, moveToLibrary, canMoveToLibrary, setLibraryQuestionLabel, renameExit,
+  addLibraryQuestion, addFragment, deleteLibraryItem, referenceNode, insertionCycle, placeNode, moveToLibrary, canMoveToLibrary, setLibraryQuestionLabel, renameExit,
   type LibraryItem,
 } from './library-edits';
-export { groupIntoBlock, groupEntries } from './group';
+export { groupIntoFragment, groupEntries, canExtract } from './group';
 export { questionnaireKeys, canRenameQuestionnaire, renameQuestionnaire, patchQuestionnaire } from './questionnaire-edits';
 export {
   addVariable, deleteVariable, renameVariable, renameListField, setVariableType, addScenario, deleteScenario, valueError,

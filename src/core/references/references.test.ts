@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { exampleWorkspace } from '../../../tests/reference/example';
 import type { Questionnaire, Workspace } from '../model';
-import { blockScope, collectExpressions, findUsages, qualifyKeys, questionnaireScope, renameKey, resolvePath } from './index';
+import { fragmentScope, collectExpressions, findUsages, qualifyKeys, questionnaireScope, renameKey, resolvePath } from './index';
 
 const ws = exampleWorkspace();
 const decl = (w: Workspace) => w.questionnaires[0]!;
@@ -37,8 +37,8 @@ describe('portée', () => {
     expect(resolvePath(scope, ['inconnu'])).toBeUndefined();
     expect(resolvePath(scope, ['sys', 'sinistres', 'montant'])).toBeUndefined();
   });
-  it('dans un bloc : ses clés sans préfixe et celles de l’hôte', () => {
-    const b = blockScope(ws, 'blk_identite_tiers');
+  it('dans un fragment : ses clés sans préfixe et celles de l’appelant', () => {
+    const b = fragmentScope(ws, 'blk_identite_tiers');
     expect(b.has('nom') && b.has('assurance_connue') && b.has('type_sinistre')).toBe(true);
   });
 });
@@ -72,9 +72,9 @@ describe('renommage propagé', () => {
     expect(fields.map((f) => f.key)).toContain('hospitalisee');
     expect(fields.find((f) => f.key === 'duree_hospitalisation')?.when).toBe('hospitalisee = true');
   });
-  it('question de bloc : `alias.cle` chez les hôtes, clé nue dans le bloc', () => {
-    const w = renameKey(ws, { kind: 'question', owner: { kind: 'block', id: 'blk_identite_tiers' }, nodeId: 'bn_nom' }, 'nom_tiers');
-    const block = w.library.blocks[0]!;
+  it('question de fragment : `alias.cle` chez les appelants, clé nue dans le fragment', () => {
+    const w = renameKey(ws, { kind: 'question', owner: { kind: 'fragment', id: 'blk_identite_tiers' }, nodeId: 'bn_nom' }, 'nom_tiers');
+    const block = w.library.fragments[0]!;
     expect(JSON.stringify(block.nodes.find((n) => n.id === 'bn_assurance_connue'))).toContain('{nom_tiers}');
     expect(JSON.stringify(node(decl(w), 'n_tiers_inconnu').text)).toContain('{tiers.nom_tiers}');
   });
@@ -83,8 +83,8 @@ describe('renommage propagé', () => {
     expect(w.library.questions[0]!.key).toBe('date_evenement');
     expect(edge(decl(w), 'e_date_lien').when).toBe('$count(sys.sinistres[date <= $$.date_evenement]) > 0');
   });
-  it('alias de bloc et variable système (scénarios compris)', () => {
-    let w = renameKey(ws, { kind: 'alias', questionnaireId: 'q_declaration', nodeId: 'n_bloc_tiers' }, 'partie_adverse');
+  it('alias de fragment et variable système (scénarios compris)', () => {
+    let w = renameKey(ws, { kind: 'alias', owner: Q, nodeId: 'n_bloc_tiers' }, 'partie_adverse');
     expect(JSON.stringify(node(decl(w), 'n_fin').message)).toContain('partie_adverse.compagnie');
     w = renameKey(w, { kind: 'system', name: 'sinistres' }, 'historique');
     expect(edge(decl(w), 'e_date_lien').when).toBe('$count(sys.historique[date <= $$.date_sinistre]) > 0');

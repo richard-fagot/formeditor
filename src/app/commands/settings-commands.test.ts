@@ -57,8 +57,7 @@ describe('commandes des paramètres et de l’affichage', () => {
   });
 
   it('vue côte à côte : bascule et choix du questionnaire comparé', () => {
-    expect(command('view.compare')!.enabled!()).toBe(false); // un seul questionnaire dans l'exemple
-    runCommand('questionnaire.new');
+    expect(command('view.compare')!.enabled!()).toBe(true); // deux questionnaires dans l'exemple (EVO-008)
     const other = st().ws.questionnaires.find((q) => q.id !== qid)!.id;
     runCommand('tab.show', `q:${qid}`);
     runCommand('view.compare');

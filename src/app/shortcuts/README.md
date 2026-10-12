@@ -17,7 +17,7 @@ Liaisons clavier (tinykeys) vers les commandes de `app/commands`.
   déclenche pas « Éditer l’intitulé ».
 - Commandes `scope: 'graph'` (raccourcis à une lettre, flèches) : si le focus est dans un élément
   `[data-graph-focus]` (le logigramme), nulle part, ou sur un élément non saisissable hors dialogue (bouton du
-  panneau des problèmes, de la barre…) pendant qu'un logigramme est affiché (questionnaire en vue logigramme, ou bloc dans l'onglet Bibliothèque).
+  panneau des problèmes, de la barre…) pendant qu'un logigramme est affiché (questionnaire en vue logigramme, ou onglet d'un fragment).
 - Entrée / Espace sur un bouton, lien ou onglet focalisé hors logigramme : l'élément est activé, aucune commande.
 - Palette ouverte : aucun raccourci.
 - Plusieurs commandes sur une même touche : la dernière disponible l'emporte, sinon la précédente.

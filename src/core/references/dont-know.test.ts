@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { exampleWorkspace } from '../../../tests/reference/example';
 import type { Question, Workspace } from '../model';
-import { blockScope, collectExpressions, questionnaireScope, renameKey, resolvePath, structureScope } from './index';
+import { fragmentScope, collectExpressions, questionnaireScope, renameKey, resolvePath, structureScope } from './index';
 
 const Q = { kind: 'questionnaire', id: 'q_declaration' } as const;
 const decl = (w: Workspace) => w.questionnaires[0]!;
@@ -26,13 +26,13 @@ describe('référence « Ne sais pas » `.nsp` (EVO-006)', () => {
     const w = withDontKnow();
     const v = node(w, 'n_victimes') as unknown as { fields: unknown[] };
     v.fields.push({ id: 'f_age', key: 'age', label: { fr: 'Âge' }, type: 'number', dontKnow: {} });
-    const block = w.library.blocks[0]!;
+    const block = w.library.fragments[0]!;
     block.nodes.push({ kind: 'question', id: 'bn_x', key: 'x', label: { fr: 'X' }, type: 'text', dontKnow: {} });
     const s = questionnaireScope(w, 'q_declaration');
     expect(resolvePath(s, ['victimes', 'age', 'nsp'])?.kind).toBe('dontKnow');
     expect(resolvePath(structureScope(s, v as unknown as Question), ['age', 'nsp'])?.kind).toBe('dontKnow');
     expect(resolvePath(s, ['tiers', 'x', 'nsp'])).toMatchObject({ kind: 'dontKnow', alias: 'tiers' });
-    expect(resolvePath(blockScope(w, block.id), ['x', 'nsp'])?.kind).toBe('dontKnow');
+    expect(resolvePath(fragmentScope(w, block.id), ['x', 'nsp'])?.kind).toBe('dontKnow');
   });
   it('le libellé « Ne sais pas » est collecté et suit le renommage', () => {
     const w = withDontKnow();

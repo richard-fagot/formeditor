@@ -3,10 +3,10 @@ import {
   type Question, type StructureField, type Workspace,
 } from '../model';
 
-/** Propriétaire d'une expression : questionnaire, bloc ou question de bibliothèque. */
+/** Propriétaire d'une expression : questionnaire, fragment ou question de bibliothèque. */
 export type Owner =
   | { kind: 'questionnaire'; id: string }
-  | { kind: 'block'; id: string }
+  | { kind: 'fragment'; id: string }
   | { kind: 'libraryQuestion'; id: string }
   /** Variable du dictionnaire de l'état du système (problèmes du dictionnaire seulement). */
   | { kind: 'system'; id: string };
@@ -145,7 +145,7 @@ export function mapGraph<G extends Graph>(g: G, f: ExprMapper, owner: Owner): G 
   };
 }
 
-/** Applique `f` à toutes les expressions du projet (questionnaires, blocs, questions de bibliothèque). */
+/** Applique `f` à toutes les expressions du projet (questionnaires, fragments, questions de bibliothèque). */
 export function mapWorkspace(ws: Workspace, f: ExprMapper): Workspace {
   return {
     ...ws,
@@ -153,7 +153,7 @@ export function mapWorkspace(ws: Workspace, f: ExprMapper): Workspace {
     library: {
       ...ws.library,
       questions: ws.library.questions.map((q) => mapQuestion(q, f, { owner: { kind: 'libraryQuestion', id: q.id }, property: '' })),
-      blocks: ws.library.blocks.map((b) => mapGraph(b, f, { kind: 'block', id: b.id })),
+      fragments: ws.library.fragments.map((x) => mapGraph(x, f, { kind: 'fragment', id: x.id })),
     },
   };
 }

@@ -1,0 +1,87 @@
+{
+  "formatVersion": 7,
+  "kind": "questionnaire",
+  "id": "q_remboursement",
+  "key": "demande_remboursement",
+  "title": {
+    "fr": "Demande de remboursement",
+    "en": "Refund request"
+  },
+  "description": "Commence par le fragment « identification_assure » (départ sur le nœud fragment).",
+  "start": "n_ident",
+  "nodes": [
+    {
+      "kind": "fragment",
+      "id": "n_ident",
+      "ref": "frg_identification_assure",
+      "alias": "ident"
+    },
+    {
+      "kind": "info",
+      "id": "n_mineur",
+      "title": {
+        "fr": "Assuré mineur",
+        "en": "Minor policyholder"
+      },
+      "text": {
+        "fr": "{ident.prenom} est mineur : le remboursement sera versé à son représentant légal.",
+        "en": "{ident.prenom} is a minor: the refund will be paid to the legal guardian."
+      }
+    },
+    {
+      "kind": "question",
+      "id": "n_montant_demande",
+      "key": "montant_demande",
+      "label": {
+        "fr": "Montant demandé",
+        "en": "Amount requested"
+      },
+      "type": "number",
+      "required": true,
+      "numberKind": "real",
+      "min": 0,
+      "decimals": 2,
+      "unit": {
+        "fr": "€",
+        "en": "€"
+      }
+    },
+    {
+      "kind": "end",
+      "id": "n_fin_remboursement",
+      "title": {
+        "fr": "Demande enregistrée",
+        "en": "Request recorded"
+      },
+      "message": {
+        "fr": "Merci {ident.prenom} {ident.nom} : votre demande de {montant_demande} € est enregistrée.",
+        "en": "Thank you {ident.prenom} {ident.nom}: your request for €{montant_demande} is recorded."
+      },
+      "outcome": "submitted"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e_ident_mineur",
+      "from": "n_ident",
+      "to": "n_mineur",
+      "when": "ident.majeur = false",
+      "caption": "Assuré mineur"
+    },
+    {
+      "id": "e_ident_montant",
+      "from": "n_ident",
+      "to": "n_montant_demande"
+    },
+    {
+      "id": "e_mineur_montant",
+      "from": "n_mineur",
+      "to": "n_montant_demande"
+    },
+    {
+      "id": "e_montant_fin",
+      "from": "n_montant_demande",
+      "to": "n_fin_remboursement"
+    }
+  ]
+}

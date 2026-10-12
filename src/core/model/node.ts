@@ -16,13 +16,13 @@ export interface LibraryQuestionNode {
 
 export type QuestionNode = LocalQuestionNode | LibraryQuestionNode;
 
-/** Instance d'un bloc de la bibliothèque. */
-export interface BlockNode {
-  kind: 'block';
+/** Instance d'un fragment de la bibliothèque (EVO-008). */
+export interface FragmentNode {
+  kind: 'fragment';
   id: string;
-  /** Id du bloc dans la bibliothèque. */
+  /** Id du fragment dans la bibliothèque. */
   ref: string;
-  /** Préfixe des clés du bloc vues depuis l'hôte (`alias.cle`). */
+  /** Préfixe des clés du fragment vues depuis l'appelant (`alias.cle`). */
   alias: string;
   description?: string;
 }
@@ -52,7 +52,7 @@ export interface EndNode {
   description?: string;
 }
 
-/** Sortie nommée d'un bloc (uniquement dans un bloc). */
+/** Sortie nommée d'un fragment (facultative, uniquement dans un fragment). */
 export interface ExitNode {
   kind: 'exit';
   id: string;
@@ -61,7 +61,7 @@ export interface ExitNode {
   description?: string;
 }
 
-export type GraphNode = QuestionNode | BlockNode | InfoNode | SummaryNode | EndNode | ExitNode;
+export type GraphNode = QuestionNode | FragmentNode | InfoNode | SummaryNode | EndNode | ExitNode;
 export type NodeKind = GraphNode['kind'];
 
 export function isLibraryQuestion(node: GraphNode): node is LibraryQuestionNode {

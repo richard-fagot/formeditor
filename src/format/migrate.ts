@@ -53,7 +53,51 @@ export const MIGRATIONS: Migrations = {
   4: (doc) => bump(doc, 5),
   /** EVO-007 : types `email`, `phone`, `address`, `civility`. Un document antérieur n'en a pas : seul le numéro change. */
   5: (doc) => bump(doc, 6),
+  /** EVO-008 : les blocs deviennent des fragments (`fragments`, nœuds `kind: "fragment"`, `start` → `entry` si utile). */
+  6: (doc) => {
+    const v7 = (d: Doc) => {
+      if (d?.kind === 'questionnaire') return { ...graphV7(d), formatVersion: 7 };
+      if (d?.kind === 'library') return { ...libraryV7(d), formatVersion: 7 };
+      return d && 'formatVersion' in d ? { ...d, formatVersion: 7 } : d;
+    };
+    if (doc.kind !== 'bundle') return v7(doc);
+    return {
+      ...doc,
+      formatVersion: 7,
+      ...(doc.library ? { library: v7({ kind: 'library', ...doc.library }) } : {}),
+      ...(Array.isArray(doc.questionnaires) ? { questionnaires: doc.questionnaires.map((q: Doc) => v7({ kind: 'questionnaire', ...q })) } : {}),
+      ...(Array.isArray(doc.layouts) ? { layouts: doc.layouts.map((l: Doc) => versioned(l, 7)) } : {}),
+      ...(doc.project ? { project: versioned(doc.project, 7) } : {}),
+    };
+  },
 };
+
+/** Graphe v6 → v7 : instances de bloc → nœuds fragment. */
+const graphV7 = (g: Doc): Doc =>
+  Array.isArray(g.nodes) ? { ...g, nodes: g.nodes.map((n: Doc) => (n?.kind === 'block' ? { ...n, kind: 'fragment' } : n)) } : g;
+
+/** Bloc v6 → fragment : `start` gardé comme `entry` seulement s'il n'est pas l'unique nœud sans arête entrante. */
+function blockToFragment(b: Doc): Doc {
+  const { start, nodes, edges, ...rest } = graphV7(b);
+  const targets = new Set((edges ?? []).map((e: Doc) => e.to));
+  const roots = (nodes ?? []).filter((n: Doc) => !targets.has(n.id));
+  const implicit = roots.length === 1 && roots[0].id === start;
+  const out: Doc = { ...rest };
+  if (start && !implicit && (nodes ?? []).some((n: Doc) => n.id === start)) out.entry = start;
+  return { ...out, nodes, edges };
+}
+
+/** Bibliothèque v6 → v7 : `blocks` → `fragments` (placés après `questions`). */
+function libraryV7(l: Doc): Doc {
+  const out: Doc = {};
+  for (const [k, v] of Object.entries(l)) {
+    if (k === 'blocks') continue;
+    out[k] = v;
+    if (k === 'questions') out.fragments = [...(l.fragments ?? []), ...(Array.isArray(l.blocks) ? l.blocks.map(blockToFragment) : [])];
+  }
+  if (!out.fragments) out.fragments = Array.isArray(l.blocks) ? l.blocks.map(blockToFragment) : [];
+  return out;
+}
 
 /** Change seulement `formatVersion` (et celui des documents d'un bundle). */
 function bump(doc: Doc, v: number): Doc {

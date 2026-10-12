@@ -1,12 +1,13 @@
 import { extractReferences, renameInTemplate, renameReference } from '../expressions';
-import { isValidKey, OTHER_VALUE, type Graph, type Question, type Workspace } from '../model';
+import { fragmentCallers, isValidKey, OTHER_VALUE, type Graph, type Question, type Workspace } from '../model';
 import { mapWorkspace, type ExprLocation, type Owner } from './visit';
 import { questionOfNode } from './scope';
 
 /** Ce qu'on renomme. `owner` + `nodeId` désignent une question locale ; `fieldId` un champ de cette structure. */
 export type RenameTarget =
   | { kind: 'question'; owner: Owner; nodeId: string; fieldId?: string }
-  | { kind: 'alias'; questionnaireId: string; nodeId: string }
+  /** Alias d'un nœud fragment du graphe `owner` (questionnaire ou fragment). */
+  | { kind: 'alias'; owner: Owner; nodeId: string }
   | { kind: 'system'; name: string }
   /** Champ d'une variable système de type liste d'objets. */
   | { kind: 'systemField'; variable: string; field: string };
@@ -20,27 +21,38 @@ interface Rule {
 
 const sameOwner = (a: Owner, b: Owner) => a.kind === b.kind && a.id === b.id;
 
+/**
+ * Endroits où une clé définie dans le graphe `owner` est visible, avec le préfixe d'alias : le graphe lui-même,
+ * puis, pour un fragment, chacun de ses appelants (récursivement : `a.b.cle` chez l'appelant de l'appelant).
+ */
+function graphVisibility(ws: Workspace, owner: Owner, seen = new Set<string>()): { owner: Owner; prefix: string[] }[] {
+  if (owner.kind !== 'fragment') return [{ owner, prefix: [] }];
+  if (seen.has(owner.id)) return [];
+  const inner = new Set([...seen, owner.id]);
+  const out: { owner: Owner; prefix: string[] }[] = [{ owner, prefix: [] }];
+  for (const c of fragmentCallers(ws, owner.id)) {
+    for (const n of graphOf(ws, c)?.nodes ?? []) {
+      if (n.kind !== 'fragment' || n.ref !== owner.id) continue;
+      for (const v of graphVisibility(ws, c, inner)) out.push({ owner: v.owner, prefix: [...v.prefix, n.alias] });
+    }
+  }
+  return out;
+}
+
 /** Endroits où une question définie dans `owner` est visible, avec le préfixe à utiliser. */
 function visibility(ws: Workspace, owner: Owner): { owner: Owner; prefix: string[] }[] {
-  const ofBlock = (blockId: string) => [
-    { owner: { kind: 'block', id: blockId } as Owner, prefix: [] as string[] },
-    ...ws.questionnaires.flatMap((q) =>
-      q.nodes.flatMap((n) => (n.kind === 'block' && n.ref === blockId ? [{ owner: { kind: 'questionnaire', id: q.id } as Owner, prefix: [n.alias] }] : [])),
-    ),
-  ];
-  if (owner.kind === 'questionnaire') return [{ owner, prefix: [] }];
-  if (owner.kind === 'block') return ofBlock(owner.id);
+  if (owner.kind !== 'libraryQuestion') return graphVisibility(ws, owner);
   const usedIn = (g: Graph) => g.nodes.some((n) => n.kind === 'question' && 'ref' in n && n.ref === owner.id);
   return [
     { owner, prefix: [] },
     ...ws.questionnaires.filter(usedIn).map((q) => ({ owner: { kind: 'questionnaire', id: q.id } as Owner, prefix: [] })),
-    ...ws.library.blocks.filter(usedIn).flatMap((b) => ofBlock(b.id)),
+    ...ws.library.fragments.filter(usedIn).flatMap((f) => graphVisibility(ws, { kind: 'fragment', id: f.id })),
   ];
 }
 
 function graphOf(ws: Workspace, owner: Owner): Graph | undefined {
   if (owner.kind === 'questionnaire') return ws.questionnaires.find((q) => q.id === owner.id);
-  if (owner.kind === 'block') return ws.library.blocks.find((b) => b.id === owner.id);
+  if (owner.kind === 'fragment') return ws.library.fragments.find((f) => f.id === owner.id);
   return undefined;
 }
 
@@ -74,7 +86,7 @@ function applyRules(ws: Workspace, rules: Rule[], newName: (path: string[]) => s
   });
 }
 
-/** Renomme une clé (question, champ, alias, variable système) et propage dans toutes les expressions. */
+/** Renomme une clé (question, champ, alias, variable système) et propage dans toutes les expressions (appelants des fragments compris). */
 export function renameKey(ws: Workspace, target: RenameTarget, newKey: string): Workspace {
   const next: Workspace = JSON.parse(JSON.stringify(ws));
   if (target.kind === 'system') {
@@ -88,18 +100,18 @@ export function renameKey(ws: Workspace, target: RenameTarget, newKey: string): 
     }
     const all: Owner[] = [
       ...next.questionnaires.map((q) => ({ kind: 'questionnaire', id: q.id }) as Owner),
-      ...next.library.blocks.map((b) => ({ kind: 'block', id: b.id }) as Owner),
+      ...next.library.fragments.map((f) => ({ kind: 'fragment', id: f.id }) as Owner),
       ...next.library.questions.map((q) => ({ kind: 'libraryQuestion', id: q.id }) as Owner),
     ];
     return applyRules(next, all.map((owner) => ({ owner, path: ['sys', target.name] })), () => newKey);
   }
   if (target.kind === 'systemField') return renameSystemField(ws, next, target.variable, target.field, newKey);
   if (target.kind === 'alias') {
-    const node = next.questionnaires.find((q) => q.id === target.questionnaireId)?.nodes.find((n) => n.id === target.nodeId);
-    if (node?.kind !== 'block' || node.alias === newKey) return ws;
+    const node = graphOf(next, target.owner)?.nodes.find((n) => n.id === target.nodeId);
+    if (node?.kind !== 'fragment' || node.alias === newKey) return ws;
     const old = node.alias;
     node.alias = newKey;
-    return applyRules(next, [{ owner: { kind: 'questionnaire', id: target.questionnaireId }, path: [old] }], () => newKey);
+    return applyRules(next, graphVisibility(next, target.owner).map((v) => ({ owner: v.owner, path: [...v.prefix, old] })), () => newKey);
   }
   const q = findQuestion(next, target.owner, target.nodeId);
   if (!q) return ws;
@@ -129,7 +141,7 @@ export function renameKey(ws: Workspace, target: RenameTarget, newKey: string): 
 
 /**
  * Préfixe par `alias` les références aux clés `keys` dans les expressions de `owner` (questions déplacées
- * dans un bloc instancié sous cet alias). Les précisions « Autre » (`cle_other`) suivent.
+ * dans un fragment appelé sous cet alias). Les précisions « Autre » (`cle_other`) suivent.
  */
 export function qualifyKeys(ws: Workspace, owner: Owner, keys: string[], alias: string): Workspace {
   const next: Workspace = JSON.parse(JSON.stringify(ws));

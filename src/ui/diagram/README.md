@@ -1,6 +1,6 @@
 # ui/diagram
 
-Logigramme d'un graphe (questionnaire, ou bloc de la bibliothèque) avec React Flow (@xyflow/react).
+Logigramme d'un graphe (questionnaire, ou fragment de la bibliothèque) avec React Flow (@xyflow/react).
 Dépend de `app/store`, `app/commands` (liaison tracée à la souris : `edge.create` ; dépôt : `library.insertItem`),
 `registry`, `core`, `ui-kit`, `html-to-image`, `ui/properties` (`usePluginEnv` : environnement de l'éditeur + `questionType` du registre).
 
@@ -13,13 +13,13 @@ Dépend de `app/store`, `app/commands` (liaison tracée à la souris : `edge.cre
 - Nœuds et arêtes dérivés du store (`ws` + mise en page `layouts`) ; un nœud recréé reprend ses mesures (`measured`,
   `rf.getInternalNode`), sinon React Flow le masque jusqu'à remesure (test : `tests/smoke/selection.spec.ts`) ; positions écrites sans historique
   pendant le glisser, point d'historique au début du glisser.
-- `NodeView` : cadre, poignées, badges (départ, obligatoire, autre, bibliothèque, source, traduction,
+- `NodeView` : cadre, poignées, badges (départ, ou « Entrée » d'un fragment (`graphStart`), obligatoire, autre, bibliothèque, source, traduction,
   problèmes) ; contenu délégué au plugin du type de nœud (`registry.nodeKind`) ; édition en place de
   l'intitulé (double-clic, Entrée, `focusRequest`) avec dérivation de la clé (`setQuestionLabel`).
-- Instance de bloc : une poignée de sortie par sortie nommée du bloc ; une liaison tirée depuis une poignée porte
+- Nœud fragment : bouton « Ouvrir le fragment ↗ » parmi les badges (`library.show`) ; une poignée de sortie par sortie nommée du fragment ; une liaison tirée depuis une poignée porte
   `exit` (arête `sourceHandle` = `exit` ; sortie inconnue → première poignée, l'arête reste visible). Sans sortie : poignée unique.
 - Dépôt d'un élément de bibliothèque : inséré à la position du curseur (`screenToFlowPosition`).
-- `EdgeView` : condition abrégée, rang si plusieurs arêtes sortent du même nœud, « sinon », sortie de bloc. Libellé
+- `EdgeView` : condition abrégée, rang si plusieurs arêtes sortent du même nœud, « sinon », sortie nommée. Libellé
   `caption` (EVO-005) : affiché à la place de la condition (`span[data-edge-caption]`, police normale), tronqué en CSS
   (« … ») ; pastille aussi pour une arête seule libellée ; `title` = libellé puis condition selon la même
   règle que la pastille (`edgeLabel.ts` : « ? » si vide, « sinon » parmi plusieurs sorties, rien pour une arête seule).
