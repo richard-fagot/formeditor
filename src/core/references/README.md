@@ -12,6 +12,7 @@ Résolution des clés et espaces de noms, index des usages, renommage propagé. 
   `hiddenFieldPaths(ws, graph)` : chemins des champs masqués visibles depuis un graphe (`cle.champ`, `alias.cle.champ`).
   Fragments imbriqués (EVO-008) : `alias.sous_alias.cle`, `RefInfo.alias` = chemin des alias (`ident.adr`) ; garde contre un cycle d'appels.
 - `findUsages(ws, path)`.
+- Suggestions d'un champ texte (EVO-016) : `suggestions` (non vide) parcourue comme expression (propriété `suggestions`) : vérifications, usages, renommage.
 - Groupes d'options (EVO-003) : la portée contient `<chemin>.groupe` (genre `group`) pour chaque question ou champ à choix
   (questionnaire, `alias.cle.groupe`, `structure.champ.groupe`, champ frère `champ.groupe`) ; ailleurs `.groupe` est inconnu.
   Le parcours visite libellé (`options[i].group`), condition et entrées de chaque groupe (`options[i].options[j].…`).

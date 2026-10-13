@@ -543,6 +543,10 @@
         },
         "pattern": {
           "type": "string"
+        },
+        "suggestions": {
+          "$ref": "#/$defs/expression",
+          "description": "Suggestions (EVO-016) : expression qui renvoie une liste de textes proposés à la saisie. Présente = option activée."
         }
       },
       "required": []

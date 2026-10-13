@@ -70,6 +70,9 @@ export function mapQuestion<Q extends Question | StructureField>(q: Q, f: ExprMa
   }
   if ('when' in q && q.when) out.when = f(q.when, 'expr', at('when'));
   switch (q.type) {
+    case 'text':
+      if (q.suggestions) out.suggestions = f(q.suggestions, 'expr', at('suggestions'));
+      break;
     case 'date':
       for (const b of ['min', 'max'] as const) if (q[b] && !ISO_DATE.test(q[b])) out[b] = f(q[b], 'expr', at(b));
       break;

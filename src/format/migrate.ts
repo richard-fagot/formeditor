@@ -78,6 +78,8 @@ export const MIGRATIONS: Migrations = {
   9: (doc) => bump(doc, 10),
   /** EVO-015 : état de validation `status` / `validatedAt` d'un questionnaire. Absent = non validé : seul le numéro change. */
   10: (doc) => bump(doc, 11),
+  /** EVO-016 : suggestions `suggestions` d'un champ texte. Propriété absente = aucune : seul le numéro change. */
+  11: (doc) => bump(doc, 12),
 };
 
 /** Graphe v6 → v7 : instances de bloc → nœuds fragment. */

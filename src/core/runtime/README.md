@@ -29,6 +29,9 @@ Dépend de `core/model`, `core/expressions`.
   réponse l'efface ; `prune` l'efface avec la réponse ; `SummaryEntry.dontKnow`. `dontKnowAnswer(q)` : valeur (`null`, `[]` pour un
   choix multiple) et groupe (`NSP` pour un choix) d'une réponse « Ne sais pas ».
 - Pays (EVO-007) : `setAnswer(…, dontKnow?, country?)` range `<clé>_pays` (`countryPath`) ; absent sinon ; `prune` l'efface avec la réponse.
+- Suggestions d'un champ texte (EVO-016, `suggestions.ts`) : `suggestionList(valeur)` met le résultat de l'expression en liste de textes
+  (valeur unique → un élément, vide → aucun, nombres / booléens → texte, objets, vides et `other` écartés, doublons retirés, ordre gardé) ;
+  `filterSuggestions(liste, saisie)` : « contient », casse ignorée.
 - `successor`, `chooseEdge`, `firstStep`, `prune`, `projectedSteps`, `getAnswer`, `withAnswer`, `otherPath`.
 
 ## Règles
@@ -45,4 +48,4 @@ Dépend de `core/model`, `core/expressions`.
 - Pas de validation des réponses ici : voir `core/validation` (`validateAnswer`).
 
 ## Tests
-`runtime.test.ts`, `fragments.test.ts` (milieu, départ, sorties, `ident.majeur = false`, deux usages, imbrication, entrée réglée), `trace.test.ts`, `options.test.ts`, `groups.test.ts`, `dont-know.test.ts`, `country.test.ts`, `hidden-fields.test.ts`, `required.test.ts` ; `tests/reference/paths.test.ts` rejoue `examples/*/chemins/*.json`.
+`runtime.test.ts`, `fragments.test.ts` (milieu, départ, sorties, `ident.majeur = false`, deux usages, imbrication, entrée réglée), `trace.test.ts`, `options.test.ts`, `groups.test.ts`, `dont-know.test.ts`, `country.test.ts`, `hidden-fields.test.ts`, `required.test.ts`, `suggestions.test.ts` ; `tests/reference/paths.test.ts` rejoue `examples/*/chemins/*.json`.

@@ -1,5 +1,5 @@
 # Guide utilisateur — Éditeur de questionnaires
-Mis à jour le 2026-10-13 — jusqu'à EVO-015
+Mis à jour le 2026-10-13 — jusqu'à EVO-016
 
 ## Mode d'emploi du guide
 
@@ -261,6 +261,16 @@ Changer de type : sélectionner une question locale (pas une référence de bibl
 - **Passer une question en texte** — `T` ou palette « Type : Texte ». `[cmd: node.type.text]`
 - **Régler un texte** — « Texte long (plusieurs lignes) », « Longueur min. », « Longueur max. », « Motif (expression
   régulière) » (ex. `^[0-9]{5}$` pour un code postal).
+- **Proposer des suggestions sur un texte** — Case « Suggestions » (texte seulement, question ou champ de structure ;
+  décochée par défaut) : le champ « Expression des suggestions » apparaît (autocomplétion et validation des autres
+  expressions). L'expression renvoie une **liste** de textes (voir §8 « Écrire une expression de suggestions ») : ex.
+  `marques` (réponse d'un choix multiple posé avant), `sys.villes`, `sys.sinistres.nature`, `["Peugeot", "Renault"]`.
+  En prévisualisation, la liste s'ouvre quand le champ prend le focus, se filtre à la frappe (le texte tapé est contenu,
+  casse ignorée : « toy » garde « Toyota ») ; choisir une suggestion au clic, ou avec les flèches puis `Entrée` ; `Échap`
+  ferme la liste. On peut toujours taper une autre valeur (« Dacia ») : la réponse est le texte saisi, contrôlé comme
+  d'habitude (obligatoire, longueurs, motif, contraintes). Les suggestions sont recalculées à chaque affichage de la page
+  (changer une réponse précédente puis revenir les met à jour) ; aucune suggestion → champ de texte simple. Décocher la case
+  efface l'expression (rien n'est exporté). Logigramme : petite icône de liste après `<texte>` (info-bulle « Avec suggestions »).
 
 ### Date
 - **Passer une question en date** — `D` ou palette « Type : Date ». `[cmd: node.type.date]`
@@ -407,6 +417,13 @@ Concerne le choix unique et le choix multiple. Le booléen et le tri-state n'ont
   vide `[]` pour un choix multiple), comme une question sans réponse : `.nsp` permet de les distinguer. `ma_question.groupe`
   vaut `NSP` (code réservé, comme `AUTRE`). Connu seulement si l'option est activée (sinon « Référence inconnue »).
   Ex. : `montant_estime > sys.plafond_expertise or montant_estime.nsp`. `nsp` est un mot réservé.
+- **Écrire une expression de suggestions** — Forme attendue : une liste (réponse d'un choix multiple, variable système de
+  type liste, champ d'une liste d'objets `sys.liste.champ`, littéral `["a", "b"]`, `$append(…)`). Cas limites : une valeur
+  unique donne une seule suggestion ; une valeur vide ou non renseignée n'en donne aucune ; nombres et dates sont affichés
+  comme dans un texte interpolé (`12`, `2024-05-06`) ; une valeur en double n'est proposée qu'une fois, à sa première
+  position ; un choix propose ses **valeurs** (pas ses libellés) et jamais `other` : pour ajouter la précision « Autre »,
+  écrire `$append(marques, marques_other)`. Seules les questions posées avant le champ et les variables `sys.` sont
+  permises ; une question après est signalée (« ⚠ », §15) comme dans toute expression.
 - **Combiner** — `=`, `!=`, `<`, `<=`, `>`, `>=` (nombres et dates `AAAA-MM-JJ`) ; `and`, `or`, `$not(…)` ; `'x' in liste` ;
   `$exists(cle)` (est renseigné) ; `$count(…)`, `$sum(…)` ; filtre `liste[champ = 'x']` ; `&` concatène ;
   `a ? b : c` ; `+ - * / %`. Chaînes entre `'…'`.
@@ -431,6 +448,7 @@ Concerne le choix unique et le choix multiple. Le booléen et le tri-state n'ont
   11. `qualite_declarant.groupe = 'SC'` (groupe de l'option choisie)
   12. `montant_estime.nsp` (« Ne sais pas » choisie)
   13. `souscripteur.telephone.pays = 'BE'` (pays d'un téléphone)
+  14. `$append(marques, marques_other)` (suggestions : valeurs cochées et précision « Autre »)
 
 ## 9. Contraintes et messages d'erreur
 

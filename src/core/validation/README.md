@@ -50,4 +50,4 @@ Dépend de `core/model`, `core/expressions`, `core/references`, `core/runtime` (
 - Le typage des expressions se limite à la syntaxe et à l'existence des références.
 
 ## Tests
-`validation.test.ts` (l'exemple ne doit produire **aucun** problème), `groups.test.ts`, `dont-know.test.ts`, `contact.test.ts`, `fragments.test.ts`, `hidden-fields.test.ts`.
+`validation.test.ts` (l'exemple ne doit produire **aucun** problème), `groups.test.ts`, `dont-know.test.ts`, `contact.test.ts`, `fragments.test.ts`, `hidden-fields.test.ts`, `suggestions.test.ts` (expression des suggestions d'un texte, EVO-016).
