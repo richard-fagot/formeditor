@@ -140,7 +140,8 @@ Mis à jour le 2026-10-13 — jusqu'à EVO-011
   ou palette « Définir comme départ ». Le départ peut être un nœud fragment : le parcours commence alors par la première
   question du fragment. Indisponible dans un fragment (voir « Définir l'entrée d'un fragment », §10). `[cmd: node.setStart]`
 - **Dupliquer des nœuds** — Sélectionner un ou plusieurs nœuds puis `Ctrl+D` (logigramme), clic droit sur un nœud « Dupliquer » ou palette « Dupliquer ». Les copies
-  sont décalées et sélectionnées ; les arêtes entre nœuds copiés sont copiées, pas les autres ; clés et alias rendus uniques. `[cmd: node.duplicate]`
+  sont décalées et sélectionnées ; les arêtes entre nœuds copiés sont copiées, pas les autres ; clés et alias rendus uniques, et les références
+  internes à la sélection suivent le renommage, comme au collage (`{date_sinistre}` → `{date_sinistre_2}`). `[cmd: node.duplicate]`
 - **Copier des nœuds** — Sélectionner un ou plusieurs nœuds puis `Ctrl+C` (logigramme), clic droit sur un nœud « Copier », ou
   palette « Copier ». Tous les types de nœuds se copient, avec tout leur contenu ; les arêtes entre nœuds copiés (conditions,
   rang) suivent, les autres non. Le presse-papiers est interne à l'outil et au projet ouvert (pas de copie vers un autre

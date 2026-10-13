@@ -17,7 +17,7 @@ Dépend de `core`, `format`, `app/i18n`, `plugin-api` (utilitaires).
   L'annulation remet chaque mise en page à sa place (ordre conservé, disparues retirées, nouvelles en fin) : le bundle est identique après annulation.
 - Édition pure du graphe (`graph.ts`, sur brouillon immer) : `insertNode`, `connect` (une arête conditionnée
   passe avant le « sinon »), `removeNodes`, `removeEdge`, `moveEdge`, `updateNode` (retire les `undefined`),
-  `duplicateNodes`, `getGraph`, `layoutOf`, `usedKeys`, `freshKey`.
+  `getGraph`, `layoutOf`, `usedKeys`, `freshKey`.
 - Questionnaire (`questionnaire-edits.ts`) : `renameQuestionnaire` (clé + fichier `<clé>.json` du projet),
   `canRenameQuestionnaire`, `questionnaireKeys`, `patchQuestionnaire` (titre, description).
 - Bibliothèque (`library-edits.ts`) : `addLibraryQuestion`, `addFragment`, `deleteLibraryItem`, `referenceNode(ws, ref, item, id)` (nœud
@@ -29,6 +29,7 @@ Dépend de `core`, `format`, `app/i18n`, `plugin-api` (utilitaires).
   `pasteNodes(ws, ref, clip, at?)` : nouveaux ids, clés et alias pris suffixés hors des clés de la cible et de la sélection, références de la sélection réécrites
   (`renameKeysIn`), placés au point `at` (coin haut gauche) ou décalés de `PASTE_OFFSET` ; écartés (`PasteDrop`) : fin dans un fragment, sortie dans un questionnaire,
   instance créant un cycle ; départ = rôle non collé (un questionnaire vide prend le départ collé ou le premier nœud). État `clipboard`.
+  `duplicateNodes(ws, ref, ids)` (Ctrl+D) = `copyNodes` puis `pasteNodes` dans le même graphe.
 - Duplication (EVO-010, `duplicate.ts`) : `duplicateQuestionnaire(ws, id, copyName)` (juste après, clé et fichier uniques), `duplicateLibraryItem(ws, item, copyName)`
   (question ou fragment, juste après, clé unique) ; « Copie de » par langue (`CopyName`), nœuds et arêtes réidentifiés, mise en page reprise, références conservées.
 - Commentaires de révision (EVO-011, `comment-edits.ts`) : rangés dans `layout.comments` de l'objet (`CommentHost` : questionnaire, fragment,

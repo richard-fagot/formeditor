@@ -86,3 +86,9 @@ export function pasteNodes(ws: Workspace, ref: GraphRef, clip: Clip, at?: { x: n
   else if (copiedStart) dropped.push({ reason: 'start', nodeId: copiedStart });
   return { ids: [...ids.values()], dropped };
 }
+
+/** Duplique des nœuds dans leur graphe (Ctrl+D) : même mécanisme que copier puis coller (références de la sélection réécrites), décalés. */
+export function duplicateNodes(ws: Workspace, ref: GraphRef, ids: string[]): string[] {
+  const clip = copyNodes(ws, ref, ids);
+  return clip ? pasteNodes(ws, ref, clip).ids : [];
+}

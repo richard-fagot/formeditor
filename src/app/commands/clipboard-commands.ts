@@ -55,6 +55,21 @@ function libraryTarget(arg: unknown): LibraryItem | undefined {
   return tab === 'library' ? st().libraryItem : undefined;
 }
 
+/** Questionnaire visé : argument, sinon celui de l'onglet actif ; `undefined` s'il n'existe pas. */
+function questionnaireTarget(arg: unknown): string | undefined {
+  const tab = st().activeTab;
+  const id = typeof arg === 'string' ? arg : tab.startsWith('q:') ? tab.slice(2) : undefined;
+  return st().ws.questionnaires.some((x) => x.id === id) ? id : undefined;
+}
+
+/** Élément de bibliothèque visé et existant. */
+function existingLibraryTarget(arg: unknown): LibraryItem | undefined {
+  const item = libraryTarget(arg);
+  const lib = st().ws.library;
+  const list: { id: string }[] = item?.kind === 'question' ? lib.questions : lib.fragments;
+  return item && list.some((x) => x.id === item.id) ? item : undefined;
+}
+
 /** Copier-coller de nœuds et duplication d'un questionnaire ou d'un élément de bibliothèque (EVO-010). */
 export function clipboardCommands(): Command[] {
   return [
@@ -81,10 +96,9 @@ export function clipboardCommands(): Command[] {
     },
     {
       id: 'questionnaire.duplicate', label: 'questionnaire.duplicate', keys: [], scope: 'global',
-      enabled: () => st().ws.questionnaires.length > 0,
+      enabled: (arg) => !!questionnaireTarget(arg),
       run: (arg) => {
-        const id = typeof arg === 'string' ? arg : st().activeTab.startsWith('q:') ? st().activeTab.slice(2) : undefined;
-        if (!id) return;
+        const id = questionnaireTarget(arg)!;
         let copy: string | undefined;
         st().edit('project', (ws) => void (copy = duplicateQuestionnaire(ws, id, copyName)));
         if (copy) st().openTab(`q:${copy}`);
@@ -92,10 +106,9 @@ export function clipboardCommands(): Command[] {
     },
     {
       id: 'library.duplicate', label: 'library.duplicate', keys: [], scope: 'global',
-      enabled: () => st().ws.library.questions.length + st().ws.library.fragments.length > 0,
+      enabled: (arg) => !!existingLibraryTarget(arg),
       run: (arg) => {
-        const item = libraryTarget(arg);
-        if (!item) return;
+        const item = existingLibraryTarget(arg)!;
         let copy: string | undefined;
         st().edit('library', (ws) => void (copy = duplicateLibraryItem(ws, item, copyName)));
         if (copy) showLibraryItem({ kind: item.kind, id: copy });
