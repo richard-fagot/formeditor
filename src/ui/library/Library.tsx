@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Boxes, FileQuestion, Plus, Tags } from 'lucide-react';
 import { runCommand } from '../../app/commands';
 import { useStore, useT, type LibraryItem } from '../../app/store';
@@ -17,9 +17,12 @@ export function Library() {
   const exists = item?.kind === 'question' && lib.questions.some((x) => x.id === item.id);
   // Menu contextuel d'un élément (EVO-010) : « Dupliquer ».
   const [menu, setMenu] = useState<{ x: number; y: number; item: LibraryItem }>();
+  // Élément affiché gardé visible dans la liste (ouverture depuis le badge « bib. », EVO-013).
+  const nav = useRef<HTMLElement>(null);
+  useEffect(() => { nav.current?.querySelector('[aria-current="true"]')?.scrollIntoView?.({ block: 'nearest' }); }, [item?.id]);
   const entry = (it: LibraryItem | undefined, label: string, sub?: string) => (
     <li key={it?.id ?? 'labelSets'}>
-      <button type="button" data-testid="library-entry"
+      <button type="button" data-testid="library-entry" aria-current={(it?.id ?? '') === (exists ? item!.id : '')}
         className={cn('flex w-full items-baseline gap-2 rounded px-2 py-1 text-left text-sm hover:bg-slate-100',
           (it?.id ?? '') === (exists ? item!.id : '') && 'bg-indigo-50 text-indigo-800')}
         onClick={() => runCommand('library.show', it)}
@@ -42,7 +45,7 @@ export function Library() {
   );
   return (
     <div className="flex h-full" data-testid="library">
-      <nav className="w-64 shrink-0 overflow-y-auto border-r border-slate-200 bg-white p-2">
+      <nav ref={nav} className="w-64 shrink-0 overflow-y-auto border-r border-slate-200 bg-white p-2">
         {heading(<Tags className="size-3" />, t('library.labelSets'))}
         <ul>{entry(undefined, t('library.labelSets'), String(lib.labelSets.length))}</ul>
         {heading(<FileQuestion className="size-3" />, t('library.questions'), 'library.newQuestion')}

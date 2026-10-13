@@ -1,7 +1,7 @@
 # EVO-013 — Ouvrir l'objet de bibliothèque depuis son badge « Bib »
 
-Statut : à faire
-Dépend de : EVO-??? (bibliothèque de fragments et de questions, badge « Bib ») — à compléter
+Statut : fait 2026-10-13
+Dépend de : EVO-008 (fragments de bibliothèque, nœud fragment et son badge « bib. ») ; questions de bibliothèque : spec §3.8 (existant)
 
 ## Besoin
 
@@ -79,3 +79,33 @@ Ajouter une section « Analyse » en bas de ce fichier :
 
 Faisable sans ambiguïté bloquante → choix notés dans l'analyse et `docs/DECISIONS.md`, puis
 réalisation. Sinon → statut « à arbitrer », options et conséquences, arrêt sans coder.
+
+## Analyse
+
+Conclusion : **faisable sans ambiguïté bloquante**, réalisée. Format JSON inchangé.
+
+1. **Faisabilité, modules** (matrice de `docs/MAP.md`, lignes « Logigramme », « Questions et fragments de bibliothèque »,
+   « Fragments (EVO-008) ») : `ui/diagram` (`NodeView` : badge), `app/commands` (`library-item-commands.ts` : nouvelle commande
+   cachée `library.openRef`, réutilise `showLibraryItem`), `app/i18n` (infobulle, message), `ui/library` (`Library` : élément
+   affiché gardé visible dans la liste). Ni `core`, ni `format`, ni plugin.
+2. **Résolution du lien** : le nœud porte `ref` (id de la question ou du fragment de bibliothèque) ; son genre (`question` /
+   `fragment`) donne la liste où chercher (`library.questions` / `library.fragments`). Trouvé → `showLibraryItem` : question
+   dans l'onglet Bibliothèque (`libraryItem`, détail à droite), fragment dans son onglet `f:<id>` (c'est ainsi que la
+   bibliothèque affiche un fragment depuis EVO-008). Introuvable → fenêtre « Objet de bibliothèque introuvable » (`notice`),
+   onglet inchangé.
+3. **Conflit d'événements** : le double-clic d'un nœud (React Flow `onNodeDoubleClick` → édition de l'intitulé) passe par
+   l'événement React du nœud : `stopPropagation` dans le `onDoubleClick` du badge l'arrête. Le zoom au double-clic du fond
+   (d3-zoom, écouteur natif sur le conteneur) applique le filtre de React Flow, qui écarte les cibles dans un élément `nopan` :
+   le badge porte cette classe. Le clic simple n'est pas intercepté (sélection du nœud inchangée). Double-clic ailleurs :
+   inchangé. Le double-clic d'une entrée du panneau latéral (insertion) n'est pas concerné (pas de badge).
+4. **État non enregistré** : l'ouverture ne fait que changer d'onglet (`openTab`, `libraryItem`) ; l'espace de travail, son
+   historique et l'indicateur « modifié » ne sont pas touchés, l'onglet du questionnaire reste ouvert.
+5. **Endroits où le badge « bib. » est affiché** : un seul composant, `NodeView` (`ui/diagram`), pour une question de
+   bibliothèque ou un nœud fragment ; il sert le logigramme d'un questionnaire, celui d'un fragment et la vue côte à côte
+   (lecture seule) : tous couverts. Le panneau de propriétés n'affiche pas de badge (texte « Question de bibliothèque : … »
+   et bouton « Ouvrir dans la bibliothèque » existants) : rien à couvrir. Le contenu déplié d'un nœud fragment et le panneau
+   latéral de la bibliothèque n'affichent pas de badge. Une référence de question rompue s'affiche « ? » sans badges
+   (existant) : le cas « lien rompu » ne se présente donc que sur un nœud fragment.
+
+Choix notés dans `docs/DECISIONS.md`. Le badge s'intitule « bib. » dans l'outil (« Bib » dans la demande).
+

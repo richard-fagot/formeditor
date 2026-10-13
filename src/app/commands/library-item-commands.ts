@@ -32,6 +32,15 @@ export function showLibraryItem(item?: LibraryItem) {
   st().set((s) => void (s.libraryItem = item));
 }
 
+/** Ouvre l'objet lié s'il existe dans la bibliothèque, sinon le signale (EVO-013). */
+function openRef(arg: unknown) {
+  if (!isItem(arg)) return;
+  const lib = st().ws.library;
+  if ((arg.kind === 'question' ? lib.questions : lib.fragments).some((x) => x.id === arg.id)) return showLibraryItem(arg);
+  const tt = t();
+  st().set((s) => void (s.notice = { title: tt('library.brokenRef'), lines: [tt('library.brokenRefLine', { id: arg.id })] }));
+}
+
 /** Insère une référence : à la position donnée (dépôt), sinon à la suite du nœud sélectionné. */
 function insertItem(arg: unknown) {
   const r = (arg as { graph?: GraphRef }).graph ?? ref();
@@ -96,6 +105,8 @@ export function libraryItemCommands(): Command[] {
         showLibraryItem({ kind: 'fragment', id });
       },
     },
+    // EVO-013 : double-clic sur le badge « bib. » ; `arg` : { kind, id } ; lien rompu → message, aucune navigation.
+    { id: 'library.openRef', label: 'node.openInLibrary', keys: [], scope: 'global', hidden: true, run: openRef },
     { id: 'library.show', label: 'tab.library', keys: [], scope: 'global', hidden: true, run: (item) => showLibraryItem(isItem(item) ? item : undefined) },
     {
       id: 'library.delete', label: 'library.delete', keys: [], scope: 'global', hidden: true,

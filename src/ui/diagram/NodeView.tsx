@@ -42,7 +42,13 @@ export const NodeView = memo(function NodeView({ data, selected }: NodeProps & {
         <span data-testid="required-override"><Badge tone="amber" title={t('required.badgeTitle')}>{t('required.badge')}</Badge></span>
       )}
       {question && OTHER_TYPES.includes(question.type) && 'other' in question && question.other && <Badge>{t('node.badgeOther')}</Badge>}
-      {(isLibraryQuestion(node) || node.kind === 'fragment') && <Badge tone="amber" title={t('node.libraryBadge')}>bib.</Badge>}
+      {(isLibraryQuestion(node) || node.kind === 'fragment') && (
+        // EVO-013 : double-clic = ouvrir l'objet lié ; `nopan` écarte le zoom du fond, stopPropagation l'édition du nœud.
+        <span data-testid="library-badge" className="nopan" title={t('node.libraryBadge')}
+          onDoubleClick={(e) => { e.stopPropagation(); runCommand('library.openRef', { kind: node.kind, id: node.ref }); }}>
+          <Badge tone="amber">bib.</Badge>
+        </span>
+      )}
       {fieldsCount && <Badge tone="amber">{fieldsCount}</Badge>}
       {hasComment && (
         <button type="button" data-testid="comment-icon" aria-pressed={commentShown} title={t('comment.toggle')} aria-label={t('comment.toggle')}
