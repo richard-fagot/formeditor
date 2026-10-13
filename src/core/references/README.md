@@ -23,6 +23,8 @@ Résolution des clés et espaces de noms, index des usages, renommage propagé. 
 - `renameKey(ws, target, newKey)` : `target` = question (`owner` + `nodeId`, `fieldId` pour un champ),
   alias d'un nœud fragment (`{ kind: 'alias', owner, nodeId }` : questionnaire ou fragment ; réécrit aussi chez les appelants), variable système (scénarios compris), ou champ d'une liste système (`systemField` :
   `sys.x.champ`, noms relatifs des entrées dynamiques dont `from` est `sys.x`, exemple et scénarios ; nom invalide ou pris → inchangé). Renvoie un nouveau `Workspace`. Renommer un champ d'une question de bibliothèque suit dans `hiddenFields` de ses instances (EVO-009).
+- `renameKeysIn(part, renames, owner)` (EVO-010) : renomme clés locales et alias d'un morceau de graphe (nœuds collés) et réécrit leurs références
+  (`cle`, `cle_other`, `cle.champ`, `alias.cle`…) dans ses seules expressions ; noms relatifs et clés masquées par un champ de structure inchangés.
 - `qualifyKeys(ws, owner, keys, alias)` : préfixe par `alias.` les références à `keys` (et `cle_other`) dans les
   expressions de `owner` (questions déplacées dans un fragment appelé sous cet alias).
 
@@ -38,4 +40,4 @@ Résolution des clés et espaces de noms, index des usages, renommage propagé. 
   (le fragment est partagé) : la vérification « clé attendue absente » le signale chez l'appelant.
 
 ## Tests
-`references.test.ts` (sur l'exemple), `groups.test.ts`, `dont-know.test.ts`, `fragments.test.ts` (portée imbriquée, renommage chez les appelants), `hidden-fields.test.ts` (EVO-009).
+`references.test.ts` (sur l'exemple), `groups.test.ts`, `dont-know.test.ts`, `fragments.test.ts` (portée imbriquée, renommage chez les appelants), `hidden-fields.test.ts` (EVO-009), `rename-local.test.ts` (EVO-010).

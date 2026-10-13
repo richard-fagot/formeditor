@@ -1,0 +1,15 @@
+/** Textes du copier-coller de nœuds et de la duplication (EVO-010). */
+export const CLIPBOARD_MESSAGES = {
+  'node.copy': { fr: 'Copier', en: 'Copy' },
+  'node.paste': { fr: 'Coller', en: 'Paste' },
+  'paste.title': { fr: 'Collage : éléments écartés', en: 'Paste: items left out' },
+  'paste.end': { fr: 'La fin « {name} » n’est pas collée : un fragment n’a pas de fin.', en: 'End "{name}" is not pasted: a fragment has no end.' },
+  'paste.exit': { fr: 'La sortie « {name} » n’est pas collée : seul un fragment a des sorties nommées.', en: 'Exit "{name}" is not pasted: only a fragment has named exits.' },
+  'paste.cycle': { fr: 'Le fragment « {name} » n’est pas collé : il créerait un cycle d’appels.', en: 'Fragment "{name}" is not pasted: it would create a call cycle.' },
+  'paste.start': { fr: '« {name} » est collé comme nœud ordinaire : la cible garde son départ.', en: '"{name}" is pasted as an ordinary node: the target keeps its start.' },
+  'paste.startFragment': { fr: '« {name} » est collé comme nœud ordinaire : un fragment n’a pas de départ.', en: '"{name}" is pasted as an ordinary node: a fragment has no start.' },
+  'questionnaire.duplicate': { fr: 'Dupliquer le questionnaire', en: 'Duplicate questionnaire' },
+  'library.duplicate': { fr: 'Dupliquer l’élément de bibliothèque', en: 'Duplicate library item' },
+  'copy.name': { fr: 'Copie de {name}', en: 'Copy of {name}' },
+  'copy.nameN': { fr: 'Copie {n} de {name}', en: 'Copy {n} of {name}' },
+} satisfies Record<string, { fr: string; en: string }>;

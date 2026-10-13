@@ -11,6 +11,8 @@ export {
   copyToLibrary, setFieldHidden, hiddenFieldUsages, type RewrittenExpression,
   type LibraryItem,
 } from './library-edits';
+export { copyNodes, pasteNodes, PASTE_OFFSET, type Clip, type PasteDrop } from './clipboard';
+export { duplicateQuestionnaire, duplicateLibraryItem, type CopyName } from './duplicate';
 export { groupIntoFragment, groupEntries, canExtract } from './group';
 export { questionnaireKeys, canRenameQuestionnaire, renameQuestionnaire, patchQuestionnaire } from './questionnaire-edits';
 export {

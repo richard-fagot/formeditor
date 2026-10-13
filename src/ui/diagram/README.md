@@ -38,4 +38,6 @@ Dépend de `app/store`, `app/commands` (liaison tracée à la souris : `edge.cre
   `data-edge-label` des libellés. Titre dessiné sur un second canvas. Pièges : sélection vidée puis restaurée, transitions
   coupées (`[data-exporting]`, `index.css`), attente d'une tâche + une image avant capture : sinon surbrillance figée.
   Seulement pour le logigramme modifiable d'un questionnaire. Test : `tests/smoke/evo-004.spec.ts`.
+- Copier-coller (EVO-010, `useDiagramMenu.tsx`) : position du pointeur transmise à `setPastePoint` (Ctrl+V colle au pointeur) ; clic droit sur un nœud
+  (Copier, Coller, Dupliquer ; le nœud est sélectionné s'il ne l'était pas) ou sur le fond (Coller au point du clic), menu `ContextMenu` de `ui-kit`.
 - Suppression par la commande (touche Suppr), jamais par React Flow (`deleteKeyCode=null`).

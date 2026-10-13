@@ -1,8 +1,10 @@
 import { SETTINGS_MESSAGES } from './messages-settings';
+import { CLIPBOARD_MESSAGES } from './messages-clipboard';
 
 /** Dictionnaire de l'interface de l'outil (français par défaut). `{x}` : paramètre. */
 export const MESSAGES = {
   ...SETTINGS_MESSAGES,
+  ...CLIPBOARD_MESSAGES,
   'app.title': { fr: 'Éditeur de questionnaires', en: 'Questionnaire editor' },
   'project.new': { fr: 'Nouveau projet', en: 'New project' },
   'project.open': { fr: 'Ouvrir / importer…', en: 'Open / import…' },
