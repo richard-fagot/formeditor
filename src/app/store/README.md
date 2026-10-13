@@ -47,7 +47,7 @@ Dépend de `core`, `format`, `app/i18n`, `plugin-api` (utilitaires).
 - État du système (`system-edits.ts`) : `addVariable`, `deleteVariable` (aussi dans les scénarios), `renameVariable`, `renameListField`
   (`renameKey` cible `system` ; nom invalide ou pris → inchangé), `setVariableType`, `addScenario` (nom rendu unique), `deleteScenario`,
   `valueError` (écart d'une valeur au type déclaré), `exampleSystemState`, `scenarioOf`, `systemStateOf` (état d'une prévisualisation).
-- État d'interface : `copyRequest` (copie en bibliothèque en attente d'une autre clé, EVO-009), `previewPanels` (panneaux état du système / débogage), `libraryItem` (élément affiché dans l'onglet Bibliothèque), `libraryPanel` (panneau latéral),
+- État d'interface : `copyRequest` (copie en bibliothèque en attente d'une autre clé, EVO-009), `previewPanels` (panneaux état du système / débogage), `previewChecks` (contrôles de saisie de la prévisualisation, EVO-014 : hors `initialState`, gardé par `loadWorkspace`, non sauvegardé ; `PreviewState.unchecked` : pages quittées contrôles désactivés), `libraryItem` (élément affiché dans l'onglet Bibliothèque), `libraryPanel` (panneau latéral),
   palette en mode `commands` | `connect` | `library`. `activeGraphRef` : questionnaire actif, ou fragment de l'onglet `f:<id>`
   (EVO-008 ; historique `library`). Un fragment n'a pas de `start` : `insertNode` ne le pose que sur un questionnaire, `removeNodes` retire `entry` si son nœud disparaît.
 - Langues des contenus (`language-edits.ts`) : `isLanguageCode`, `addLanguage`, `removeLanguage` (jamais la langue par défaut ;

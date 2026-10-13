@@ -7,3 +7,4 @@ Raccourci par défaut : Shift+A. Aperçu : icône, `<adresse>`, pays par défaut
 - Saisie : sélecteur de pays (`data-testid="address-country"`, masqué si un seul pays est autorisé) et une ligne. Valeur
   enregistrée : la ligne sans espaces de bord ; pays passé par `onChange(…, country)` (`<clé>_pays`).
 - Contrôles `address` et `postalCode` (France) : `core/contact`, à la sortie du champ et à la validation de la page.
+- `env.checks === false` (contrôles de saisie désactivés en prévisualisation, EVO-014) : aucun message affiché à la sortie du champ.

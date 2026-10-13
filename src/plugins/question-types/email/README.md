@@ -7,3 +7,4 @@ Type « mail » (`type: "email"`, EVO-007) : aucun paramètre propre. Raccourci 
 - Champ `type="text"` (`inputMode="email"`) : un `type="email"` laisserait Chromium convertir un domaine accentué en punycode.
 - Valeur enregistrée à chaque frappe : saisie sans espaces de bord, domaine en minuscules si l'adresse est valide.
 - « Ne sais pas » : case sous le champ (`data-testid="dont-know"`), comme le texte.
+- `env.checks === false` (contrôles de saisie désactivés en prévisualisation, EVO-014) : aucun message affiché à la sortie du champ.

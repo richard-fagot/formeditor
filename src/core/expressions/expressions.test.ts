@@ -35,6 +35,14 @@ describe('évaluation', () => {
     expect(evaluateCondition('a = ', ctx)).toBe(false);
     expect(evaluateCondition('inconnu.x > 3', ctx)).toBe(false);
   });
+  it('EVO-014 : condition sur une réponse vide ou invalide évaluée à faux, sans erreur', () => {
+    expect(() => evaluateCondition('$number(age) >= 18', { age: 'abc' })).not.toThrow();
+    expect(evaluateCondition('$number(age) >= 18', { age: 'abc' })).toBe(false);
+    expect(evaluateCondition('age >= 18', {})).toBe(false);
+    expect(evaluateCondition('age + 1 > 18', { age: 'abc' })).toBe(false);
+    expect(evaluateCondition("situation = 'marie'", {})).toBe(false);
+    expect(evaluateCondition("$contains(nom, 'a')", { nom: 5 })).toBe(false);
+  });
   it('signale les erreurs de syntaxe avec leur position', () => {
     expect(checkSyntax("type_sinistre = 'vol'")).toBeUndefined();
     expect(checkSyntax('a = ')).toMatchObject({ position: 4 });

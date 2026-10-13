@@ -17,3 +17,5 @@
 | 2026-10-13 | EVO-012 | mineur | La provenance « Hérité » affiche la clé du fragment et non son nom (titre). | `src/ui/properties/RequiredOverride.tsx:203`, `src/app/i18n/messages-required.ts:10` |
 | 2026-10-13 | EVO-012 | mineur | Pas de test direct : une question surchargée « Obligatoire » mais non présentée n'est pas exigée (moteur inchangé sur ce point). | `src/core/runtime/required.test.ts` |
 | 2026-10-13 | EVO-013 | mineur | Le défilement jusqu'à la question ouverte n'est pas réellement testé (liste d'exemple trop courte, `toBeInViewport` passe toujours). | `tests/smoke/evo-013.spec.ts:344` |
+| 2026-10-13 | EVO-014 | mineur | Pas de test vérifiant que les messages de format des plugins mail, téléphone et adresse se taisent contrôles désactivés (seul un nombre hors bornes est testé). | `tests/smoke/evo-014.spec.ts` |
+| 2026-10-13 | EVO-014 | mineur | Une page quittée contrôles désactivés reste exclue de la garde de fin jusqu'à « Recommencer », même revisitée contrôles activés (cas limite non documenté). | `src/ui/preview/Preview.tsx:375`, `src/ui/preview/path-check.ts:21` |

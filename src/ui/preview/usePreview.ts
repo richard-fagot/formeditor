@@ -28,15 +28,15 @@ export function usePreview(questionnaireId: string) {
   return { input, session, lang, uiLang, update, state: p };
 }
 
-/** Environnement de rendu des plugins à une étape donnée. */
-export function makeRenderEnv(input: RuntimeInput, session: Session, stepId: string | undefined, lang: string, uiLang: string): RenderEnv {
-  return envOf(input, buildContext(input, session.answers, stepId), lang, uiLang);
+/** Environnement de rendu des plugins à une étape donnée (`checks` : contrôles de saisie, EVO-014). */
+export function makeRenderEnv(input: RuntimeInput, session: Session, stepId: string | undefined, lang: string, uiLang: string, checks = true): RenderEnv {
+  return envOf(input, buildContext(input, session.answers, stepId), lang, uiLang, checks);
 }
 
 /** Copie sans les valeurs `null` (comme `buildContext`) : une valeur vide n'est pas « renseignée ». */
 const withoutNulls = (o: Record<string, unknown>) => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== null));
 
-function envOf(input: RuntimeInput, ctx: EvalContext, lang: string, uiLang: string): RenderEnv {
+function envOf(input: RuntimeInput, ctx: EvalContext, lang: string, uiLang: string, checks: boolean): RenderEnv {
   const langs = { lang, defaultLang: input.ws.project.defaultLanguage };
   return {
     ws: input.ws,
@@ -50,6 +50,7 @@ function envOf(input: RuntimeInput, ctx: EvalContext, lang: string, uiLang: stri
     evaluate: (e, extra) => evaluate(e, { ...ctx, ...extra }, input.env),
     condition: (e, extra) => evaluateCondition(e, { ...ctx, ...extra }, input.env),
     options: (q) => (q.type === 'single' || q.type === 'multiple' ? choiceOptions(q, ctx, input.env) : []),
-    scoped: (extra) => envOf(input, { ...ctx, ...withoutNulls(extra) }, lang, uiLang),
+    scoped: (extra) => envOf(input, { ...ctx, ...withoutNulls(extra) }, lang, uiLang, checks),
+    checks,
   };
 }

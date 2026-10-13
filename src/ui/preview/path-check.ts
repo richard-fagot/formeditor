@@ -14,9 +14,10 @@ export function answerErrors(input: RuntimeInput, answers: Answers, stepId: stri
   return validateAnswer(q, value, { ...ctx, ...(value === null || value === undefined ? {} : { [q.key]: value }) }, input.env, other, '', group, dontKnow);
 }
 
-/** Première page du chemin effectif dont la réponse (connue) est devenue invalide (spec §5). */
-export function firstInvalidStep(input: RuntimeInput, answers: Answers): string | undefined {
+/** Première page du chemin effectif dont la réponse (connue) est devenue invalide (spec §5) ; `skip` : pages non revérifiées (EVO-014). */
+export function firstInvalidStep(input: RuntimeInput, answers: Answers, skip: readonly string[] = []): string | undefined {
   for (const id of projectedSteps(input, answers)) {
+    if (skip.includes(id)) continue;
     const path = resolveStep(input, id)?.answerPath;
     if (path && getAnswer(answers, path) !== undefined && answerErrors(input, answers, id).length) return id;
   }
@@ -27,8 +28,8 @@ export function firstInvalidStep(input: RuntimeInput, answers: Answers): string 
  * Une fin ne s'affiche que si toutes les réponses du chemin sont valides : sinon, session ramenée à la
  * première question concernée (réponse conservée). Renvoie `undefined` si rien n'est à corriger.
  */
-export function guardEnd(input: RuntimeInput, s: Session): Session | undefined {
+export function guardEnd(input: RuntimeInput, s: Session, skip: readonly string[] = []): Session | undefined {
   if (!s.history.length || currentStep(input, s).node.kind !== 'end') return undefined;
-  const bad = firstInvalidStep(input, s.answers);
+  const bad = firstInvalidStep(input, s.answers, skip);
   return bad ? goTo(s, bad) : undefined;
 }

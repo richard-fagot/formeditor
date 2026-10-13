@@ -1,6 +1,6 @@
 # EVO-014 — Désactivation des contrôles de surface en prévisualisation
 
-Statut : à faire
+Statut : fait 2026-10-13
 Dépend de : aucune
 
 ## Besoin
@@ -107,3 +107,27 @@ Ajouter une section « Analyse » en bas de ce fichier :
 
 Faisable sans ambiguïté bloquante → choix notés dans l'analyse et `docs/DECISIONS.md`, puis
 réalisation. Sinon → statut « à arbitrer », options et conséquences, arrêt sans coder.
+
+## Analyse
+
+**Conclusion : faisable sans ambiguïté bloquante.** Choix notés ci-dessous et dans `docs/DECISIONS.md`.
+
+1. **Faisabilité, modules impactés** (`docs/MAP.md`, ligne « Prévisualisation ») : `ui/preview` (bascule, bandeau,
+   court-circuit), `app/store` (état `previewChecks`, hors projet et hors `initialState` : il survit à `loadWorkspace`,
+   n'est pas sauvegardé par `app/persistence`), `app/commands` (commande `preview.toggleChecks`, palette), `app/i18n`,
+   `plugin-api` (`RenderEnv.checks`), plugins `email`, `phone`, `address` (messages affichés à la sortie du champ).
+   Aucun changement de `core`, du format JSON ni du moteur de parcours.
+2. **Séparation contrôles / navigation** : déjà séparés. Le moteur (`core/runtime` : `next`, `back`, `resume`,
+   `chooseEdge`) ne valide rien ; toute la validation de surface passe par `ui/preview` : `check()` avant « Suivant »
+   (`advance`), le prédicat de `resume` (« Revenir à la synthèse »), `guardEnd` (garde de fin) et l'affichage des erreurs
+   (`attempted`). Seul autre point : les contrôles intégrés affichés à la sortie du champ par les plugins mail, téléphone,
+   adresse (`blurErrors`). Point de bascule unique : `previewChecks` lu dans `Wizard` ; les plugins reçoivent
+   `env.checks === false` pour taire leurs messages. Aucun contrôle ne reste actif une fois désactivé.
+   Réactivation sans rétroactivité : les pages quittées contrôles désactivés sont mémorisées (`PreviewState.unchecked`) et
+   ignorées par `guardEnd` ; la page courante est contrôlée à la prochaine tentative de navigation.
+3. **Expressions sur valeurs vides ou invalides** : `evaluate` intercepte toute erreur JSONata et renvoie `undefined` ;
+   `evaluateCondition` ne vaut vrai que si le résultat est exactement `true`. Une réponse vide est absente du contexte
+   (`buildContext` retire les `null`) : `x = "M"` ou `x > 18` vaut faux (ou vide), `$number(x) > 3` sur un texte lève une
+   erreur interceptée → faux. Aucun traitement supplémentaire : la valeur invalide est évaluée telle quelle, et toute
+   condition non évaluable est fausse (la branche « sinon » s'applique ; sans « sinon », « parcours bloqué » comme
+   aujourd'hui). Couvert par un test de `core/expressions`.
