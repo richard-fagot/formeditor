@@ -137,3 +137,41 @@ Ajouter une section « Analyse » en bas de ce fichier :
 
 Faisable sans ambiguïté bloquante → choix notés dans l'analyse et `docs/DECISIONS.md`, puis
 réalisation. Sinon → statut « à arbitrer », options et conséquences, arrêt sans coder.
+
+## Analyse
+
+Prérequis vérifiés : les fragments (EVO-008) existent ; une commande `node.duplicate` (Ctrl+D) duplique déjà des nœuds
+dans le même graphe (clés suffixées, sans réécriture des références). Les expressions sont **analysées** (arbre JSONata) :
+`renameReference` et `renameInTemplate` (`core/expressions`) renomment un chemin dans l'arbre, et `mapGraph`
+(`core/references`) parcourt toutes les expressions d'un graphe (conditions, libellés, entrées dynamiques, contraintes,
+variantes, champs de structure). Conclusion : **faisable sans arbitrage**.
+
+1. **Faisabilité et modules** (d'après `docs/MAP.md`) : `core/references` (réécriture des clés renommées dans les seuls
+   nœuds et arêtes collés : `renameKeysIn`), `app/store` (`clipboard.ts` : `copyNodes`, `pasteNodes` ; `duplicate.ts` :
+   `duplicateQuestionnaire`, `duplicateLibraryItem`), `app/commands` (`node.copy`, `node.paste`, `questionnaire.duplicate`,
+   `library.duplicate`), `app/i18n`, `ui-kit` (menu contextuel générique), `ui/diagram` (position du pointeur, menu
+   contextuel), `ui/shell` (menu des onglets), `ui/library` (menu de la liste), `docs/spec.md`, `docs/GUIDE.md`.
+   Format JSON : sans objet.
+2. **Réécriture des références** : cible atteinte. Les nouvelles clés (et alias) sont choisies hors des clés de la cible
+   **et** des clés d'origine de la sélection : renommer les règles l'une après l'autre ne peut pas en enchaîner deux.
+   Chaque référence racine `cle`, `cle_other`, `cle.champ`, `cle.groupe`, `cle.nsp`, `cle.pays`, `alias.cle` dont le
+   premier nom est une clé renommée de la sélection est réécrite, dans les expressions et les libellés interpolés des
+   nœuds et arêtes collés seulement. Les noms relatifs des entrées dynamiques ne sont pas touchés, ni une clé masquée
+   par un champ de même nom de sa structure (même règle que le renommage propagé).
+
+Choix complémentaires (aussi dans `docs/DECISIONS.md`) :
+- **Départ** : ce n'est pas un type de nœud mais un rôle (badge « Départ »). Le nœud est collé comme nœud ordinaire et
+  la cible garde son départ ; un message l'indique. Dans un questionnaire vide, le premier nœud collé devient le départ
+  (règle de la création manuelle). Le rôle d'entrée d'un fragment n'est pas non plus copié.
+- **Fin** : la spec (§3.2) autorise plusieurs fins par questionnaire : une fin collée dans un questionnaire est collée.
+  Dans un fragment, les fins sont écartées avec leurs arêtes, avec message (comme « Nouvelle fin », indisponible).
+  Symétriquement, une sortie nommée collée dans un questionnaire est écartée avec message (« Nouvelle sortie » n'existe
+  que dans un fragment).
+- **Question de bibliothèque** : une instance collée référence la même question ; sa clé est celle de la bibliothèque et
+  ne peut pas être suffixée : un doublon éventuel est signalé par les vérifications (comme une insertion manuelle).
+- **Presse-papiers** : interne, en mémoire, instantané pris à la copie ; il porte l'id du projet : coller est
+  indisponible dans un autre projet. Pointeur hors du logigramme : décalage de 40 px par rapport à l'original.
+- **Duplication** : « Copie de <nom> » dans chaque langue du titre ou de l'intitulé (texte de l'outil dans cette langue,
+  sinon langue de l'interface), puis « Copie 2 de… » ; nouvelle clé `cle_2`… ; nœuds et arêtes de la copie avec de
+  nouveaux identifiants, mise en page reprise. « Liste des questionnaires » = les onglets de questionnaires (ouverts et
+  fermés) ; aussi par la palette sur le questionnaire, le fragment ou la question de bibliothèque affichés.
