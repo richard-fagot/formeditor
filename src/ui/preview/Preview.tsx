@@ -1,5 +1,5 @@
 import { useEffect, useMemo, type ReactNode } from 'react';
-import { Bug, ChevronLeft, ChevronRight, Database, RotateCcw, ShieldCheck, Undo2 } from 'lucide-react';
+import { Bug, ChevronLeft, Map as MapIcon, ChevronRight, Database, RotateCcw, ShieldCheck, Undo2 } from 'lucide-react';
 import { OTHER_VALUE } from '../../core/model';
 import {
   back, countryPath, currentStep, dontKnowAnswer, dontKnowPath, getAnswer, groupPath, next, otherPath, progress, resume, setAnswer, start, type RuntimeInput, type Session,
@@ -10,6 +10,7 @@ import { runCommand } from '../../app/commands';
 import { useStore, useT } from '../../app/store';
 import { Button, Select, cn } from '../../ui-kit';
 import { DebugPanel } from './DebugPanel';
+import { Outline } from './Outline';
 import { Summary } from './Summary';
 import { SystemPanel } from './SystemPanel';
 import { answerErrors, guardEnd } from './path-check';
@@ -38,10 +39,11 @@ export function Preview({ questionnaireId }: { questionnaireId: string }) {
           </Select>
         </label>
         <MissingTranslations questionnaireId={questionnaireId} lang={lang} />
-        <Button size="sm" variant="ghost" onClick={() => update({ session: start(input), attempted: false, returnTo: undefined, unchecked: undefined })}>
+        <Button size="sm" variant="ghost" onClick={() => update({ session: start(input), attempted: false, returnTo: undefined, unchecked: undefined, visited: [] })}>
           <RotateCcw className="size-3.5" />{t('preview.restart')}
         </Button>
         <div className="ml-auto flex gap-1">
+          {toggle('preview.toggleOutline', panels.outline, <MapIcon className="size-3.5" />, t('preview.outline'))}
           {toggle('preview.toggleChecks', checks, <ShieldCheck className="size-3.5" />, t('preview.checks'))}
           {toggle('preview.toggleSystem', panels.system, <Database className="size-3.5" />, t('preview.system'))}
           {toggle('preview.toggleDebug', panels.debug, <Bug className="size-3.5" />, t('preview.debug'))}
@@ -52,6 +54,11 @@ export function Preview({ questionnaireId }: { questionnaireId: string }) {
       )}
       <div className="flex min-h-0 flex-1">
         <Wizard questionnaireId={questionnaireId} preview={preview} />
+        {panels.outline && (
+          <aside className="w-[28rem] max-w-[45%] shrink-0 border-l border-slate-200 bg-white" data-testid="outline-panel" aria-label={t('preview.outline')}>
+            <Outline questionnaireId={questionnaireId} preview={preview} />
+          </aside>
+        )}
         {(panels.system || panels.debug) && (
           <aside className="w-80 shrink-0 space-y-6 overflow-y-auto border-l border-slate-200 bg-white p-4">
             {panels.system && (

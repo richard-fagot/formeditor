@@ -1,5 +1,5 @@
 # Guide utilisateur — Éditeur de questionnaires
-Mis à jour le 2026-10-13 — jusqu'à EVO-017
+Mis à jour le 2026-10-13 — jusqu'à EVO-019
 
 ## Mode d'emploi du guide
 
@@ -649,6 +649,20 @@ Concerne le choix unique et le choix multiple. Le booléen et le tri-state n'ont
 - **Voir quelles questions sont exigées** — L'astérisque rouge et le blocage de « Suivant » sur une question laissée vide
   suivent la valeur **effective** du caractère obligatoire, surcharges comprises (§10) ; une question non présentée (chemin
   non emprunté, champ masqué) n'est jamais exigée.
+- **Afficher l'outline du logigramme** — Bouton « Outline » de la barre de prévisualisation, ou palette « Afficher / masquer
+  l’outline du logigramme ». Un panneau à droite du wizard montre le logigramme du questionnaire en lecture seule (rien ne
+  s'y déplace ni ne s'y modifie) ; le wizard occupe la largeur restante. Masqué, la prévisualisation est inchangée. L'état
+  affiché / masqué est gardé pendant la session (changement d'onglet compris), jamais enregistré dans le projet. `[cmd: preview.toggleOutline]`
+- **Suivre la page dans l'outline** — À chaque changement de page (« Suivant », « Précédent », branche, saut), l'outline se
+  recentre sur le nœud de la page affichée, entouré en vert (page d'un fragment : le nœud fragment), avec ses voisins
+  immédiats visibles si possible. On peut zoomer (molette) ou déplacer la vue (glisser le fond) : le changement de page
+  suivant recentre.
+- **Revenir à une question depuis l'outline** — Cliquer une question active : le wizard l'affiche avec sa réponse, les
+  autres réponses sont conservées et « Précédent » remonte le parcours. Sont actives les questions déjà affichées depuis
+  « Recommencer » et situées sur le parcours que donnent les réponses actuelles, y compris celles qui suivent la page
+  courante après un retour arrière. Les autres questions sont grisées et le clic est sans effet : jamais affichées, ou
+  hors du parcours dès qu'une réponse le change (ex. « Oui » devenu « Non »). Un clic sur un nœud qui n'est pas une question
+  (fragment, information, synthèse, fin) ne fait rien.
 - **Retrouver le nœud d'une page** — Cliquer la page : le nœud est sélectionné dans le logigramme (visible en revenant au logigramme) ;
   pour une page d'un fragment, le nœud fragment du questionnaire.
 - **Parcourir un fragment** — Ses pages s'enchaînent sans rupture avec celles du questionnaire ; « Précédent » traverse le
@@ -910,6 +924,7 @@ Chaque formulaire se valide indépendamment des autres. Un formulaire non valid�
 | Enregistrer l’état du système comme nouveau scénario | — | `preview.saveScenario` |
 | Afficher / masquer le panneau d’état du système | — | `preview.toggleSystem` |
 | Afficher / masquer le panneau de débogage | — | `preview.toggleDebug` |
+| Afficher / masquer l’outline du logigramme | — | `preview.toggleOutline` |
 | Activer / désactiver les contrôles de saisie de la prévisualisation | — | `preview.toggleChecks` |
 | Paramètres | — | `tab.settings` |
 | Ajouter une langue | — | `lang.add` |

@@ -38,6 +38,8 @@ export interface PreviewState {
   lang?: string;
   /** Pages quittées contrôles de saisie désactivés (EVO-014) : non revérifiées par la garde de fin. */
   unchecked?: string[];
+  /** Pages affichées depuis le début du parcours (EVO-019) : « Précédent » tronque l'historique, pas cette liste. */
+  visited?: string[];
 }
 
 /** État applicatif ; l'état de l'export d'image est dans `image-state.ts`. */
@@ -77,8 +79,8 @@ export interface AppState extends ImageState {
   libraryItem?: LibraryItem;
   /** Panneau latéral de la bibliothèque à côté du logigramme (glisser-déposer). */
   libraryPanel: boolean;
-  /** Panneaux repliables de la prévisualisation : état du système, débogage. */
-  previewPanels: { system: boolean; debug: boolean };
+  /** Panneaux repliables de la prévisualisation : état du système, débogage, outline du logigramme (EVO-019). */
+  previewPanels: { system: boolean; debug: boolean; outline: boolean };
   /** Contrôles de saisie de la prévisualisation (EVO-014) : état de l'éditeur, non enregistré dans le projet. */
   previewChecks: boolean;
 }
@@ -168,7 +170,7 @@ export const useStore = create<Store>()(
     fitRequest: 0,
     layoutRequest: 0,
     libraryPanel: true,
-    previewPanels: { system: true, debug: false },
+    previewPanels: { system: true, debug: false, outline: false },
     previewChecks: true,
     ...initialImageState(),
 

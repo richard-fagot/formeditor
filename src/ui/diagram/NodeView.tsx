@@ -15,7 +15,7 @@ export type NodeData = { nodeId: string };
 
 /** Nœud du logigramme : cadre, poignées, contenu délégué au plugin du type de nœud, édition en place. */
 export const NodeView = memo(function NodeView({ data, selected }: NodeProps & { data: NodeData }) {
-  const { graph, issuesByNode, readOnly, locked } = useDiagram();
+  const { graph, issuesByNode, readOnly, locked, outline } = useDiagram();
   const node = useStore((s) => getGraph(s.ws, graph)?.nodes.find((n) => n.id === data.nodeId));
   // Départ d'un questionnaire, ou entrée (implicite ou réglée) d'un fragment.
   const isStart = useStore((s) => { const g = getGraph(s.ws, graph); return !!g && graphStart(g) === data.nodeId; });
@@ -75,12 +75,19 @@ export const NodeView = memo(function NodeView({ data, selected }: NodeProps & {
   const Shape = plugin.Shape;
   const fragment = node.kind === 'fragment' ? env.ws.library.fragments.find((f) => f.id === node.ref) : undefined;
   const exits = fragment?.nodes.flatMap((n) => (n.kind === 'exit' ? [n.name] : [])) ?? [];
+  // Outline de la prévisualisation (EVO-019) : page courante en évidence ; question non passée ou hors parcours grisée.
+  const current = outline?.current === node.id;
+  const state = outline && node.kind === 'question' ? (outline.active.has(node.id) ? 'active' : 'inactive') : undefined;
   return (
     <div
+      data-outline={state} data-outline-current={current || undefined}
       className={cn(
         'w-60 border px-3 py-2 text-sm shadow-sm transition-shadow',
         plugin.shapeClass,
         selected && 'ring-2 ring-indigo-500 ring-offset-1 shadow-md',
+        current && 'ring-4 ring-emerald-500 ring-offset-2 shadow-md',
+        state === 'active' && 'cursor-pointer',
+        state === 'inactive' && 'cursor-default opacity-40 grayscale',
       )}
     >
       <Handle type="target" position={Position.Top} className="!size-2 !border-slate-400 !bg-white" />

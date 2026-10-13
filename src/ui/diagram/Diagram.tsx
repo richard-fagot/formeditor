@@ -21,6 +21,7 @@ import { EdgeView } from './EdgeView';
 import { CommentNodeView } from './CommentNodeView';
 import { COMMENT_PREFIX, useCommentNodes } from './useCommentNodes';
 import { useCenterOnComment } from './useCenterOnComment';
+import { useOutlineCenter, type OutlineOptions } from './useOutlineCenter';
 
 const nodeTypes = { graphNode: NodeView, comment: CommentNodeView };
 
@@ -33,6 +34,8 @@ interface DiagramProps {
   issues: Issue[];
   /** Lecture seule (vue côte à côte) : ni sélection, ni déplacement, ni liaison, ni dépôt ; ne prend pas le focus. */
   readOnly?: boolean;
+  /** Outline de la prévisualisation (EVO-019) : lecture seule, nœud courant centré et mis en évidence, questions actives cliquables. */
+  outline?: OutlineOptions;
 }
 
 /** Logigramme d'un graphe (questionnaire ou fragment) : React Flow piloté par le store. */
@@ -44,7 +47,8 @@ export function Diagram(props: DiagramProps) {
   );
 }
 
-function DiagramInner({ graph, issues, readOnly }: DiagramProps) {
+function DiagramInner({ graph, issues, readOnly: ro, outline }: DiagramProps) {
+  const readOnly = ro || !!outline;
   const g = useStore((s) => getGraph(s.ws, graph));
   const layout = useStore((s) => s.ws.layouts.find((l) => l.graph === graph.id));
   const selection = useStore((s) => s.selection);
@@ -126,10 +130,13 @@ function DiagramInner({ graph, issues, readOnly }: DiagramProps) {
   );
 
   useEffect(() => {
+    // Outline : vue réglée par `useOutlineCenter` (un `fitView` en attente des mesures la remplacerait).
+    if (outline) return;
     void rf.fitView({ padding: 0.2, maxZoom: 1.1, duration: fitRequest ? 250 : 0 });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fitRequest, graph.id]);
 
+  useOutlineCenter(outline, g, container);
   useAutoLayout(graph, readOnly);
   // Export en image : logigramme modifiable d'un questionnaire seulement (ni bloc, ni vue côte à côte).
   const exportable = !readOnly && graph.kind === 'questionnaire';
@@ -148,8 +155,8 @@ function DiagramInner({ graph, issues, readOnly }: DiagramProps) {
   }, [graph.id]);
 
   return (
-    <DiagramContext.Provider value={{ graph, issuesByNode, readOnly, locked }}>
-      <div ref={container} tabIndex={readOnly ? undefined : 0} data-graph-focus={readOnly ? undefined : ''} data-testid={readOnly ? 'diagram-compare' : 'diagram'}
+    <DiagramContext.Provider value={{ graph, issuesByNode, readOnly, locked, outline }}>
+      <div ref={container} tabIndex={readOnly ? undefined : 0} data-graph-focus={readOnly ? undefined : ''} data-testid={outline ? 'outline' : readOnly ? 'diagram-compare' : 'diagram'}
         className="relative h-full w-full outline-none" {...menu.pointer}
         onDragOver={(e) => {
           if (!readOnly && !locked && e.dataTransfer.types.includes(LIBRARY_MIME)) {
@@ -170,7 +177,11 @@ function DiagramInner({ graph, issues, readOnly }: DiagramProps) {
           edges={edges}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
-          {...(readOnly ? { nodesDraggable: false, nodesConnectable: false, elementsSelectable: false } : {
+          {...(readOnly ? {
+            nodesDraggable: false, nodesConnectable: false, elementsSelectable: false,
+            // Outline : seul un nœud question actif réagit au clic ; les autres nœuds ne changent ni la page ni la vue.
+            ...(outline ? { onNodeClick: (_: unknown, n: RFNode) => outline.active.has(n.id) && outline.onQuestionClick(n.id) } : {}),
+          } : {
             onNodesChange,
             nodesConnectable: !locked,
             onNodeDragStart: () => useStore.getState().checkpoint(scopeOf(graph)),

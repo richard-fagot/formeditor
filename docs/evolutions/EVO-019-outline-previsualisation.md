@@ -128,16 +128,15 @@ Conclusion : **faisable sans ambiguïté bloquante** ; aucun impact sur le forma
    l'intérieur du fournisseur : on ajoute une prop `outline` (nœud courant, nœuds actifs, clic) qui
    active ce centrage, la mise en évidence et le grisage. Pas de rendu simplifié dédié.
 3. **Questions actives** : l'historique du wizard (`Session.history`) est **tronqué** par « Précédent »
-   (`back`) : il ne conserve pas les questions passées après un retour. En revanche les réponses sont
-   conservées par `back` et ne sont effacées par `prune` (à « Suivant ») que hors du chemin projeté ;
-   une réponse n'existe que pour une question atteinte (« Suivant » pose `null` pour une question laissée
-   vide, la valeur par défaut est posée à l'arrivée). On reconstitue donc les questions actives sans
-   nouvel état : parcours depuis le départ avec les réponses **actuelles** (`successor`), arrêté à la
-   première question sans réponse ; sont actives les questions de ce parcours qui ont une réponse, plus
-   la page courante. Changer « Oui » en « Non » sur Q1 retire Q2 du parcours recalculé : grisée tout de
-   suite, même avant « Suivant ». Saut : l'historique devient le préfixe de ce parcours jusqu'à la
-   question cliquée (« Précédent » reste cohérent), réponses inchangées.
-   Limite : une question affichée puis quittée par « Précédent » sans réponse saisie n'est pas « passée ».
+   (`back`) : il ne conserve pas les questions passées après un retour. Les réponses ne suffisent pas
+   non plus (une question affichée sans réponse, comme Q3 dans l'exemple, doit rester active). On
+   reconstitue donc avec une liste des pages affichées, `PreviewState.visited` (état de l'éditeur, non
+   enregistré), alimentée à chaque nouvelle session du wizard et vidée par « Recommencer ». Questions
+   actives (`core/runtime`, `passedQuestions`) : parcours depuis le départ avec les réponses **actuelles**
+   (`successor`), arrêté à la première page jamais affichée ; ses questions sont actives. Changer « Oui »
+   en « Non » sur Q1 retire Q2 du parcours recalculé : grisée tout de suite, même avant « Suivant ».
+   Saut (`jumpTo`) : l'historique devient le préfixe de ce parcours jusqu'à la question cliquée
+   (« Précédent » reste cohérent), réponses inchangées, sans validation de la page quittée (comme « Précédent »).
 4. **Zoom** : centrage exact sur le nœud courant ; zoom choisi pour que les voisins immédiats (arêtes
    entrantes et sortantes) tiennent dans le panneau, borné à [0,5 ; 1] : 1 = lisible comme le logigramme
    à 100 %, 0,5 = plancher de lisibilité. Logigramme très large ou très profond : le plancher l'emporte,
