@@ -1,6 +1,6 @@
 # EVO-014 — Désactivation des contrôles de surface en prévisualisation
 
-Statut : à faire
+Statut : en cours
 Dépend de : aucune
 
 ## Besoin
