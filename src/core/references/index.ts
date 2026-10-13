@@ -6,4 +6,5 @@ export {
   type Scope, type RefInfo, type RefKind, type Caller,
 } from './scope';
 export { renameKey, qualifyKeys, type RenameTarget } from './rename';
+export { renameKeysIn } from './rename-local';
 export { findUsages } from './usages';

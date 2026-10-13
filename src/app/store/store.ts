@@ -10,6 +10,7 @@ import { changedScopes, travel, type TabId } from './travel';
 export type { TabId } from './travel';
 import type { GraphRef } from './graph';
 import type { LibraryItem } from './library-edits';
+import type { Clip } from './clipboard';
 import { initialImageState, type ImageState } from './image-state';
 
 export type { ImageOptions } from './image-state';
@@ -57,6 +58,8 @@ export interface AppState extends ImageState {
   notice?: { title: string; lines: string[] };
   /** Copie en bibliothèque en attente d'une autre clé (clé déjà prise, EVO-009). */
   copyRequest?: { graph: GraphRef; nodeId: string };
+  /** Presse-papiers interne des nœuds copiés (EVO-010), lié au projet. */
+  clipboard?: Clip;
   /** Demande d'ajustement de la vue du logigramme (compteur). */
   fitRequest: number;
   /** Demande de mise en page automatique du logigramme affiché (compteur). */

@@ -1,5 +1,5 @@
 # Guide utilisateur — Éditeur de questionnaires
-Mis à jour le 2026-10-12 — jusqu'à EVO-009
+Mis à jour le 2026-10-13 — jusqu'à EVO-010
 
 ## Mode d'emploi du guide
 
@@ -68,6 +68,10 @@ Mis à jour le 2026-10-12 — jusqu'à EVO-009
 
 - **Créer un questionnaire** — Bouton « + » à droite des onglets (info-bulle « Nouveau questionnaire ») ou palette
   « Nouveau questionnaire ». Il s'ouvre dans un nouvel onglet, intitulé « Questionnaire sans titre ». `[cmd: questionnaire.new]`
+- **Dupliquer un questionnaire** — Clic droit sur son onglet (ou sur son titre gris s'il est fermé), « Dupliquer », ou palette
+  « Dupliquer le questionnaire » (questionnaire affiché). La copie, « Copie de <titre> » (puis « Copie 2 de… »), clé suffixée
+  (`declaration_sinistre_2`), est placée juste après l'original et s'ouvre. Contenu complet, sans aucun lien : modifier l'un
+  ne modifie pas l'autre ; les questions et fragments de bibliothèque restent des références. Annulable. `[cmd: questionnaire.duplicate]`
 - **Changer d'onglet** — Cliquer sur l'onglet, ou `Alt+→` / `Alt+←` (aussi `Ctrl+Tab` / `Ctrl+Shift+Tab`,
   souvent réservés par le navigateur). `[cmd: tab.show]`
   `[cmd: tab.next]` `[cmd: tab.prev]`
@@ -134,8 +138,24 @@ Mis à jour le 2026-10-12 — jusqu'à EVO-009
 - **Définir le départ** — Sélectionner le nœud, bouton « Définir comme départ » (section « Départ ») du panneau de propriétés,
   ou palette « Définir comme départ ». Le départ peut être un nœud fragment : le parcours commence alors par la première
   question du fragment. Indisponible dans un fragment (voir « Définir l'entrée d'un fragment », §10). `[cmd: node.setStart]`
-- **Dupliquer des nœuds** — Sélectionner un ou plusieurs nœuds puis `Ctrl+D` (logigramme) ou palette « Dupliquer ». Les copies
+- **Dupliquer des nœuds** — Sélectionner un ou plusieurs nœuds puis `Ctrl+D` (logigramme), clic droit sur un nœud « Dupliquer » ou palette « Dupliquer ». Les copies
   sont décalées et sélectionnées ; les arêtes entre nœuds copiés sont copiées, pas les autres ; clés et alias rendus uniques. `[cmd: node.duplicate]`
+- **Copier des nœuds** — Sélectionner un ou plusieurs nœuds puis `Ctrl+C` (logigramme), clic droit sur un nœud « Copier », ou
+  palette « Copier ». Tous les types de nœuds se copient, avec tout leur contenu ; les arêtes entre nœuds copiés (conditions,
+  rang) suivent, les autres non. Le presse-papiers est interne à l'outil et au projet ouvert (pas de copie vers un autre
+  projet) ; un texte sélectionné dans la page se copie normalement. `[cmd: node.copy]`
+- **Coller des nœuds** — Dans le logigramme d'un questionnaire ou d'un fragment (le même ou un autre), `Ctrl+V` : les nœuds
+  arrivent au pointeur de la souris (décalés de l'original si le pointeur est hors du logigramme), disposition conservée,
+  **non raccordés** et sélectionnés. Aussi clic droit sur le fond ou un nœud, « Coller » (au point du clic), ou palette
+  « Coller ». Chaque collage crée de nouveaux nœuds, sans lien avec l'original ; un seul `Ctrl+Z` l'annule.
+  Règles : une clé (ou un alias) déjà pris dans la cible est suffixé (`date_sinistre` → `date_sinistre_2`) et les références
+  **de la sélection** à cette clé (conditions, contraintes, libellés `{…}`, entrées dynamiques) sont réécrites ; une
+  référence à une question **non copiée** est gardée telle quelle et signalée par « Problèmes » si la cible ne l'a pas. Une
+  instance de fragment ou de question de bibliothèque reste une référence au même élément. Le rôle de départ n'est pas
+  collé : la cible garde son départ (un questionnaire vide prend le nœud qui était le départ dans la copie, à défaut le premier nœud collé). Dans un **fragment**, les fins ne
+  sont pas collées (ni leurs arêtes) et une instance qui créerait un cycle d'appels (le fragment lui-même…) est refusée ;
+  dans un questionnaire, les sorties nommées ne sont pas collées. Une fenêtre « Collage : éléments écartés » liste ce qui
+  a été écarté ; le reste est collé. `[cmd: node.paste]`
 - **Supprimer des nœuds** — Sélectionner puis `Suppr` (Delete) ou `Retour arrière` (Backspace) (logigramme), ou palette « Supprimer la sélection ».
   Leurs arêtes disparaissent aussi ; si le départ est supprimé, le premier nœud restant le devient (dans un fragment, une
   entrée réglée supprimée redevient implicite). Annulable. `[cmd: node.delete]`
@@ -462,6 +482,12 @@ Concerne le choix unique et le choix multiple. Le booléen et le tri-state n'ont
   `E`, `Ctrl+D`…), même panneau de propriétés, panneau latéral de la bibliothèque, « Problèmes ». « Définir comme départ »
   et « Nouvelle fin » y sont indisponibles ; un fragment n'a pas de sous-onglet « Prévisualisation » (il se prévisualise
   dans un questionnaire qui l'appelle). `[cmd: library.newFragment]`
+- **Dupliquer un élément de la bibliothèque** — Onglet « Bibliothèque », clic droit sur une question ou un fragment de la
+  liste, « Dupliquer » ; pour un fragment, aussi clic droit sur son onglet ; ou palette « Dupliquer l’élément de bibliothèque »
+  (question affichée ou fragment de l'onglet actif). La copie, « Copie de <nom> » (puis « Copie 2 de… »), clé suffixée,
+  est placée juste après l'original et s'ouvre. Elle n'a **aucun appelant** : les questionnaires qui utilisaient l'original
+  l'utilisent toujours. Un fragment dupliqué qui appelle un autre fragment appelle toujours le même (pas de copie en
+  cascade). Annulable (`Ctrl+Z` dans l'onglet Bibliothèque ou un fragment). `[cmd: library.duplicate]`
 - **Régler un fragment** — Sous le bandeau : « Titre du fragment », « Clé du fragment », « Description (pour l’équipe de dev) ».
 - **Comprendre l'entrée et les sorties d'un fragment** — L'**entrée** est le nœud sans arête entrante (badge « Entrée ») :
   c'est la première page du fragment. Les **sorties** sont tous les nœuds sans arête sortante : après leur page, le
@@ -627,9 +653,8 @@ ou palette « Problèmes ») ; un clic sur un problème sélectionne le nœud ou
 
 ## Ce que l'outil ne fait pas
 
-- **Supprimer ou dupliquer un questionnaire** : aucune action ; on peut seulement fermer son onglet.
-- **Copier / coller des nœuds**, y compris entre questionnaires : non disponible (dupliquer avec `Ctrl+D` dans le même graphe ;
-  pour partager, passer par la bibliothèque).
+- **Supprimer un questionnaire** : aucune action ; on peut seulement fermer son onglet.
+- **Couper des nœuds** (`Ctrl+X`), **copier vers un autre projet**, garder un lien entre une copie et son original.
 - **Changer la cible ou l'origine d'une arête** : la supprimer et la retracer.
 - **Imbriquer** : pas de structure dans une structure ; une sortie nommée n'existe que dans un fragment ; un fragment ne
   peut pas s'appeler lui-même, même indirectement (un fragment peut en appeler un autre).
@@ -637,7 +662,7 @@ ou palette « Problèmes ») ; un clic sur un problème sélectionne le nœud ou
 - **Glisser-déposer des options ou des champs** : utiliser les flèches.
 - **Construire une condition à la souris** : les expressions s'écrivent en texte ; seuls la syntaxe et les noms sont vérifiés, pas les types.
 - **Conserver les itérations d'une boucle** : un nouveau passage remplace la réponse ; utiliser une structure répétable.
-- **Modifier plusieurs nœuds à la fois** dans le panneau de propriétés (seuls dupliquer, supprimer, extraire en fragment agissent sur une sélection).
+- **Modifier plusieurs nœuds à la fois** dans le panneau de propriétés (seuls copier, dupliquer, supprimer, extraire en fragment agissent sur une sélection).
 - **Rechercher / remplacer** dans les textes ; **traduire automatiquement**.
 - **Exporter autre chose que du JSON et l'image PNG du logigramme** (pas de PDF, de formulaire final).
 - **Exporter le logigramme en SVG** : un SVG produit par capture de l'écran n'est qu'un bloc HTML enveloppé (`foreignObject`),
@@ -744,6 +769,10 @@ ou palette « Problèmes ») ; un clic sur un problème sélectionne le nœud ou
 | Vue côte à côte | — | `view.compare` |
 | Exporter le logigramme en image | `X` | `view.exportImage` |
 | Exporter l’image avec ces options | — | `view.exportImageRun` |
+| Copier | `Ctrl+C` | `node.copy` |
+| Coller | `Ctrl+V` | `node.paste` |
+| Dupliquer le questionnaire | — | `questionnaire.duplicate` |
+| Dupliquer l’élément de bibliothèque | — | `library.duplicate` |
 | Aller au nœud suivant | `↓` | `nav.down` |
 | Aller au nœud précédent | `↑` | `nav.up` |
 | Aller au nœud voisin suivant | `→` | `nav.right` |

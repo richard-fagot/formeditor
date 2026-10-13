@@ -25,6 +25,12 @@ Dépend de `core`, `format`, `app/i18n`, `plugin-api` (utilitaires).
   locale → bibliothèque, même clé ; refus si la clé y est déjà prise), `copyToLibrary(ws, ref, nodeId, key?)` (EVO-009 : nouveau `Workspace` ; avec `key`,
   renommage propagé avant la copie et `rewritten` = expressions réécrites), `setFieldHidden` (masque / réaffiche un champ d'une instance de structure ;
   refus du dernier champ affiché ; liste vide → propriété retirée), `hiddenFieldUsages` (expressions du graphe qui lisent le champ), `setLibraryQuestionLabel`, `renameExit` (suit dans les arêtes des instances), type `LibraryItem`.
+- Copier-coller (EVO-010, `clipboard.ts`) : `copyNodes(ws, ref, ids)` → `Clip` (instantané : nœuds, arêtes internes, positions, départ, id du projet) ;
+  `pasteNodes(ws, ref, clip, at?)` : nouveaux ids, clés et alias pris suffixés hors des clés de la cible et de la sélection, références de la sélection réécrites
+  (`renameKeysIn`), placés au point `at` (coin haut gauche) ou décalés de `PASTE_OFFSET` ; écartés (`PasteDrop`) : fin dans un fragment, sortie dans un questionnaire,
+  instance créant un cycle ; départ = rôle non collé (un questionnaire vide prend le départ collé ou le premier nœud). État `clipboard`.
+- Duplication (EVO-010, `duplicate.ts`) : `duplicateQuestionnaire(ws, id, copyName)` (juste après, clé et fichier uniques), `duplicateLibraryItem(ws, item, copyName)`
+  (question ou fragment, juste après, clé unique) ; « Copie de » par langue (`CopyName`), nœuds et arêtes réidentifiés, mise en page reprise, références conservées.
 - `groupIntoFragment(ws, ref, ids, title)` (`group.ts`) : extrait une sélection en fragment (`canExtract` : ni fin ni sortie) ; `entry` réglée si
   l'entrée n'est pas l'unique nœud sans arête entrante ; entrée unique = départ ou cible
   des arêtes entrantes (`groupEntries` ; plusieurs entrées → refus) ; une sortie par cible extérieure ; références de l'hôte préfixées par l'alias (`qualifyKeys`).
@@ -50,4 +56,5 @@ Dépend de `core`, `format`, `app/i18n`, `plugin-api` (utilitaires).
 ## Tests
 `store.test.ts` (historique par questionnaire, regroupement, renommage d'un questionnaire) ;
 `system.test.ts` (dictionnaire, scénarios, contrôle des valeurs) ; `language.test.ts` (langues des contenus) ;
+copier-coller et duplication : `app/commands/clipboard-commands.test.ts` ;
 `library.test.ts` (éléments de bibliothèque, copie en bibliothèque et champs masqués (EVO-009), références, cycle d'appels refusé, extraction en fragment : structure, requalification, parcours inchangé, imbrication).

@@ -12,6 +12,7 @@ import { DiagramContext } from './DiagramContext';
 import { useAutoLayout } from './useAutoLayout';
 import { useImageExport } from './useImageExport';
 import { useKeepSelectionVisible } from './useKeepSelectionVisible';
+import { useDiagramMenu } from './useDiagramMenu';
 import { EmptyHint } from './EmptyHint';
 import { ImageDialog } from './ImageDialog';
 import { NodeView, type NodeData } from './NodeView';
@@ -119,6 +120,7 @@ function DiagramInner({ graph, issues, readOnly }: DiagramProps) {
   useKeepSelectionVisible(container, layout?.nodes, readOnly);
 
   const focusGraph = () => container.current?.focus({ preventScroll: true });
+  const menu = useDiagramMenu(graph, readOnly);
 
   // À l'ouverture d'un graphe (nouveau questionnaire, changement d'onglet), le logigramme prend le focus
   // pour que les raccourcis à une lettre (N…) agissent aussitôt, sauf si une saisie est en cours.
@@ -130,7 +132,7 @@ function DiagramInner({ graph, issues, readOnly }: DiagramProps) {
   return (
     <DiagramContext.Provider value={{ graph, issuesByNode, readOnly }}>
       <div ref={container} tabIndex={readOnly ? undefined : 0} data-graph-focus={readOnly ? undefined : ''} data-testid={readOnly ? 'diagram-compare' : 'diagram'}
-        className="relative h-full w-full outline-none"
+        className="relative h-full w-full outline-none" {...menu.pointer}
         onDragOver={(e) => {
           if (!readOnly && e.dataTransfer.types.includes(LIBRARY_MIME)) {
             e.preventDefault();
@@ -154,6 +156,7 @@ function DiagramInner({ graph, issues, readOnly }: DiagramProps) {
             onNodesChange,
             onNodeDragStart: () => useStore.getState().checkpoint(scopeOf(graph)),
             onNodeClick: focusGraph,
+            ...menu.handlers,
             onEdgeClick: (_: unknown, e: RFEdge) => {
               useStore.getState().select({ graph, nodes: [], edge: e.id });
               focusGraph();
@@ -178,6 +181,7 @@ function DiagramInner({ graph, issues, readOnly }: DiagramProps) {
         </ReactFlow>
         {g && g.nodes.length === 0 && !readOnly && <EmptyHint />}
         {exportable && <ImageDialog graph={graph} />}
+        {menu.element}
       </div>
     </DiagramContext.Provider>
   );

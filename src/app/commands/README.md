@@ -8,6 +8,7 @@ Catalogue unique des actions utilisateur (spec §4.4). Palette, menus et raccour
   `scope` (`global` | `graph` : actif seulement focus sur le logigramme), `allowInInput`, `hidden`, `enabled()`, `run(arg?)`.
   `arg` : paramètre fourni par un bouton ou un champ (onglet, langue, valeur saisie) ; les commandes qui
   l'exigent sont `hidden` (absentes de la palette).
+- `setPastePoint(graphe, position?)` : position du pointeur sur le logigramme (collage, EVO-010).
 - `download(name, texte | Blob)` ; `imageFileName(projet, titre, date)` (`<projet> - <titre> - AAAAMMJJ.png`, caractères
   interdits → `_`), `imageTitle(questionnaire, langue, langueParDéfaut)` (`image-file.ts`, fonctions pures).
 
@@ -42,6 +43,10 @@ Catalogue unique des actions utilisateur (spec §4.4). Palette, menus et raccour
 - `image-commands.ts` (EVO-004) : `view.exportImage` (X, logigramme ; questionnaire non vide en vue Logigramme) ouvre le
   dialogue ; `view.exportImageRun` (cachée, `arg` = `{ scope, title }`) mémorise les choix, ferme le dialogue et incrémente
   `imageRequest`, que `ui/diagram` exécute (capture).
+- `clipboard-commands.ts` (EVO-010) : `node.copy` (Ctrl+C, logigramme ; inactif si du texte est sélectionné dans la page), `node.paste` (Ctrl+V ; `arg` = `{ position }`,
+  sinon pointeur posé par `setPastePoint` de `ui/diagram` ; indisponible si le presse-papiers vient d'un autre projet ; éléments écartés listés dans `notice`),
+  `questionnaire.duplicate` (`arg` = id, sinon le questionnaire affiché ; ouvre la copie), `library.duplicate` (`arg` = `{ kind, id }`, sinon le fragment de l'onglet
+  actif ou la question affichée ; ouvre la copie).
 - `nav-commands.ts` : flèches, annuler/rétablir (portée `global` : actifs hors du logigramme, pas pendant une saisie ; onglet Bibliothèque → historique `library`), ajuster la vue, logigramme ↔ prévisualisation.
 - `example.ts` : exemple embarqué ; `files.ts` : téléchargement et sélection de fichiers.
 
@@ -50,6 +55,7 @@ Catalogue unique des actions utilisateur (spec §4.4). Palette, menus et raccour
 `system-commands.test.ts` (dictionnaire, scénarios, enregistrement depuis la prévisualisation, panneaux) ;
 `settings-commands.test.ts` (langues, langue de la prévisualisation, raccourcis, vue côte à côte, mise en page) ;
 `image-file.test.ts` (nom du fichier image, commandes d'export, entrée du guide) ;
+`clipboard-commands.test.ts` (EVO-010 : copier-coller, renommage, fragment, annulation, duplication, export / réimport, guide) ;
 `library-commands.test.ts` (insertion, dépôt, regroupement et annulation, fragment : onglet, entrée, cycle refusé, ouverture, sortie nommée ; question vers la bibliothèque ; entrée du guide EVO-008).
 
 ## Ajouter une action

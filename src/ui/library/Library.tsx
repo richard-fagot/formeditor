@@ -1,8 +1,8 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Boxes, FileQuestion, Plus, Tags } from 'lucide-react';
 import { runCommand } from '../../app/commands';
 import { useStore, useT, type LibraryItem } from '../../app/store';
-import { Button, cn } from '../../ui-kit';
+import { Button, cn, ContextMenu } from '../../ui-kit';
 import { usePluginEnv } from '../properties';
 import { LabelSets } from './LabelSets';
 import { LibraryQuestionView } from './LibraryQuestionView';
@@ -15,12 +15,19 @@ export function Library() {
   const item = useStore((s) => s.libraryItem);
   const lib = env.ws.library;
   const exists = item?.kind === 'question' && lib.questions.some((x) => x.id === item.id);
+  // Menu contextuel d'un élément (EVO-010) : « Dupliquer ».
+  const [menu, setMenu] = useState<{ x: number; y: number; item: LibraryItem }>();
   const entry = (it: LibraryItem | undefined, label: string, sub?: string) => (
     <li key={it?.id ?? 'labelSets'}>
       <button type="button" data-testid="library-entry"
         className={cn('flex w-full items-baseline gap-2 rounded px-2 py-1 text-left text-sm hover:bg-slate-100',
           (it?.id ?? '') === (exists ? item!.id : '') && 'bg-indigo-50 text-indigo-800')}
-        onClick={() => runCommand('library.show', it)}>
+        onClick={() => runCommand('library.show', it)}
+        onContextMenu={(e) => {
+          if (!it) return;
+          e.preventDefault();
+          setMenu({ x: e.clientX, y: e.clientY, item: it });
+        }}>
         <span className="truncate">{label}</span>
         {sub && <span className="ml-auto shrink-0 font-mono text-[10px] text-slate-400">{sub}</span>}
       </button>
@@ -51,6 +58,8 @@ export function Library() {
           </div>
         )}
       </div>
+      <ContextMenu at={menu} onClose={() => setMenu(undefined)}
+        items={[{ label: t('node.duplicate'), onSelect: () => runCommand('library.duplicate', menu!.item) }]} />
     </div>
   );
 }

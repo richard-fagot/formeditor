@@ -1,7 +1,8 @@
+import { useState } from 'react';
 import { BookOpen, Boxes, Database, Plus, Settings, X } from 'lucide-react';
 import { runCommand } from '../../app/commands';
 import { useStore, useT, type TabId } from '../../app/store';
-import { cn } from '../../ui-kit';
+import { cn, ContextMenu } from '../../ui-kit';
 
 /** Onglets : questionnaires et fragments ouverts, bibliothèque, état du système. */
 export function Tabs() {
@@ -22,13 +23,23 @@ export function Tabs() {
     return q ? (q.title[lang] ?? q.title[ws.project.defaultLanguage] ?? q.key) : tab;
   };
   const closed = ws.questionnaires.filter((q) => !tabs.includes(`q:${q.id}`));
+  // Menu contextuel d'un questionnaire ou d'un fragment (EVO-010) : « Dupliquer ».
+  const [menu, setMenu] = useState<{ x: number; y: number; tab: TabId }>();
+  const onMenu = (tab: TabId) => (e: React.MouseEvent) => {
+    if (!tab.startsWith('q:') && !tab.startsWith('f:')) return;
+    e.preventDefault();
+    setMenu({ x: e.clientX, y: e.clientY, tab });
+  };
+  const duplicate = (tab: TabId) => (tab.startsWith('q:')
+    ? runCommand('questionnaire.duplicate', tab.slice(2))
+    : runCommand('library.duplicate', { kind: 'fragment', id: tab.slice(2) }));
   return (
     <nav className="flex h-9 items-end gap-0.5 border-b border-slate-200 bg-slate-100 px-2" role="tablist">
       {tabs.map((tab) => (
         <div key={tab} role="tab" aria-selected={tab === active}
           className={cn('group flex h-8 cursor-pointer items-center gap-1.5 rounded-t-md border border-b-0 px-3 text-sm',
             tab === active ? 'border-slate-200 bg-white text-slate-800' : 'border-transparent text-slate-500 hover:bg-slate-50')}
-          onClick={() => runCommand('tab.show', tab)}>
+          onClick={() => runCommand('tab.show', tab)} onContextMenu={onMenu(tab)}>
           {tab === 'library' && <BookOpen className="size-3.5" />}
           {tab === 'system' && <Database className="size-3.5" />}
           {tab === 'settings' && <Settings className="size-3.5" />}
@@ -45,7 +56,8 @@ export function Tabs() {
         <Plus className="size-4" />
       </button>
       {closed.map((q) => (
-        <button key={q.id} type="button" className="mb-1 rounded px-2 py-0.5 text-xs text-slate-400 hover:bg-slate-200" onClick={() => runCommand('tab.open', `q:${q.id}`)}>
+        <button key={q.id} type="button" className="mb-1 rounded px-2 py-0.5 text-xs text-slate-400 hover:bg-slate-200" onClick={() => runCommand('tab.open', `q:${q.id}`)}
+          onContextMenu={onMenu(`q:${q.id}`)}>
           {q.title[lang] ?? q.key}
         </button>
       ))}
@@ -53,6 +65,7 @@ export function Tabs() {
         {!tabs.includes('library') && <button type="button" className="rounded px-2 py-0.5 text-xs text-slate-500 hover:bg-slate-200" onClick={() => runCommand('tab.library')}>{t('tab.library')}</button>}
         {!tabs.includes('system') && <button type="button" className="rounded px-2 py-0.5 text-xs text-slate-500 hover:bg-slate-200" onClick={() => runCommand('tab.system')}>{t('tab.system')}</button>}
       </div>
+      <ContextMenu at={menu} onClose={() => setMenu(undefined)} items={[{ label: t('node.duplicate'), onSelect: () => void duplicate(menu!.tab) }]} />
     </nav>
   );
 }
