@@ -131,6 +131,6 @@ Conclusion : **faisable sans ambiguïté bloquante**. Choix ci-dessous, reporté
    proposées : pour l'exemple de l'EVO, des options dont la valeur est le nom de la marque.
 4. **Stockage** : propriété facultative `suggestions` (expression) du champ texte ; présente = option activée
    (même chaîne vide), absente = désactivée ; décocher la retire, donc rien n'est exporté. Politique du format
-   (`docs/FORMAT.md` §13, précédents EVO-005 à EVO-015) : schémas en `additionalProperties: false`, un fichier qui
+   (`docs/FORMAT.md` §16, précédents EVO-005 à EVO-015) : schémas en `additionalProperties: false`, un fichier qui
    utilise l'option serait refusé par un outil antérieur → **version 12**, migration 11 → 12 sans transformation
    (propriété absente = pas de suggestions).
