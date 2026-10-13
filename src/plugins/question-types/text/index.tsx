@@ -1,7 +1,7 @@
 import { ListFilter } from 'lucide-react';
 import type { TextQuestion } from '../../../core/model';
-import { suggestionList } from '../../../core/runtime';
-import { dontKnowLabel, previewText, tr, type QuestionTypePlugin } from '../../../plugin-api';
+import { referencedChoices, suggestionList } from '../../../core/runtime';
+import { dontKnowLabel, previewText, tr, type QuestionTypePlugin, type RenderEnv } from '../../../plugin-api';
 import { Checkbox, Field, Input, Textarea } from '../../../ui-kit';
 import { DontKnowEditor, ExpressionInput } from '../../../ui/expression-editor';
 import { SuggestBox } from './suggest-box';
@@ -22,6 +22,15 @@ const T = {
   },
   suggestionsBadge: { fr: 'Avec suggestions', en: 'With suggestions' },
 };
+
+/** Suggestions (EVO-016) : la valeur d'une option d'un choix référencé est remplacée par son libellé dans la langue courante. */
+function suggestionsOf(expr: string, env: RenderEnv): string[] {
+  const labels = new Map<string, string>();
+  for (const q of referencedChoices(env.ws, expr)) {
+    for (const o of env.options(q)) if (!labels.has(o.value)) labels.set(o.value, typeof o.label === 'string' ? o.label : env.label(o.label));
+  }
+  return suggestionList(env.evaluate(expr), (v) => labels.get(v));
+}
 
 const num = (v: string) => (v === '' ? undefined : Math.max(0, Math.trunc(Number(v))));
 
@@ -78,7 +87,7 @@ export const textType: QuestionTypePlugin<TextQuestion> = {
       onChange: (e: { target: { value: string } }) => onChange(e.target.value === '' ? null : e.target.value),
     };
     // Suggestions (EVO-016) : recalculées à chaque affichage avec les réponses courantes ; aucune → texte simple.
-    const list = question.suggestions ? suggestionList(env.evaluate(question.suggestions)) : [];
+    const list = question.suggestions ? suggestionsOf(question.suggestions, env) : [];
     const input = (p: typeof props) => (question.multiline ? <Textarea rows={5} {...p} /> : <Input autoComplete="off" {...p} />);
     return (
       <div className="space-y-2">

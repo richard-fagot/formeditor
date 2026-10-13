@@ -30,7 +30,8 @@ Dépend de `core/model`, `core/expressions`.
   choix multiple) et groupe (`NSP` pour un choix) d'une réponse « Ne sais pas ».
 - Pays (EVO-007) : `setAnswer(…, dontKnow?, country?)` range `<clé>_pays` (`countryPath`) ; absent sinon ; `prune` l'efface avec la réponse.
 - Suggestions d'un champ texte (EVO-016, `suggestions.ts`) : `suggestionList(valeur)` met le résultat de l'expression en liste de textes
-  (valeur unique → un élément, vide → aucun, nombres / booléens → texte, objets, vides et `other` écartés, doublons retirés, ordre gardé) ;
+  (valeur unique → un élément, vide → aucun, nombres / booléens → texte, objets, vides et `other` écartés, doublons retirés, ordre gardé ; `labelOf` facultatif : libellé affiché à la place d'une valeur d'option) ;
+  `referencedChoices(ws, expr)` : questions à choix dont la clé est le dernier nom d'une référence (hors `sys.`) ;
   `filterSuggestions(liste, saisie)` : « contient », casse ignorée.
 - `successor`, `chooseEdge`, `firstStep`, `prune`, `projectedSteps`, `getAnswer`, `withAnswer`, `otherPath`.
 

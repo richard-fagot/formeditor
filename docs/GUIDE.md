@@ -421,7 +421,8 @@ Concerne le choix unique et le choix multiple. Le booléen et le tri-state n'ont
   type liste, champ d'une liste d'objets `sys.liste.champ`, littéral `["a", "b"]`, `$append(…)`). Cas limites : une valeur
   unique donne une seule suggestion ; une valeur vide ou non renseignée n'en donne aucune ; nombres et dates sont affichés
   comme dans un texte interpolé (`12`, `2024-05-06`) ; une valeur en double n'est proposée qu'une fois, à sa première
-  position ; un choix propose ses **valeurs** (pas ses libellés) et jamais `other` : pour ajouter la précision « Autre »,
+  position ; une valeur d'option d'un choix cité dans l'expression est proposée (et insérée) par son **libellé** dans la
+  langue affichée (`alfa_romeo` → « Alfa Romeo »), jamais `other` : pour ajouter la précision « Autre »,
   écrire `$append(marques, marques_other)`. Seules les questions posées avant le champ et les variables `sys.` sont
   permises ; une question après est signalée (« ⚠ », §15) comme dans toute expression.
 - **Combiner** — `=`, `!=`, `<`, `<=`, `>`, `>=` (nombres et dates `AAAA-MM-JJ`) ; `and`, `or`, `$not(…)` ; `'x' in liste` ;
@@ -448,7 +449,7 @@ Concerne le choix unique et le choix multiple. Le booléen et le tri-state n'ont
   11. `qualite_declarant.groupe = 'SC'` (groupe de l'option choisie)
   12. `montant_estime.nsp` (« Ne sais pas » choisie)
   13. `souscripteur.telephone.pays = 'BE'` (pays d'un téléphone)
-  14. `$append(marques, marques_other)` (suggestions : valeurs cochées et précision « Autre »)
+  14. `$append(marques, marques_other)` (suggestions : options cochées, par leur libellé, et précision « Autre »)
 
 ## 9. Contraintes et messages d'erreur
 

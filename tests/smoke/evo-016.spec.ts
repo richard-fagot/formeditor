@@ -37,7 +37,8 @@ function withExample(bundleText: string): string {
   q.start = 'n_marques';
   q.nodes = [
     { kind: 'question', id: 'n_marques', key: 'marques', label: fr('Marques de véhicules possédées'), type: 'multiple', other: {},
-      options: ['Peugeot', 'Renault', 'Toyota'].map((m) => ({ value: m, label: fr(m) })) },
+      // Valeurs distinctes des libellés, comme la saisie rapide (« Alfa Romeo » → `alfa_romeo`).
+      options: ['Peugeot', 'Renault', 'Toyota', 'Alfa Romeo'].map((m) => ({ value: m.toLowerCase().replace(' ', '_'), label: fr(m) })) },
     { kind: 'question', id: 'n_marque', key: 'marque', label: fr('Marque du véhicule principal'), type: 'text', required: true },
     { kind: 'question', id: 'n_rappel', key: 'rappel', label: fr('Marque retenue : {marque}'), type: 'text' },
     { kind: 'end', id: 'n_fin', message: fr('Fin') },
@@ -99,6 +100,7 @@ test('EVO-016 : suggestions sur un champ texte (paramétrage, prévisualisation,
   await page.keyboard.press('Enter');
   await expect(field).toHaveValue('Toyota');
   await expect(list).toHaveCount(0);
+  await expect(debug).toContainText('"marque": "Toyota"');
 
   // Saisie hors liste : acceptée telle quelle ; une expression qui référence Q2 renvoie le texte saisi.
   await field.fill('Dacia');
@@ -112,13 +114,13 @@ test('EVO-016 : suggestions sur un champ texte (paramétrage, prévisualisation,
   await prev.click();
   await prev.click();
   await preview.getByText('Peugeot').click();
-  await preview.getByText('Renault').click();
+  await preview.getByText('Alfa Romeo').click();
   await next.click();
   await field.fill('');
-  // Ordre de l'expression : celui de la réponse (Toyota restée cochée, Renault ajoutée ensuite).
-  await expect(list.getByRole('option')).toHaveText(['Toyota', 'Renault']);
-  await list.getByRole('option', { name: 'Renault' }).click();
-  await expect(field).toHaveValue('Renault');
+  // Ordre de l'expression : celui de la réponse (Toyota restée cochée, Alfa Romeo ajoutée ensuite) ; libellés, pas valeurs.
+  await expect(list.getByRole('option')).toHaveText(['Toyota', 'Alfa Romeo']);
+  await list.getByRole('option', { name: 'Alfa Romeo' }).click();
+  await expect(field).toHaveValue('Alfa Romeo');
   await expect(field).toBeFocused();
   await page.keyboard.press('Escape');
   await expect(list).toHaveCount(0);

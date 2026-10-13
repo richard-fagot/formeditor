@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { evaluate } from '../expressions';
-import { filterSuggestions, suggestionList } from './suggestions';
+import type { Workspace } from '../model';
+import { filterSuggestions, referencedChoices, suggestionList } from './suggestions';
 
 /** Suggestions d'un champ texte (EVO-016) : résultat de l'expression mis en liste de textes. */
 const of = (expr: string, ctx: Record<string, unknown> = {}) => suggestionList(evaluate(expr, ctx));
@@ -48,6 +49,34 @@ describe('suggestionList (EVO-016)', () => {
 
   it('objets, éléments vides et chaînes vides écartés', () => {
     expect(suggestionList(['a', '', '  ', null, { x: 1 }, ['b']])).toEqual(['a', 'b']);
+  });
+});
+
+describe('libellés des options (EVO-016, correction)', () => {
+  const libelles: Record<string, string> = { peugeot: 'Peugeot', alfa_romeo: 'Alfa Romeo' };
+  const labelOf = (v: string) => libelles[v];
+
+  it('valeur d’une option → son libellé ; autres valeurs inchangées ; `other` écartée', () => {
+    expect(suggestionList(['alfa_romeo', 'peugeot', 'Dacia', 'other'], labelOf)).toEqual(['Alfa Romeo', 'Peugeot', 'Dacia']);
+  });
+
+  it('doublons retirés après remplacement par le libellé', () => {
+    expect(suggestionList(['peugeot', 'Peugeot'], labelOf)).toEqual(['Peugeot']);
+  });
+
+  it('referencedChoices : questions à choix dont la clé est référencée (variables système exclues)', () => {
+    const choix = (id: string, key: string) => ({ kind: 'question', id, key, label: { fr: key }, type: 'multiple', options: [] });
+    const ws = {
+      project: {}, layouts: [],
+      library: { questions: [choix('l1', 'couleurs')], fragments: [{ id: 'f', nodes: [choix('f1', 'modeles')], edges: [] }], labelSets: [] },
+      questionnaires: [{ id: 'q', nodes: [choix('n1', 'marques'), { kind: 'question', id: 'n2', key: 'nom', label: {}, type: 'text' }], edges: [] }],
+    } as unknown as Workspace;
+    const keys = (e: string) => referencedChoices(ws, e).map((q) => q.key);
+    expect(keys('$append(marques, nom)')).toEqual(['marques']);
+    expect(keys('ident.modeles')).toEqual(['modeles']);
+    expect(keys('couleurs')).toEqual(['couleurs']);
+    expect(keys('sys.marques')).toEqual([]);
+    expect(keys('$inconnue(')).toEqual([]);
   });
 });
 

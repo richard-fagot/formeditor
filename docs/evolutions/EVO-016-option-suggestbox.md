@@ -127,8 +127,10 @@ Conclusion : **faisable sans ambiguïté bloquante**. Choix ci-dessous, reporté
    « Autre » est la valeur réservée `other` et la précision est rangée à part sous `<clé>_other`. On s'aligne sur
    les entrées dynamiques des choix (`choiceOptions`), qui écartent `other` : la valeur `other` n'est pas proposée,
    ni le libellé « Autre » ; la précision n'est pas ajoutée d'office, l'auteur l'inclut s'il le veut
-   (`$append(marques, marques_other)`). De même, ce sont les valeurs (et non les libellés) des options qui sont
-   proposées : pour l'exemple de l'EVO, des options dont la valeur est le nom de la marque.
+   (`$append(marques, marques_other)`). Les valeurs restent des codes dans l'expression, mais à l'affichage une valeur
+   égale à celle d'une option d'une question à choix référencée par l'expression est remplacée par le **libellé** de
+   l'option dans la langue courante, et c'est ce libellé qui est inséré dans le champ (`peugeot` → « Peugeot ») ;
+   les autres valeurs restent telles quelles.
 4. **Stockage** : propriété facultative `suggestions` (expression) du champ texte ; présente = option activée
    (même chaîne vide), absente = désactivée ; décocher la retire, donc rien n'est exporté. Politique du format
    (`docs/FORMAT.md` §16, précédents EVO-005 à EVO-015) : schémas en `additionalProperties: false`, un fichier qui
