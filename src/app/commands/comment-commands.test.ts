@@ -172,6 +172,19 @@ describe('commentaires de révision (EVO-011)', () => {
     expect(commentOf(st().ws, lq)).toBeDefined();
   });
 
+  it('supprimer un fragment dont une question est commentée demande confirmation', () => {
+    const fq: CommentRef = { host: { kind: 'fragment', id: 'frg' }, node: 'f1' };
+    runCommand('comment.add', fq);
+    const confirm = vi.fn(() => false);
+    vi.stubGlobal('window', { confirm });
+    runCommand('library.delete', { kind: 'fragment', id: 'frg' });
+    expect(confirm).toHaveBeenCalledOnce();
+    expect(st().ws.library.fragments.some((f) => f.id === 'frg')).toBe(true);
+    confirm.mockReturnValue(true);
+    runCommand('library.delete', { kind: 'fragment', id: 'frg' });
+    expect(st().ws.library.fragments.some((f) => f.id === 'frg')).toBe(false);
+  });
+
   it('le guide décrit les commentaires de révision (EVO-011)', () => {
     const guide = readFileSync('docs/GUIDE.md', 'utf8');
     for (const id of ['comment.add', 'comment.toggle', 'comment.toggleAll', 'comment.reply', 'comment.deleteReply', 'comment.delete', 'comment.open', 'tab.comments']) {

@@ -476,7 +476,7 @@ Concerne le choix unique et le choix multiple. Le booléen et le tri-state n'ont
   libellés », « Questions », « Fragments »). Une question s'affiche à droite (« Utilisé dans : … » liste les questionnaires
   et fragments qui l'emploient) ; un fragment s'ouvre dans son onglet. `[cmd: library.show]`
 - **Supprimer un élément de la bibliothèque** — L'afficher (question) ou ouvrir son onglet (fragment), bouton « Supprimer ».
-  Sans confirmation : ses références deviennent « Élément de bibliothèque introuvable ». `Ctrl+Z` dans l'onglet
+  Sans confirmation (sauf élément commenté) : ses références deviennent « Élément de bibliothèque introuvable ». `Ctrl+Z` dans l'onglet
   Bibliothèque l'annule. `[cmd: library.delete]`
 - **Créer un fragment** — Onglet « Bibliothèque », « + » de la rubrique « Fragments » (« Nouveau fragment »), ou palette
   « Nouveau fragment ». Il s'ouvre dans un **onglet** (icône ambre), avec un bandeau « Fragment de la bibliothèque · n
@@ -690,8 +690,8 @@ l'objet lui-même et sur la page des commentaires.
 - **Aller au commentaire** — Bouton « Ouvrir » d'un commentaire de la page : l'objet s'ouvre (logigramme), ses commentaires
   affichés, la vue centrée sur le commentaire et sa question sélectionnée. Pour une question réutilisable, c'est sa vue
   dans l'onglet Bibliothèque qui s'ouvre, le commentaire en tête. `[cmd: comment.open]`
-- **Supprimer une question commentée** — Confirmation demandée (logigramme ou bibliothèque) ; le commentaire est supprimé
-  avec la question. Dupliquer ou coller des nœuds, dupliquer un questionnaire ou un fragment ne copie pas les commentaires ;
+- **Supprimer une question commentée** — Confirmation demandée (logigramme ou bibliothèque, y compris pour un fragment
+  dont des questions sont commentées) ; le commentaire est supprimé avec la question. Dupliquer ou coller des nœuds, dupliquer un questionnaire ou un fragment ne copie pas les commentaires ;
   extraire une sélection en fragment y emporte leurs commentaires.
 
 ## Ce que l'outil ne fait pas
