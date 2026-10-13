@@ -16,6 +16,10 @@ export const COMMENT_MESSAGES = {
     fr: 'Une question sélectionnée porte un commentaire de révision : il sera supprimé avec elle. Continuer ?',
     en: 'A selected question has a review comment: it will be deleted with it. Continue?',
   },
+  'comment.confirmDeleteFragment': {
+    fr: 'Des questions de ce fragment portent des commentaires de révision : ils seront supprimés avec lui. Continuer ?',
+    en: 'Some questions of this fragment have review comments: they will be deleted with it. Continue?',
+  },
   'tab.comments': { fr: 'Commentaires', en: 'Comments' },
   'comments.title': { fr: 'Commentaires de révision', en: 'Review comments' },
   'comments.empty': { fr: 'Aucun commentaire. Clic droit sur une question > Commenter.', en: 'No comment. Right-click a question > Comment.' },
