@@ -179,6 +179,7 @@ describe('commentaires de révision (EVO-011)', () => {
     vi.stubGlobal('window', { confirm });
     runCommand('library.delete', { kind: 'fragment', id: 'frg' });
     expect(confirm).toHaveBeenCalledOnce();
+    expect(confirm).toHaveBeenCalledWith(expect.stringMatching(/ce fragment|this fragment/));
     expect(st().ws.library.fragments.some((f) => f.id === 'frg')).toBe(true);
     confirm.mockReturnValue(true);
     runCommand('library.delete', { kind: 'fragment', id: 'frg' });
