@@ -1,6 +1,6 @@
 # EVO-015 — Marquer un formulaire comme validé
 
-Statut : en cours
+Statut : fait 2026-10-13
 Dépend de : aucune
 
 ## Besoin

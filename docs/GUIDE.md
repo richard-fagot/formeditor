@@ -761,8 +761,8 @@ Chaque formulaire se valide indépendamment des autres. Un formulaire non valid�
   demandée ; « Annuler » laisse le formulaire validé. Confirmé, le marqueur disparaît et le formulaire redevient
   modifiable. `[cmd: questionnaire.unvalidate]`
 - **Annuler / rétablir autour d'une validation** — Valider et dévalider sont des étapes de l'historique du formulaire :
-  `Ctrl+Z` juste après une validation la retire, `Ctrl+Shift+Z` la rétablit. Tant que le formulaire est validé, aucune
-  autre étape n'entre dans son historique : remonter plus loin passe d'abord par l'annulation de la validation.
+  `Ctrl+Z` juste après une validation la retire, `Ctrl+Shift+Z` la rétablit. Tant que le formulaire est validé, seuls les
+  commentaires de révision entrent encore dans son historique : remonter plus loin les annule d'abord, puis la validation.
 
 ## Ce que l'outil ne fait pas
 

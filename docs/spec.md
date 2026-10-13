@@ -179,7 +179,7 @@ Unicité : une clé (ou un alias) est unique dans son questionnaire, et unique d
 - **Commentaires de révision** (§4.7) : hors verrou, ils restent éditables et déplaçables.
 - **Éléments partagés** : la bibliothèque et le dictionnaire de l'état du système restent modifiables ; leurs modifications s'appliquent par référence (§3.8). Une modification qui réécrirait un formulaire validé (renommage propagé d'une clé ou d'une variable qu'il utilise) est refusée en bloc.
 - **Annuler / rétablir** : valider et dévalider sont des points de l'historique du questionnaire ; annuler la validation le dévalide. Aucune annulation ne modifie le contenu d'un formulaire validé.
-- **Affichage** : marqueur « Validé » (icône et badge) sur l'onglet du formulaire (et sur son bouton de réouverture s'il est fermé) et dans la barre du logigramme ; le logigramme ne permet plus ni de déplacer, ni de relier, ni de déposer, ni d'éditer en place ; les champs du panneau de propriétés sont en lecture seule. Un formulaire non validé s'affiche comme avant.
+- **Affichage** : marqueur « Validé » (icône et badge) sur l'onglet du formulaire (et sur son bouton de réouverture s'il est fermé) et en surimpression en haut à gauche du logigramme ; le logigramme ne permet plus ni de déplacer, ni de relier, ni de déposer, ni d'éditer en place ; les champs du panneau de propriétés sont en lecture seule. Un formulaire non validé s'affiche comme avant.
 
 ## 4. IHM et ergonomie
 
@@ -192,7 +192,7 @@ Objectif : pas de clicodrome. Chaque action courante doit se faire au clavier ou
 - **Vue côte à côte** (souhaitable) : deux questionnaires affichés en parallèle pour comparer.
 - Dans un onglet de questionnaire, deux sous-onglets : **Logigramme** et **Prévisualisation**.
 - Le logigramme est divisé en deux zones : à gauche le graphe, à droite le **panneau de propriétés** de l'objet sélectionné (question, arête, nœud fragment, champ de structure, page). Un panneau « Problèmes », repliable, liste les avertissements (§4.6).
-- **Barre du logigramme** : mise en page automatique, ajuster la vue, **exporter le logigramme en image** (§6.4), afficher / masquer les commentaires de révision (§4.7), valider / dévalider le formulaire et marqueur « Validé » (§3.10).
+- **Barre du logigramme** : mise en page automatique, ajuster la vue, **exporter le logigramme en image** (§6.4), afficher / masquer les commentaires de révision (§4.7), valider / dévalider le formulaire (§3.10).
 - **Page des commentaires** (EVO-011) : onglet « Commentaires » (§4.7).
 
 ### 4.2 Représentation des nœuds
