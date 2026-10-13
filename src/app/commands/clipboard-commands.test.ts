@@ -121,6 +121,24 @@ describe('copier-coller de nœuds (EVO-010)', () => {
     ]);
   });
 
+  it('pointeur hors du logigramme : collé décalé de 40 px par rapport à l’original', () => {
+    copy(A, ['n1', 'n2']);
+    setPastePoint('qa', { x: 10, y: 10 });
+    setPastePoint('qa');
+    paste('q:qa');
+    const layout = st().ws.layouts.find((l) => l.graph === 'qa')!.nodes;
+    expect(st().selection.nodes.map((id) => layout[id])).toEqual([{ x: 140, y: 240 }, { x: 140, y: 390 }]);
+  });
+
+  it('refuse au collage un fragment qui créerait un cycle d’appels indirect', () => {
+    // frg_h appelle frg_g, qui appelle frg_f : coller cette instance de frg_g dans frg_f bouclerait.
+    st().edit('library', (ws) => void ws.library.fragments.push({ id: 'frg_h', key: 'h', title: { fr: 'H' }, nodes: [{ kind: 'fragment', id: 'h1', ref: 'frg_g', alias: 'g' }], edges: [] }));
+    copy({ kind: 'fragment', id: 'frg_h' }, ['h1']);
+    paste('f:frg_f');
+    expect(keys(st().ws.library.fragments[0]!)).toEqual(['nom']);
+    expect(st().notice?.lines).toEqual(['Le fragment « g » n’est pas collé : il créerait un cycle d’appels.']);
+  });
+
   it('coller est indisponible sans copie ou dans un autre projet', () => {
     runCommand('tab.show', 'q:qb');
     expect(command('node.paste')!.enabled!()).toBe(false);
@@ -176,6 +194,39 @@ describe('duplication (EVO-010)', () => {
     expect(fragmentCallers(st().ws, f!.id).map((c) => c.id).sort()).toEqual(['frg_g', gCopy!.id, 'qa', 'qb', 'qc'].sort());
     expect(gCopy!.nodes[0]).toMatchObject({ kind: 'fragment', ref: 'frg_f', alias: 'id' });
     expect(g!.id).toBe('frg_g');
+  });
+
+  it('Ctrl+Z annule la duplication d’un questionnaire et celle d’un fragment', () => {
+    runCommand('questionnaire.duplicate', 'qa');
+    expect(st().ws.questionnaires).toHaveLength(4);
+    st().undo('project');
+    expect(st().ws.questionnaires.map((x) => x.id)).toEqual(['qa', 'qb', 'qc']);
+    expect(st().ws.project.questionnaires.map((x) => x.id)).toEqual(['qa', 'qb', 'qc']);
+    runCommand('library.duplicate', { kind: 'fragment', id: 'frg_f' });
+    st().undo('library');
+    expect(st().ws.library.fragments.map((f) => f.id)).toEqual(['frg_f', 'frg_g']);
+  });
+
+  it('indisponibles quand rien n’est à dupliquer', () => {
+    runCommand('tab.show', 'library');
+    st().set((s) => void (s.libraryItem = undefined));
+    expect(command('questionnaire.duplicate')!.enabled!()).toBe(false);
+    expect(command('library.duplicate')!.enabled!()).toBe(false);
+    expect(command('questionnaire.duplicate')!.enabled!('inconnu')).toBe(false);
+    runCommand('tab.show', 'q:qa');
+    expect(command('questionnaire.duplicate')!.enabled!()).toBe(true);
+    expect(command('library.duplicate')!.enabled!()).toBe(false);
+    runCommand('tab.show', 'f:frg_f');
+    expect(command('library.duplicate')!.enabled!()).toBe(true);
+  });
+
+  it('Ctrl+D réécrit les références internes à la sélection, comme le collage', () => {
+    runCommand('tab.show', 'q:qa');
+    st().select({ graph: A, nodes: ['n1', 'n3'] });
+    expect(runCommand('node.duplicate')).toBe(true);
+    const [d1, d3] = st().selection.nodes.map((id) => qOf('qa').nodes.find((n) => n.id === id)) as unknown as { key: string; required: string }[];
+    expect(d1!.key).toBe('date_sinistre_2');
+    expect(d3!.required).toBe('date_sinistre_2 != ""');
   });
 
   it('duplique une question de bibliothèque', () => {

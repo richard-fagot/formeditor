@@ -112,25 +112,3 @@ export function updateNode(ws: Workspace, ref: GraphRef, nodeId: string, patch: 
   // Une propriété mise à `undefined` est retirée (JSON propre).
   g.nodes[i] = Object.fromEntries(Object.entries(next).filter(([, v]) => v !== undefined)) as GraphNode;
 }
-
-/** Duplique des nœuds (et les arêtes entre eux), décalés ; clés rendues uniques. Renvoie les nouveaux ids. */
-export function duplicateNodes(ws: Workspace, ref: GraphRef, ids: string[]): string[] {
-  const g = getGraph(ws, ref);
-  if (!g) return [];
-  const map = new Map<string, string>();
-  const layout = layoutOf(ws, ref.id).nodes;
-  for (const n of g.nodes.filter((x) => ids.includes(x.id))) {
-    const copy = JSON.parse(JSON.stringify(n)) as GraphNode & { key?: string; alias?: string };
-    copy.id = newId('n');
-    if (copy.kind === 'question' && !('ref' in copy) && copy.key) copy.key = uniqueKey(copy.key, usedKeys(ws, g));
-    if (copy.kind === 'fragment') copy.alias = uniqueKey(copy.alias!, usedKeys(ws, g));
-    g.nodes.push(copy);
-    map.set(n.id, copy.id);
-    const p = layout[n.id] ?? { x: 0, y: 0 };
-    layout[copy.id] = { x: p.x + 40, y: p.y + 40 };
-  }
-  for (const e of g.edges.filter((x) => map.has(x.from) && map.has(x.to))) {
-    g.edges.push({ ...e, id: newId('e'), from: map.get(e.from)!, to: map.get(e.to)! });
-  }
-  return [...map.values()];
-}
