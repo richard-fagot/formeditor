@@ -33,6 +33,9 @@ Dépend de `core/model`, `core/expressions`.
   (valeur unique → un élément, vide → aucun, nombres / booléens → texte, objets, vides et `other` écartés, doublons retirés, ordre gardé ; `labelOf` facultatif : libellé affiché à la place d'une valeur d'option) ;
   `referencedChoices(ws, expr)` : questions à choix dont la clé est le dernier nom d'une référence (hors `sys.`) ;
   `filterSuggestions(liste, saisie)` : « contient », casse ignorée.
+- Outline de la prévisualisation (EVO-019, `outline.ts`) : `passedQuestions(input, s, visited)` : questions du parcours recalculé
+  avec les réponses actuelles depuis le départ, arrêté à la première page jamais affichée (`visited` ∪ historique) ;
+  `jumpTo(input, s, stepId, visited)` : vers une de ces questions, l'historique devient ce parcours jusqu'à elle, réponses conservées ; sinon sans effet.
 - `successor`, `chooseEdge`, `firstStep`, `prune`, `projectedSteps`, `getAnswer`, `withAnswer`, `otherPath`.
 
 ## Règles
@@ -49,4 +52,4 @@ Dépend de `core/model`, `core/expressions`.
 - Pas de validation des réponses ici : voir `core/validation` (`validateAnswer`).
 
 ## Tests
-`runtime.test.ts`, `fragments.test.ts` (milieu, départ, sorties, `ident.majeur = false`, deux usages, imbrication, entrée réglée), `trace.test.ts`, `options.test.ts`, `groups.test.ts`, `dont-know.test.ts`, `country.test.ts`, `hidden-fields.test.ts`, `required.test.ts`, `suggestions.test.ts` ; `tests/reference/paths.test.ts` rejoue `examples/*/chemins/*.json`.
+`runtime.test.ts`, `fragments.test.ts` (milieu, départ, sorties, `ident.majeur = false`, deux usages, imbrication, entrée réglée), `trace.test.ts`, `options.test.ts`, `groups.test.ts`, `dont-know.test.ts`, `country.test.ts`, `hidden-fields.test.ts`, `required.test.ts`, `suggestions.test.ts`, `outline.test.ts` ; `tests/reference/paths.test.ts` rejoue `examples/*/chemins/*.json`.
