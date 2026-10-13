@@ -170,6 +170,17 @@ Unicité : une clé (ou un alias) est unique dans son questionnaire, et unique d
 - Civilité (EVO-007) : libellés par défaut fournis en français et en anglais ; dans les autres langues du projet, ils sont signalés comme traductions manquantes. L'interpolation d'une civilité (`{civilite} {nom}`) affiche son libellé dans la langue courante, celle d'un téléphone son format international lisible (`+33 6 12 34 56 78`) ; pour les autres types (choix unique compris), la valeur. Noms de pays : fournis par le navigateur (`Intl.DisplayNames`) dans la langue affichée, sans donnée embarquée.
 - L'interface de l'outil lui-même est aussi internationalisable (français par défaut).
 
+### 3.10 Validation d'un formulaire (EVO-015)
+
+- Un questionnaire (formulaire) est **non validé** (par défaut) ou **validé** : relu et approuvé par les métiers, livrable aux développeurs. L'état porte sur un questionnaire, indépendamment des autres.
+- **Valider le formulaire** (bouton de la barre du logigramme, palette) le passe à l'état validé et note la date. **Dévalider** (même place, palette) le repasse à l'état non validé après confirmation ; refuser la confirmation le laisse validé. Seule l'action possible selon l'état est proposée.
+- **Lecture seule** : un formulaire validé ne peut plus être modifié, quel que soit le moyen (panneau de propriétés, logigramme, raccourcis, palette, glisser-déposer, collage, import d'un fichier unitaire, mise en page automatique, annuler / rétablir) : questions, réponses, propriétés, expressions, nœuds et arêtes (création, liaison, déplacement, suppression, rang), départ, titre, clé, description. Le verrou est appliqué au niveau du modèle : une modification qui changerait un formulaire validé est refusée en bloc et un message l'indique.
+- **Consultation** inchangée : navigation, sélection, lecture des propriétés, prévisualisation, export, copie de nœuds vers un autre formulaire, duplication du formulaire (la copie n'est pas validée).
+- **Commentaires de révision** (§4.7) : hors verrou, ils restent éditables et déplaçables.
+- **Éléments partagés** : la bibliothèque et le dictionnaire de l'état du système restent modifiables ; leurs modifications s'appliquent par référence (§3.8). Une modification qui réécrirait un formulaire validé (renommage propagé d'une clé ou d'une variable qu'il utilise) est refusée en bloc.
+- **Annuler / rétablir** : valider et dévalider sont des points de l'historique du questionnaire ; annuler la validation le dévalide. Aucune annulation ne modifie le contenu d'un formulaire validé.
+- **Affichage** : marqueur « Validé » (icône et badge) sur l'onglet du formulaire (et sur son bouton de réouverture s'il est fermé) et en surimpression en haut à gauche du logigramme ; le logigramme ne permet plus ni de déplacer, ni de relier, ni de déposer, ni d'éditer en place ; les champs du panneau de propriétés sont en lecture seule. Un formulaire non validé s'affiche comme avant.
+
 ## 4. IHM et ergonomie
 
 Objectif : pas de clicodrome. Chaque action courante doit se faire au clavier ou en un geste, sans quitter le logigramme.
@@ -177,11 +188,11 @@ Objectif : pas de clicodrome. Chaque action courante doit se faire au clavier ou
 ### 4.1 Structure de l'écran
 
 - **Barre de projet** : nouveau projet, ouvrir, importer (projet, questionnaire, bibliothèque), exporter, langue, paramètres.
-- **Onglets de questionnaires** : plusieurs questionnaires ouverts en même temps. On passe de l'un à l'autre par onglet ou par raccourci. La bibliothèque et le dictionnaire de l'état du système ont aussi leur onglet.
+- **Onglets de questionnaires** : plusieurs questionnaires ouverts en même temps ; l'onglet d'un formulaire validé porte le marqueur « Validé » (§3.10). On passe de l'un à l'autre par onglet ou par raccourci. La bibliothèque et le dictionnaire de l'état du système ont aussi leur onglet.
 - **Vue côte à côte** (souhaitable) : deux questionnaires affichés en parallèle pour comparer.
 - Dans un onglet de questionnaire, deux sous-onglets : **Logigramme** et **Prévisualisation**.
 - Le logigramme est divisé en deux zones : à gauche le graphe, à droite le **panneau de propriétés** de l'objet sélectionné (question, arête, nœud fragment, champ de structure, page). Un panneau « Problèmes », repliable, liste les avertissements (§4.6).
-- **Barre du logigramme** : mise en page automatique, ajuster la vue, **exporter le logigramme en image** (§6.4), afficher / masquer les commentaires de révision (§4.7).
+- **Barre du logigramme** : mise en page automatique, ajuster la vue, **exporter le logigramme en image** (§6.4), afficher / masquer les commentaires de révision (§4.7), valider / dévalider le formulaire (§3.10).
 - **Page des commentaires** (EVO-011) : onglet « Commentaires » (§4.7).
 
 ### 4.2 Représentation des nœuds
@@ -327,6 +338,7 @@ L'import accepte un bundle ou des fichiers unitaires. L'export propose les deux.
 - **Caractère obligatoire surchargé** (EVO-012) : `required` (booléen) facultatif d'un nœud question qui référence la bibliothèque, `requiredOverrides` (chemin d'identifiants → booléen) facultatif d'un nœud fragment ; seule la surcharge est stockée, la valeur résolue n'est pas exportée (règle dans `docs/FORMAT.md` §6.1). Format version 10 ; un fichier antérieur se migre sans transformation (tout est hérité).
 - **Champs masqués** (EVO-009) : propriété facultative `hiddenFields` (clés des champs masqués) d'un nœud question qui référence une structure de bibliothèque ; l'export conserve la référence et cette liste (pas de résolution). Format version 8 ; un fichier antérieur se migre sans transformation (propriété absente = tous les champs affichés).
 - **Commentaires de révision** (EVO-011) : propriété facultative `comments` d'une mise en page (`{ node, x?, y?, text, replies[] }`), donc absents de `projet.json`, `bibliotheque.json` et `<questionnaire>.json` ; dans le bundle, sous `layouts[].comments`, à ignorer par le moteur. Pas d'export distinct pour les développeurs : l'export est la sauvegarde. Format version 9 ; un fichier antérieur se migre sans transformation (aucun commentaire).
+- **État de validation** (EVO-015, §3.10) : propriétés facultatives `status` (`"draft"` | `"validated"`, absente = non validé) et `validatedAt` (date `AAAA-MM-JJ`) d'un questionnaire, exportées pour indiquer aux développeurs les formulaires livrables ; sans effet sur le parcours. Format version 11 ; un fichier antérieur se migre sans transformation (tous les formulaires non validés).
 - **« Ne sais pas »** (EVO-006) : propriété facultative `dontKnow` (`{}` ou `{ "label": … }`) d'une question ou d'un champ de structure ; réponse « Ne sais pas » = valeur vide et marqueur `<clé>_nsp: true` (groupe `NSP` pour un choix). Format version 5 ; un fichier antérieur se migre sans transformation (propriété absente = désactivée).
 - **Livré avec** :
   - un **JSON Schema** par type de fichier ;

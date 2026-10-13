@@ -7,6 +7,8 @@ export interface ExpressionEnv {
   uiLang: string;
   languages: string[];
   contentLang: string;
+  /** Lecture seule (formulaire validé, EVO-015) : les saisies CodeMirror ne sont pas éditables (lu au montage). */
+  readOnly?: boolean;
 }
 
 const Ctx = createContext<ExpressionEnv>({ scope: new Map(), uiLang: 'fr', languages: ['fr'], contentLang: 'fr' });

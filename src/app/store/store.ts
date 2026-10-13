@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { enableMapSet } from 'immer';
-import { FORMAT_VERSION, newId, type Workspace } from '../../core/model';
+import { FORMAT_VERSION, lockedChanges, newId, type Workspace } from '../../core/model';
+import { makeTranslate } from '../i18n';
 import type { Session } from '../../core/runtime';
 import { newWorkspace } from '../../format';
 import { record, takeSnapshot, type Scope, type ScopeHistory } from './history';
@@ -138,7 +139,27 @@ export function blankWorkspace(name = 'Nouveau projet', title = 'Questionnaire')
 }
 
 export const useStore = create<Store>()(
-  immer((set, get) => ({
+  immer((set, get) => {
+  /**
+   * Verrou des formulaires validés (EVO-015) : si la dernière modification a changé un questionnaire validé dans `prev`,
+   * remet le projet (et l'historique, les onglets, la sélection) dans l'état de `prev` ; message si `notify`. Vrai si refusée.
+   */
+  function refused(prev: Store, notify = true): boolean {
+    const locked = lockedChanges(prev.ws, get().ws);
+    if (!locked.length) return false;
+    set((s) => {
+      Object.assign(s, { ws: prev.ws, history: prev.history, tabs: prev.tabs, activeTab: prev.activeTab, selection: prev.selection, libraryItem: prev.libraryItem, compare: prev.compare, dirty: prev.dirty });
+      if (!notify) return;
+      const t = makeTranslate(prev.uiLang);
+      const name = (id: string) => {
+        const q = prev.ws.questionnaires.find((x) => x.id === id)!;
+        return q.title[prev.contentLang] ?? q.title[prev.ws.project.defaultLanguage] ?? q.key;
+      };
+      s.notice = { title: t('validation.locked'), lines: locked.map((id) => t('validation.lockedLine', { name: name(id) })) };
+    });
+    return true;
+  }
+  return {
     ...initialState(blankWorkspace()),
     palette: { open: false, mode: 'commands' },
     uiLang: 'fr',
@@ -152,12 +173,14 @@ export const useStore = create<Store>()(
     ...initialImageState(),
 
     edit(scope, recipe, key) {
-      const ws = get().ws;
+      const prev = get();
+      const ws = prev.ws;
       const before = takeSnapshot(ws, scope);
       set((s) => {
         const result = recipe(s.ws as Workspace);
         if (result) s.ws = result;
       });
+      if (refused(prev)) return;
       // Rien de changé : aucun point d'historique (le `future` est conservé).
       const changed = changedScopes(ws, get().ws);
       if (!changed.length) return;
@@ -171,11 +194,15 @@ export const useStore = create<Store>()(
       });
     },
     transact(scopes, recipe) {
-      const before = scopes.map((sc) => takeSnapshot(get().ws, sc));
-      const tx = ++txCounter;
+      const prev = get();
+      const before = scopes.map((sc) => takeSnapshot(prev.ws, sc));
       set((s) => {
         const result = recipe(s.ws as Workspace);
         if (result) s.ws = result;
+      });
+      if (refused(prev)) return;
+      const tx = ++txCounter;
+      set((s) => {
         before.forEach((snap, i) => {
           const sc = scopes[i]!;
           if (JSON.stringify(snap) === JSON.stringify(takeSnapshot(s.ws as Workspace, sc))) return;
@@ -185,10 +212,14 @@ export const useStore = create<Store>()(
       });
     },
     undo(scope) {
+      const prev = get();
       set((s) => void travel(s as AppState, scope, 'past'));
+      refused(prev);
     },
     redo(scope) {
+      const prev = get();
       set((s) => void travel(s as AppState, scope, 'future'));
+      refused(prev);
     },
     checkpoint(scope) {
       const before = takeSnapshot(get().ws, scope);
@@ -197,10 +228,12 @@ export const useStore = create<Store>()(
       });
     },
     silent(recipe) {
+      const prev = get();
       set((s) => {
         recipe(s.ws as Workspace);
         s.dirty = true;
       });
+      refused(prev, false);
     },
     set(recipe) {
       set((s) => {
@@ -243,7 +276,8 @@ export const useStore = create<Store>()(
         s.dirty = false;
       });
     },
-  })),
+  };
+  }),
 );
 
 let txCounter = 0;

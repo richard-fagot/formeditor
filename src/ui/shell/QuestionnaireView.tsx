@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { BookOpen, Columns2, ImageDown, MessageSquare, Network } from 'lucide-react';
+import { BadgeCheck, BookOpen, Columns2, ImageDown, MessageSquare, Network } from 'lucide-react';
+import { isValidated } from '../../core/model';
 import { checkWorkspace } from '../../core/validation';
 import { useStore, useT, type GraphRef } from '../../app/store';
 import { runCommand } from '../../app/commands';
@@ -21,6 +22,7 @@ export function QuestionnaireView({ id }: { id: string }) {
   const empty = useStore((s) => !s.ws.questionnaires.find((q) => q.id === id)?.nodes.length);
   const busy = useStore((s) => s.imageBusy);
   const hasComments = useStore((s) => !!s.ws.layouts.find((l) => l.graph === id)?.comments?.length);
+  const validatedAt = useStore((s) => { const q = s.ws.questionnaires.find((x) => x.id === id); return isValidated(q) ? (q!.validatedAt ?? '') : undefined; });
   const graph: GraphRef = useMemo(() => ({ kind: 'questionnaire', id }), [id]);
   const issues = useMemo(() => checkWorkspace(ws).filter((i) => i.owner.kind === 'questionnaire' && i.owner.id === id), [ws, id]);
   const sub = (v: 'diagram' | 'preview', label: string) => (
@@ -63,6 +65,19 @@ export function QuestionnaireView({ id }: { id: string }) {
             <Columns2 className="size-3.5" />{t('view.compare')}
           </button>
         )}
+        {view === 'diagram' && (validatedAt === undefined ? (
+          <button type="button" data-testid="validate" title={t('questionnaire.validate')}
+            className="flex items-center gap-1 rounded px-2 py-1 text-xs text-slate-500 hover:bg-slate-100"
+            onClick={() => runCommand('questionnaire.validate')}>
+            <BadgeCheck className="size-3.5" />{t('questionnaire.validate')}
+          </button>
+        ) : (
+          <button type="button" data-testid="unvalidate" title={t('questionnaire.unvalidate')}
+            className="flex items-center gap-1 rounded px-2 py-1 text-xs text-slate-500 hover:bg-slate-100"
+            onClick={() => runCommand('questionnaire.unvalidate')}>
+            {t('questionnaire.unvalidate')}
+          </button>
+        ))}
         {view === 'diagram' && (
           <button type="button" data-testid="toggle-library-panel" title={t('view.libraryPanel')}
             className={cn('flex items-center gap-1 rounded px-2 py-1 text-xs', panel ? 'bg-amber-50 text-amber-800' : 'text-slate-500 hover:bg-slate-100')}
@@ -75,7 +90,15 @@ export function QuestionnaireView({ id }: { id: string }) {
         <div className="flex min-h-0 flex-1">
           {panel && !compare && <LibraryPanel graph={graph} />}
           <div className="flex min-w-0 flex-1 flex-col">
-            <div className="min-h-0 flex-1"><Diagram graph={graph} issues={issues} /></div>
+            <div className="relative min-h-0 flex-1">
+              <Diagram graph={graph} issues={issues} />
+              {validatedAt !== undefined && (
+                <span data-testid="diagram-validated" title={t('validation.badgeTitle', { date: validatedAt })}
+                  className="pointer-events-none absolute left-3 top-3 z-10 flex items-center gap-1 rounded-md border border-emerald-200 bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 shadow-sm">
+                  <BadgeCheck className="size-4" />{t('validation.badge')}
+                </span>
+              )}
+            </div>
             <ProblemsPanel graph={graph} issues={issues} />
           </div>
           {compare && <ComparePane activeId={id} compareId={compare} />}

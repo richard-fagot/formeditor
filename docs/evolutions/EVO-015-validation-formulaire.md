@@ -1,6 +1,6 @@
 # EVO-015 — Marquer un formulaire comme validé
 
-Statut : à faire
+Statut : fait 2026-10-13
 Dépend de : aucune
 
 ## Besoin
@@ -100,3 +100,43 @@ Ajouter une section « Analyse » en bas de ce fichier :
 
 Faisable sans ambiguïté bloquante → choix notés dans l'analyse et `docs/DECISIONS.md`, puis
 réalisation. Sinon → statut « à arbitrer », options et conséquences, arrêt sans coder.
+
+## Analyse
+
+Conclusion : **faisable sans ambiguïté bloquante**. Choix ci-dessous, reportés dans `docs/DECISIONS.md`.
+
+1. **Faisabilité, modules** (matrice de `docs/MAP.md`) : `core/model` (état du questionnaire, règle du verrou,
+   fonction pure testée), `format` (schéma, migration 10 → 11, exemple, `docs/FORMAT.md`), `app/store` (verrou
+   dans `edit`, `transact`, `silent`, `undo`, `redo` ; écriture de l'état ; la duplication ne reprend pas l'état),
+   `app/commands` (« Valider le formulaire », « Dévalider » avec confirmation), `app/i18n`, `ui/shell` (marqueur sur
+   l'onglet, bouton et marqueur dans la barre du logigramme), `ui/diagram` (mode verrouillé : sélection gardée,
+   ni déplacement, ni liaison, ni dépôt, ni édition en place), `ui/properties` et `ui/expression-editor` (champs
+   en lecture seule), `docs/spec.md`, `docs/GUIDE.md`, tests.
+2. **Verrou au niveau du modèle** : toute modification du projet passe par l'une des actions du store
+   (`edit`, `transact`, `silent`, `undo` / `redo`) ; `loadWorkspace` remplace tout le projet (ouvrir, nouveau, exemple).
+   Chacune compare l'état avant / après : si le contenu d'un questionnaire validé avant la modification a changé
+   (questionnaire hors état de validation, sa mise en page hors commentaires, son entrée dans le projet) ou s'il a
+   disparu, la modification est **annulée en bloc** et un message l'explique. Raccourcis, palette, panneau, collage,
+   glisser-déposer, dépôt depuis la bibliothèque, import de fichiers unitaires (qui passe par `edit`), mise en page
+   automatique et annuler / rétablir sont donc tous couverts. Seule l'action de dévalidation (qui ne change que l'état)
+   passe. Points d'entrée qui échappent au verrou : aucun pour le contenu ; l'ouverture d'un projet (`loadWorkspace`)
+   n'est pas une modification. Côté interface, les champs non contrôlés (CodeMirror) sont mis en lecture seule pour
+   que l'affichage ne diverge pas du modèle. Annuler / rétablir : la validation est un point de l'historique du
+   questionnaire ; tant qu'il est validé, ce point est en tête de sa pile (aucune autre modification n'y est
+   enregistrée), donc on ne peut remonter à une version antérieure qu'en annulant d'abord la validation ; le verrou
+   vérifie en plus chaque annuler / rétablir (transactions multi-portées comprises).
+   **Commentaires de révision** (§4.7) : hors verrou (sans effet sur le questionnaire) ; ils restent éditables et
+   déplaçables sur un formulaire validé, utiles pour remonter une erreur.
+3. **Stockage** : statut énuméré facultatif `status` (`"draft"` | `"validated"`, absent = `"draft"`), prêt pour des
+   états futurs ; date `validatedAt` (`AAAA-MM-JJ`) posée à la validation, retirée à la dévalidation (renseigne les
+   développeurs à moindre coût). Dévalider retire les deux propriétés : le fichier redevient identique à l'octet près.
+   Version 11 ; migration 10 → 11 sans transformation (propriété absente = non validé).
+4. **Interactions entre formulaires** : un questionnaire ne référence jamais un autre questionnaire ; les éléments
+   partagés sont la bibliothèque (questions, fragments, jeux de libellés) et le dictionnaire de l'état du système.
+   La validation porte sur le fichier du questionnaire. Bibliothèque et dictionnaire restent modifiables : une
+   modification sans réécriture du formulaire validé (intitulé d'une question de bibliothèque, contenu d'un fragment)
+   s'y applique par référence, comme aujourd'hui (règle §3.8 : l'utilisateur reste garant de la cohérence) ; une
+   modification qui **réécrirait** le formulaire validé (renommage propagé d'une clé de bibliothèque ou d'une
+   variable qu'il utilise) est **refusée en bloc** avec le message du verrou. Une référence rendue cassée (élément
+   supprimé) est signalée par les vérifications (§4.6). Copier des nœuds d'un formulaire validé ou le dupliquer est
+   permis ; la copie n'est pas validée.

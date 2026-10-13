@@ -15,7 +15,7 @@ export type NodeData = { nodeId: string };
 
 /** Nœud du logigramme : cadre, poignées, contenu délégué au plugin du type de nœud, édition en place. */
 export const NodeView = memo(function NodeView({ data, selected }: NodeProps & { data: NodeData }) {
-  const { graph, issuesByNode, readOnly } = useDiagram();
+  const { graph, issuesByNode, readOnly, locked } = useDiagram();
   const node = useStore((s) => getGraph(s.ws, graph)?.nodes.find((n) => n.id === data.nodeId));
   // Départ d'un questionnaire, ou entrée (implicite ou réglée) d'un fragment.
   const isStart = useStore((s) => { const g = getGraph(s.ws, graph); return !!g && graphStart(g) === data.nodeId; });
@@ -25,7 +25,7 @@ export const NodeView = memo(function NodeView({ data, selected }: NodeProps & {
   // Commentaire de révision (EVO-011) : icône sur la question, clic = afficher / masquer.
   const hasComment = useStore((s) => !readOnly && !!commentOf(s.ws, { host: graph, node: data.nodeId }));
   const commentShown = useStore((s) => s.shownComments.includes(commentKey({ host: graph, node: data.nodeId })));
-  const editing = !readOnly && focus?.kind === 'label' && focus.id === data.nodeId && node?.kind === 'question';
+  const editing = !readOnly && !locked && focus?.kind === 'label' && focus.id === data.nodeId && node?.kind === 'question';
   if (!node) return null;
   const plugin = nodeKind(node.kind);
   const question = questionOfNode(env.ws, node);

@@ -1,4 +1,4 @@
-# Format des questionnaires — version 10
+# Format des questionnaires — version 11
 
 Ce document décrit le format JSON produit par l'éditeur de questionnaires. Il s'adresse à l'équipe
 de développement (et à l'IA qui l'assiste) chargée de construire le moteur cible et les formulaires
@@ -34,7 +34,7 @@ libellés et interpolation — 6. Nœuds — 7. Questions — 8. Réponses — 9
 | `<clé>.layout.json`, `fragment_<clé>.layout.json`, `question_<clé>.layout.json` | `layout` | Positions des nœuds dans l'éditeur et commentaires de révision (version 9, §1.1). | **non** (à ignorer) |
 | `<projet>.bundle.json` | `bundle` | `project`, `library`, `questionnaires[]`, `layouts[]` dans un seul fichier. | oui (même contenu) |
 
-- Chaque fichier (et le bundle) porte `formatVersion` (entier, actuellement `10`) et `kind`.
+- Chaque fichier (et le bundle) porte `formatVersion` (entier, actuellement `11`) et `kind`.
 - L'outil migre automatiquement à l'ouverture un fichier d'une version antérieure ; il refuse un fichier
   d'une version plus récente. Un moteur cible peut refuser toute version qu'il ne connaît pas.
 - Tout élément (projet, questionnaire, nœud, arête, question, fragment, variable, scénario, jeu de libellés)
@@ -158,6 +158,8 @@ nommé (« UD avec 2 sinistres », « Contrat résilié »…). Les chemins atte
 | `key` | Clé `snake_case`, nom du fichier. |
 | `title` | Titre, texte multilingue simple (§5). |
 | `description?` | Libre. |
+| `status?` | État de validation (version 11, EVO-015) : `"draft"` (non validé, valeur par défaut si absent) ou `"validated"` : relu et approuvé par les métiers, **livrable aux développeurs** ; l'éditeur le garde en lecture seule jusqu'à sa dévalidation. Sans effet sur le parcours. |
+| `validatedAt?` | Date de validation `AAAA-MM-JJ` (version 11), présente seulement si `status` vaut `"validated"`. |
 | `start` | Id du nœud de départ ; peut être un nœud `fragment` (le parcours commence alors sur l'entrée du fragment, §11.3). |
 | `nodes[]` | Nœuds (§6). |
 | `edges[]` | Arêtes (§11.1) ; **leur ordre compte**. |
@@ -827,6 +829,7 @@ L'exemple fourni ne produit aucun problème.
 | Champs masqués (version 8) : structure `identite` (7 champs, tous obligatoires) réduite à nom, prénom, mail dans une instance ; `{identite.mail}` dans la fin | `q_remboursement` : `n_rappel` → `lq_identite`, `n_fin_remboursement` ; chemins `remboursement_*.json` |
 | Commentaire de révision (version 9) : question commentée, deux réponses, nœud commentaire à gauche de la question | `declaration_sinistre.layout.json` : `comments` sur `n_date` |
 | Surcharge du caractère obligatoire (version 10, §6.1) : téléphone obligatoire en bibliothèque, rendu facultatif dans un fragment (laissé vide) ; question d'un fragment rendue facultative depuis un questionnaire | `blk_identite_tiers` : `bn_telephone` → `lq_telephone` (chemins `ud_tiers_inconnu.json`, `ud_vol_avec_boucle.json`) ; `q_remboursement` : `n_ident.requiredOverrides` |
+| Formulaire validé (version 11) : `status: "validated"`, `validatedAt` ; la déclaration de sinistre reste non validée | `demande_remboursement.json` |
 
 Après la date, on demande le lien avec un sinistre existant s'il y en a un d'antérieur, puis on va aux
 victimes (accident) ou au montant :
@@ -881,7 +884,7 @@ doit égaler `path`, toutes les réponses doivent avoir été consommées et l'i
 
 Toute évolution incompatible incrémente `formatVersion` et s'accompagne d'une migration dans l'outil,
 des schémas, de ce document et de l'exemple. Les ajouts compatibles (nouvelle propriété facultative)
-sont documentés ici. Version actuelle : **10**.
+sont documentés ici. Version actuelle : **11**.
 
 | Version | Changement | Migration |
 | --- | --- | --- |
@@ -894,3 +897,4 @@ sont documentés ici. Version actuelle : **10**.
 | 8 | Champs masqués `hiddenFields` (clés) d'une instance d'une structure de bibliothèque ; code de vérification `hiddenField` (EVO-009). | Aucune transformation (propriété absente = tous les champs affichés) ; seul `formatVersion` change. |
 | 9 | Commentaires de révision `comments` (`{ node, x?, y?, text, replies[] }`) d'un document `layout` ; fichier `question_<clé>.layout.json` pour une question de bibliothèque commentée (EVO-011). Outil seulement, à ignorer par le moteur. | Aucune transformation (propriété absente = aucun commentaire) ; seul `formatVersion` change. |
 | 10 | Surcharge du caractère obligatoire (EVO-012) : `required?` (booléen) d'une référence de bibliothèque, `requiredOverrides?` (chemin d'ids → booléen) d'un nœud fragment ; résolution du plus proche au plus lointain (§6.1). | Aucune transformation (propriétés absentes = hérité) ; seul `formatVersion` change. |
+| 11 | État de validation d'un questionnaire (EVO-015) : `status?` (`"draft"` \| `"validated"`) et `validatedAt?` (date). | Aucune transformation (propriétés absentes = non validé) ; seul `formatVersion` change. |

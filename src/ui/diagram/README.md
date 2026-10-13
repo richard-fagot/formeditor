@@ -6,6 +6,8 @@ Dépend de `app/store`, `app/commands` (liaison tracée à la souris : `edge.cre
 
 ## API
 - `Diagram({ graph, issues, readOnly? })` ; `readOnly` (vue côte à côte) : ni sélection, ni glisser, ni liaison, ni dépôt, pas de focus.
+  Questionnaire validé (EVO-015, `locked` du contexte) : sélection gardée, nœuds du graphe non déplaçables (commentaires déplaçables), ni liaison, ni dépôt,
+  ni édition en place, pas d'invitation sur un graphe vide ; le store refuse de toute façon toute modification.
 - `ProblemsPanel({ graph, issues })` : vérifications du §4.6 du graphe, repliable ; clic = sélection.
 - `LIBRARY_MIME` : type des données glissées depuis le panneau de la bibliothèque (`{ kind, id }`).
 

@@ -28,8 +28,10 @@ utilitaires purs. Aucun import externe : c'est la base de tous les autres module
   (surcharges non orphelines d'un appel).
 - `graph.ts` : `Edge` (dont `caption?`, libellé de lecture, EVO-005), `Graph`.
 - `documents.ts` : `Questionnaire` (porte `start`), `Library` (`fragments`), `Fragment` (`entry?`, pas de `start`), `LabelSet`, `Project`, `SystemVariable` (dont `caption?`), `Scenario`,
-  `Layout` (dont `comments?` : `ReviewComment` `{ node, x?, y?, text, replies }`, commentaires de révision, EVO-011), `Workspace` (projet complet en mémoire), `Bundle`, `FORMAT_VERSION` (10).
+  `Layout` (dont `comments?` : `ReviewComment` `{ node, x?, y?, text, replies }`, commentaires de révision, EVO-011), `Workspace` (projet complet en mémoire), `Bundle`, `FORMAT_VERSION` (11). `Questionnaire.status?` (`draft` | `validated`) et `validatedAt?` (EVO-015).
 - `graph.ts` : `Graph` = `nodes` + `edges` (sans départ).
+- `validation.ts` (EVO-015) : `QuestionnaireStatus`, `isValidated(q)`, `lockedChanges(avant, après)` → ids des questionnaires validés avant
+  dont le contenu verrouillé a changé ou qui ont disparu (questionnaire hors `status` / `validatedAt`, mise en page hors `comments`, entrée du projet).
 - `fragment.ts` (EVO-008) : `fragmentRoots` (nœuds sans arête entrante), `fragmentEntry` (`entry`, sinon premier candidat, sinon premier nœud),
   `fragmentExits` (nœuds sans arête sortante), `graphStart` (départ ou entrée), `calledFragments`, `createsCycle`, `fragmentCallers`.
 - `keys.ts` : `deriveKey` (« Date du sinistre » → `date_sinistre`), `uniqueKey`, `isValidKey`, `newId`, `RESERVED_KEYS` (dont `groupe`, `nsp`).
@@ -44,4 +46,4 @@ utilitaires purs. Aucun import externe : c'est la base de tous les autres module
 - `StructureField` exclut le type `structure` (pas de structure imbriquée).
 
 ## Tests
-`keys.test.ts`, `fragment.test.ts`, `instance.test.ts`, `required.test.ts`.
+`keys.test.ts`, `fragment.test.ts`, `instance.test.ts`, `required.test.ts`, `validation.test.ts`.

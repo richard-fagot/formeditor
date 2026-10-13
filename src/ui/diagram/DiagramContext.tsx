@@ -8,6 +8,8 @@ export interface DiagramInfo {
   issuesByNode: Map<string, Issue[]>;
   /** Logigramme en lecture seule (vue côte à côte). */
   readOnly?: boolean;
+  /** Formulaire validé (EVO-015) : sélection permise, ni déplacement, ni liaison, ni dépôt, ni édition en place. */
+  locked?: boolean;
 }
 
 export const DiagramContext = createContext<DiagramInfo | null>(null);

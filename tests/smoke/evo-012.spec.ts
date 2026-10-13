@@ -47,6 +47,9 @@ test('EVO-012 : nœud fragment — questions listées, surcharge repérée, prov
   const errors = await open(page);
   await palette(page, 'exemple');
   await page.getByRole('tab', { name: /Demande de remboursement/ }).click();
+  // « Demande de remboursement » est validé dans l'exemple (EVO-015) : le dévalider pour le modifier.
+  page.once('dialog', (d) => void d.accept());
+  await page.getByTestId('unvalidate').click();
   const node = page.getByTestId('rf__node-n_ident');
   await expect(node).toContainText('surch.');
   await node.click();

@@ -2,7 +2,7 @@ import type { Graph } from './graph';
 import type { LangCode, LocalizedText } from './text';
 import type { Question } from './question';
 
-export const FORMAT_VERSION = 10;
+export const FORMAT_VERSION = 11;
 
 export interface Questionnaire extends Graph {
   formatVersion: number;
@@ -11,6 +11,10 @@ export interface Questionnaire extends Graph {
   key: string;
   title: LocalizedText;
   description?: string;
+  /** État de validation (EVO-015) : absent = `draft` (non validé) ; `validated` = en lecture seule. */
+  status?: 'draft' | 'validated';
+  /** Date de validation (`AAAA-MM-JJ`), présente seulement quand le questionnaire est validé. */
+  validatedAt?: string;
   /** Nœud de départ (peut être un nœud fragment : le parcours commence sur l'entrée du fragment). */
   start: string;
 }

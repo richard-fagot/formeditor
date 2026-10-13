@@ -32,6 +32,9 @@ vient des plugins (`registry`). Dépend de `app/store`, `registry`, `core`, `ui-
   « Revenir à l’entrée implicite », commande `node.setEntry`). Portée d'un fragment : `fragmentScope`.
 - Autres nœuds : `plugin.Properties` du type de nœud ; renommer une sortie passe par `renameExit` (arêtes des appels suivies).
 
+Questionnaire validé (EVO-015) : contenu dans un `fieldset disabled` (`properties-locked`), remonté au changement d'état, et `readOnly` transmis
+aux saisies CodeMirror (`ExpressionEnv`).
+
 Les saisies de champs de nœud et d'arête passent par `store.edit` avec une clé de regroupement `nœud:champ`
 (frappes regroupées dans l'historique). Les boutons (départ, rang, suppression) et les propriétés du
 questionnaire passent par `runCommand`.
