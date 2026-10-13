@@ -29,3 +29,17 @@ export function patchQuestionnaire(ws: Workspace, id: string, patch: { title?: L
     else delete q.description;
   }
 }
+
+/**
+ * Valide (`date` = AAAA-MM-JJ) ou dévalide un questionnaire (EVO-015). Dévalider retire `status` et `validatedAt` :
+ * le fichier redevient identique à celui d'avant la validation.
+ */
+export function setValidation(ws: Workspace, id: string, date: string | undefined): void {
+  const q = ws.questionnaires.find((x) => x.id === id);
+  if (!q) return;
+  if (date) Object.assign(q, { status: 'validated', validatedAt: date });
+  else {
+    delete q.status;
+    delete q.validatedAt;
+  }
+}

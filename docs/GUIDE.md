@@ -1,9 +1,9 @@
 # Guide utilisateur — Éditeur de questionnaires
-Mis à jour le 2026-10-13 — jusqu'à EVO-014
+Mis à jour le 2026-10-13 — jusqu'à EVO-015
 
 ## Mode d'emploi du guide
 
-- Une entrée par action, titrée par un verbe à l'infinitif, groupées par thème (sections 1 à 16) ; cherchez le verbe (« Créer », « Relier », « Supprimer »…).
+- Une entrée par action, titrée par un verbe à l'infinitif, groupées par thème (sections 1 à 17) ; cherchez le verbe (« Créer », « Relier », « Supprimer »…).
 - Les libellés entre « » sont ceux affichés par l'interface en français (langue d'interface par défaut).
 - Raccourcis entre accents graves : `N`, `Ctrl+K`, `Alt+I`. Sur Mac, `Ctrl` s'affiche `⌘`. « Palette » = palette de commandes (`Ctrl+K`), où l'on tape le libellé de l'action.
 - Les raccourcis marqués « logigramme » n'agissent que si le logigramme a le focus (cliquer dans une zone vide du graphe), jamais pendant une saisie.
@@ -13,6 +13,7 @@ Mis à jour le 2026-10-13 — jusqu'à EVO-014
 
 - **Projet** : tout le travail (questionnaires, bibliothèque, état du système, scénarios, langues) ; un seul ouvert à la fois.
 - **Questionnaire** : un graphe de nœuds reliés par des arêtes ; un onglet par questionnaire.
+- **Formulaire validé** : questionnaire relu et approuvé par les métiers, livrable aux développeurs ; marqué « Validé » et en lecture seule jusqu'à sa dévalidation (section 17).
 - **Nœud** : question, page d'information, page de synthèse, fin, nœud fragment (ou sortie nommée, dans un fragment).
 - **Départ** : nœud par lequel commence le parcours d'un questionnaire (badge « Départ »). Le premier nœud créé l'est d'office ;
   ce peut être un nœud fragment.
@@ -736,6 +737,33 @@ l'objet lui-même et sur la page des commentaires.
   dont des questions sont commentées) ; le commentaire est supprimé avec la question. Dupliquer ou coller des nœuds, dupliquer un questionnaire ou un fragment ne copie pas les commentaires ;
   extraire une sélection en fragment y emporte leurs commentaires.
 
+## 17. Valider un formulaire
+
+Un formulaire **validé** est relu et approuvé par les métiers, donc livrable aux développeurs. Il porte le marqueur
+« Validé » (icône et badge) sur son onglet (et sur son bouton de réouverture s'il est fermé) et en haut à gauche du
+logigramme ; le survol indique la date de validation. L'état est enregistré dans le fichier du questionnaire et exporté.
+Chaque formulaire se valide indépendamment des autres. Un formulaire non validé s'affiche et se modifie comme avant.
+
+- **Valider le formulaire** — Bouton « Valider le formulaire » de la barre du logigramme, ou palette : le formulaire
+  affiché passe à l'état validé (date du jour). Annulable (`Ctrl+Z`). `[cmd: questionnaire.validate]`
+- **Consulter un formulaire validé** — Il est en **lecture seule** : on ne peut plus modifier ses questions, réponses,
+  propriétés, expressions, ni ses nœuds et arêtes (créer, relier, déplacer, supprimer, changer le rang, le départ), ni son
+  titre, sa clé ou sa description, quel que soit le moyen : panneau de propriétés (champs grisés), logigramme (nœuds
+  figés, ni liaison, ni dépôt depuis la bibliothèque, ni édition en place), raccourcis, palette, collage, mise en page
+  automatique, import d'un fichier de questionnaire. Une tentative affiche « Formulaire validé : modification impossible ».
+  Restent possibles : sélectionner, lire les propriétés, prévisualiser, exporter, copier des nœuds vers un autre
+  formulaire, dupliquer le formulaire (la copie n'est pas validée), et les **commentaires de révision** (section 16),
+  toujours éditables et déplaçables.
+- **Modifier un élément partagé** — La bibliothèque et l'état du système restent modifiables ; leurs changements
+  s'appliquent par référence au formulaire validé. Un renommage qui réécrirait le formulaire validé (clé de bibliothèque
+  ou variable qu'il utilise) est refusé en entier, avec le même message.
+- **Dévalider** — Bouton « Dévalider » (à la place de « Valider le formulaire »), ou palette : une confirmation est
+  demandée ; « Annuler » laisse le formulaire validé. Confirmé, le marqueur disparaît et le formulaire redevient
+  modifiable. `[cmd: questionnaire.unvalidate]`
+- **Annuler / rétablir autour d'une validation** — Valider et dévalider sont des étapes de l'historique du formulaire :
+  `Ctrl+Z` juste après une validation la retire, `Ctrl+Shift+Z` la rétablit. Tant que le formulaire est validé, aucune
+  autre étape n'entre dans son historique : remonter plus loin passe d'abord par l'annulation de la validation.
+
 ## Ce que l'outil ne fait pas
 
 - **Supprimer un questionnaire** : aucune action ; on peut seulement fermer son onglet.
@@ -819,6 +847,8 @@ l'objet lui-même et sur la page des commentaires.
 | Titre du questionnaire | — | `questionnaire.setTitle` |
 | Description (pour l’équipe de dev) | — | `questionnaire.setDescription` |
 | Clé du questionnaire | — | `questionnaire.rename` |
+| Valider le formulaire | — | `questionnaire.validate` |
+| Dévalider | — | `questionnaire.unvalidate` |
 | Nom du projet | — | `project.rename` |
 | Nouveau jeu de libellés booléen | — | `labelSet.addBoolean` |
 | Nouveau jeu de libellés tri-state | — | `labelSet.addTristate` |

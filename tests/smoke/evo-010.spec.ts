@@ -22,6 +22,9 @@ test('EVO-010 : copier deux nœuds, les coller au pointeur dans un autre questio
   await page.getByTestId('rf__node-n_lien').click({ modifiers: ['Shift'] });
   await page.keyboard.press('Control+c');
   await page.getByRole('tab', { name: /Demande de remboursement/ }).click();
+  // « Demande de remboursement » est validé dans l'exemple (EVO-015) : le dévalider pour le modifier.
+  page.once('dialog', (d) => void d.accept());
+  await page.getByTestId('unvalidate').click();
   const diagram = page.getByTestId('diagram');
   await expect(page.locator('.react-flow__node')).toHaveCount(5);
   const box = (await diagram.boundingBox())!;

@@ -515,15 +515,11 @@ describe('surcharge du caractère obligatoire (EVO-012, version 10)', () => {
     return bundle;
   };
 
-  it('le format courant est la version 10', () => {
-    expect(FORMAT_VERSION).toBe(10);
-  });
-
   it('un projet version 9 se charge sans erreur, toutes les utilisations en « Hérité »', () => {
     const back = importFiles([{ name: 'ancien.bundle.json', text: JSON.stringify(v9()) }]);
     expect(back.errors).toEqual([]);
     const q = back.workspace!.questionnaires[0]!;
-    expect(q.formatVersion).toBe(10);
+    expect(q.formatVersion).toBe(FORMAT_VERSION);
     expect(q.nodes.some((n) => 'required' in n || 'requiredOverrides' in n)).toBe(false);
     expect(back.workspace!.library.fragments[0]!.nodes[0]).not.toHaveProperty('required');
   });
@@ -545,6 +541,48 @@ describe('surcharge du caractère obligatoire (EVO-012, version 10)', () => {
       expect(back.errors).toEqual([]);
       expect(back.workspace!.questionnaires).toEqual(ws.questionnaires);
       expect(back.workspace!.library).toEqual(ws.library);
+    }
+  });
+});
+
+describe('état de validation d’un formulaire (EVO-015, version 11)', () => {
+  const v10 = () => {
+    const ws = newWorkspace('p', 'fr');
+    ws.questionnaires.push(minimalQuestionnaire(), { ...minimalQuestionnaire(), id: 'q2', key: 'autre' });
+    ws.project.questionnaires.push({ id: 'q1', file: 'test.json' }, { id: 'q2', file: 'autre.json' });
+    const bundle = JSON.parse(exportBundle(ws));
+    for (const d of [bundle, bundle.library, bundle.project, ...bundle.questionnaires]) d.formatVersion = 10;
+    return bundle;
+  };
+
+  it('le format courant est la version 11', () => {
+    expect(FORMAT_VERSION).toBe(11);
+  });
+
+  it('un projet version 10 se charge sans erreur, tous ses formulaires non validés', () => {
+    const back = importFiles([{ name: 'ancien.bundle.json', text: JSON.stringify(v10()) }]);
+    expect(back.errors).toEqual([]);
+    for (const q of back.workspace!.questionnaires) {
+      expect(q.formatVersion).toBe(11);
+      expect(q).not.toHaveProperty('status');
+      expect(q).not.toHaveProperty('validatedAt');
+    }
+  });
+
+  it('schéma : `status` énuméré, `validatedAt` date ; refusés mal formés', () => {
+    expect(validateDocument({ ...minimalQuestionnaire(), status: 'validated', validatedAt: '2026-10-13' })).toEqual([]);
+    expect(validateDocument({ ...minimalQuestionnaire(), status: 'draft' })).toEqual([]);
+    expect(validateDocument({ ...minimalQuestionnaire(), status: 'livré' }).length).toBeGreaterThan(0);
+    expect(validateDocument({ ...minimalQuestionnaire(), status: true }).length).toBeGreaterThan(0);
+    expect(validateDocument({ ...minimalQuestionnaire(), status: 'validated', validatedAt: '13/10/2026' }).length).toBeGreaterThan(0);
+  });
+
+  it('export puis réimport : état de validation de chaque formulaire identique', () => {
+    const ws = importFiles([{ name: 'p.bundle.json', text: JSON.stringify(v10()) }]).workspace!;
+    Object.assign(ws.questionnaires[0]!, { status: 'validated', validatedAt: '2026-10-13' });
+    for (const back of [importFiles(exportFiles(ws)), importFiles([{ name: 'p.bundle.json', text: exportBundle(ws) }])]) {
+      expect(back.errors).toEqual([]);
+      expect(back.workspace!.questionnaires.map((q) => [q.status, q.validatedAt])).toEqual([['validated', '2026-10-13'], [undefined, undefined]]);
     }
   });
 });

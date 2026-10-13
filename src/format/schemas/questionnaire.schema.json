@@ -33,6 +33,18 @@
     "description": {
       "type": "string"
     },
+    "status": {
+      "description": "État de validation (EVO-015) : absent = draft (non validé) ; validated = validé par les métiers, livrable.",
+      "enum": [
+        "draft",
+        "validated"
+      ]
+    },
+    "validatedAt": {
+      "description": "Date de validation (AAAA-MM-JJ), présente quand le questionnaire est validé.",
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
     "start": {
       "type": "string"
     },

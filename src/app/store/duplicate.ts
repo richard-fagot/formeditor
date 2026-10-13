@@ -40,7 +40,9 @@ export function duplicateQuestionnaire(ws: Workspace, id: string, name: CopyName
   const key = uniqueKey(q.key, ws.questionnaires.map((x) => x.key));
   const { nodes, edges, ids } = cloneGraph(ws, q, copyId);
   const title = copyTitle(q.title, ws.questionnaires.map((x) => x.title), name);
-  ws.questionnaires.splice(i + 1, 0, { ...clone(q), id: copyId, key, title, nodes, edges, start: ids.get(q.start) ?? '' });
+  // La copie d'un formulaire validé n'est pas validée (EVO-015).
+  const { status: _status, validatedAt: _at, ...rest } = clone(q);
+  ws.questionnaires.splice(i + 1, 0, { ...rest, id: copyId, key, title, nodes, edges, start: ids.get(q.start) ?? '' });
   const entries = ws.project.questionnaires;
   const at = entries.findIndex((e) => e.id === id);
   entries.splice(at < 0 ? entries.length : at + 1, 0, { id: copyId, file: `${key}.json` });

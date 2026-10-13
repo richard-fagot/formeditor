@@ -19,7 +19,11 @@ Dépend de `core`, `format`, `app/i18n`, `plugin-api` (utilitaires).
   passe avant le « sinon »), `removeNodes`, `removeEdge`, `moveEdge`, `updateNode` (retire les `undefined`),
   `getGraph`, `layoutOf`, `usedKeys`, `freshKey`.
 - Questionnaire (`questionnaire-edits.ts`) : `renameQuestionnaire` (clé + fichier `<clé>.json` du projet),
-  `canRenameQuestionnaire`, `questionnaireKeys`, `patchQuestionnaire` (titre, description).
+  `canRenameQuestionnaire`, `questionnaireKeys`, `patchQuestionnaire` (titre, description), `setValidation(ws, id, date?)` (EVO-015 : avec date, valide ;
+  sans, retire `status` et `validatedAt`).
+- Verrou des formulaires validés (EVO-015, `refused` dans `store.ts`) : après `edit`, `transact`, `silent`, `undo`, `redo`, si `lockedChanges` (core/model)
+  signale un questionnaire validé modifié ou supprimé, l'état d'avant est remis (projet, historique, onglets, sélection) et `notice` l'explique
+  (sauf `silent`). La duplication d'un questionnaire ne reprend pas son état de validation.
 - Bibliothèque (`library-edits.ts`) : `addLibraryQuestion`, `addFragment`, `deleteLibraryItem`, `referenceNode(ws, ref, item, id)` (nœud
   référence ; alias libre pour un fragment ; refusé si `insertionCycle` : fragment dans lui-même ou cycle d'appels), `placeNode`, `moveToLibrary` / `canMoveToLibrary` (question
   locale → bibliothèque, même clé ; refus si la clé y est déjà prise), `copyToLibrary(ws, ref, nodeId, key?)` (EVO-009 : nouveau `Workspace` ; avec `key`,
@@ -64,7 +68,7 @@ Dépend de `core`, `format`, `app/i18n`, `plugin-api` (utilitaires).
 - Les fonctions de `core` reçoivent parfois un brouillon immer : elles clonent en JSON, jamais avec `structuredClone`.
 
 ## Tests
-`store.test.ts` (historique par questionnaire, regroupement, renommage d'un questionnaire) ;
+`store.test.ts` (historique par questionnaire, regroupement, renommage d'un questionnaire) ; verrou (EVO-015) : `app/commands/validation-commands.test.ts` ;
 `system.test.ts` (dictionnaire, scénarios, contrôle des valeurs) ; `language.test.ts` (langues des contenus) ;
 copier-coller et duplication : `app/commands/clipboard-commands.test.ts` ;
 `library.test.ts` (éléments de bibliothèque, copie en bibliothèque et champs masqués (EVO-009), références, cycle d'appels refusé, extraction en fragment : structure, requalification, parcours inchangé, imbrication).

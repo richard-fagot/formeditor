@@ -15,7 +15,7 @@ Saisie d'expressions JSONata et de libellés multilingues. Dépend de `core/expr
   utilisé par `ui/properties` et par les champs de structure.
 - `DontKnowEditor` : option « Ne sais pas » (EVO-006) : case d'activation et libellé (`LabelEditor`), partagé par les plugins.
 - `ExpressionEnvProvider` / `useExpressionEnv` : portée (`Scope` de `core/references`) et langues, fournies
-  par le panneau de propriétés.
+  par le panneau de propriétés ; `readOnly` (EVO-015, formulaire validé) : `ExpressionInput` non éditable (lu au montage).
 
 ## Pièges
 - Le motif du mot tapé est Unicode (`\p{L}`, drapeau `u`) pour reconnaître « connecté » ; pas de `validFor` :

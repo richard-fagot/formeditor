@@ -1,5 +1,5 @@
 {
-  "formatVersion": 10,
+  "formatVersion": 11,
   "kind": "questionnaire",
   "id": "q_remboursement",
   "key": "demande_remboursement",
@@ -8,6 +8,8 @@
     "en": "Refund request"
   },
   "description": "Commence par le fragment « identification_assure » (départ sur le nœud fragment).",
+  "status": "validated",
+  "validatedAt": "2026-10-13",
   "start": "n_ident",
   "nodes": [
     {

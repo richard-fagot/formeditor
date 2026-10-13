@@ -31,6 +31,11 @@ describe('exemple « déclaration de sinistre »', () => {
     for (const f of exportFiles(ws).filter((x) => !x.name.endsWith('.layout.json'))) expect(f.text).not.toContain('Faut-il borner');
   });
 
+  it('contient un formulaire validé (EVO-015) et un non validé', () => {
+    const ws = exampleWorkspace();
+    expect(ws.questionnaires.map((q) => [q.key, q.status])).toEqual([['declaration_sinistre', undefined], ['demande_remboursement', 'validated']]);
+  });
+
   it('aller-retour par bundle à l’identique', () => {
     const ws = exampleWorkspace();
     const bundle = exportBundle(ws);

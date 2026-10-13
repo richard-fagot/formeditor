@@ -4,6 +4,7 @@ import {
   type Edge as RFEdge, type Node as RFNode, type NodeChange,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+import { isValidated } from '../../core/model';
 import type { Issue } from '../../core/validation';
 import { runCommand } from '../../app/commands';
 import { isTyping } from '../../app/shortcuts';
@@ -50,6 +51,8 @@ function DiagramInner({ graph, issues, readOnly }: DiagramProps) {
   const fitRequest = useStore((s) => s.fitRequest);
   const container = useRef<HTMLDivElement>(null);
   const rf = useReactFlow();
+  // Formulaire validé (EVO-015) : nœuds du graphe figés ; les commentaires restent déplaçables.
+  const locked = useStore((s) => graph.kind === 'questionnaire' && isValidated(s.ws.questionnaires.find((q) => q.id === graph.id)));
 
   // Mesures reprises de React Flow : sans elles, un nœud recréé (changement de sélection, déplacement) est masqué
   // (`visibility: hidden`) jusqu'à sa remesure et le logigramme disparaît brièvement.
@@ -60,11 +63,12 @@ function DiagramInner({ graph, issues, readOnly }: DiagramProps) {
         type: 'graphNode',
         position: layout?.nodes[n.id] ?? { x: 0, y: 0 },
         data: { nodeId: n.id },
+        draggable: !locked,
         selected: !readOnly && selection.nodes.includes(n.id),
         measured: rf.getInternalNode(n.id)?.measured,
       })),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [g?.nodes, layout, selection.nodes, readOnly],
+    [g?.nodes, layout, selection.nodes, readOnly, locked],
   );
   const fragments = useStore((s) => s.ws.library.fragments);
   const graphEdges: RFEdge[] = useMemo(() => {
@@ -144,18 +148,18 @@ function DiagramInner({ graph, issues, readOnly }: DiagramProps) {
   }, [graph.id]);
 
   return (
-    <DiagramContext.Provider value={{ graph, issuesByNode, readOnly }}>
+    <DiagramContext.Provider value={{ graph, issuesByNode, readOnly, locked }}>
       <div ref={container} tabIndex={readOnly ? undefined : 0} data-graph-focus={readOnly ? undefined : ''} data-testid={readOnly ? 'diagram-compare' : 'diagram'}
         className="relative h-full w-full outline-none" {...menu.pointer}
         onDragOver={(e) => {
-          if (!readOnly && e.dataTransfer.types.includes(LIBRARY_MIME)) {
+          if (!readOnly && !locked && e.dataTransfer.types.includes(LIBRARY_MIME)) {
             e.preventDefault();
             e.dataTransfer.dropEffect = 'copy';
           }
         }}
         onDrop={(e) => {
           const raw = e.dataTransfer.getData(LIBRARY_MIME);
-          if (!raw || readOnly) return;
+          if (!raw || readOnly || locked) return;
           e.preventDefault();
           const position = rf.screenToFlowPosition({ x: e.clientX, y: e.clientY });
           runCommand('library.insertItem', { ...(JSON.parse(raw) as object), graph, position });
@@ -168,6 +172,7 @@ function DiagramInner({ graph, issues, readOnly }: DiagramProps) {
           edgeTypes={edgeTypes}
           {...(readOnly ? { nodesDraggable: false, nodesConnectable: false, elementsSelectable: false } : {
             onNodesChange,
+            nodesConnectable: !locked,
             onNodeDragStart: () => useStore.getState().checkpoint(scopeOf(graph)),
             // Nœud commentaire : la saisie garde le focus.
             onNodeClick: (_: unknown, n: RFNode) => n.type !== 'comment' && focusGraph(),
@@ -180,7 +185,7 @@ function DiagramInner({ graph, issues, readOnly }: DiagramProps) {
               useStore.getState().select({ graph, nodes: [] });
               focusGraph();
             },
-            onNodeDoubleClick: (_: unknown, n: RFNode) => n.type !== 'comment' && useStore.getState().requestFocus('label', n.id),
+            onNodeDoubleClick: (_: unknown, n: RFNode) => n.type !== 'comment' && !locked && useStore.getState().requestFocus('label', n.id),
             onConnect: (c: { source: string | null; target: string | null; sourceHandle?: string | null }) =>
               c.source && c.target && runCommand('edge.create', { graph, from: c.source, to: c.target, exit: c.sourceHandle ?? undefined }),
           })}
@@ -194,7 +199,7 @@ function DiagramInner({ graph, issues, readOnly }: DiagramProps) {
           <Background gap={20} color="#e2e8f0" />
           <Controls showInteractive={false} />
         </ReactFlow>
-        {g && g.nodes.length === 0 && !readOnly && <EmptyHint />}
+        {g && g.nodes.length === 0 && !readOnly && !locked && <EmptyHint />}
         {exportable && <ImageDialog graph={graph} />}
         {menu.element}
       </div>

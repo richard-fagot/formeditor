@@ -1,8 +1,10 @@
-import type { LocalizedText } from '../../core/model';
+import { isValidated, type LocalizedText } from '../../core/model';
+import { todayIso } from '../../core/expressions';
 import {
   activeGraphRef, activeQuestionnaire, canRenameQuestionnaire, connect, getGraph, moveEdge, patchQuestionnaire, renameQuestionnaire,
-  scopeOf, useStore, type GraphRef,
+  scopeOf, setValidation, useStore, type GraphRef,
 } from '../store';
+import { makeTranslate } from '../i18n';
 import type { Command } from './types';
 
 const st = () => useStore.getState();
@@ -30,6 +32,9 @@ function editQuestionnaire(key: string, recipe: Parameters<ReturnType<typeof st>
 }
 
 const hasQuestionnaire = () => !!activeQuestionnaire(st());
+
+/** Questionnaire visé par la validation (EVO-015) : `arg` = id, sinon le questionnaire affiché. */
+const target = (arg?: unknown) => (typeof arg === 'string' ? st().ws.questionnaires.find((q) => q.id === arg) : activeQuestionnaire(st()));
 
 /** Modifications ponctuelles : rang des arêtes, liaison par glisser, propriétés du questionnaire et du projet. */
 export function editCommands(): Command[] {
@@ -70,6 +75,26 @@ export function editCommands(): Command[] {
         const id = activeQuestionnaire(st())!.id;
         if (typeof key !== 'string' || !canRenameQuestionnaire(st().ws, id, key)) return;
         editQuestionnaire('key', (ws) => renameQuestionnaire(ws, id, key));
+      },
+    },
+    {
+      // EVO-015 : un point d'historique du questionnaire ; le verrou ne porte pas sur l'état de validation.
+      id: 'questionnaire.validate', label: 'questionnaire.validate', keys: [], scope: 'global',
+      enabled: (arg) => { const q = target(arg); return !!q && !isValidated(q); },
+      run: (arg) => {
+        const q = target(arg);
+        if (q && !isValidated(q)) st().edit(`q:${q.id}`, (ws) => setValidation(ws, q.id, todayIso()));
+      },
+    },
+    {
+      id: 'questionnaire.unvalidate', label: 'questionnaire.unvalidate', keys: [], scope: 'global',
+      enabled: (arg) => isValidated(target(arg)),
+      run: (arg) => {
+        const q = target(arg);
+        if (!q || !isValidated(q)) return;
+        const name = q.title[st().contentLang] ?? q.title[st().ws.project.defaultLanguage] ?? q.key;
+        if (!window.confirm(makeTranslate(st().uiLang)('validation.confirmUnvalidate', { name }))) return;
+        st().edit(`q:${q.id}`, (ws) => setValidation(ws, q.id, undefined));
       },
     },
     {

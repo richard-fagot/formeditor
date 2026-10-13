@@ -66,6 +66,7 @@ export function ExpressionInput({
         doc: value,
         extensions: [
           history(),
+          ...(envRef.current.readOnly ? [EditorState.readOnly.of(true), EditorView.editable.of(false)] : []),
           EditorState.transactionFilter.of((tr) => (tr.newDoc.lines > 1 ? [] : tr)),
           keymap.of([
             { key: 'Enter', run: () => (onSubmitRef.current?.(), true) },

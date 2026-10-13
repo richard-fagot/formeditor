@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { graphStart, isLibraryQuestion, isLocalQuestion, type GraphNode } from '../../core/model';
+import { graphStart, isLibraryQuestion, isLocalQuestion, isValidated, type GraphNode } from '../../core/model';
 import { fragmentScope, questionnaireScope } from '../../core/references';
 import { nodeKind } from '../../registry';
 import { runCommand } from '../../app/commands';
@@ -26,13 +26,18 @@ export function PropertiesPanel({ graph }: { graph: GraphRef }) {
   const node = selection.nodes.length === 1 ? g?.nodes.find((n) => n.id === selection.nodes[0]) : undefined;
   const edge = selection.edge ? g?.edges.find((e) => e.id === selection.edge) : undefined;
   const questionnaire = graph.kind === 'questionnaire' ? env.ws.questionnaires.find((q) => q.id === graph.id) : undefined;
+  // Formulaire validé (EVO-015) : champs en lecture seule (le store refuse de toute façon la modification) ;
+  // `key` remonte les saisies CodeMirror, configurées au montage.
+  const locked = isValidated(questionnaire);
   return (
-    <ExpressionEnvProvider value={{ scope, uiLang: env.uiLang, languages: env.languages, contentLang: env.contentLang }}>
+    <ExpressionEnvProvider value={{ scope, uiLang: env.uiLang, languages: env.languages, contentLang: env.contentLang, readOnly: locked }}>
       <div className="h-full overflow-y-auto pb-8" data-testid="properties">
-        {node && <NodeProperties graph={graph} node={node} isStart={!!g && graphStart(g) === node.id} />}
-        {!node && edge && g && <EdgeProperties graph={graph} g={g} edge={edge} />}
-        {!node && !edge && questionnaire && <QuestionnaireProperties questionnaire={questionnaire} />}
-        {!node && !edge && !questionnaire && <p className="p-4 text-sm text-slate-400">{t('props.empty')}</p>}
+        <fieldset key={String(locked)} disabled={locked} data-testid={locked ? 'properties-locked' : undefined} className="m-0 min-w-0 border-0 p-0">
+          {node && <NodeProperties graph={graph} node={node} isStart={!!g && graphStart(g) === node.id} />}
+          {!node && edge && g && <EdgeProperties graph={graph} g={g} edge={edge} />}
+          {!node && !edge && questionnaire && <QuestionnaireProperties questionnaire={questionnaire} />}
+          {!node && !edge && !questionnaire && <p className="p-4 text-sm text-slate-400">{t('props.empty')}</p>}
+        </fieldset>
       </div>
     </ExpressionEnvProvider>
   );

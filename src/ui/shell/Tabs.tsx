@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { BookOpen, Boxes, Database, MessageSquare, Plus, Settings, X } from 'lucide-react';
+import { BadgeCheck, BookOpen, Boxes, Database, MessageSquare, Plus, Settings, X } from 'lucide-react';
+import { isValidated, type Questionnaire } from '../../core/model';
 import { runCommand } from '../../app/commands';
 import { useStore, useT, type TabId } from '../../app/store';
 import { cn, ContextMenu } from '../../ui-kit';
@@ -24,6 +25,13 @@ export function Tabs() {
     return q ? (q.title[lang] ?? q.title[ws.project.defaultLanguage] ?? q.key) : tab;
   };
   const closed = ws.questionnaires.filter((q) => !tabs.includes(`q:${q.id}`));
+  // Marqueur « Validé » d'un formulaire validé (EVO-015).
+  const badge = (q: Questionnaire | undefined) => isValidated(q) && (
+    <span data-testid="validated-badge" title={t('validation.badgeTitle', { date: q!.validatedAt ?? '' })}
+      className="flex items-center gap-0.5 rounded bg-emerald-50 px-1 text-[10px] font-medium text-emerald-700">
+      <BadgeCheck className="size-3" />{t('validation.badge')}
+    </span>
+  );
   // Menu contextuel d'un questionnaire ou d'un fragment (EVO-010) : « Dupliquer ».
   const [menu, setMenu] = useState<{ x: number; y: number; tab: TabId }>();
   const onMenu = (tab: TabId) => (e: React.MouseEvent) => {
@@ -47,6 +55,7 @@ export function Tabs() {
           {tab === 'comments' && <MessageSquare className="size-3.5" />}
           {tab.startsWith('f:') && <Boxes className="size-3.5 text-amber-600" />}
           <span className="max-w-48 truncate">{label(tab)}</span>
+          {tab.startsWith('q:') && badge(ws.questionnaires.find((x) => `q:${x.id}` === tab))}
           <button type="button" aria-label={t('questionnaire.close')} className="rounded p-0.5 opacity-0 hover:bg-slate-200 group-hover:opacity-100"
             onClick={(e) => { e.stopPropagation(); runCommand('tab.close', tab); }}>
             <X className="size-3" />
@@ -58,9 +67,9 @@ export function Tabs() {
         <Plus className="size-4" />
       </button>
       {closed.map((q) => (
-        <button key={q.id} type="button" className="mb-1 rounded px-2 py-0.5 text-xs text-slate-400 hover:bg-slate-200" onClick={() => runCommand('tab.open', `q:${q.id}`)}
+        <button key={q.id} type="button" className="mb-1 flex items-center gap-1 rounded px-2 py-0.5 text-xs text-slate-400 hover:bg-slate-200" onClick={() => runCommand('tab.open', `q:${q.id}`)}
           onContextMenu={onMenu(`q:${q.id}`)}>
-          {q.title[lang] ?? q.key}
+          {q.title[lang] ?? q.key}{badge(q)}
         </button>
       ))}
       <div className="ml-auto flex gap-1 pb-1">

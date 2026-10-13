@@ -21,7 +21,8 @@ Catalogue unique des actions utilisateur (spec §4.4). Palette, menus et raccour
   (sans paramètre : langue suivante).
 - `edit-commands.ts` : `edge.moveUp` / `edge.moveDown` (Alt+↑ / Alt+↓, arête sélectionnée), `edge.create`
   (glisser sur le logigramme), `questionnaire.properties`, `questionnaire.setTitle` / `rename` / `setDescription`,
-  `project.rename`.
+  `project.rename`, `questionnaire.validate` / `questionnaire.unvalidate` (EVO-015 : `arg` = id, sinon le questionnaire affiché ; chacune activée
+  selon l'état ; dévalider demande confirmation, `window.confirm`).
 - `library-commands.ts` : jeux de libellés (`labelSet.addBoolean`, `labelSet.addTristate`, `labelSet.delete` avec l'id).
 - `library-item-commands.ts` : `library.newQuestion`, `library.newFragment` (ouvre l'onglet `f:<id>`), `library.openRef` (EVO-013, badge « bib. » : `{ kind, id }`, objet introuvable → `notice`, sinon comme `library.show`), `library.show` (question : onglet
   Bibliothèque ; fragment : son onglet) / `library.delete` (`arg` = `{ kind, id }` ; ferme l'onglet du fragment),
@@ -62,6 +63,7 @@ Catalogue unique des actions utilisateur (spec §4.4). Palette, menus et raccour
 `image-file.test.ts` (nom du fichier image, commandes d'export, entrée du guide) ;
 `clipboard-commands.test.ts` (EVO-010 : copier-coller, renommage, fragment, annulation, duplication, export / réimport, guide) ;
 `comment-commands.test.ts` (EVO-011 : un test par critère d'acceptation testable sans navigateur, entrée du guide) ;
+`validation-commands.test.ts` (EVO-015 : validation, verrou par tous les moyens, dévalidation, autres formulaires, annuler / rétablir, export, guide) ;
 `library-commands.test.ts` (insertion, dépôt, regroupement et annulation, fragment : onglet, entrée, cycle refusé, ouverture, sortie nommée ; question vers la bibliothèque ; entrée du guide EVO-008).
 
 ## Ajouter une action
