@@ -1,6 +1,6 @@
 # EVO-019 — Outline du logigramme dans la prévisualisation
 
-Statut : à faire
+Statut : en cours
 Dépend de : aucune
 
 ## Besoin
