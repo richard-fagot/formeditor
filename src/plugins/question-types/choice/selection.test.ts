@@ -3,7 +3,7 @@ import { evaluate, resolveLabel } from '../../../core/expressions';
 import type { MultipleChoiceQuestion, Question, SingleChoiceQuestion } from '../../../core/model';
 import { choiceOptions } from '../../../core/runtime';
 import type { RenderEnv } from '../../../plugin-api';
-import { itemsOf, pickedAnswer, sectionsOf, selectedOf } from './selection';
+import { itemsOf, pickedAnswer, sectionsOf, selectedOf, separatedOther } from './selection';
 
 /** Exemple d'EVO-003, les deux groupes codés (SC, AA). */
 const single: SingleChoiceQuestion = {
@@ -58,5 +58,23 @@ describe('saisie d’un choix groupé (EVO-003)', () => {
     // Traduction absente : langue par défaut, comme une option.
     const missing: SingleChoiceQuestion = { ...q, options: [{ group: { fr: 'Seulement fr' }, options: [{ value: 'a', label: { fr: 'A' } }] }] };
     expect(itemsOf(missing, envOf('en'))[0]!.title).toBe('Seulement fr');
+  });
+});
+
+describe('« Autre (préciser) » à part des groupes (EVO-017)', () => {
+  it('avec des groupes : « Autre » en dernier, hors section, à part (unique et multiple)', () => {
+    for (const q of [single, multiple]) {
+      const items = itemsOf(q, envOf('fr'));
+      expect(separatedOther(items)).toBe(items.length - 1);
+      expect(sectionsOf(items.slice(0, -1)).map((s) => s.title)).toEqual(['Victime directe', 'Ayant droit']);
+    }
+  });
+  it('avec des groupes sans « Autre » : rien à part', () => {
+    expect(separatedOther(itemsOf({ ...single, other: undefined }, envOf('fr')))).toBeUndefined();
+  });
+  it('sans groupe, avec ou sans « Autre » : rien à part (rendu inchangé)', () => {
+    const flat: SingleChoiceQuestion = { ...single, options: [{ value: 'a', label: { fr: 'A' } }, { value: 'b', label: { fr: 'B' } }] };
+    expect(separatedOther(itemsOf(flat, envOf('fr')))).toBeUndefined();
+    expect(separatedOther(itemsOf({ ...flat, other: undefined }, envOf('fr')))).toBeUndefined();
   });
 });

@@ -36,6 +36,16 @@ describe('exemple « déclaration de sinistre »', () => {
     expect(ws.questionnaires.map((q) => [q.key, q.status])).toEqual([['declaration_sinistre', undefined], ['demande_remboursement', 'validated']]);
   });
 
+  it('question groupée avec « Autre (préciser) » (EVO-017) : export puis réimport, JSON inchangé', () => {
+    const ws = exampleWorkspace();
+    const q = ws.questionnaires.flatMap((x) => x.nodes).find((n) => n.id === 'n_qualite') as { other?: object };
+    q.other = {};
+    const exported = exportFiles(ws);
+    const back = importFiles(exported);
+    expect(back.errors).toEqual([]);
+    expect(exportFiles(back.workspace!)).toEqual(exported);
+  });
+
   it('aller-retour par bundle à l’identique', () => {
     const ws = exampleWorkspace();
     const bundle = exportBundle(ws);
