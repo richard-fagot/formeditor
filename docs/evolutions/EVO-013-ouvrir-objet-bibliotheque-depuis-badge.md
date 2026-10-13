@@ -1,6 +1,6 @@
 # EVO-013 — Ouvrir l'objet de bibliothèque depuis son badge « Bib »
 
-Statut : en cours
+Statut : fait 2026-10-13
 Dépend de : EVO-008 (fragments de bibliothèque, nœud fragment et son badge « bib. ») ; questions de bibliothèque : spec §3.8 (existant)
 
 ## Besoin
