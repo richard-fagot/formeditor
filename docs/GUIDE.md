@@ -360,16 +360,20 @@ Concerne le choix unique et le choix multiple. Le booléen et le tri-state n'ont
   ```
   Le champ réaffiche chaque groupe en `# Libellé` et ses options avec `* `. Dans le wizard, chaque groupe est une section
   titrée ; un groupe dont aucune option n'est visible n'est pas affiché. « Autre (préciser) » reste en dernier, hors groupe :
-  avec au moins un groupe affiché, elle est séparée du dernier groupe par un trait et alignée sur les titres de groupe
+  avec au moins un groupe affiché, elle est séparée du dernier groupe par un trait
   (choix unique ou multiple ; sa précision s'ouvre comme d'habitude). Exemple, avec `A` sur la question :
   ```
   Transports en commun
-    ○ Bus   ○ Métro   ○ Train
+  ○ Bus
+  ○ Métro
+  ○ Train
   Véhicule personnel
-    ○ Voiture   ○ Vélo
+  ○ Voiture
+  ○ Vélo
   ───────────────────────
   ○ Autre (préciser)
   ```
+  Les options ne sont pas décalées : c'est le trait qui distingue « Autre (préciser) ».
   Sans groupe, « Autre (préciser) » suit les options, sans trait.
 - **Régler un groupe** — Sous le champ des options, chaque groupe a sa ligne (« # Libellé (groupe) »), juste avant celles de
   ses options. La déplier : libellé multilingue (variantes, `{…}` possibles, comme une option), « Code du groupe » (ex. `SC` ;
