@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { BookOpen, Boxes, Trash2 } from 'lucide-react';
+import { BookOpen, Boxes, MessageSquare, Trash2 } from 'lucide-react';
 import { fragmentCallers, type Fragment } from '../../core/model';
 import { checkWorkspace } from '../../core/validation';
 import { runCommand } from '../../app/commands';
@@ -25,6 +25,7 @@ export function FragmentView({ id }: { id: string }) {
   const t = useT();
   const env = usePluginEnv();
   const panel = useStore((s) => s.libraryPanel);
+  const hasComments = useStore((s) => !!s.ws.layouts.find((l) => l.graph === id)?.comments?.length);
   const fragment = env.ws.library.fragments.find((f) => f.id === id);
   const graph: GraphRef = useMemo(() => ({ kind: 'fragment', id }), [id]);
   const issues = useMemo(() => checkWorkspace(env.ws).filter((i) => i.owner.kind === 'fragment' && i.owner.id === id), [env.ws, id]);
@@ -39,8 +40,13 @@ export function FragmentView({ id }: { id: string }) {
         <span className="font-semibold">{t('library.fragmentBanner')}</span>
         <span>·</span>
         <span data-testid="fragment-callers">{callers.length ? t('library.callers', { n: String(callers.length), list: callers.join(', ') }) : t('library.noCaller')}</span>
+        <button type="button" data-testid="toggle-comments" title={t('comment.toggleAll')} disabled={!hasComments}
+          className="ml-auto flex items-center gap-1 rounded px-2 py-0.5 hover:bg-amber-100 disabled:opacity-40 disabled:hover:bg-transparent"
+          onClick={() => runCommand('comment.toggleAll')}>
+          <MessageSquare className="size-3.5" />{t('comment.short')}
+        </button>
         <button type="button" data-testid="toggle-library-panel" title={t('view.libraryPanel')}
-          className={cn('ml-auto flex items-center gap-1 rounded px-2 py-0.5', panel ? 'bg-amber-100' : 'hover:bg-amber-100')}
+          className={cn('flex items-center gap-1 rounded px-2 py-0.5', panel ? 'bg-amber-100' : 'hover:bg-amber-100')}
           onClick={() => runCommand('view.libraryPanel')}>
           <BookOpen className="size-3.5" />{t('tab.library')}
         </button>

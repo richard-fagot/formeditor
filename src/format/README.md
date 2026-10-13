@@ -9,10 +9,10 @@ sérialisation, import/export unitaire et bundle. Dépend uniquement de `core/mo
   placée après les options statiques, questionnaires, bibliothèque et bundle, champs de structure compris ;
   2 → 3 : groupes d'options ; 3 → 4 : libellés `caption` (EVO-005) ; 4 → 5 : « Ne sais pas » (EVO-006) ; 5 → 6 : types mail, téléphone, adresse, civilité (EVO-007) ; seul `formatVersion` change, documents d'un bundle compris ;
   6 → 7 (EVO-008) : `library.blocks` → `library.fragments` (`start` → `entry` seulement s'il n'est pas l'unique nœud sans arête entrante),
-  nœuds `block` → `fragment`, bundle compris) ; 7 → 8 (EVO-009) : `hiddenFields` d'une instance, seul `formatVersion` change.
+  nœuds `block` → `fragment`, bundle compris) ; 7 → 8 (EVO-009) : `hiddenFields` d'une instance, seul `formatVersion` change ; 8 → 9 (EVO-011) : `comments` d'une mise en page, seul `formatVersion` change.
 - `serialize(doc)` : JSON indenté 2 espaces, ordre des clés conservé, `\n` final.
 - `newWorkspace(name, lang)`, `emptyLibrary()`, `toBundle(ws)`.
-- `exportFiles(ws) → FileContent[]` (`projet.json`, `bibliotheque.json`, `<q>.json`, `<q>.layout.json`, `fragment_<cle>.layout.json`).
+- `exportFiles(ws) → FileContent[]` (`projet.json`, `bibliotheque.json`, `<q>.json`, `<q>.layout.json`, `fragment_<cle>.layout.json`, `question_<cle>.layout.json` : commentaires d'une question de bibliothèque, EVO-011).
 - `exportBundle(ws) → string`.
 - `importFiles(files, current?) → { workspace?, errors }` : bundle ou fichiers unitaires ; sans `projet.json`,
   les fichiers sont fusionnés dans `current`. Un fichier invalide → rien n'est chargé.
@@ -31,4 +31,4 @@ Le sens de chaque propriété (navigation, validation, expressions) est dans `do
 - L'aller-retour import/export de l'exemple est identique à l'octet près (`tests/reference/format.test.ts`).
 
 ## Tests
-`format.test.ts` (unitaires, migration 1 → 2 sur `fixtures/*-v1.json`, migration 2 → 3 et groupes, migration 3 → 4 et libellés `caption`, migration 4 → 5 et « Ne sais pas », migration 5 → 6 et types EVO-007, migration 6 → 7 et fragments EVO-008, migration 7 → 8 et champs masqués EVO-009) ; `tests/reference/format.test.ts` (exemple).
+`format.test.ts` (unitaires, migration 1 → 2 sur `fixtures/*-v1.json`, migration 2 → 3 et groupes, migration 3 → 4 et libellés `caption`, migration 4 → 5 et « Ne sais pas », migration 5 → 6 et types EVO-007, migration 6 → 7 et fragments EVO-008, migration 7 → 8 et champs masqués EVO-009, version 9 et commentaires EVO-011) ; `tests/reference/format.test.ts` (exemple).

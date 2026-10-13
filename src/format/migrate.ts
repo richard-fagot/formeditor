@@ -72,6 +72,8 @@ export const MIGRATIONS: Migrations = {
   },
   /** EVO-009 : champs masqués `hiddenFields` d'une instance. Propriété absente = tous affichés : seul le numéro change. */
   7: (doc) => bump(doc, 8),
+  /** EVO-011 : commentaires de révision `comments` d'une mise en page. Propriété absente = aucun : seul le numéro change. */
+  8: (doc) => bump(doc, 9),
 };
 
 /** Graphe v6 → v7 : instances de bloc → nœuds fragment. */

@@ -24,6 +24,13 @@ describe('exemple « déclaration de sinistre »', () => {
     expect(ws.project.systemState.some((v) => v.fields?.some((f) => f.caption))).toBe(true);
   });
 
+  it('contient une question commentée (EVO-011), commentaires absents des fichiers du moteur', () => {
+    const ws = exampleWorkspace();
+    const c = ws.layouts.flatMap((l) => l.comments ?? []);
+    expect(c.some((x) => x.node === 'n_date' && x.replies.length === 2)).toBe(true);
+    for (const f of exportFiles(ws).filter((x) => !x.name.endsWith('.layout.json'))) expect(f.text).not.toContain('Faut-il borner');
+  });
+
   it('aller-retour par bundle à l’identique', () => {
     const ws = exampleWorkspace();
     const bundle = exportBundle(ws);

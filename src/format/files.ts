@@ -18,7 +18,7 @@ export function exportBundle(ws: Workspace): string {
   return serialize(toBundle(ws));
 }
 
-/** Fichiers unitaires : projet, bibliothèque, puis chaque questionnaire suivi de sa mise en page. */
+/** Fichiers unitaires : projet, bibliothèque, chaque questionnaire suivi de sa mise en page, mises en page des fragments et des questions de bibliothèque. */
 export function exportFiles(ws: Workspace): FileContent[] {
   const files: FileContent[] = [
     { name: PROJECT_FILE, text: serialize(ws.project) },
@@ -34,6 +34,11 @@ export function exportFiles(ws: Workspace): FileContent[] {
   for (const f of ws.library.fragments) {
     const layout = ws.layouts.find((l) => l.graph === f.id);
     if (layout) files.push({ name: `fragment_${f.key}.layout.json`, text: serialize(layout) });
+  }
+  // Commentaires de révision d'une question de bibliothèque (EVO-011).
+  for (const q of ws.library.questions) {
+    const layout = ws.layouts.find((l) => l.graph === q.id);
+    if (layout) files.push({ name: `question_${q.key}.layout.json`, text: serialize(layout) });
   }
   return files;
 }

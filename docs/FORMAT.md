@@ -1,4 +1,4 @@
-# Format des questionnaires — version 8
+# Format des questionnaires — version 9
 
 Ce document décrit le format JSON produit par l'éditeur de questionnaires. Il s'adresse à l'équipe
 de développement (et à l'IA qui l'assiste) chargée de construire le moteur cible et les formulaires
@@ -31,10 +31,10 @@ libellés et interpolation — 6. Nœuds — 7. Questions — 8. Réponses — 9
 | `projet.json` | `project` | Métadonnées, langues, dictionnaire de l'état du système, scénarios, liste des questionnaires. | oui |
 | `bibliotheque.json` | `library` | Questions, fragments et jeux de libellés réutilisables. | oui |
 | `<clé>.json` | `questionnaire` | Un questionnaire : nœuds, arêtes, questions locales, références à la bibliothèque. | oui |
-| `<clé>.layout.json`, `fragment_<clé>.layout.json` | `layout` | Positions des nœuds dans l'éditeur. | **non** (à ignorer) |
+| `<clé>.layout.json`, `fragment_<clé>.layout.json`, `question_<clé>.layout.json` | `layout` | Positions des nœuds dans l'éditeur et commentaires de révision (version 9, §1.1). | **non** (à ignorer) |
 | `<projet>.bundle.json` | `bundle` | `project`, `library`, `questionnaires[]`, `layouts[]` dans un seul fichier. | oui (même contenu) |
 
-- Chaque fichier (et le bundle) porte `formatVersion` (entier, actuellement `8`) et `kind`.
+- Chaque fichier (et le bundle) porte `formatVersion` (entier, actuellement `9`) et `kind`.
 - L'outil migre automatiquement à l'ouverture un fichier d'une version antérieure ; il refuse un fichier
   d'une version plus récente. Un moteur cible peut refuser toute version qu'il ne connaît pas.
 - Tout élément (projet, questionnaire, nœud, arête, question, fragment, variable, scénario, jeu de libellés)
@@ -47,7 +47,38 @@ libellés et interpolation — 6. Nœuds — 7. Questions — 8. Réponses — 9
   expressions (on écrit toujours la clé) et n'a **aucun effet** sur le comportement. À ne pas confondre
   avec `label` / `title` (textes multilingues) ni avec `description` (explication longue).
 - Le format ne contient aucune donnée de présentation, sauf les fichiers `layout` (outil seulement).
+- Les **commentaires de révision** (version 9, §1.1) ne figurent que dans les fichiers `layout` : jamais dans `projet.json`,
+  `bibliotheque.json` ni `<clé>.json`.
 - Les fichiers sont écrits en UTF-8, indentés de 2 espaces, terminés par un saut de ligne.
+
+### 1.1 Mise en page et commentaires de révision (`layout`, outil seulement)
+
+```json
+{
+  "formatVersion": 9,
+  "kind": "layout",
+  "graph": "q_declaration",
+  "nodes": { "n_date": { "x": 0, "y": 320 } },
+  "comments": [
+    {
+      "node": "n_date",
+      "x": -320,
+      "y": 300,
+      "text": "Faut-il borner à la date du jour ?",
+      "replies": ["Oui, pas de date future.", "Et pas avant la date d'effet du contrat."]
+    }
+  ]
+}
+```
+
+- `graph` : id du questionnaire, du fragment, ou (commentaires seulement, `nodes` vide) de la question de bibliothèque
+  commentée (`question_<clé>.layout.json`).
+- `nodes` : position de chaque nœud dans l'éditeur (`collapsed` : nœud fragment déplié ou non).
+- `comments` (facultatif, version 9) : commentaires de révision, au plus un par question. `node` : nœud question commenté
+  (pour une question de bibliothèque : son id) ; `x`, `y` : position du nœud commentaire (absente pour une question de
+  bibliothèque) ; `text` : texte initial ; `replies` : réponses, dans l'ordre de saisie. Texte brut, multiligne.
+- **Le moteur cible ignore entièrement ces fichiers** (et `layouts[]` d'un bundle) : les commentaires n'ont aucun effet
+  sur le questionnaire (navigation, validation, expressions).
 
 Squelette d'un questionnaire :
 
@@ -762,6 +793,7 @@ L'exemple fourni ne produit aucun problème.
 | Libellés de lecture `caption` (version 4) : arête conditionnée, « sinon », arête de sortie nommée ; variable et champ de liste | `e_qualite_ayant_droit`, `e_qualite_montant`, `e_bloc_non_identifie` ; `sys.type_adherent`, `sys.sinistres` (`nature`) |
 | Mail, téléphone, adresse, civilité (version 6) : structure de bibliothèque non utilisée par le questionnaire (civilité obligatoire, téléphone mobile, adresse à vérifier) | `lq_souscripteur` (bibliothèque) |
 | Champs masqués (version 8) : structure `identite` (7 champs, tous obligatoires) réduite à nom, prénom, mail dans une instance ; `{identite.mail}` dans la fin | `q_remboursement` : `n_rappel` → `lq_identite`, `n_fin_remboursement` ; chemins `remboursement_*.json` |
+| Commentaire de révision (version 9) : question commentée, deux réponses, nœud commentaire à gauche de la question | `declaration_sinistre.layout.json` : `comments` sur `n_date` |
 
 Après la date, on demande le lien avec un sinistre existant s'il y en a un d'antérieur, puis on va aux
 victimes (accident) ou au montant :
@@ -816,7 +848,7 @@ doit égaler `path`, toutes les réponses doivent avoir été consommées et l'i
 
 Toute évolution incompatible incrémente `formatVersion` et s'accompagne d'une migration dans l'outil,
 des schémas, de ce document et de l'exemple. Les ajouts compatibles (nouvelle propriété facultative)
-sont documentés ici. Version actuelle : **8**.
+sont documentés ici. Version actuelle : **9**.
 
 | Version | Changement | Migration |
 | --- | --- | --- |
@@ -827,3 +859,4 @@ sont documentés ici. Version actuelle : **8**.
 | 6 | Types `email`, `phone`, `address`, `civility` et leurs paramètres, réponse `<clé>_pays`, référence `cle.pays`, contrôles intégrés `email`, `phone`, `lineType`, `address`, `postalCode` (EVO-007). | Aucune transformation (un document antérieur n'utilise pas ces types) ; seul `formatVersion` change. |
 | 7 | Fragments de questionnaire (EVO-008) : `library.blocks` → `library.fragments` (`entry?`, sans `start`), nœud `block` → `fragment`, sorties implicites (nœuds sans arête sortante), départ possible sur un nœud fragment, imbrication. | Chaque bloc devient un fragment (mêmes id, clé, titre, nœuds, arêtes, sorties nommées ; `start` devient `entry` seulement s'il n'est pas l'unique nœud sans arête entrante) ; chaque nœud `block` devient `fragment`. Navigation inchangée pour un projet antérieur, sauf un nœud de bloc sans arête sortante (impasse déjà signalée en v6) : il arrêtait le parcours, il reprend désormais sur les arêtes sortantes du nœud fragment chez l'appelant. |
 | 8 | Champs masqués `hiddenFields` (clés) d'une instance d'une structure de bibliothèque ; code de vérification `hiddenField` (EVO-009). | Aucune transformation (propriété absente = tous les champs affichés) ; seul `formatVersion` change. |
+| 9 | Commentaires de révision `comments` (`{ node, x?, y?, text, replies[] }`) d'un document `layout` ; fichier `question_<clé>.layout.json` pour une question de bibliothèque commentée (EVO-011). Outil seulement, à ignorer par le moteur. | Aucune transformation (propriété absente = aucun commentaire) ; seul `formatVersion` change. |

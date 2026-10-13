@@ -40,4 +40,10 @@ Dépend de `app/store`, `app/commands` (liaison tracée à la souris : `edge.cre
   Seulement pour le logigramme modifiable d'un questionnaire. Test : `tests/smoke/evo-004.spec.ts`.
 - Copier-coller (EVO-010, `useDiagramMenu.tsx`) : position du pointeur transmise à `setPastePoint` (Ctrl+V colle au pointeur) ; clic droit sur un nœud
   (Copier, Coller, Dupliquer ; le nœud est sélectionné s'il ne l'était pas) ou sur le fond (Coller au point du clic), menu `ContextMenu` de `ui-kit`.
+- Commentaires de révision (EVO-011) : `useCommentNodes` ajoute un nœud React Flow `comment:<nœud>` (`CommentNodeView` : `CommentThread` de `ui/comments`,
+  non sélectionnable, déplaçable : position écrite dans le commentaire) par commentaire affiché (`shownComments`, pas en lecture seule) et une branche en pointillés
+  `comment:<nœud>:edge` depuis la poignée invisible `comment-left` / `comment-right` de la question (côté du centre du commentaire). Ces poignées sont **après** la
+  poignée par défaut (React Flow prend la première pour une arête sans poignée). Icône bulle sur la question (`comment.toggle`) ; « Commenter » dans le menu
+  contextuel d'une question ; `useCenterOnComment` (réagit à `centerRequest`) ; la mise en page automatique déplace chaque commentaire avec sa question.
+  Clic et double-clic sur un nœud commentaire ne prennent pas le focus du logigramme.
 - Suppression par la commande (touche Suppr), jamais par React Flow (`deleteKeyCode=null`).

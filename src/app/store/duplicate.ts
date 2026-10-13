@@ -24,7 +24,9 @@ function cloneGraph(ws: Workspace, g: Graph & { id: string }, newGraphId: string
   const layout = ws.layouts.find((l) => l.graph === g.id);
   if (layout) {
     const pos = Object.fromEntries(Object.entries(layout.nodes).flatMap(([id, p]) => (ids.has(id) ? [[ids.get(id)!, clone(p)]] : [])));
-    ws.layouts.push({ ...clone(layout), graph: newGraphId, nodes: pos });
+    // Commentaires de révision non repris (EVO-011).
+    const { comments: _comments, ...rest } = clone(layout);
+    ws.layouts.push({ ...rest, graph: newGraphId, nodes: pos });
   }
   return { nodes, edges, ids };
 }

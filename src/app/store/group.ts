@@ -2,6 +2,7 @@ import { deriveKey, fragmentRoots, newId, uniqueKey, type Edge, type ExitNode, t
 import { qualifyKeys, questionOfNode } from '../../core/references';
 import { getGraph, layoutOf, NODE_SPACING, usedKeys, type GraphRef } from './graph';
 import { addFragment } from './library-edits';
+import { moveCommentsTo } from './comment-edits';
 
 /** Nom de sortie proposé selon la cible, quand elle n'a pas de clé. */
 const KIND_NAMES: Record<string, string> = { end: 'fin', info: 'information', summary: 'synthese' };
@@ -87,6 +88,7 @@ export function groupIntoFragment(ws: Workspace, ref: GraphRef, ids: string[], t
   [...exits.values()].forEach((x, i) => (fragmentLayout[x.id] = { x: left + i * NODE_SPACING.x, y: bottom }));
   hostLayout[instanceId] = { ...(hostLayout[entry] ?? { x: 0, y: 0 }) };
   for (const n of moved) delete hostLayout[n.id];
+  moveCommentsTo(ws, ref.id, fragmentId, moved.map((n) => n.id));
 
   return { ws: qualifyKeys(ws, { kind: 'questionnaire', id: ref.id }, movedKeys, alias), fragmentId, instanceId };
 }

@@ -2,7 +2,7 @@ import { newId, OTHER_TYPES, type GraphNode, type Question } from '../../core/mo
 import { commonQuestionFields } from '../../plugin-api';
 import { DEFAULT_QUESTION_TYPE, nodeKind, QUESTION_TYPE_PLUGINS, questionType } from '../../registry';
 import {
-  activeGraphRef, connect, duplicateNodes, freshKey, getGraph, insertNode, removeEdge, removeNodes, scopeOf, updateNode, useStore,
+  activeGraphRef, commentsOf, connect, duplicateNodes, freshKey, getGraph, insertNode, removeEdge, removeNodes, scopeOf, updateNode, useStore,
   type GraphRef,
 } from '../store';
 import { makeTranslate } from '../i18n';
@@ -163,6 +163,9 @@ export function graphCommands(): Command[] {
       run: () => {
         const r = ref()!;
         const { nodes, edge } = st().selection;
+        // Question commentée (EVO-011) : confirmation, le commentaire est supprimé avec elle.
+        const commented = commentsOf(st().ws, r.id).some((c) => nodes.includes(c.node));
+        if (commented && !window.confirm(t()('comment.confirmDelete'))) return;
         edit(r, (ws) => void (nodes.length ? removeNodes(ws, r, nodes) : edge && removeEdge(ws, r, edge)));
         st().select({ graph: r, nodes: [] });
       },

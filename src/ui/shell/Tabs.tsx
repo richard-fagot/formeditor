@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BookOpen, Boxes, Database, Plus, Settings, X } from 'lucide-react';
+import { BookOpen, Boxes, Database, MessageSquare, Plus, Settings, X } from 'lucide-react';
 import { runCommand } from '../../app/commands';
 import { useStore, useT, type TabId } from '../../app/store';
 import { cn, ContextMenu } from '../../ui-kit';
@@ -15,6 +15,7 @@ export function Tabs() {
     if (tab === 'library') return t('tab.library');
     if (tab === 'system') return t('tab.system');
     if (tab === 'settings') return t('tab.settings');
+    if (tab === 'comments') return t('tab.comments');
     if (tab.startsWith('f:')) {
       const f = ws.library.fragments.find((x) => `f:${x.id}` === tab);
       return f ? (f.title[lang] ?? f.title[ws.project.defaultLanguage] ?? f.key) : tab;
@@ -43,6 +44,7 @@ export function Tabs() {
           {tab === 'library' && <BookOpen className="size-3.5" />}
           {tab === 'system' && <Database className="size-3.5" />}
           {tab === 'settings' && <Settings className="size-3.5" />}
+          {tab === 'comments' && <MessageSquare className="size-3.5" />}
           {tab.startsWith('f:') && <Boxes className="size-3.5 text-amber-600" />}
           <span className="max-w-48 truncate">{label(tab)}</span>
           <button type="button" aria-label={t('questionnaire.close')} className="rounded p-0.5 opacity-0 hover:bg-slate-200 group-hover:opacity-100"
@@ -64,6 +66,7 @@ export function Tabs() {
       <div className="ml-auto flex gap-1 pb-1">
         {!tabs.includes('library') && <button type="button" className="rounded px-2 py-0.5 text-xs text-slate-500 hover:bg-slate-200" onClick={() => runCommand('tab.library')}>{t('tab.library')}</button>}
         {!tabs.includes('system') && <button type="button" className="rounded px-2 py-0.5 text-xs text-slate-500 hover:bg-slate-200" onClick={() => runCommand('tab.system')}>{t('tab.system')}</button>}
+        {!tabs.includes('comments') && <button type="button" data-testid="open-comments" className="rounded px-2 py-0.5 text-xs text-slate-500 hover:bg-slate-200" onClick={() => runCommand('tab.comments')}>{t('tab.comments')}</button>}
       </div>
       <ContextMenu at={menu} onClose={() => setMenu(undefined)} items={[{ label: t('node.duplicate'), onSelect: () => void duplicate(menu!.tab) }]} />
     </nav>

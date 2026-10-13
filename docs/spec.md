@@ -155,6 +155,7 @@ Unicité : une clé (ou un alias) est unique dans son questionnaire, et unique d
 - Dans l'appelant, le fragment apparaît comme **un seul nœud** (le « nœud fragment ») ; ses arêtes sortantes reprennent le parcours après lui. Il est dépliable en lecture seule. Le départ d'un questionnaire peut être posé sur lui (fragment en première position).
 - Un même fragment peut être appelé plusieurs fois dans un questionnaire et dans plusieurs questionnaires, chaque fois avec un **alias** unique dans l'appelant (refusé s'il est déjà pris) qui préfixe ses clés. Une modification du fragment s'applique à tous ses appelants.
 - **Dupliquer** une question ou un fragment de la bibliothèque (EVO-010) : copie indépendante, sans appelant (§4.3).
+- **Commentaires de révision** (EVO-011) : une question d'un fragment ou une question réutilisable se commente dans l'objet lui-même ; ses commentaires ne sont pas visibles depuis les questionnaires qui l'utilisent (§4.7).
 - **Imbrication** : un fragment peut appeler un autre fragment ; un **cycle d'appels** (A appelle B qui appelle A, ou A s'appelle lui-même) est refusé à l'insertion et signalé.
 - Les expressions d'un fragment accèdent librement à ses propres questions, à celles de l'appelant (par leur clé : ce sont ses **clés attendues de l'appelant**) et à l'état du système. En cas de clé identique, la question du fragment prime. Comme un même fragment peut être appelé par plusieurs questionnaires, ses références sont vérifiées chez chacun d'eux : une clé attendue absente est signalée **dans cet appelant**, sans bloquer (§4.6).
 - **Fragment ou bloc** : le fragment remplace le bloc des versions antérieures (un seul concept). À l'ouverture d'un projet antérieur, chaque bloc devient un fragment (son départ devient l'entrée explicite seulement s'il n'est pas l'unique nœud sans arête entrante), ses sorties nommées sont conservées et chaque instance devient un nœud fragment.
@@ -178,7 +179,8 @@ Objectif : pas de clicodrome. Chaque action courante doit se faire au clavier ou
 - **Vue côte à côte** (souhaitable) : deux questionnaires affichés en parallèle pour comparer.
 - Dans un onglet de questionnaire, deux sous-onglets : **Logigramme** et **Prévisualisation**.
 - Le logigramme est divisé en deux zones : à gauche le graphe, à droite le **panneau de propriétés** de l'objet sélectionné (question, arête, nœud fragment, champ de structure, page). Un panneau « Problèmes », repliable, liste les avertissements (§4.6).
-- **Barre du logigramme** : mise en page automatique, ajuster la vue, **exporter le logigramme en image** (§6.4).
+- **Barre du logigramme** : mise en page automatique, ajuster la vue, **exporter le logigramme en image** (§6.4), afficher / masquer les commentaires de révision (§4.7).
+- **Page des commentaires** (EVO-011) : onglet « Commentaires » (§4.7).
 
 ### 4.2 Représentation des nœuds
 
@@ -265,6 +267,19 @@ C'est un écran de projet. On y déclare chaque variable : nom, libellé, type (
 - Expression invalide ou mal typée, traduction manquante, élément de bibliothèque introuvable.
 - Fragments (EVO-008) : fragment sans entrée unique (sans entrée explicite), fragment sans sortie, cycle d'appels, alias en double (clé en double), clé attendue absente chez un appelant (signalée dans cet appelant, sur le nœud fragment), fragment inutilisé, fin dans un fragment (projet antérieur), sortie nommée non raccordée ou inconnue. Les nœuds sans arête sortante d'un fragment sont ses sorties, pas des impasses.
 
+### 4.7 Commentaires de révision (EVO-011)
+
+La revue d'un questionnaire se mène dans l'outil : on commente une question et on échange des réponses au plus près d'elle.
+
+- **Rattachement** : un commentaire appartient à l'objet où il a été créé (questionnaire, fragment ou question réutilisable) et, dans un graphe, à un nœud question de cet objet ; une question en porte au plus un. Depuis un questionnaire, on commente ses nœuds question, instances de questions de bibliothèque comprises (le commentaire porte sur cet usage et reste dans le questionnaire) ; une question interne à un fragment se commente dans le fragment, pas depuis l'appelant. Les commentaires d'un fragment ou d'une question réutilisable ne sont visibles et éditables que dans l'objet d'origine et sur la page des commentaires.
+- **Création** : clic droit sur une question (logigramme d'un questionnaire ou d'un fragment, liste de l'onglet Bibliothèque pour une question réutilisable), « Commenter » (aussi par la palette sur la question sélectionnée). Le nœud commentaire est créé à droite de la question, affiché, le curseur dans le texte initial. Si la question a déjà un commentaire, « Commenter » l'affiche sans en créer un second.
+- **Fil** : un texte initial suivi de réponses successives, chacune dans sa carte, dans l'ordre de saisie ; pas de réponse à une réponse ; nombre illimité ; une nouvelle réponse s'ajoute en fin de fil. Texte brut multiligne, éditable à tout moment. Une réponse se supprime seule ; le texte initial ne se supprime qu'avec le commentaire entier. Éditions annulables (historique de l'objet).
+- **Logigramme** : le commentaire est un nœud hors du graphe métier, déplaçable, dont la position est sauvegardée ; une branche en pointillés le relie au côté gauche ou droit de la question selon que son centre est à gauche ou à droite de celui de la question. La mise en page automatique ne place que les nœuds du graphe et déplace chaque commentaire avec sa question. L'image du logigramme (§6.4) montre les commentaires affichés.
+- **Affichage** : une question commentée porte une icône *commentaire* (un clic affiche, un nouveau clic masque) ; le nœud commentaire porte une icône pour se masquer ; un bouton de la barre du logigramme (bandeau d'un fragment) affiche tous les commentaires de l'objet si l'un est masqué, sinon les masque tous. Masquer ne supprime pas. L'état affiché / masqué est propre à la session : tous masqués à l'ouverture d'un projet. Une question réutilisable n'a pas de logigramme : son commentaire est toujours affiché en tête de sa vue dans l'onglet Bibliothèque.
+- **Suppression d'une question commentée** (logigramme ou bibliothèque) : confirmation, puis le commentaire est supprimé avec elle. Dupliquer ou coller des nœuds, dupliquer un questionnaire ou un fragment ne copie pas les commentaires ; l'extraction en fragment emporte ceux des nœuds extraits.
+- **Page des commentaires** : onglet listant tous les commentaires du projet (questionnaires dans l'ordre du projet, fragments, questions réutilisables), avec l'objet, la question commentée, le texte initial et les réponses ; toutes les actions d'édition y sont disponibles et se reflètent dans le logigramme (et réciproquement). « Ouvrir » ouvre l'objet en vue logigramme, ses commentaires affichés, la vue centrée sur le commentaire, la question sélectionnée (une question réutilisable : sa vue dans l'onglet Bibliothèque).
+- **Sans effet** sur le questionnaire : ni expressions, ni vérifications, ni navigation ; absents du wizard. Hors périmètre : auteur, date, statut « résolu », mentions, notifications.
+
 ## 5. Prévisualisation
 
 La prévisualisation exécute le questionnaire avec le même moteur de parcours que celui décrit pour l'équipe de dev. Elle sert de référence comportementale, pas de maquette UX.
@@ -279,6 +294,7 @@ La prévisualisation exécute le questionnaire avec le même moteur de parcours 
 - **Panneau de débogage** (facultatif) : chemin parcouru, valeurs courantes, conditions évaluées.
 - **Fragments** (EVO-008) : les pages d'un fragment s'enchaînent sans rupture avec celles de l'appelant ; le panneau de débogage indique qu'on est dans le fragment (chemin des alias et nom du fragment) et montre ses réponses sous leur clé préfixée (`ident.nom`) ; le retour arrière traverse le fragment normalement ; un clic sur une page d'un fragment sélectionne le nœud fragment du questionnaire.
 - **Champs masqués** (EVO-009) : les champs masqués d'une instance de structure ne sont pas présentés dans le wizard, ni dans la synthèse.
+- **Commentaires de révision** (EVO-011, §4.7) : jamais présentés dans le wizard.
 - Changement de langue.
 - Un clic sur une page de la prévisualisation sélectionne le nœud correspondant dans le logigramme.
 
@@ -293,7 +309,7 @@ Un format propre est retenu par défaut. Aucun standard existant (SurveyJS, Form
 | `projet.json` | Métadonnées, langues, dictionnaire de l'état du système, scénarios, liste des questionnaires. | Outil et dev |
 | `bibliotheque.json` | Questions, fragments, jeux de libellés réutilisables. | Outil et dev |
 | `<questionnaire>.json` | Nœuds, arêtes, questions locales, références à la bibliothèque. | Outil et dev |
-| `<questionnaire>.layout.json`, `fragment_<clé>.layout.json` | Positions, tailles, état de repli. Séparé pour ne pas polluer la spec. | Outil seulement |
+| `<questionnaire>.layout.json`, `fragment_<clé>.layout.json`, `question_<clé>.layout.json` | Positions, tailles, état de repli, commentaires de révision (EVO-011 ; une question de bibliothèque n'a de fichier que si elle est commentée). Séparé pour ne pas polluer la spec. | Outil seulement |
 | `<projet>.bundle.json` | Tous les fichiers ci-dessus dans un seul fichier, pour sauvegarde et partage. | Outil |
 
 L'import accepte un bundle ou des fichiers unitaires. L'export propose les deux.
@@ -305,6 +321,7 @@ L'import accepte un bundle ou des fichiers unitaires. L'export propose les deux.
 - **Libellés de lecture** (EVO-005) : propriété facultative `caption` (chaîne simple sur une ligne, non traduite) sur l'arête, la variable de l'état du système et le champ d'une liste d'objets ; exportée pour l'équipe de dev, sans effet sur le comportement. Format version 4 ; un fichier antérieur se migre sans transformation.
 - **Fragments** (EVO-008) : `bibliotheque.json` porte `fragments` (sans départ ; `entry` facultative) ; nœud d'appel `{ kind: "fragment", ref, alias }` ; le départ d'un questionnaire peut le viser. Format version 7 ; un fichier antérieur se migre (blocs → fragments, instances → nœuds fragment).
 - **Champs masqués** (EVO-009) : propriété facultative `hiddenFields` (clés des champs masqués) d'un nœud question qui référence une structure de bibliothèque ; l'export conserve la référence et cette liste (pas de résolution). Format version 8 ; un fichier antérieur se migre sans transformation (propriété absente = tous les champs affichés).
+- **Commentaires de révision** (EVO-011) : propriété facultative `comments` d'une mise en page (`{ node, x?, y?, text, replies[] }`), donc absents de `projet.json`, `bibliotheque.json` et `<questionnaire>.json` ; dans le bundle, sous `layouts[].comments`, à ignorer par le moteur. Pas d'export distinct pour les développeurs : l'export est la sauvegarde. Format version 9 ; un fichier antérieur se migre sans transformation (aucun commentaire).
 - **« Ne sais pas »** (EVO-006) : propriété facultative `dontKnow` (`{}` ou `{ "label": … }`) d'une question ou d'un champ de structure ; réponse « Ne sais pas » = valeur vide et marqueur `<clé>_nsp: true` (groupe `NSP` pour un choix). Format version 5 ; un fichier antérieur se migre sans transformation (propriété absente = désactivée).
 - **Livré avec** :
   - un **JSON Schema** par type de fichier ;

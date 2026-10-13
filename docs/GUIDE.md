@@ -1,9 +1,9 @@
 # Guide utilisateur — Éditeur de questionnaires
-Mis à jour le 2026-10-13 — jusqu'à EVO-010
+Mis à jour le 2026-10-13 — jusqu'à EVO-011
 
 ## Mode d'emploi du guide
 
-- Une entrée par action, titrée par un verbe à l'infinitif, groupées par thème (sections 1 à 15) ; cherchez le verbe (« Créer », « Relier », « Supprimer »…).
+- Une entrée par action, titrée par un verbe à l'infinitif, groupées par thème (sections 1 à 16) ; cherchez le verbe (« Créer », « Relier », « Supprimer »…).
 - Les libellés entre « » sont ceux affichés par l'interface en français (langue d'interface par défaut).
 - Raccourcis entre accents graves : `N`, `Ctrl+K`, `Alt+I`. Sur Mac, `Ctrl` s'affiche `⌘`. « Palette » = palette de commandes (`Ctrl+K`), où l'on tape le libellé de l'action.
 - Les raccourcis marqués « logigramme » n'agissent que si le logigramme a le focus (cliquer dans une zone vide du graphe), jamais pendant une saisie.
@@ -53,10 +53,11 @@ Mis à jour le 2026-10-13 — jusqu'à EVO-010
 - **Ouvrir l'exemple « déclaration de sinistre »** — Icône étincelles de la barre de projet (info-bulle « Ouvrir l’exemple
   « déclaration de sinistre » ») ou palette. Remplace le projet ouvert (confirmation si non exporté). `[cmd: project.example]`
 - **Exporter le projet** — `Ctrl+S` (actif même pendant une saisie), bouton « Exporter (bundle) » ou palette. Télécharge
-  `<nom_du_projet>.bundle.json`, qui contient tout (questionnaires, bibliothèque, mises en page). `[cmd: project.export]`
+  `<nom_du_projet>.bundle.json`, qui contient tout (questionnaires, bibliothèque, mises en page et commentaires de révision). `[cmd: project.export]`
 - **Exporter les fichiers unitaires** — Icône fichier JSON de la barre de projet (info-bulle « Exporter les fichiers unitaires »)
   ou palette. Télécharge `projet.json`, `bibliotheque.json`, `<clé>.json` et `<clé>.layout.json` par questionnaire,
-  `fragment_<clé>.layout.json` par fragment ; le navigateur peut demander d'autoriser les téléchargements multiples. `[cmd: project.exportFiles]`
+  `fragment_<clé>.layout.json` par fragment, `question_<clé>.layout.json` par question de bibliothèque commentée. Les commentaires
+  de révision (§16) ne sont que dans les `.layout.json`, que l'équipe de dev ignore ; le navigateur peut demander d'autoriser les téléchargements multiples. `[cmd: project.exportFiles]`
 - **Savoir si le projet est exporté** — Pastille à côté du nom du projet : « Modifications non exportées » (orange) ou
   « Tout est exporté » (vert). Elle repasse au vert après un export.
 - **Renommer le projet** — Cliquer sur le nom en haut à gauche et le modifier. Il donne son nom au bundle exporté. `[cmd: project.rename]`
@@ -158,13 +159,14 @@ Mis à jour le 2026-10-13 — jusqu'à EVO-010
   a été écarté ; le reste est collé. `[cmd: node.paste]`
 - **Supprimer des nœuds** — Sélectionner puis `Suppr` (Delete) ou `Retour arrière` (Backspace) (logigramme), ou palette « Supprimer la sélection ».
   Leurs arêtes disparaissent aussi ; si le départ est supprimé, le premier nœud restant le devient (dans un fragment, une
-  entrée réglée supprimée redevient implicite). Annulable. `[cmd: node.delete]`
+  entrée réglée supprimée redevient implicite). Une question commentée demande confirmation : son commentaire de
+  révision est supprimé avec elle (§16). Annulable. `[cmd: node.delete]`
 - **Annuler** — `Ctrl+Z` ou palette « Annuler ». Un historique par questionnaire, un pour la bibliothèque (fragments compris), un pour le projet
   (état du système, scénarios, langues, nom) : `Ctrl+Z` agit sur celui de l'onglet affiché. Pendant une saisie, `Ctrl+Z`
   annule seulement la frappe dans le champ. `[cmd: edit.undo]`
 - **Rétablir** — `Ctrl+Shift+Z` ou `Ctrl+Y`, ou palette « Rétablir ». `[cmd: edit.redo]`
 - **Lire les badges d'un nœud** — « Départ » (« Entrée » dans un fragment) ; « * » obligatoire (« * ? » : obligatoire sous condition) ; « + autre » ;
-  « bib. » élément de bibliothèque ; « 3 / 7 champs » instance de structure dont des champs sont masqués (§10) ; « trad. » traduction manquante ; « ⚠ n » problèmes (rouge si erreur).
+  « bib. » élément de bibliothèque ; « 3 / 7 champs » instance de structure dont des champs sont masqués (§10) ; « trad. » traduction manquante ; « ⚠ n » problèmes (rouge si erreur) ; icône bulle : la question a un commentaire de révision (§16).
 
 ## 4. Logigramme — arêtes et conditions
 
@@ -581,6 +583,7 @@ Concerne le choix unique et le choix multiple. Le booléen et le tri-state n'ont
   donne le chemin des alias et le nom du fragment ; le chemin parcouru écrit ses questions `alias.cle`. `[cmd: preview.toggleDebug]`
 - **Changer la langue de la prévisualisation** — Liste « Langue » de la barre, ou palette « Langue de la prévisualisation
   suivante » (plusieurs langues). Un bandeau compte les textes non traduits, affichés dans la langue par défaut. `[cmd: preview.lang]`
+- **Ne pas voir les commentaires** — Les commentaires de révision (§16) n'apparaissent jamais dans le wizard.
 - **Comprendre « parcours bloqué »** — « Aucune arête ne s’applique : parcours bloqué. » : aucune condition vraie et pas de
   « sinon » ; ajouter une arête sans condition.
 
@@ -651,6 +654,45 @@ ou palette « Problèmes ») ; un clic sur un problème sélectionne le nœud ou
 - **Problèmes du dictionnaire** — Nom de variable ou de champ invalide ou en double : signalé en rouge sur la carte de la
   variable (onglet « État du système ») → la renommer.
 
+## 16. Commentaires de révision
+
+Un commentaire mène la revue d'une question dans l'outil : un texte initial puis des réponses successives, en texte brut
+multiligne. Il est rangé dans l'objet où il a été créé (questionnaire, fragment ou question réutilisable), une question en
+porte au plus un, et il est **sans effet** sur le questionnaire (expressions, vérifications, wizard). Les commentaires
+d'un fragment ou d'une question réutilisable ne se voient pas depuis un questionnaire qui les utilise : seulement dans
+l'objet lui-même et sur la page des commentaires.
+
+- **Commenter une question** — Clic droit sur une question d'un questionnaire ou d'un fragment (une instance de question
+  de bibliothèque comprise : le commentaire reste dans ce questionnaire), « Commenter » ; ou sélectionner la question puis
+  palette « Commenter ». Un nœud commentaire apparaît à droite de la question, relié par une branche en pointillés, le
+  curseur dans le texte initial. Si la question a déjà un commentaire, il est simplement affiché. Une question interne à un
+  fragment se commente dans l'onglet du fragment, pas depuis l'appelant. `[cmd: comment.add]`
+- **Commenter une question réutilisable** — Onglet Bibliothèque, clic droit sur la question dans la liste, « Commenter » :
+  le commentaire s'affiche en tête de la vue de la question (toujours affiché, elle n'a pas de logigramme). `[cmd: comment.add]`
+- **Répondre** — Bouton « Répondre » du commentaire : une nouvelle carte s'ajoute en fin de fil, en saisie. On répond au
+  commentaire, pas à une réponse ; nombre de réponses illimité. `[cmd: comment.reply]`
+- **Modifier le texte initial ou une réponse** — Cliquer dans le texte et le modifier, à tout moment (`Entrée` = nouvelle ligne).
+  Annulable (`Ctrl+Z` hors du champ, historique de l'objet).
+- **Supprimer une réponse** — Croix de la carte de la réponse : seule cette réponse disparaît. `[cmd: comment.deleteReply]`
+- **Supprimer le commentaire** — Bouton « Supprimer le commentaire » (ou palette, question sélectionnée) : texte initial et
+  réponses disparaissent, ainsi que l'icône de la question. Le texte initial ne se supprime pas seul. Annulable. `[cmd: comment.delete]`
+- **Afficher ou masquer un commentaire** — Icône bulle de la question (palette « Afficher / masquer le commentaire », question
+  sélectionnée) ; icône œil barré du nœud commentaire pour le masquer. Masquer ne supprime rien : l'icône de la question reste. `[cmd: comment.toggle]`
+- **Afficher ou masquer tous les commentaires** — Bouton « Commentaires » de la barre du logigramme (bandeau d'un fragment),
+  ou palette : affiche tous ceux de l'objet ouvert si l'un est masqué, sinon les masque tous. À l'ouverture du projet, tous
+  sont masqués ; l'affichage n'est pas sauvegardé. `[cmd: comment.toggleAll]`
+- **Placer un commentaire** — Glisser le nœud commentaire (par son en-tête) : la branche part du côté gauche ou droit de la
+  question selon qu'il est à sa gauche ou à sa droite. La position est sauvegardée ; la mise en page automatique déplace le
+  commentaire avec sa question. L'image du logigramme montre les commentaires affichés.
+- **Ouvrir la page des commentaires** — Lien « Commentaires » à droite des onglets, ou palette « Commentaires » : tous les
+  commentaires du projet, avec leur objet (questionnaire, fragment, question réutilisable) et la question commentée.
+  Toutes les actions d'édition y sont disponibles ; une modification y est aussitôt visible dans le logigramme, et réciproquement. `[cmd: tab.comments]`
+- **Aller au commentaire** — Bouton « Ouvrir » d'un commentaire de la page : l'objet s'ouvre (logigramme), ses commentaires
+  affichés, la vue centrée sur le commentaire et sa question sélectionnée. `[cmd: comment.open]`
+- **Supprimer une question commentée** — Confirmation demandée (logigramme ou bibliothèque) ; le commentaire est supprimé
+  avec la question. Dupliquer ou coller des nœuds, dupliquer un questionnaire ou un fragment ne copie pas les commentaires ;
+  extraire une sélection en fragment y emporte leurs commentaires.
+
 ## Ce que l'outil ne fait pas
 
 - **Supprimer un questionnaire** : aucune action ; on peut seulement fermer son onglet.
@@ -674,6 +716,7 @@ ou palette « Problèmes ») ; un clic sur un problème sélectionne le nœud ou
   est un indicateur pour l'équipe de dev, aucun service n'est appelé.
 - **Accepter un mail avec accents** (adresses internationalisées RFC 6531 / 6532) : refusé.
 - **Importer un seul fragment ou une seule question de bibliothèque** : `bibliotheque.json` remplace toute la bibliothèque.
+- **Commentaires** : ni auteur, ni date, ni statut « résolu », ni mention, ni notification ; pas de réponse à une réponse.
 - **Extraire en fragment une sélection d'un fragment**, ou qui contient une fin : l'extraction part d'un questionnaire.
 
 ## Index des raccourcis
@@ -773,6 +816,14 @@ ou palette « Problèmes ») ; un clic sur un problème sélectionne le nœud ou
 | Coller | `Ctrl+V` | `node.paste` |
 | Dupliquer le questionnaire | — | `questionnaire.duplicate` |
 | Dupliquer l’élément de bibliothèque | — | `library.duplicate` |
+| Commenter | — | `comment.add` |
+| Afficher / masquer le commentaire | — | `comment.toggle` |
+| Afficher / masquer les commentaires | — | `comment.toggleAll` |
+| Répondre | — | `comment.reply` |
+| Supprimer la réponse | — | `comment.deleteReply` |
+| Supprimer le commentaire | — | `comment.delete` |
+| Ouvrir | — | `comment.open` |
+| Commentaires | — | `tab.comments` |
 | Aller au nœud suivant | `↓` | `nav.down` |
 | Aller au nœud précédent | `↑` | `nav.up` |
 | Aller au nœud voisin suivant | `→` | `nav.right` |

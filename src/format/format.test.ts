@@ -426,14 +426,14 @@ describe('champs masqués d’une instance (EVO-009, version 8)', () => {
     return bundle;
   };
 
-  it('le format courant est la version 8', () => {
-    expect(FORMAT_VERSION).toBe(8);
+  it('un document version 7 migre au format courant', () => {
+    expect(migrate({ formatVersion: 7, kind: 'layout', graph: 'g', nodes: {} }).formatVersion).toBe(FORMAT_VERSION);
   });
 
   it('un projet version 7 se charge sans erreur, instances sans champ masqué', () => {
     const back = importFiles([{ name: 'ancien.bundle.json', text: JSON.stringify(v7()) }]);
     expect(back.errors).toEqual([]);
-    expect(back.workspace!.library.formatVersion).toBe(8);
+    expect(back.workspace!.library.formatVersion).toBe(FORMAT_VERSION);
     expect(back.workspace!.questionnaires[0]!.nodes[0]).toEqual({ kind: 'question', id: 'n', ref: 'lq_id' });
   });
 
@@ -454,6 +454,55 @@ describe('champs masqués d’une instance (EVO-009, version 8)', () => {
       expect(back.errors).toEqual([]);
       expect(back.workspace!.library).toEqual(ws.library);
       expect(back.workspace!.questionnaires).toEqual(ws.questionnaires);
+    }
+  });
+});
+
+describe('commentaires de révision (EVO-011, version 9)', () => {
+  const v8 = () => {
+    const ws = newWorkspace('p', 'fr');
+    ws.questionnaires.push({ ...minimalQuestionnaire(), formatVersion: 8 });
+    ws.project.questionnaires.push({ id: 'q1', file: 'test.json' });
+    ws.layouts.push({ formatVersion: 8, kind: 'layout', graph: 'q1', nodes: { n1: { x: 1, y: 2 } } });
+    const bundle = JSON.parse(exportBundle(ws));
+    bundle.formatVersion = 8;
+    bundle.library.formatVersion = 8;
+    bundle.project.formatVersion = 8;
+    return bundle;
+  };
+  const comment = { node: 'n1', x: 300, y: 2, text: 'Faut-il borner ?\nÀ voir.', replies: ['Oui.', 'Et pas avant la date d’effet.'] };
+
+  it('le format courant est la version 9', () => {
+    expect(FORMAT_VERSION).toBe(9);
+  });
+
+  it('un projet version 8 se charge sans erreur et sans commentaire', () => {
+    const back = importFiles([{ name: 'ancien.bundle.json', text: JSON.stringify(v8()) }]);
+    expect(back.errors).toEqual([]);
+    expect(back.workspace!.layouts[0]!.formatVersion).toBe(9);
+    expect(back.workspace!.layouts[0]!.comments).toBeUndefined();
+  });
+
+  it('schéma : `comments` accepté dans une mise en page, refusé mal formé', () => {
+    const layout = { formatVersion: 9, kind: 'layout', graph: 'q1', nodes: {}, comments: [comment] };
+    expect(validateDocument(layout)).toEqual([]);
+    expect(validateDocument({ ...layout, comments: [{ node: 'n1', text: 'x', replies: [] }] })).toEqual([]);
+    expect(validateDocument({ ...layout, comments: [{ ...comment, replies: [1] }] }).length).toBeGreaterThan(0);
+    expect(validateDocument({ ...layout, comments: [{ ...comment, author: 'moi' }] }).length).toBeGreaterThan(0);
+    expect(validateDocument({ ...layout, comments: [{ text: 'x', replies: [] }] }).length).toBeGreaterThan(0);
+  });
+
+  it('export puis réimport : commentaires, réponses et position identiques ; absents des fichiers du moteur', () => {
+    const ws = importFiles([{ name: 'p.bundle.json', text: JSON.stringify(v8()) }]).workspace!;
+    ws.layouts[0]!.comments = [comment];
+    ws.library.questions.push({ id: 'lq', key: 'date_sinistre', label: { fr: 'Date' }, type: 'date' });
+    ws.layouts.push({ formatVersion: FORMAT_VERSION, kind: 'layout', graph: 'lq', nodes: {}, comments: [{ node: 'lq', text: 'Libellé ?', replies: [] }] });
+    const files = exportFiles(ws);
+    expect(files.map((f) => f.name)).toContain('question_date_sinistre.layout.json');
+    for (const f of files.filter((x) => !x.name.endsWith('.layout.json'))) expect(f.text).not.toContain('Faut-il');
+    for (const back of [importFiles(files), importFiles([{ name: 'p.bundle.json', text: exportBundle(ws) }])]) {
+      expect(back.errors).toEqual([]);
+      expect(back.workspace!.layouts).toEqual(ws.layouts);
     }
   });
 });

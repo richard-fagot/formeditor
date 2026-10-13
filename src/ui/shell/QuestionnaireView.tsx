@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { BookOpen, Columns2, ImageDown, Network } from 'lucide-react';
+import { BookOpen, Columns2, ImageDown, MessageSquare, Network } from 'lucide-react';
 import { checkWorkspace } from '../../core/validation';
 import { useStore, useT, type GraphRef } from '../../app/store';
 import { runCommand } from '../../app/commands';
@@ -20,6 +20,7 @@ export function QuestionnaireView({ id }: { id: string }) {
   const canCompare = useStore((s) => s.ws.questionnaires.length > 1);
   const empty = useStore((s) => !s.ws.questionnaires.find((q) => q.id === id)?.nodes.length);
   const busy = useStore((s) => s.imageBusy);
+  const hasComments = useStore((s) => !!s.ws.layouts.find((l) => l.graph === id)?.comments?.length);
   const graph: GraphRef = useMemo(() => ({ kind: 'questionnaire', id }), [id]);
   const issues = useMemo(() => checkWorkspace(ws).filter((i) => i.owner.kind === 'questionnaire' && i.owner.id === id), [ws, id]);
   const sub = (v: 'diagram' | 'preview', label: string) => (
@@ -46,6 +47,13 @@ export function QuestionnaireView({ id }: { id: string }) {
             className="flex items-center gap-1 rounded px-2 py-1 text-xs text-slate-500 hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-transparent"
             onClick={() => runCommand('view.exportImage')}>
             <ImageDown className="size-3.5" />{busy ? t('image.busy') : t('image.short')}
+          </button>
+        )}
+        {view === 'diagram' && (
+          <button type="button" data-testid="toggle-comments" title={t('comment.toggleAll')} disabled={!hasComments}
+            className="flex items-center gap-1 rounded px-2 py-1 text-xs text-slate-500 hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-transparent"
+            onClick={() => runCommand('comment.toggleAll')}>
+            <MessageSquare className="size-3.5" />{t('comment.short')}
           </button>
         )}
         {view === 'diagram' && canCompare && (

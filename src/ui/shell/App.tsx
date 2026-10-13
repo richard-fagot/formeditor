@@ -6,6 +6,7 @@ import { Button, Dialog } from '../../ui-kit';
 import { FragmentView, Library } from '../library';
 import { SystemState } from '../system-state';
 import { Settings } from '../settings';
+import { CommentsPage } from '../comments';
 import { CopyDialog } from './CopyDialog';
 import { Palette } from './Palette';
 import { QuestionnaireView } from './QuestionnaireView';
@@ -42,6 +43,7 @@ export function App() {
         {active === 'library' && <Library />}
         {active === 'system' && <SystemState />}
         {active === 'settings' && <Settings />}
+        {active === 'comments' && <CommentsPage />}
       </main>
       <Palette />
       <CopyDialog />
