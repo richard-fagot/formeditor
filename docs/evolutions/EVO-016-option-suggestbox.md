@@ -103,3 +103,34 @@ Ajouter une section « Analyse » en bas de ce fichier :
 
 Faisable sans ambiguïté bloquante → choix notés dans l'analyse et `docs/DECISIONS.md`, puis
 réalisation. Sinon → statut « à arbitrer », options et conséquences, arrêt sans coder.
+
+## Analyse
+
+Conclusion : **faisable sans ambiguïté bloquante**. Choix ci-dessous, reportés dans `docs/DECISIONS.md`.
+
+1. **Faisabilité, modules** (matrice de `docs/MAP.md`) : `core/model` (propriété `suggestions?` de `TextQuestion`),
+   `core/references` (`visit.ts` : l'expression est parcourue comme les autres, donc vérifications — syntaxe, référence
+   inconnue, `notGuaranteed` pour une question située après —, renommage propagé, usages et dépendances du logigramme
+   sans code supplémentaire), `core/runtime` (`suggestions.ts` : mise en liste, conversion en texte, doublons, filtrage ;
+   fonctions pures testées), `format` (schéma `params_text`, migration 11 → 12, exemple, `docs/FORMAT.md`),
+   `plugins/question-types/text` (case et `ExpressionInput` dans les propriétés, indicateur dans l'aperçu du nœud,
+   liste déroulante dans la saisie, champs de structure compris), `docs/spec.md`, `docs/GUIDE.md`, tests.
+   Aucune nouvelle commande : la case se règle dans le panneau de propriétés, comme les autres paramètres du type.
+2. **Expressions renvoyant une liste** : le moteur (JSONata) produit déjà des listes — réponse d'un choix multiple
+   (liste des valeurs), variable système de type liste, champ d'une liste d'objets (`sys.sinistres.date`), littéral
+   (`["a", "b"]`), fonctions (`$append`, filtres) ; les entrées dynamiques des choix s'en servent depuis EVO-001.
+   Le typage se limite à la syntaxe et aux références (`core/validation`) : rien à ajouter. Le résultat est normalisé
+   à l'affichage : valeur unique → liste d'un élément, vide / erreur → aucune suggestion, nombres, booléens et dates
+   → texte (`formatValue`, règle de l'interpolation ; une date est déjà une chaîne ISO), objets écartés (pas de
+   texte lisible), chaînes vides écartées, doublons supprimés en gardant la première occurrence. Rien n'est reporté.
+3. **« Autre (préciser) »** : dans les expressions, un choix multiple vaut la liste de ses **valeurs** (codes), où
+   « Autre » est la valeur réservée `other` et la précision est rangée à part sous `<clé>_other`. On s'aligne sur
+   les entrées dynamiques des choix (`choiceOptions`), qui écartent `other` : la valeur `other` n'est pas proposée,
+   ni le libellé « Autre » ; la précision n'est pas ajoutée d'office, l'auteur l'inclut s'il le veut
+   (`$append(marques, marques_other)`). De même, ce sont les valeurs (et non les libellés) des options qui sont
+   proposées : pour l'exemple de l'EVO, des options dont la valeur est le nom de la marque.
+4. **Stockage** : propriété facultative `suggestions` (expression) du champ texte ; présente = option activée
+   (même chaîne vide), absente = désactivée ; décocher la retire, donc rien n'est exporté. Politique du format
+   (`docs/FORMAT.md` §13, précédents EVO-005 à EVO-015) : schémas en `additionalProperties: false`, un fichier qui
+   utilise l'option serait refusé par un outil antérieur → **version 12**, migration 11 → 12 sans transformation
+   (propriété absente = pas de suggestions).
