@@ -50,6 +50,16 @@ export function sectionsOf(items: Item[]): { title?: string; indexes: number[] }
 }
 
 /**
+ * Indice de « Autre (préciser) » à afficher à part, séparée des groupes (EVO-017) : seulement si un groupe est affiché ;
+ * sinon `undefined` (rendu inchangé, « Autre » à la suite des options).
+ */
+export function separatedOther(items: Item[]): number | undefined {
+  const last = items.length - 1;
+  if (last < 0 || items[last]!.value !== OTHER_VALUE || items[last]!.group !== OTHER_GROUP) return undefined;
+  return items.some((c) => c.title !== undefined) ? last : undefined;
+}
+
+/**
  * Réponse d'un choix multiple pour les choix cochés (dans l'ordre de la sélection) : valeurs, et groupes en liste
  * parallèle (`""` hors groupe, `AUTRE` pour « Autre ») ; rien de coché : `null`.
  */

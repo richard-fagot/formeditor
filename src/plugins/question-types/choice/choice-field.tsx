@@ -1,7 +1,7 @@
 import { OTHER_VALUE } from '../../../core/model';
 import { dontKnowLabel, type FieldProps, type RenderEnv } from '../../../plugin-api';
 import { Input } from '../../../ui-kit';
-import { asList, OTHER_LABEL, fits, itemsOf, pickedAnswer, sectionsOf, selectedOf, type Choice } from './selection';
+import { asList, OTHER_LABEL, fits, itemsOf, pickedAnswer, sectionsOf, selectedOf, separatedOther, type Choice } from './selection';
 
 /**
  * Saisie : boutons radio (unique) ou cases à cocher (multiple), en sections par groupe, puis « Autre » avec sa précision,
@@ -27,14 +27,20 @@ export function ChoiceField({ question, value, other, group, onChange, env, inpu
     </label>
   );
   const option = (i: number) => box(i, items[i]!.text, selected.includes(i), () => toggle(i));
+  // EVO-017 : avec des groupes, « Autre » est hors de toute section, après un trait séparateur.
+  const apart = separatedOther(items);
+  const listed = apart === undefined ? items : items.slice(0, apart);
   return (
     <div role={multiple ? 'group' : 'radiogroup'} id={inputId} className="space-y-2">
-      {sectionsOf(items).map((s, k) => (s.title === undefined ? s.indexes.map(option) : (
+      {sectionsOf(listed).map((s, k) => (s.title === undefined ? s.indexes.map(option) : (
         <div key={`g${k}`} role="group" aria-label={s.title} className="space-y-2 pt-1" data-testid="choice-group">
           <p className="text-sm font-semibold text-slate-700">{s.title}</p>
           {s.indexes.map(option)}
         </div>
       )))}
+      {apart !== undefined && (
+        <div className="mt-3 border-t border-slate-300 pt-3" data-testid="choice-other-apart">{option(apart)}</div>
+      )}
       {hasOther && (
         <Input autoFocus aria-label={env.label(question.other?.label ?? OTHER_LABEL)} value={other ?? ''} onChange={(e) => onChange(value, e.target.value, group)} />
       )}

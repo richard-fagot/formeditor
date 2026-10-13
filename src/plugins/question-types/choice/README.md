@@ -28,7 +28,8 @@ même dossier : ils partagent l'éditeur d'options et la saisie (DECISIONS.md).
   `env.label`, traduit et interpolé), sections, sélection réaffichée (`selectedOf`), réponse d'un choix multiple
   (`pickedAnswer` : valeurs et groupes parallèles), `OTHER_LABEL`.
 - `choice-field.tsx` : saisie dans la prévisualisation (options visibles de `env.options(q)`, une section titrée par
-  groupe visible, « Autre » en dernier) ; `onChange(valeur, précision, groupe)` : identifiant du groupe, `AUTRE`, ou
+  groupe visible, « Autre » en dernier ; avec au moins un groupe affiché, « Autre » est hors section, après un trait
+  (`choice-other-apart`, `separatedOther` dans `selection.ts`, EVO-017)) ; `onChange(valeur, précision, groupe)` : identifiant du groupe, `AUTRE`, ou
   liste parallèle aux valeurs (`""` hors groupe) ; `formatAnswer` : « Groupe — Option ».
 - Une valeur (ou un couple groupe, valeur) qui n'est plus parmi les options visibles est refusée par `validateAnswer` (`option`).
 - Aperçu du logigramme : ○ / ☐ par option dans l'ordre (« ? » si conditionnée), intitulé de groupe en gras avec ses
@@ -36,4 +37,4 @@ même dossier : ils partagent l'éditeur d'options et la saisie (DECISIONS.md).
 - Changement de type unique ↔ multiple : entrées et « Autre » conservés.
 
 ## Tests
-`reconcile.test.ts`, `groups.test.ts`, `selection.test.ts` ; fumée : `tests/smoke/evo-001.spec.ts`, `tests/smoke/evo-003.spec.ts`.
+`reconcile.test.ts`, `groups.test.ts`, `selection.test.ts` ; fumée : `tests/smoke/evo-001.spec.ts`, `tests/smoke/evo-003.spec.ts`, `tests/smoke/evo-017.spec.ts`.
