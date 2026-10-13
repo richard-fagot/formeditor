@@ -1,6 +1,6 @@
 # EVO-012 — Surcharger le caractère obligatoire d'une question réutilisée
 
-Statut : en cours
+Statut : fait 2026-10-13
 Dépend de : aucune (s'appuie sur la bibliothèque de questions et les fragments existants)
 
 ## Besoin
