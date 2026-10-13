@@ -1,6 +1,6 @@
 # EVO-011 — Commentaires de révision sur les questions
 
-Statut : en cours
+Statut : fait 2026-10-13
 Dépend de : aucune
 
 ## Besoin

@@ -688,7 +688,8 @@ l'objet lui-même et sur la page des commentaires.
   commentaires du projet, avec leur objet (questionnaire, fragment, question réutilisable) et la question commentée.
   Toutes les actions d'édition y sont disponibles ; une modification y est aussitôt visible dans le logigramme, et réciproquement. `[cmd: tab.comments]`
 - **Aller au commentaire** — Bouton « Ouvrir » d'un commentaire de la page : l'objet s'ouvre (logigramme), ses commentaires
-  affichés, la vue centrée sur le commentaire et sa question sélectionnée. `[cmd: comment.open]`
+  affichés, la vue centrée sur le commentaire et sa question sélectionnée. Pour une question réutilisable, c'est sa vue
+  dans l'onglet Bibliothèque qui s'ouvre, le commentaire en tête. `[cmd: comment.open]`
 - **Supprimer une question commentée** — Confirmation demandée (logigramme ou bibliothèque) ; le commentaire est supprimé
   avec la question. Dupliquer ou coller des nœuds, dupliquer un questionnaire ou un fragment ne copie pas les commentaires ;
   extraire une sélection en fragment y emporte leurs commentaires.
