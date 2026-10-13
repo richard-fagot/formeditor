@@ -59,7 +59,11 @@ export function Library() {
         )}
       </div>
       <ContextMenu at={menu} onClose={() => setMenu(undefined)}
-        items={[{ label: t('node.duplicate'), onSelect: () => runCommand('library.duplicate', menu!.item) }]} />
+        items={[
+          { label: t('node.duplicate'), onSelect: () => runCommand('library.duplicate', menu!.item) },
+          // Question réutilisable : commentaire de révision (EVO-011).
+          ...(menu?.item.kind === 'question' ? [{ label: t('comment.add'), onSelect: () => runCommand('comment.add', { host: menu.item, node: menu.item.id }) }] : []),
+        ]} />
     </div>
   );
 }

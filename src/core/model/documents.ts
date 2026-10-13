@@ -2,7 +2,7 @@ import type { Graph } from './graph';
 import type { LangCode, LocalizedText } from './text';
 import type { Question } from './question';
 
-export const FORMAT_VERSION = 8;
+export const FORMAT_VERSION = 9;
 
 export interface Questionnaire extends Graph {
   formatVersion: number;
@@ -93,13 +93,29 @@ export interface NodeLayout {
   collapsed?: boolean;
 }
 
-/** Mise en page d'un graphe (outil seulement). */
+/**
+ * Commentaire de révision (EVO-011, outil seulement) : texte initial puis réponses, dans l'ordre de saisie.
+ * Rattaché à un nœud question du graphe (ou, pour une question de bibliothèque, à la question elle-même).
+ */
+export interface ReviewComment {
+  /** Nœud question commenté (id de la question de bibliothèque pour une question de bibliothèque). */
+  node: string;
+  /** Position du nœud commentaire dans le logigramme (absente pour une question de bibliothèque). */
+  x?: number;
+  y?: number;
+  text: string;
+  replies: string[];
+}
+
+/** Mise en page d'un graphe (outil seulement), et commentaires de révision de l'objet (EVO-011). */
 export interface Layout {
   formatVersion: number;
   kind: 'layout';
-  /** Id du questionnaire ou du fragment. */
+  /** Id du questionnaire, du fragment ou de la question de bibliothèque (commentaires seulement). */
   graph: string;
   nodes: Record<string, NodeLayout>;
+  /** Commentaires de révision : au plus un par question. */
+  comments?: ReviewComment[];
 }
 
 /** Projet complet en mémoire, et contenu d'un bundle. */

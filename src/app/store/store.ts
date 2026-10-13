@@ -45,7 +45,11 @@ export interface AppState extends ImageState {
   view: Record<string, 'diagram' | 'preview'>;
   selection: Selection;
   /** Champ à mettre en saisie dès l'affichage (intitulé d'un nœud, condition d'une arête). */
-  focusRequest?: { kind: 'label' | 'condition' | 'variable'; id: string; n: number };
+  focusRequest?: { kind: FocusKind; id: string; n: number };
+  /** Commentaires de révision affichés (EVO-011, session seulement) : clés `commentKey`. */
+  shownComments: string[];
+  /** Demande de centrage du logigramme sur un commentaire (ouverture depuis la page des commentaires). */
+  centerRequest?: { graph: string; node: string; n: number };
   palette: { open: boolean; mode: PaletteMode };
   dirty: boolean;
   uiLang: string;
@@ -74,6 +78,9 @@ export interface AppState extends ImageState {
   previewPanels: { system: boolean; debug: boolean };
 }
 
+/** Champ à mettre en saisie : intitulé, condition, variable, texte d'un commentaire (`commentKey`, `#i` pour la réponse i). */
+export type FocusKind = 'label' | 'condition' | 'variable' | 'comment';
+
 export interface AppActions {
   /** Modifie le projet dans une portée d'historique. `key` regroupe les frappes successives. */
   edit(scope: Scope, recipe: (ws: Workspace) => Workspace | void, key?: string): void;
@@ -93,13 +100,13 @@ export interface AppActions {
   openTab(tab: TabId): void;
   closeTab(tab: TabId): void;
   select(sel: Selection): void;
-  requestFocus(kind: 'label' | 'condition' | 'variable', id: string): void;
+  requestFocus(kind: FocusKind, id: string): void;
   markExported(): void;
 }
 
 export type Store = AppState & AppActions;
 
-function initialState(ws: Workspace): Pick<AppState, 'ws' | 'tabs' | 'activeTab' | 'view' | 'selection' | 'history' | 'preview' | 'contentLang' | 'dirty' | 'libraryItem' | 'compare'> {
+function initialState(ws: Workspace): Pick<AppState, 'ws' | 'tabs' | 'activeTab' | 'view' | 'selection' | 'history' | 'preview' | 'contentLang' | 'dirty' | 'libraryItem' | 'compare' | 'shownComments'> {
   const tabs: TabId[] = ws.questionnaires.map((q) => `q:${q.id}` as const);
   return {
     ws,
@@ -113,6 +120,7 @@ function initialState(ws: Workspace): Pick<AppState, 'ws' | 'tabs' | 'activeTab'
     dirty: false,
     libraryItem: undefined,
     compare: undefined,
+    shownComments: [],
   };
 }
 

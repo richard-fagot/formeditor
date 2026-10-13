@@ -28,7 +28,8 @@ const MAX_ENTRIES = 500;
 
 export function takeSnapshot(ws: Workspace, scope: Scope): Snapshot {
   if (scope === 'library') {
-    const ids = new Set(ws.library.fragments.map((f) => f.id));
+    // Mises en page des fragments et des questions de bibliothèque (commentaires de révision, EVO-011).
+    const ids = new Set([...ws.library.fragments, ...ws.library.questions].map((f) => f.id));
     return { scope, library: ws.library, layouts: ws.layouts.filter((l) => ids.has(l.graph)) };
   }
   if (scope === 'project') return { scope, project: ws.project };
@@ -45,7 +46,7 @@ export function takeSnapshot(ws: Workspace, scope: Scope): Snapshot {
 /** Remet en place un instantané dans `ws` (brouillon immer). */
 export function restoreSnapshot(ws: Workspace, s: Snapshot): void {
   if (s.scope === 'library') {
-    const ids = new Set([...ws.library.fragments.map((f) => f.id), ...s.library.fragments.map((f) => f.id)]);
+    const ids = new Set([...ws.library.fragments, ...ws.library.questions, ...s.library.fragments, ...s.library.questions].map((f) => f.id));
     ws.library = s.library;
     // Mises en page des fragments remises à leur place (ordre du tableau conservé), les nouvelles à la fin.
     const saved = new Map(s.layouts.map((l) => [l.graph, l]));

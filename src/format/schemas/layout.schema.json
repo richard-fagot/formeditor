@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "layout.schema.json",
-  "title": "Mise en page d'un graphe (outil seulement)",
+  "title": "Mise en page d'un graphe et commentaires de révision (outil seulement)",
   "type": "object",
   "required": [
     "formatVersion",
@@ -38,6 +38,39 @@
           },
           "collapsed": {
             "type": "boolean"
+          }
+        }
+      }
+    },
+    "comments": {
+      "description": "Commentaires de révision (EVO-011) : sans effet sur le questionnaire, à ignorer par le moteur.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "node",
+          "text",
+          "replies"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "node": {
+            "type": "string"
+          },
+          "x": {
+            "type": "number"
+          },
+          "y": {
+            "type": "number"
+          },
+          "text": {
+            "type": "string"
+          },
+          "replies": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         }
       }

@@ -4,8 +4,8 @@ import { restoreSnapshot, takeSnapshot, type Scope, type ScopeHistory } from './
 import type { GraphRef } from './graph';
 import type { LibraryItem } from './library-edits';
 
-/** Onglets : questionnaire `q:<id>`, fragment de la bibliothèque `f:<id>` (EVO-008), bibliothèque, état du système, paramètres. */
-export type TabId = `q:${string}` | `f:${string}` | 'library' | 'system' | 'settings';
+/** Onglets : questionnaire `q:<id>`, fragment de la bibliothèque `f:<id>` (EVO-008), bibliothèque, état du système, paramètres, commentaires (EVO-011). */
+export type TabId = `q:${string}` | `f:${string}` | 'library' | 'system' | 'settings' | 'comments';
 
 /** Partie de l'état applicatif touchée par annuler / rétablir. */
 interface TravelState {

@@ -1,11 +1,15 @@
 // API publique du module app/store : état applicatif, édition, annuler/rétablir par questionnaire.
-export { useStore, scopeOf, blankWorkspace, type Store, type AppState, type TabId, type Selection, type PreviewState, type PaletteMode, type ImageOptions } from './store';
+export { useStore, scopeOf, blankWorkspace, type Store, type AppState, type TabId, type Selection, type PreviewState, type PaletteMode, type ImageOptions, type FocusKind } from './store';
 export type { Scope } from './history';
 export {
   getGraph, layoutOf, insertNode, connect, removeNodes, removeEdge, moveEdge, updateNode, duplicateNodes,
   usedKeys, freshKey, NODE_SPACING, type GraphRef,
 } from './graph';
 export { setQuestionLabel } from './question-edits';
+export {
+  commentKey, hostScope, commentOf, commentsOf, allComments, addComment, setCommentText, moveComment, setReply, deleteReply, addReply,
+  deleteComment, removeComments, type CommentHost, type CommentRef,
+} from './comment-edits';
 export {
   addLibraryQuestion, addFragment, deleteLibraryItem, referenceNode, insertionCycle, placeNode, moveToLibrary, canMoveToLibrary, setLibraryQuestionLabel, renameExit,
   copyToLibrary, setFieldHidden, hiddenFieldUsages, type RewrittenExpression,

@@ -5,7 +5,8 @@ import { questionOfNode } from '../../core/references';
 import { previewText } from '../../plugin-api';
 import { nodeKind, questionType } from '../../registry';
 import { runCommand } from '../../app/commands';
-import { getGraph, scopeOf, setQuestionLabel, useStore, useT } from '../../app/store';
+import { commentKey, commentOf, getGraph, scopeOf, setQuestionLabel, useStore, useT } from '../../app/store';
+import { MessageSquare } from 'lucide-react';
 import { usePluginEnv } from '../properties';
 import { Badge, cn } from '../../ui-kit';
 import { useDiagram } from './DiagramContext';
@@ -21,6 +22,9 @@ export const NodeView = memo(function NodeView({ data, selected }: NodeProps & {
   const env = usePluginEnv();
   const t = useT();
   const focus = useStore((s) => s.focusRequest);
+  // Commentaire de révision (EVO-011) : icône sur la question, clic = afficher / masquer.
+  const hasComment = useStore((s) => !readOnly && !!commentOf(s.ws, { host: graph, node: data.nodeId }));
+  const commentShown = useStore((s) => s.shownComments.includes(commentKey({ host: graph, node: data.nodeId })));
   const editing = !readOnly && focus?.kind === 'label' && focus.id === data.nodeId && node?.kind === 'question';
   if (!node) return null;
   const plugin = nodeKind(node.kind);
@@ -37,6 +41,13 @@ export const NodeView = memo(function NodeView({ data, selected }: NodeProps & {
       {question && OTHER_TYPES.includes(question.type) && 'other' in question && question.other && <Badge>{t('node.badgeOther')}</Badge>}
       {(isLibraryQuestion(node) || node.kind === 'fragment') && <Badge tone="amber" title={t('node.libraryBadge')}>bib.</Badge>}
       {fieldsCount && <Badge tone="amber">{fieldsCount}</Badge>}
+      {hasComment && (
+        <button type="button" data-testid="comment-icon" aria-pressed={commentShown} title={t('comment.toggle')} aria-label={t('comment.toggle')}
+          className={cn('nodrag rounded border px-1 text-amber-700', commentShown ? 'border-amber-400 bg-amber-100' : 'border-amber-300 hover:bg-amber-100')}
+          onClick={(e) => { e.stopPropagation(); runCommand('comment.toggle', { host: graph, node: node.id }); }}>
+          <MessageSquare className="size-3" />
+        </button>
+      )}
       {node.kind === 'fragment' && !readOnly && (
         <button type="button" data-testid="fragment-open" title={t('node.openFragment')}
           className="nodrag rounded border border-amber-300 px-1 text-[10px] text-amber-800 hover:bg-amber-100"
@@ -70,6 +81,13 @@ export const NodeView = memo(function NodeView({ data, selected }: NodeProps & {
         <Shape node={node} env={env} question={question} typePlugin={question ? questionType(question.type) : undefined} badges={badges} />
       )}
       {exits.length ? <ExitHandles exits={exits} /> : <Handle type="source" position={Position.Bottom} className="!size-2 !border-slate-400 !bg-white" />}
+      {node.kind === 'question' && (
+        <>
+          {/* Départs des branches vers le commentaire (EVO-011), invisibles et non reliables ; après la poignée par défaut (première = arêtes sans poignée). */}
+          <Handle id="comment-left" type="source" position={Position.Left} isConnectable={false} className="!size-1 !min-h-0 !min-w-0 !border-0 !bg-transparent" />
+          <Handle id="comment-right" type="source" position={Position.Right} isConnectable={false} className="!size-1 !min-h-0 !min-w-0 !border-0 !bg-transparent" />
+        </>
+      )}
     </div>
   );
 });

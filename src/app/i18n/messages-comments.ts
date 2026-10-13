@@ -1,0 +1,25 @@
+/** Textes des commentaires de révision (EVO-011). */
+export const COMMENT_MESSAGES = {
+  'comment.add': { fr: 'Commenter', en: 'Comment' },
+  'comment.toggle': { fr: 'Afficher / masquer le commentaire', en: 'Show / hide comment' },
+  'comment.toggleAll': { fr: 'Afficher / masquer les commentaires', en: 'Show / hide comments' },
+  'comment.short': { fr: 'Commentaires', en: 'Comments' },
+  'comment.reply': { fr: 'Répondre', en: 'Reply' },
+  'comment.deleteReply': { fr: 'Supprimer la réponse', en: 'Delete reply' },
+  'comment.delete': { fr: 'Supprimer le commentaire', en: 'Delete comment' },
+  'comment.hide': { fr: 'Masquer le commentaire', en: 'Hide comment' },
+  'comment.open': { fr: 'Ouvrir', en: 'Open' },
+  'comment.text': { fr: 'Commentaire', en: 'Comment' },
+  'comment.replyText': { fr: 'Réponse {n}', en: 'Reply {n}' },
+  'comment.placeholder': { fr: 'Votre remarque…', en: 'Your remark…' },
+  'comment.confirmDelete': {
+    fr: 'Une question sélectionnée porte un commentaire de révision : il sera supprimé avec elle. Continuer ?',
+    en: 'A selected question has a review comment: it will be deleted with it. Continue?',
+  },
+  'tab.comments': { fr: 'Commentaires', en: 'Comments' },
+  'comments.title': { fr: 'Commentaires de révision', en: 'Review comments' },
+  'comments.empty': { fr: 'Aucun commentaire. Clic droit sur une question > Commenter.', en: 'No comment. Right-click a question > Comment.' },
+  'comments.questionnaire': { fr: 'Questionnaire', en: 'Questionnaire' },
+  'comments.fragment': { fr: 'Fragment', en: 'Fragment' },
+  'comments.question': { fr: 'Question réutilisable', en: 'Reusable question' },
+} satisfies Record<string, { fr: string; en: string }>;

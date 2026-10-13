@@ -74,8 +74,13 @@ export function removeNodes(ws: Workspace, ref: GraphRef, ids: string[]): void {
   const q = asQuestionnaire(g);
   if (q && ids.includes(q.start)) q.start = g.nodes[0]?.id ?? '';
   if ('entry' in g && ids.includes(g.entry as string)) delete (g as { entry?: string }).entry;
-  const layout = layoutOf(ws, ref.id).nodes;
-  ids.forEach((id) => delete layout[id]);
+  const l = layoutOf(ws, ref.id);
+  ids.forEach((id) => delete l.nodes[id]);
+  // Commentaires de révision des questions supprimées (EVO-011).
+  if (l.comments?.some((c) => ids.includes(c.node))) {
+    l.comments = l.comments.filter((c) => !ids.includes(c.node));
+    if (!l.comments.length) delete l.comments;
+  }
 }
 
 export function removeEdge(ws: Workspace, ref: GraphRef, edgeId: string): void {

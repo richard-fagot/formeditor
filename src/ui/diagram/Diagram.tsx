@@ -7,7 +7,7 @@ import '@xyflow/react/dist/style.css';
 import type { Issue } from '../../core/validation';
 import { runCommand } from '../../app/commands';
 import { isTyping } from '../../app/shortcuts';
-import { getGraph, layoutOf, scopeOf, useStore, type GraphRef } from '../../app/store';
+import { getGraph, layoutOf, moveComment, scopeOf, useStore, type GraphRef } from '../../app/store';
 import { DiagramContext } from './DiagramContext';
 import { useAutoLayout } from './useAutoLayout';
 import { useImageExport } from './useImageExport';
@@ -17,8 +17,11 @@ import { EmptyHint } from './EmptyHint';
 import { ImageDialog } from './ImageDialog';
 import { NodeView, type NodeData } from './NodeView';
 import { EdgeView } from './EdgeView';
+import { CommentNodeView } from './CommentNodeView';
+import { COMMENT_PREFIX, useCommentNodes } from './useCommentNodes';
+import { useCenterOnComment } from './useCenterOnComment';
 
-const nodeTypes = { graphNode: NodeView };
+const nodeTypes = { graphNode: NodeView, comment: CommentNodeView };
 
 /** Type MIME des éléments de bibliothèque glissés sur le logigramme (`{ kind, id }`). */
 export const LIBRARY_MIME = 'application/x-questionnaire-library';
@@ -50,7 +53,7 @@ function DiagramInner({ graph, issues, readOnly }: DiagramProps) {
 
   // Mesures reprises de React Flow : sans elles, un nœud recréé (changement de sélection, déplacement) est masqué
   // (`visibility: hidden`) jusqu'à sa remesure et le logigramme disparaît brièvement.
-  const nodes: RFNode<NodeData>[] = useMemo(
+  const graphNodes: RFNode<NodeData>[] = useMemo(
     () =>
       (g?.nodes ?? []).map((n) => ({
         id: n.id,
@@ -64,7 +67,7 @@ function DiagramInner({ graph, issues, readOnly }: DiagramProps) {
     [g?.nodes, layout, selection.nodes, readOnly],
   );
   const fragments = useStore((s) => s.ws.library.fragments);
-  const edges: RFEdge[] = useMemo(() => {
+  const graphEdges: RFEdge[] = useMemo(() => {
     // Sortie inconnue (renommée, supprimée) : l'arête part de la poignée par défaut, reste visible et corrigeable.
     const exitsOf = (nodeId: string) => {
       const n = g?.nodes.find((x) => x.id === nodeId);
@@ -81,6 +84,13 @@ function DiagramInner({ graph, issues, readOnly }: DiagramProps) {
         markerEnd: { type: MarkerType.ArrowClosed, color: !readOnly && selection.edge === e.id ? '#6366f1' : '#94a3b8' },
       }));
   }, [g?.edges, g?.nodes, fragments, selection.edge, readOnly]);
+
+  // Commentaires de révision affichés (EVO-011) : nœuds hors graphe et branches latérales.
+  const shown = useStore((s) => s.shownComments);
+  const comments = useCommentNodes(graph, g, layout, shown, rf, readOnly);
+  const nodes = useMemo(() => [...graphNodes, ...comments.nodes] as RFNode[], [graphNodes, comments.nodes]);
+  const edges = useMemo(() => [...graphEdges, ...comments.edges], [graphEdges, comments.edges]);
+  useCenterOnComment(graph);
 
   const issuesByNode = useMemo(() => {
     const m = new Map<string, Issue[]>();
@@ -101,7 +111,11 @@ function DiagramInner({ graph, issues, readOnly }: DiagramProps) {
       if (!moves.length) return;
       useStore.getState().silent((ws) => {
         const l = layoutOf(ws, graph.id).nodes;
-        for (const c of moves) if (c.type === 'position' && c.position) l[c.id] = { ...l[c.id], x: Math.round(c.position.x), y: Math.round(c.position.y) };
+        for (const c of moves) {
+          if (c.type !== 'position' || !c.position) continue;
+          if (c.id.startsWith(COMMENT_PREFIX)) moveComment(ws, { host: graph, node: c.id.slice(COMMENT_PREFIX.length) }, c.position.x, c.position.y);
+          else l[c.id] = { ...l[c.id], x: Math.round(c.position.x), y: Math.round(c.position.y) };
+        }
       });
     },
     [graph],
@@ -155,7 +169,8 @@ function DiagramInner({ graph, issues, readOnly }: DiagramProps) {
           {...(readOnly ? { nodesDraggable: false, nodesConnectable: false, elementsSelectable: false } : {
             onNodesChange,
             onNodeDragStart: () => useStore.getState().checkpoint(scopeOf(graph)),
-            onNodeClick: focusGraph,
+            // Nœud commentaire : la saisie garde le focus.
+            onNodeClick: (_: unknown, n: RFNode) => n.type !== 'comment' && focusGraph(),
             ...menu.handlers,
             onEdgeClick: (_: unknown, e: RFEdge) => {
               useStore.getState().select({ graph, nodes: [], edge: e.id });
@@ -165,7 +180,7 @@ function DiagramInner({ graph, issues, readOnly }: DiagramProps) {
               useStore.getState().select({ graph, nodes: [] });
               focusGraph();
             },
-            onNodeDoubleClick: (_: unknown, n: RFNode) => useStore.getState().requestFocus('label', n.id),
+            onNodeDoubleClick: (_: unknown, n: RFNode) => n.type !== 'comment' && useStore.getState().requestFocus('label', n.id),
             onConnect: (c: { source: string | null; target: string | null; sourceHandle?: string | null }) =>
               c.source && c.target && runCommand('edge.create', { graph, from: c.source, to: c.target, exit: c.sourceHandle ?? undefined }),
           })}

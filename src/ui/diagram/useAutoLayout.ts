@@ -19,7 +19,13 @@ export function useAutoLayout(graph: GraphRef, readOnly?: boolean) {
     const sizes = Object.fromEntries(rf.getNodes().map((n) => [n.id, { width: n.measured?.width ?? 240, height: n.measured?.height ?? 100 }]));
     void computeLayout(current, sizes).then((pos) => {
       useStore.getState().edit(scopeOf(graph), (ws) => {
-        const l = layoutOf(ws, graph.id).nodes;
+        const layout = layoutOf(ws, graph.id);
+        const l = layout.nodes;
+        // Commentaires de révision (EVO-011) : déplacés avec leur question (même décalage).
+        for (const c of layout.comments ?? []) {
+          const before = l[c.node], after = pos[c.node];
+          if (before && after && c.x !== undefined && c.y !== undefined) Object.assign(c, { x: c.x + after.x - before.x, y: c.y + after.y - before.y });
+        }
         for (const [id, p] of Object.entries(pos)) l[id] = { ...l[id], ...p };
       });
       setTimeout(() => void rf.fitView({ padding: 0.2, maxZoom: 1.1, duration: 250 }), 30);

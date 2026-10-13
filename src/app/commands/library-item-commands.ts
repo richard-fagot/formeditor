@@ -1,7 +1,7 @@
 import { newId, uniqueKey, type GraphNode } from '../../core/model';
 import { nodeKind } from '../../registry';
 import {
-  activeGraphRef, addFragment, canExtract, canMoveToLibrary, copyToLibrary, addLibraryQuestion, deleteLibraryItem, getGraph, groupEntries, groupIntoFragment, insertNode,
+  commentsOf, activeGraphRef, addFragment, canExtract, canMoveToLibrary, copyToLibrary, addLibraryQuestion, deleteLibraryItem, getGraph, groupEntries, groupIntoFragment, insertNode,
   insertionCycle, placeNode, referenceNode, scopeOf, useStore, type GraphRef, type LibraryItem,
 } from '../store';
 import { makeTranslate } from '../i18n';
@@ -101,6 +101,8 @@ export function libraryItemCommands(): Command[] {
       id: 'library.delete', label: 'library.delete', keys: [], scope: 'global', hidden: true,
       run: (item) => {
         if (!isItem(item)) return;
+        // Question réutilisable commentée (EVO-011) : confirmation, le commentaire est supprimé avec elle.
+        if (item.kind === 'question' && commentsOf(st().ws, item.id).length && !window.confirm(makeTranslate(st().uiLang)('comment.confirmDelete'))) return;
         st().edit('library', (ws) => deleteLibraryItem(ws, item));
         if (item.kind === 'fragment') st().closeTab(`f:${item.id}`);
         if (st().libraryItem?.id === item.id) showLibraryItem();

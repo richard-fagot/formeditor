@@ -13,7 +13,8 @@ export interface Command {
   allowInInput?: boolean;
   /** Masquée de la palette (navigation aux flèches, commandes qui attendent une valeur saisie). */
   hidden?: boolean;
-  enabled?(): boolean;
+  /** `arg` : paramètre éventuel de `runCommand` (commande appelée depuis un menu ou un bouton). */
+  enabled?(arg?: unknown): boolean;
   /** `arg` : paramètre facultatif fourni par un bouton ou un champ (onglet visé, langue, valeur saisie). */
   run(arg?: unknown): void;
 }

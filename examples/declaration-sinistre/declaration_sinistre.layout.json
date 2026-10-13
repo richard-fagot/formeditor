@@ -1,5 +1,5 @@
 {
-  "formatVersion": 8,
+  "formatVersion": 9,
   "kind": "layout",
   "graph": "q_declaration",
   "nodes": {
@@ -79,5 +79,17 @@
       "x": 0,
       "y": 1760
     }
-  }
+  },
+  "comments": [
+    {
+      "node": "n_date",
+      "x": -320,
+      "y": 300,
+      "text": "Faut-il borner à la date du jour ?",
+      "replies": [
+        "Oui, pas de date future.",
+        "Et pas avant la date d'effet du contrat."
+      ]
+    }
+  ]
 }

@@ -31,6 +31,13 @@ Dépend de `core`, `format`, `app/i18n`, `plugin-api` (utilitaires).
   instance créant un cycle ; départ = rôle non collé (un questionnaire vide prend le départ collé ou le premier nœud). État `clipboard`.
 - Duplication (EVO-010, `duplicate.ts`) : `duplicateQuestionnaire(ws, id, copyName)` (juste après, clé et fichier uniques), `duplicateLibraryItem(ws, item, copyName)`
   (question ou fragment, juste après, clé unique) ; « Copie de » par langue (`CopyName`), nœuds et arêtes réidentifiés, mise en page reprise, références conservées.
+- Commentaires de révision (EVO-011, `comment-edits.ts`) : rangés dans `layout.comments` de l'objet (`CommentHost` : questionnaire, fragment,
+  question de bibliothèque ; `CommentRef` = objet + nœud ; `commentKey`, `hostScope`) : `commentOf`, `commentsOf`, `allComments` (questionnaires, fragments,
+  questions), `addComment` (un par question, à droite de la question ; sans position pour une question de bibliothèque), `setCommentText`, `moveComment`,
+  `addReply`, `setReply`, `deleteReply`, `deleteComment`, `removeComments` (mise en page d'une question vidée retirée), `moveCommentsTo` (extraction en fragment).
+  `removeNodes` retire les commentaires des nœuds supprimés, `deleteLibraryItem` la mise en page de l'élément, la duplication n'en reprend pas.
+  Historique `library` : mises en page des fragments **et** des questions de bibliothèque. État de session : `shownComments` (clés affichées, vidé au
+  chargement), `centerRequest` (centrage demandé au logigramme), `focusRequest` de genre `comment` (`commentKey`, `#i` pour la réponse i), onglet `comments`.
 - `groupIntoFragment(ws, ref, ids, title)` (`group.ts`) : extrait une sélection en fragment (`canExtract` : ni fin ni sortie) ; `entry` réglée si
   l'entrée n'est pas l'unique nœud sans arête entrante ; entrée unique = départ ou cible
   des arêtes entrantes (`groupEntries` ; plusieurs entrées → refus) ; une sortie par cible extérieure ; références de l'hôte préfixées par l'alias (`qualifyKeys`).

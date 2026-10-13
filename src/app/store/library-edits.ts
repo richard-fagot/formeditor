@@ -32,10 +32,9 @@ export function addFragment(ws: Workspace, title: LocalizedText): string {
 /** Supprime un élément ; ses références éventuelles sont signalées par la vérification « introuvable ». */
 export function deleteLibraryItem(ws: Workspace, item: LibraryItem): void {
   if (item.kind === 'question') ws.library.questions = ws.library.questions.filter((q) => q.id !== item.id);
-  else {
-    ws.library.fragments = ws.library.fragments.filter((f) => f.id !== item.id);
-    ws.layouts = ws.layouts.filter((l) => l.graph !== item.id);
-  }
+  else ws.library.fragments = ws.library.fragments.filter((f) => f.id !== item.id);
+  // Mise en page et commentaires de révision (EVO-011) de l'élément.
+  ws.layouts = ws.layouts.filter((l) => l.graph !== item.id);
 }
 
 /** Insérer le fragment `item` dans le graphe `ref` créerait-il un cycle d'appels (fragment dans lui-même, A → B → A) ? */
