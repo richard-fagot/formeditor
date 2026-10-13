@@ -477,8 +477,9 @@ avant contrôle et enregistrement.
 - Mise en liste, à l'affichage de la page, avec les réponses courantes : valeur unique → un élément ; vide, absente ou
   erreur → aucune suggestion (texte simple) ; nombres, booléens, dates (chaînes ISO) → texte ; objets, éléments
   vides et valeur réservée `"other"` d'un choix (« Autre », comme pour une entrée dynamique, §7.5) écartés ;
-  doublons supprimés, ordre de l'expression conservé (première occurrence). Ce sont les **valeurs** des options
-  d'un choix qui sont proposées, pas leurs libellés ; la précision d'« Autre » s'ajoute par l'expression
+  doublons supprimés, ordre de l'expression conservé (première occurrence). Une valeur égale à celle d'une option
+  d'un choix cité dans l'expression est proposée sous le **libellé** de l'option dans la langue courante, et c'est
+  ce libellé qui est inséré (EVO-016) ; la précision d'« Autre » s'ajoute par l'expression
   (`$append(marques, marques_other)`).
 - Affichage (outil) : liste ouverte à la prise de focus, filtrée à la frappe (« contient », casse ignorée), choix à la
   souris ou au clavier.
