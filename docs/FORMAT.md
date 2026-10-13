@@ -1,4 +1,4 @@
-# Format des questionnaires — version 9
+# Format des questionnaires — version 10
 
 Ce document décrit le format JSON produit par l'éditeur de questionnaires. Il s'adresse à l'équipe
 de développement (et à l'IA qui l'assiste) chargée de construire le moteur cible et les formulaires
@@ -34,7 +34,7 @@ libellés et interpolation — 6. Nœuds — 7. Questions — 8. Réponses — 9
 | `<clé>.layout.json`, `fragment_<clé>.layout.json`, `question_<clé>.layout.json` | `layout` | Positions des nœuds dans l'éditeur et commentaires de révision (version 9, §1.1). | **non** (à ignorer) |
 | `<projet>.bundle.json` | `bundle` | `project`, `library`, `questionnaires[]`, `layouts[]` dans un seul fichier. | oui (même contenu) |
 
-- Chaque fichier (et le bundle) porte `formatVersion` (entier, actuellement `9`) et `kind`.
+- Chaque fichier (et le bundle) porte `formatVersion` (entier, actuellement `10`) et `kind`.
 - L'outil migre automatiquement à l'ouverture un fichier d'une version antérieure ; il refuse un fichier
   d'une version plus récente. Un moteur cible peut refuser toute version qu'il ne connaît pas.
 - Tout élément (projet, questionnaire, nœud, arête, question, fragment, variable, scénario, jeu de libellés)
@@ -210,8 +210,8 @@ le contexte de la page affichée (§10.2). Exemples : `Bonjour {sys.nom_assure}`
 
 | `kind` | Rôle | Propriétés (outre `id`, `description?`) | Page affichée |
 | --- | --- | --- | --- |
-| `question` | Saisie d'une réponse. | Question locale (§7) **ou** `ref` (id d'une question de bibliothèque) + `label?` qui surcharge son intitulé + `hiddenFields?` (structure : champs masqués, version 8). | oui |
-| `fragment` | Appel d'un fragment de bibliothèque, par référence (version 7, ex-`block`). | `ref` (id du fragment), `alias` (clé : préfixe des clés du fragment vues de l'appelant). | non : on entre dans le fragment |
+| `question` | Saisie d'une réponse. | Question locale (§7) **ou** `ref` (id d'une question de bibliothèque) + `label?` qui surcharge son intitulé + `hiddenFields?` (structure : champs masqués, version 8) + `required?` (booléen : surcharge du caractère obligatoire, version 10, §6.1). | oui |
+| `fragment` | Appel d'un fragment de bibliothèque, par référence (version 7, ex-`block`). | `ref` (id du fragment), `alias` (clé : préfixe des clés du fragment vues de l'appelant), `requiredOverrides?` (surcharges du caractère obligatoire de ses questions, version 10, §6.1). | non : on entre dans le fragment |
 | `info` | Texte sans saisie. | `title?`, `text`. | oui |
 | `summary` | Récapitulatif des réponses (§11.6). | `title?`. | oui |
 | `end` | Fin de parcours. | `title?`, `message`, `outcome?` (issue métier libre : `submitted`, `ineligible`…). | oui (dernière) |
@@ -226,7 +226,7 @@ Question locale (le nœud porte la question) et question de bibliothèque :
 ```
 
 Pour une question de bibliothèque, la clé, le type, les contraintes et tout le reste sont ceux de la
-bibliothèque ; seul l'intitulé (`label`) peut être surchargé.
+bibliothèque ; seuls l'intitulé (`label`) et le caractère obligatoire (`required`, §6.1) peuvent être surchargés.
 
 **Champs masqués** (`hiddenFields`, version 8) : sur un nœud qui référence une question `structure`, liste des
 **clés** des champs masqués dans cette instance (sans doublon) ; absente = tous les champs affichés. La question
@@ -244,6 +244,38 @@ L'export conserve la référence et `hiddenFields` : le moteur cible résout l'i
 { "kind": "question", "id": "n_rappel", "ref": "lq_identite", "hiddenFields": ["civilite", "date_naissance", "adresse", "telephone"] }
 ```
 
+### 6.1 Surcharge du caractère obligatoire (version 10)
+
+Une question **utilisée** (référence de bibliothèque, ou question d'un fragment vue depuis un appel) peut voir son
+caractère obligatoire surchargé à l'endroit où elle est utilisée, sans toucher à sa définition. Seule la surcharge
+est stockée ; absente, la valeur est **héritée**. Une surcharge vaut `true` (obligatoire) ou `false` (facultatif) et
+remplace la valeur héritée, y compris un `required` calculé (expression). Rien d'autre (intitulé, type, options,
+contraintes) n'est surchargé ici.
+
+- `required?` d'un nœud `question` qui a un `ref` : surcharge pour cet usage (dans un questionnaire ou un fragment).
+- `requiredOverrides?` d'un nœud `fragment` : `{ "<chemin>": true | false }`, surcharges des questions du fragment
+  appelé pour **cet appel**. Le chemin est la suite des `id` de nœuds, séparés par `/`, à partir du fragment appelé :
+  `fn_num_secu` (question du fragment), `n_adresse/an_ville` (question du fragment appelé par le nœud `n_adresse` de
+  ce fragment), sur toute la profondeur. Toute question du fragment est adressable, locale ou de bibliothèque.
+
+**Résolution** (le niveau le plus proche de l'utilisation l'emporte) pour une question atteinte par les appels
+`c1` (dans le questionnaire), `c2` (dans le fragment de `c1`)… `cn`, puis le nœud question `q` du dernier fragment :
+
+1. `c1.requiredOverrides["c2/…/cn/q"]`, puis `c2.requiredOverrides["c3/…/cn/q"]`, …, puis `cn.requiredOverrides["q"]` :
+   la première valeur présente l'emporte ;
+2. sinon `q.required` si `q` est une référence de bibliothèque qui le porte ;
+3. sinon la définition : `required` de la question de bibliothèque, ou de la question locale.
+
+Une surcharge reste figée quand la valeur héritée change, même si elle lui était égale. Un chemin (ou une
+référence) qui ne désigne plus aucune question est **ignoré** sans erreur. La valeur résolue n'est pas exportée :
+le moteur cible applique cette règle (implémentation de référence : `resolveRequired`, `src/core/model/required.ts`).
+Une question non présentée (chemin non emprunté, champ masqué) n'est jamais exigée.
+
+```json
+{ "kind": "question", "id": "bn_telephone", "ref": "lq_telephone", "required": false },
+{ "kind": "fragment", "id": "n_ident", "ref": "frg_identification_assure", "alias": "ident", "requiredOverrides": { "fn_num_secu": false } }
+```
+
 ## 7. Questions
 
 ### 7.1 Propriétés communes
@@ -253,7 +285,7 @@ L'export conserve la référence et `hiddenFields` : le moteur cible résout l'i
 | `id`, `key`, `type` | Identifiant, clé, type (§7.2). |
 | `label` | Intitulé (libellé). |
 | `help?`, `placeholder?` | Aide sous l'intitulé ; texte indicatif dans le champ (libellés). |
-| `required?` | `true`, `false` (défaut) ou **expression** : obligatoire si elle vaut `true` au moment de la validation. |
+| `required?` | `true`, `false` (défaut) ou **expression** : obligatoire si elle vaut `true` au moment de la validation. Surchargeable là où la question est utilisée (version 10, §6.1). |
 | `default?` | Valeur par défaut littérale, de la forme de la réponse (§7.2). |
 | `defaultExpr?` | Valeur par défaut calculée (expression), prioritaire sur `default`. |
 | `messages?` | `{ "<paramètre>": texte multilingue }` : message d'erreur par contrainte intégrée (§9.2). |
@@ -733,7 +765,7 @@ lieu d'afficher la fin. La réponse n'est pas effacée : l'utilisateur la corrig
 
 ## 12. Bibliothèque (`bibliotheque.json`)
 
-- `questions[]` : questions réutilisables (§7), référencées par `{ "kind": "question", "id", "ref", "label"?, "hiddenFields"? }` (§6).
+- `questions[]` : questions réutilisables (§7), référencées par `{ "kind": "question", "id", "ref", "label"?, "hiddenFields"?, "required"? }` (§6).
   Leur clé est vue sans préfixe dans le graphe qui les référence (questionnaire, ou fragment puis `alias.cle`).
 - `fragments[]` (version 7) : `{ id, key, title, description?, entry?, nodes, edges }` (§11.3) ; nœuds : questions
   (locales ou de bibliothèque), `info`, `summary`, `fragment` (appel d'un autre fragment), `exit` ; pas de `start`
@@ -794,6 +826,7 @@ L'exemple fourni ne produit aucun problème.
 | Mail, téléphone, adresse, civilité (version 6) : structure de bibliothèque non utilisée par le questionnaire (civilité obligatoire, téléphone mobile, adresse à vérifier) | `lq_souscripteur` (bibliothèque) |
 | Champs masqués (version 8) : structure `identite` (7 champs, tous obligatoires) réduite à nom, prénom, mail dans une instance ; `{identite.mail}` dans la fin | `q_remboursement` : `n_rappel` → `lq_identite`, `n_fin_remboursement` ; chemins `remboursement_*.json` |
 | Commentaire de révision (version 9) : question commentée, deux réponses, nœud commentaire à gauche de la question | `declaration_sinistre.layout.json` : `comments` sur `n_date` |
+| Surcharge du caractère obligatoire (version 10, §6.1) : téléphone obligatoire en bibliothèque, rendu facultatif dans un fragment (laissé vide) ; question d'un fragment rendue facultative depuis un questionnaire | `blk_identite_tiers` : `bn_telephone` → `lq_telephone` (chemins `ud_tiers_inconnu.json`, `ud_vol_avec_boucle.json`) ; `q_remboursement` : `n_ident.requiredOverrides` |
 
 Après la date, on demande le lien avec un sinistre existant s'il y en a un d'antérieur, puis on va aux
 victimes (accident) ou au montant :
@@ -848,7 +881,7 @@ doit égaler `path`, toutes les réponses doivent avoir été consommées et l'i
 
 Toute évolution incompatible incrémente `formatVersion` et s'accompagne d'une migration dans l'outil,
 des schémas, de ce document et de l'exemple. Les ajouts compatibles (nouvelle propriété facultative)
-sont documentés ici. Version actuelle : **9**.
+sont documentés ici. Version actuelle : **10**.
 
 | Version | Changement | Migration |
 | --- | --- | --- |
@@ -860,3 +893,4 @@ sont documentés ici. Version actuelle : **9**.
 | 7 | Fragments de questionnaire (EVO-008) : `library.blocks` → `library.fragments` (`entry?`, sans `start`), nœud `block` → `fragment`, sorties implicites (nœuds sans arête sortante), départ possible sur un nœud fragment, imbrication. | Chaque bloc devient un fragment (mêmes id, clé, titre, nœuds, arêtes, sorties nommées ; `start` devient `entry` seulement s'il n'est pas l'unique nœud sans arête entrante) ; chaque nœud `block` devient `fragment`. Navigation inchangée pour un projet antérieur, sauf un nœud de bloc sans arête sortante (impasse déjà signalée en v6) : il arrêtait le parcours, il reprend désormais sur les arêtes sortantes du nœud fragment chez l'appelant. |
 | 8 | Champs masqués `hiddenFields` (clés) d'une instance d'une structure de bibliothèque ; code de vérification `hiddenField` (EVO-009). | Aucune transformation (propriété absente = tous les champs affichés) ; seul `formatVersion` change. |
 | 9 | Commentaires de révision `comments` (`{ node, x?, y?, text, replies[] }`) d'un document `layout` ; fichier `question_<clé>.layout.json` pour une question de bibliothèque commentée (EVO-011). Outil seulement, à ignorer par le moteur. | Aucune transformation (propriété absente = aucun commentaire) ; seul `formatVersion` change. |
+| 10 | Surcharge du caractère obligatoire (EVO-012) : `required?` (booléen) d'une référence de bibliothèque, `requiredOverrides?` (chemin d'ids → booléen) d'un nœud fragment ; résolution du plus proche au plus lointain (§6.1). | Aucune transformation (propriétés absentes = hérité) ; seul `formatVersion` change. |

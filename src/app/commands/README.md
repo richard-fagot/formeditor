@@ -29,7 +29,7 @@ Catalogue unique des actions utilisateur (spec §4.4). Palette, menus et raccour
   la sélection, ou à la position d'un dépôt), `view.libraryPanel`, `node.group` (Ctrl+G, questionnaire seulement ;
   transaction questionnaire + bibliothèque via `edit` ; « Extraire la sélection en fragment », refus avec message : plusieurs entrées, fin ou sortie),
   `node.toLibrary` (« Copier dans la bibliothèque », EVO-009 : question locale ; clé prise → `copyRequest` (dialogue de `ui/shell`) puis
-  `runCommand('node.toLibrary', { graph, nodeId, key })` ; références réécrites listées dans `notice`), `node.openInLibrary` (question de bibliothèque), `node.openFragment` (nœud fragment), `node.setEntry` (fragment seulement :
+  `runCommand('node.toLibrary', { graph, nodeId, key })` ; références réécrites listées dans `notice`), `node.openInLibrary` (question de bibliothèque), `node.resetRequired` (« Revenir à la valeur héritée », EVO-012 : retire la surcharge du caractère obligatoire de la référence sélectionnée, ou toutes celles de l'appel sélectionné ; `resetRequired`), `node.openFragment` (nœud fragment), `node.setEntry` (fragment seulement :
   règle `entry`, ou la retire sur l'entrée réglée), `node.newExit` (fragment seulement). `library.insertItem` refuse un cycle d'appels (message `insert.cycle`).
 - Les commandes du graphe agissent sur le graphe actif (`activeGraphRef`) : questionnaire, ou fragment ouvert dans son onglet. Dans un
   fragment, `node.setStart` et `node.newEnd` sont indisponibles.

@@ -472,14 +472,10 @@ describe('commentaires de révision (EVO-011, version 9)', () => {
   };
   const comment = { node: 'n1', x: 300, y: 2, text: 'Faut-il borner ?\nÀ voir.', replies: ['Oui.', 'Et pas avant la date d’effet.'] };
 
-  it('le format courant est la version 9', () => {
-    expect(FORMAT_VERSION).toBe(9);
-  });
-
   it('un projet version 8 se charge sans erreur et sans commentaire', () => {
     const back = importFiles([{ name: 'ancien.bundle.json', text: JSON.stringify(v8()) }]);
     expect(back.errors).toEqual([]);
-    expect(back.workspace!.layouts[0]!.formatVersion).toBe(9);
+    expect(back.workspace!.layouts[0]!.formatVersion).toBe(FORMAT_VERSION);
     expect(back.workspace!.layouts[0]!.comments).toBeUndefined();
   });
 
@@ -503,6 +499,52 @@ describe('commentaires de révision (EVO-011, version 9)', () => {
     for (const back of [importFiles(files), importFiles([{ name: 'p.bundle.json', text: exportBundle(ws) }])]) {
       expect(back.errors).toEqual([]);
       expect(back.workspace!.layouts).toEqual(ws.layouts);
+    }
+  });
+});
+
+describe('surcharge du caractère obligatoire (EVO-012, version 10)', () => {
+  const v9 = () => {
+    const ws = newWorkspace('p', 'fr');
+    ws.library.questions.push({ id: 'lq_tel', key: 'tel', label: { fr: 'Téléphone' }, type: 'text' });
+    ws.library.fragments.push({ id: 'f', key: 'coord', title: { fr: 'Coordonnées' }, nodes: [{ kind: 'question', id: 'n_tel', ref: 'lq_tel' }], edges: [] });
+    ws.questionnaires.push({ ...minimalQuestionnaire(), formatVersion: 9, nodes: [{ kind: 'question', id: 'n1', ref: 'lq_tel' }, { kind: 'fragment', id: 'c', ref: 'f', alias: 'coord' }] });
+    ws.project.questionnaires.push({ id: 'q1', file: 'test.json' });
+    const bundle = JSON.parse(exportBundle(ws));
+    for (const d of [bundle, bundle.library, bundle.project, ...bundle.questionnaires]) d.formatVersion = 9;
+    return bundle;
+  };
+
+  it('le format courant est la version 10', () => {
+    expect(FORMAT_VERSION).toBe(10);
+  });
+
+  it('un projet version 9 se charge sans erreur, toutes les utilisations en « Hérité »', () => {
+    const back = importFiles([{ name: 'ancien.bundle.json', text: JSON.stringify(v9()) }]);
+    expect(back.errors).toEqual([]);
+    const q = back.workspace!.questionnaires[0]!;
+    expect(q.formatVersion).toBe(10);
+    expect(q.nodes.some((n) => 'required' in n || 'requiredOverrides' in n)).toBe(false);
+    expect(back.workspace!.library.fragments[0]!.nodes[0]).not.toHaveProperty('required');
+  });
+
+  it('schéma : `required` booléen sur une référence, `requiredOverrides` sur un appel ; refusés mal formés', () => {
+    const q = { ...minimalQuestionnaire(), nodes: [{ kind: 'question', id: 'n1', ref: 'lq_tel', required: true }, { kind: 'fragment', id: 'c', ref: 'f', alias: 'coord', requiredOverrides: { n_tel: false, 'n_in/n_tel': true } }] };
+    expect(validateDocument(q)).toEqual([]);
+    expect(validateDocument({ ...q, nodes: [{ kind: 'question', id: 'n1', ref: 'lq_tel', required: 'x = 1' }] }).length).toBeGreaterThan(0);
+    expect(validateDocument({ ...q, nodes: [{ kind: 'fragment', id: 'c', ref: 'f', alias: 'coord', requiredOverrides: { n_tel: 'oui' } }] }).length).toBeGreaterThan(0);
+  });
+
+  it('export puis réimport : surcharges identiques', () => {
+    const ws = importFiles([{ name: 'p.bundle.json', text: JSON.stringify(v9()) }]).workspace!;
+    const [ref, call] = ws.questionnaires[0]!.nodes as unknown as [Record<string, unknown>, Record<string, unknown>];
+    ref.required = false;
+    call.requiredOverrides = { n_tel: true };
+    (ws.library.fragments[0]!.nodes[0] as unknown as Record<string, unknown>).required = true;
+    for (const back of [importFiles(exportFiles(ws)), importFiles([{ name: 'p.bundle.json', text: exportBundle(ws) }])]) {
+      expect(back.errors).toEqual([]);
+      expect(back.workspace!.questionnaires).toEqual(ws.questionnaires);
+      expect(back.workspace!.library).toEqual(ws.library);
     }
   });
 });

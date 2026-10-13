@@ -1,4 +1,4 @@
-import { instanceQuestion, isLibraryQuestion, type Fragment, type FragmentNode, type Graph, type GraphNode, type Question, type Workspace } from '../model';
+import { instanceQuestion, isLibraryQuestion, resolveRequired, type Fragment, type FragmentNode, type Graph, type GraphNode, type Question, type Workspace } from '../model';
 import type { EvalEnv } from '../expressions';
 
 /** Entrée du moteur : projet, questionnaire joué, état du système, environnement d'évaluation. */
@@ -23,7 +23,7 @@ export interface Step {
   /** Appel le plus interne (dernier de `instances`) et son fragment. */
   instance?: FragmentNode;
   fragment?: Fragment;
-  /** Question effective (bibliothèque résolue, libellé surchargé). */
+  /** Question effective (bibliothèque résolue, libellé surchargé, caractère obligatoire résolu : EVO-012). */
   question?: Question;
   /** Chemin de la réponse dans `answers` : `['cle']`, `['alias', 'cle']`, `['a', 'b', 'cle']`. */
   answerPath?: string[];
@@ -64,8 +64,12 @@ export function resolveStep(input: RuntimeInput, id: string): Step | undefined {
 }
 
 function withQuestion(input: RuntimeInput, step: Step): Step {
-  const question = effectiveQuestion(input.ws, step.node);
-  if (!question) return step;
+  const base = effectiveQuestion(input.ws, step.node);
+  if (!base || step.node.kind !== 'question') return step;
+  // Surcharges des appels traversés (EVO-012) : le niveau le plus proche du questionnaire l'emporte.
+  const { value: required } = resolveRequired(input.ws, step.node, step.instances);
+  const { required: _r, ...rest } = base;
+  const question = (required === undefined ? rest : { ...rest, required }) as Question;
   return { ...step, question, answerPath: [...step.instances.map((i) => i.alias), question.key] };
 }
 

@@ -13,7 +13,7 @@ Dépend de `app/store`, `app/commands` (liaison tracée à la souris : `edge.cre
 - Nœuds et arêtes dérivés du store (`ws` + mise en page `layouts`) ; un nœud recréé reprend ses mesures (`measured`,
   `rf.getInternalNode`), sinon React Flow le masque jusqu'à remesure (test : `tests/smoke/selection.spec.ts`) ; positions écrites sans historique
   pendant le glisser, point d'historique au début du glisser.
-- `NodeView` : cadre, poignées, badges (départ, ou « Entrée » d'un fragment (`graphStart`), obligatoire, autre, bibliothèque, « n / m champs » d'une instance de structure à champs masqués (EVO-009), source, traduction,
+- `NodeView` : cadre, poignées, badges (départ, ou « Entrée » d'un fragment (`graphStart`), obligatoire, autre, bibliothèque, « n / m champs » d'une instance de structure à champs masqués (EVO-009), « surch. » (`required-override`) sur une référence dont le caractère obligatoire est surchargé ou un nœud fragment qui en surcharge (`activeOverrides`, EVO-012), source, traduction,
   problèmes) ; contenu délégué au plugin du type de nœud (`registry.nodeKind`) ; édition en place de
   l'intitulé (double-clic, Entrée, `focusRequest`) avec dérivation de la clé (`setQuestionLabel`).
 - Nœud fragment : bouton « Ouvrir le fragment ↗ » parmi les badges (`library.show`) ; une poignée de sortie par sortie nommée du fragment ; une liaison tirée depuis une poignée porte

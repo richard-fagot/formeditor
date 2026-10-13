@@ -1,5 +1,5 @@
 # Guide utilisateur — Éditeur de questionnaires
-Mis à jour le 2026-10-13 — jusqu'à EVO-011
+Mis à jour le 2026-10-13 — jusqu'à EVO-012
 
 ## Mode d'emploi du guide
 
@@ -223,7 +223,8 @@ libres » et « Description (pour l’équipe de dev) ». Chaque saisie est enre
   obligation et contraintes sont conservés ; la valeur par défaut et les réglages de l'ancien type sont perdus (sauf
   options entre choix unique et multiple, « Autre » entre types qui l'acceptent, et « Ne sais pas » sauf vers une structure).
 - **Rendre une question obligatoire** — Case « Obligatoire », ou `O` (logigramme ; palette « Basculer obligatoire »). `O`
-  bascule : sur une question déjà obligatoire (même sous condition), il retire l'obligation. `[cmd: node.toggleRequired]`
+  bascule : sur une question déjà obligatoire (même sous condition), il retire l'obligation. Question locale seulement :
+  pour une question de bibliothèque ou d'un fragment utilisé, voir « Surcharger le caractère obligatoire… » (§10). `[cmd: node.toggleRequired]`
 - **Rendre une question obligatoire sous condition** — Case « Obligatoire » décochée, champ « Obligatoire si… (expression,
   facultatif) » : ex. `type_sinistre = 'accident'`.
 - **Ajouter « Ne sais pas »** — Case « Option « Ne sais pas » » du panneau (section du type : juste après « Autre
@@ -464,7 +465,28 @@ Concerne le choix unique et le choix multiple. Le booléen et le tri-state n'ont
   (bibliothèque ou questionnaire) ; la question est alors renommée et la fenêtre « Copie faite : références réécrites » liste
   les expressions modifiées. Bouton et commande absents sur une référence de bibliothèque. `Ctrl+Z` annule. `[cmd: node.toLibrary]`
 - **Reformuler une question de bibliothèque dans un questionnaire** — Sélectionner la référence (badge « bib. ») : seuls
-  « Intitulé » et, pour une structure, « Champs affichés » sont modifiables (« Intitulé surchargé localement. ») ; « Reprendre l’intitulé de la bibliothèque » annule la surcharge.
+  « Intitulé », « Caractère obligatoire » et, pour une structure, « Champs affichés » sont modifiables (« Intitulé surchargé localement. ») ; « Reprendre l’intitulé de la bibliothèque » annule la surcharge.
+- **Surcharger le caractère obligatoire d'une question de bibliothèque** — Sélectionner la référence (badge « bib. »), dans
+  un questionnaire ou dans un fragment : liste « Caractère obligatoire » : « Hérité (Obligatoire, bibliothèque) » (ou
+  « Facultatif », « Obligatoire sous condition »), « Obligatoire », « Facultatif ». Dessous, « Valeur effective : … (provenance) »
+  (« surcharge locale » quand elle est posée ici). Seule **cette utilisation** change : la bibliothèque et les autres
+  utilisations gardent leur valeur. Le nœud porte le badge « surch. » et son badge `*` suit la valeur effective. En
+  « Hérité », l'utilisation suit les modifications ultérieures de la bibliothèque ; une surcharge reste figée, même si
+  elle était égale à la valeur héritée. `Ctrl+Z` annule.
+- **Surcharger le caractère obligatoire d'une question d'un fragment utilisé** — Dans l'appelant (questionnaire, ou
+  fragment qui en inclut un autre), sélectionner le nœud fragment : la liste « Questions du fragment : caractère obligatoire »
+  montre chaque question (`alias.cle`, fragments inclus compris : `alias.sous_alias.cle`) avec le même sélecteur et sa
+  valeur effective ; « Surchargé » repère celles surchargées dans cet appel, et le nœud fragment porte le badge « surch. ».
+  « Hérité » affiche la valeur et sa provenance (« bibliothèque » ou « fragment <clé> » quand elle est fixée dans le
+  fragment). Règle : **le niveau le plus proche de l'utilisation l'emporte** — l'appelant le plus externe, puis chaque
+  fragment intermédiaire, puis la référence dans le fragment, puis la bibliothèque. Ex. : `Q_TEL` facultative en
+  bibliothèque, « Obligatoire » dans le fragment `coordonnees` ; le formulaire « Adhésion » qui l'appelle sans surcharge
+  l'exige (« Hérité (Obligatoire, fragment coordonnees) ») ; le formulaire « Demande de rappel » la règle sur
+  « Facultatif » pour lui seul. Une surcharge dont la question a disparu du fragment est ignorée.
+- **Revenir à la valeur héritée** — Choisir « Hérité » dans la liste, ou bouton « Revenir à la valeur héritée » (sous la
+  liste d'une référence ; sous la liste des questions d'un nœud fragment, il retire **toutes** les surcharges de l'appel),
+  ou palette sur la référence ou le nœud fragment sélectionné. La valeur effective redevient celle du niveau supérieur.
+  `[cmd: node.resetRequired]`
 - **Masquer des champs d'une structure de bibliothèque** — Sélectionner la référence d'une structure : la liste « Champs
   affichés » du panneau montre chaque champ, dans l'ordre de la bibliothèque, avec une case « affiché ». Décocher masque le
   champ **dans ce questionnaire seulement** (ni la bibliothèque ni les autres usages ne changent) ; le dernier champ affiché
@@ -573,6 +595,9 @@ Concerne le choix unique et le choix multiple. Le booléen et le tri-state n'ont
   Une option d'un groupe s'y affiche « Groupe — Option » (ex. « Victime directe — Conjoint ») ; « Ne sais pas », par son libellé.
 - **Comprendre un retour forcé avant la fin** — Une réponse devenue invalide (option disparue après un changement d'état du
   système…) empêche d'atteindre la fin : le wizard ramène à la question avec son message jusqu'à correction.
+- **Voir quelles questions sont exigées** — L'astérisque rouge et le blocage de « Suivant » sur une question laissée vide
+  suivent la valeur **effective** du caractère obligatoire, surcharges comprises (§10) ; une question non présentée (chemin
+  non emprunté, champ masqué) n'est jamais exigée.
 - **Retrouver le nœud d'une page** — Cliquer la page : le nœud est sélectionné dans le logigramme (visible en revenant au logigramme) ;
   pour une page d'un fragment, le nœud fragment du questionnaire.
 - **Parcourir un fragment** — Ses pages s'enchaînent sans rupture avec celles du questionnaire ; « Précédent » traverse le
@@ -761,6 +786,7 @@ l'objet lui-même et sur la page des commentaires.
 | Type : Adresse | `Shift+A` | `node.type.address` |
 | Type : Civilité | `Shift+C` | `node.type.civility` |
 | Basculer obligatoire | `O` | `node.toggleRequired` |
+| Revenir à la valeur héritée | — | `node.resetRequired` |
 | Activer « Autre (préciser) » | `A` | `node.toggleOther` |
 | Activer « Ne sais pas » | — | `node.toggleDontKnow` |
 | Éditer l’intitulé | `Entrée` | `node.editLabel` |

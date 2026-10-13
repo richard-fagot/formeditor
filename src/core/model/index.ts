@@ -7,3 +7,4 @@ export * from './documents';
 export * from './keys';
 export * from './fragment';
 export * from './instance';
+export * from './required';

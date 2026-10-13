@@ -1,5 +1,5 @@
 {
-  "description": "UD avec 2 sinistres : dégât des eaux sans lien, sous le plafond, tiers dont l'assureur est inconnu (sortie « non_identifie » du bloc).",
+  "description": "UD avec 2 sinistres : dégât des eaux sans lien, sous le plafond, tiers dont l'assureur est inconnu (sortie « non_identifie » du bloc). Téléphone du tiers laissé vide : facultatif dans le fragment (surcharge EVO-012), obligatoire en bibliothèque.",
   "questionnaire": "q_declaration",
   "scenario": "sc_ud_2_sinistres",
   "today": "2026-10-10",
@@ -37,6 +37,10 @@
       }
     },
     {
+      "step": "n_bloc_tiers/bn_telephone",
+      "value": null
+    },
+    {
       "step": "n_bloc_tiers/bn_assurance_connue",
       "value": "unknown"
     },
@@ -64,6 +68,7 @@
     "n_tiers",
     "n_bloc_tiers/bn_nom",
     "n_bloc_tiers/bn_coordonnees",
+    "n_bloc_tiers/bn_telephone",
     "n_bloc_tiers/bn_assurance_connue",
     "n_tiers_inconnu",
     "n_circonstances",

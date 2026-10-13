@@ -292,7 +292,8 @@ test('bibliothèque : glisser une question, insérer un fragment (I), déplier, 
   await expect(instance.getByTestId('fragment-content')).toContainText('identite_tiers.nom');
 
   // Extraire la question déposée (reliée au nœud inséré à sa suite) : fragment avec une sortie.
-  await nodes.filter({ hasText: 'telephone' }).last().click();
+  // (le fragment déplié liste aussi `identite_tiers.telephone` depuis EVO-012 : on l'exclut)
+  await nodes.filter({ hasText: 'telephone', hasNot: page.getByTestId('fragment-content') }).last().click();
   await page.keyboard.press('Control+g');
   await expect(nodes.filter({ hasText: 'Nouveau fragment' })).toHaveCount(1);
 
