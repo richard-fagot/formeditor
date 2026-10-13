@@ -1,6 +1,6 @@
 # EVO-016 — Option « suggestions » sur les champs texte
 
-Statut : à faire
+Statut : en cours
 Dépend de : aucune (réutilise le moteur d'expressions existant)
 
 ## Besoin
