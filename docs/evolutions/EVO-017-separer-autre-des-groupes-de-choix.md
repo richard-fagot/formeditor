@@ -70,3 +70,21 @@ Ajouter une section « Analyse » en bas de ce fichier :
 
 Faisable sans ambiguïté bloquante → choix notés dans l'analyse et `docs/DECISIONS.md`, puis
 réalisation. Sinon → statut « à arbitrer », options et conséquences, arrêt sans coder.
+
+## Analyse
+
+Conclusion : **faisable sans ambiguïté bloquante**, réalisé.
+
+1. **Faisabilité, modules** (matrice « Groupes d'options » de `docs/MAP.md`) : rendu seul, dans
+   `plugins/question-types/choice` (`choice-field.tsx`, et `selection.ts` pour la règle pure `separatedOther`).
+   Aucun changement de `core`, `format`, `plugin-api`, `ui/preview` ni du JSON (pas de migration). L'aperçu du
+   logigramme n'est pas concerné (l'EVO vise la prévisualisation).
+2. **Accessibilité** : chaque groupe est déjà un `div role="group"` nommé par son titre (`aria-label`), à l'intérieur
+   du `radiogroup` (unique) ou `group` (multiple) de la question. « Autre » était déjà hors de ces `div` (section sans
+   titre), donc pas annoncée dans le dernier groupe ; seule la présentation la rattachait visuellement. Elle est
+   désormais rendue dans un conteneur à part (trait supérieur), enfant direct du groupe de la question, hors de tout
+   `role="group"` de groupe : un lecteur d'écran l'annonce comme option de la question.
+
+Choix (aussi dans `docs/DECISIONS.md`) : séparation seulement si au moins un groupe est affiché ; trait sans rôle
+ARIA ; options de groupe non indentées (inchangé), donc « Autre » alignée sur les titres de groupe ; « Ne sais pas »
+reste après « Autre », sans trait supplémentaire.
