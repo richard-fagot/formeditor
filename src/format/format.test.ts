@@ -555,15 +555,11 @@ describe('état de validation d’un formulaire (EVO-015, version 11)', () => {
     return bundle;
   };
 
-  it('le format courant est la version 11', () => {
-    expect(FORMAT_VERSION).toBe(11);
-  });
-
   it('un projet version 10 se charge sans erreur, tous ses formulaires non validés', () => {
     const back = importFiles([{ name: 'ancien.bundle.json', text: JSON.stringify(v10()) }]);
     expect(back.errors).toEqual([]);
     for (const q of back.workspace!.questionnaires) {
-      expect(q.formatVersion).toBe(11);
+      expect(q.formatVersion).toBe(FORMAT_VERSION);
       expect(q).not.toHaveProperty('status');
       expect(q).not.toHaveProperty('validatedAt');
     }
@@ -583,6 +579,52 @@ describe('état de validation d’un formulaire (EVO-015, version 11)', () => {
     for (const back of [importFiles(exportFiles(ws)), importFiles([{ name: 'p.bundle.json', text: exportBundle(ws) }])]) {
       expect(back.errors).toEqual([]);
       expect(back.workspace!.questionnaires.map((q) => [q.status, q.validatedAt])).toEqual([['validated', '2026-10-13'], [undefined, undefined]]);
+    }
+  });
+});
+
+describe('suggestions d’un champ texte (EVO-016, version 12)', () => {
+  const withSuggestions = (suggestions?: string): Questionnaire => {
+    const q = minimalQuestionnaire();
+    q.nodes = [{ kind: 'question', id: 'n1', key: 'marque', label: { fr: 'Marque' }, type: 'text', ...(suggestions === undefined ? {} : { suggestions }) }];
+    return q;
+  };
+  const v11 = () => {
+    const ws = newWorkspace('p', 'fr');
+    ws.questionnaires.push(minimalQuestionnaire());
+    ws.project.questionnaires.push({ id: 'q1', file: 'test.json' });
+    const bundle = JSON.parse(exportBundle(ws));
+    for (const d of [bundle, bundle.library, bundle.project, ...bundle.questionnaires]) d.formatVersion = 11;
+    return bundle;
+  };
+
+  it('le format courant est la version 12', () => {
+    expect(FORMAT_VERSION).toBe(12);
+  });
+
+  it('un projet version 11 se charge sans erreur, ses champs texte sans suggestions', () => {
+    const back = importFiles([{ name: 'ancien.bundle.json', text: JSON.stringify(v11()) }]);
+    expect(back.errors).toEqual([]);
+    const q = back.workspace!.questionnaires[0]!;
+    expect(q.formatVersion).toBe(12);
+    expect(q.nodes[0]).not.toHaveProperty('suggestions');
+  });
+
+  it('schéma : `suggestions` (expression) accepté sur un texte, refusé sur un autre type', () => {
+    expect(validateDocument(withSuggestions('marques'))).toEqual([]);
+    expect(validateDocument(withSuggestions(''))).toEqual([]);
+    expect(validateDocument(withSuggestions(['a'] as unknown as string)).length).toBeGreaterThan(0);
+    const q = withSuggestions('marques') as unknown as { nodes: Record<string, unknown>[] };
+    q.nodes[0]!.type = 'number';
+    expect(validateDocument(q).length).toBeGreaterThan(0);
+  });
+
+  it('export puis réimport : option et expression des suggestions identiques', () => {
+    const ws = importFiles([{ name: 'p.bundle.json', text: JSON.stringify(v11()) }]).workspace!;
+    ws.questionnaires[0] = withSuggestions('$append(marques, marques_other)');
+    for (const back of [importFiles(exportFiles(ws)), importFiles([{ name: 'p.bundle.json', text: exportBundle(ws) }])]) {
+      expect(back.errors).toEqual([]);
+      expect(back.workspace!.questionnaires[0]!.nodes[0]).toHaveProperty('suggestions', '$append(marques, marques_other)');
     }
   });
 });

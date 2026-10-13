@@ -1,4 +1,4 @@
-# Format des questionnaires — version 11
+# Format des questionnaires — version 12
 
 Ce document décrit le format JSON produit par l'éditeur de questionnaires. Il s'adresse à l'équipe
 de développement (et à l'IA qui l'assiste) chargée de construire le moteur cible et les formulaires
@@ -34,7 +34,7 @@ libellés et interpolation — 6. Nœuds — 7. Questions — 8. Réponses — 9
 | `<clé>.layout.json`, `fragment_<clé>.layout.json`, `question_<clé>.layout.json` | `layout` | Positions des nœuds dans l'éditeur et commentaires de révision (version 9, §1.1). | **non** (à ignorer) |
 | `<projet>.bundle.json` | `bundle` | `project`, `library`, `questionnaires[]`, `layouts[]` dans un seul fichier. | oui (même contenu) |
 
-- Chaque fichier (et le bundle) porte `formatVersion` (entier, actuellement `11`) et `kind`.
+- Chaque fichier (et le bundle) porte `formatVersion` (entier, actuellement `12`) et `kind`.
 - L'outil migre automatiquement à l'ouverture un fichier d'une version antérieure ; il refuse un fichier
   d'une version plus récente. Un moteur cible peut refuser toute version qu'il ne connaît pas.
 - Tout élément (projet, questionnaire, nœud, arête, question, fragment, variable, scénario, jeu de libellés)
@@ -304,7 +304,7 @@ champs de structure ne sont pas appliquées (comportement actuel de l'outil).
 
 | `type` | Réponse | Paramètres propres |
 | --- | --- | --- |
-| `text` | chaîne | `multiline?` (zone de texte), `minLength?`, `maxLength?`, `pattern?` (expression régulière JavaScript) |
+| `text` | chaîne | `multiline?` (zone de texte), `minLength?`, `maxLength?`, `pattern?` (expression régulière JavaScript), `suggestions?` (expression, v12, §7.9) |
 | `date` | chaîne `AAAA-MM-JJ` | `min?`, `max?` : date ISO littérale ou expression (`$today()`, `date_sinistre`, `sys.date_effet_contrat`) |
 | `number` | nombre | `numberKind?` (`real` défaut, `natural` = entier ≥ 0, `integer`), `min?`, `max?` (nombre ou expression), `decimals?` (décimales max.), `unit?` (texte multilingue affiché après le champ) |
 | `single` | chaîne : `value` de l'option | `options[]` (entrées, §7.3), `other?` |
@@ -464,6 +464,30 @@ avant contrôle et enregistrement.
   { "id": "lf_telephone", "key": "telephone", "type": "phone", "label": { "fr": "Téléphone" }, "defaultCountry": "FR", "lineType": "mobile" },
   { "id": "lf_adresse", "key": "adresse", "type": "address", "label": { "fr": "Adresse" }, "defaultCountry": "FR", "verify": true }
 ] }
+```
+
+### 7.9 Suggestions d'un champ texte (version 12)
+
+`suggestions` (expression, §10) sur une question ou un champ de structure `text` : textes **proposés** pendant la saisie
+(autocomplétion), la saisie libre restant possible. Présente (même vide) = option activée ; absente = aucune suggestion.
+
+- L'expression doit renvoyer une **liste** : réponse d'un choix multiple, variable de l'état du système de type
+  liste, champ d'une liste d'objets (`sys.sinistres.nature`), littéral (`["a", "b"]`), fonctions (`$append(…)`).
+  Mêmes références que les autres expressions (§10.3) ; une question non garantie avant le champ est signalée (§13).
+- Mise en liste, à l'affichage de la page, avec les réponses courantes : valeur unique → un élément ; vide, absente ou
+  erreur → aucune suggestion (texte simple) ; nombres, booléens, dates (chaînes ISO) → texte ; objets, éléments
+  vides et valeur réservée `"other"` d'un choix (« Autre », comme pour une entrée dynamique, §7.5) écartés ;
+  doublons supprimés, ordre de l'expression conservé (première occurrence). Une valeur égale à celle d'une option
+  d'un choix cité dans l'expression est proposée sous le **libellé** de l'option dans la langue courante, et c'est
+  ce libellé qui est inséré (EVO-016) ; la précision d'« Autre » s'ajoute par l'expression
+  (`$append(marques, marques_other)`).
+- Affichage (outil) : liste ouverte à la prise de focus, filtrée à la frappe (« contient », casse ignorée), choix à la
+  souris ou au clavier.
+- Réponse et validation : inchangées (§8, §9). La réponse est le texte saisi, qu'il vienne d'une suggestion ou non ;
+  aucune contrainte d'appartenance à la liste. Les autres expressions qui référencent le champ lisent ce texte.
+
+```json
+{ "id": "n_marque", "key": "marque", "type": "text", "label": { "fr": "Marque du véhicule principal" }, "suggestions": "marques" }
 ```
 
 ## 8. Réponses
@@ -830,6 +854,7 @@ L'exemple fourni ne produit aucun problème.
 | Commentaire de révision (version 9) : question commentée, deux réponses, nœud commentaire à gauche de la question | `declaration_sinistre.layout.json` : `comments` sur `n_date` |
 | Surcharge du caractère obligatoire (version 10, §6.1) : téléphone obligatoire en bibliothèque, rendu facultatif dans un fragment (laissé vide) ; question d'un fragment rendue facultative depuis un questionnaire | `blk_identite_tiers` : `bn_telephone` → `lq_telephone` (chemins `ud_tiers_inconnu.json`, `ud_vol_avec_boucle.json`) ; `q_remboursement` : `n_ident.requiredOverrides` |
 | Formulaire validé (version 11) : `status: "validated"`, `validatedAt` ; la déclaration de sinistre reste non validée | `demande_remboursement.json` |
+| Suggestions d'un champ texte (version 12) : nom d'une victime, suggestion tirée du nom de l'assuré (`$substringAfter(sys.nom_assure, ' ')`, valeur unique) | `n_victimes` : champ `nom` |
 
 Après la date, on demande le lien avec un sinistre existant s'il y en a un d'antérieur, puis on va aux
 victimes (accident) ou au montant :
@@ -884,7 +909,7 @@ doit égaler `path`, toutes les réponses doivent avoir été consommées et l'i
 
 Toute évolution incompatible incrémente `formatVersion` et s'accompagne d'une migration dans l'outil,
 des schémas, de ce document et de l'exemple. Les ajouts compatibles (nouvelle propriété facultative)
-sont documentés ici. Version actuelle : **11**.
+sont documentés ici. Version actuelle : **12**.
 
 | Version | Changement | Migration |
 | --- | --- | --- |
@@ -898,3 +923,4 @@ sont documentés ici. Version actuelle : **11**.
 | 9 | Commentaires de révision `comments` (`{ node, x?, y?, text, replies[] }`) d'un document `layout` ; fichier `question_<clé>.layout.json` pour une question de bibliothèque commentée (EVO-011). Outil seulement, à ignorer par le moteur. | Aucune transformation (propriété absente = aucun commentaire) ; seul `formatVersion` change. |
 | 10 | Surcharge du caractère obligatoire (EVO-012) : `required?` (booléen) d'une référence de bibliothèque, `requiredOverrides?` (chemin d'ids → booléen) d'un nœud fragment ; résolution du plus proche au plus lointain (§6.1). | Aucune transformation (propriétés absentes = hérité) ; seul `formatVersion` change. |
 | 11 | État de validation d'un questionnaire (EVO-015) : `status?` (`"draft"` \| `"validated"`) et `validatedAt?` (date). | Aucune transformation (propriétés absentes = non validé) ; seul `formatVersion` change. |
+| 12 | Suggestions d'un champ texte (EVO-016) : `suggestions?` (expression renvoyant une liste, §7.9). | Aucune transformation (propriété absente = pas de suggestions) ; seul `formatVersion` change. |

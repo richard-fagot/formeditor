@@ -103,6 +103,11 @@ export interface TextQuestion extends QuestionBase {
   minLength?: number;
   maxLength?: number;
   pattern?: string;
+  /**
+   * Suggestions (EVO-016) : expression qui renvoie une liste de textes proposés à la saisie (saisie libre conservée).
+   * Présente (même vide) = option activée ; absente = désactivée.
+   */
+  suggestions?: Expression;
 }
 
 export interface DateQuestion extends QuestionBase {

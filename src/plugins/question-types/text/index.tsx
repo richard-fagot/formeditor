@@ -1,7 +1,10 @@
+import { ListFilter } from 'lucide-react';
 import type { TextQuestion } from '../../../core/model';
-import { dontKnowLabel, previewText, tr, type QuestionTypePlugin } from '../../../plugin-api';
+import { referencedChoices, suggestionList } from '../../../core/runtime';
+import { dontKnowLabel, previewText, tr, type QuestionTypePlugin, type RenderEnv } from '../../../plugin-api';
 import { Checkbox, Field, Input, Textarea } from '../../../ui-kit';
-import { DontKnowEditor } from '../../../ui/expression-editor';
+import { DontKnowEditor, ExpressionInput } from '../../../ui/expression-editor';
+import { SuggestBox } from './suggest-box';
 
 const T = {
   name: { fr: 'Texte', en: 'Text' },
@@ -11,7 +14,23 @@ const T = {
   minLength: { fr: 'Longueur min.', en: 'Min. length' },
   maxLength: { fr: 'Longueur max.', en: 'Max. length' },
   pattern: { fr: 'Motif (expression régulière)', en: 'Pattern (regular expression)' },
+  suggestions: { fr: 'Suggestions', en: 'Suggestions' },
+  suggestionsExpr: { fr: 'Expression des suggestions', en: 'Suggestions expression' },
+  suggestionsHint: {
+    fr: 'Liste de textes proposés à la saisie (réponse à choix multiple, liste de l’état du système…) ; saisie libre conservée.',
+    en: 'List of texts offered while typing (multiple-choice answer, system state list…); free input still allowed.',
+  },
+  suggestionsBadge: { fr: 'Avec suggestions', en: 'With suggestions' },
 };
+
+/** Suggestions (EVO-016) : la valeur d'une option d'un choix référencé est remplacée par son libellé dans la langue courante. */
+function suggestionsOf(expr: string, env: RenderEnv): string[] {
+  const labels = new Map<string, string>();
+  for (const q of referencedChoices(env.ws, expr)) {
+    for (const o of env.options(q)) if (!labels.has(o.value)) labels.set(o.value, typeof o.label === 'string' ? o.label : env.label(o.label));
+  }
+  return suggestionList(env.evaluate(expr), (v) => labels.get(v));
+}
 
 const num = (v: string) => (v === '' ? undefined : Math.max(0, Math.trunc(Number(v))));
 
@@ -24,6 +43,11 @@ export const textType: QuestionTypePlugin<TextQuestion> = {
   Preview: ({ question, env }) => (
     <span className="font-mono text-slate-400">
       {tr(question.multiline ? T.long : T.short, env.uiLang)}
+      {question.suggestions !== undefined && (
+        <span data-testid="suggestions-indicator" role="img" title={tr(T.suggestionsBadge, env.uiLang)} aria-label={tr(T.suggestionsBadge, env.uiLang)}>
+          <ListFilter className="ml-1 inline size-3 align-[-1px]" aria-hidden />
+        </span>
+      )}
       {question.dontKnow && <span className="font-sans italic"> + {previewText(dontKnowLabel(question), env)}</span>}
     </span>
   ),
@@ -41,6 +65,15 @@ export const textType: QuestionTypePlugin<TextQuestion> = {
       <Field label={tr(T.pattern, env.uiLang)}>
         <Input className="font-mono" value={question.pattern ?? ''} onChange={(e) => update({ pattern: e.target.value || undefined })} />
       </Field>
+      <Checkbox label={tr(T.suggestions, env.uiLang)} checked={question.suggestions !== undefined}
+        onChange={(e) => update({ suggestions: e.target.checked ? '' : undefined })} />
+      {question.suggestions !== undefined && (
+        <div data-testid="suggestions-editor">
+          <Field label={tr(T.suggestionsExpr, env.uiLang)} hint={tr(T.suggestionsHint, env.uiLang)}>
+            <ExpressionInput value={question.suggestions} onChange={(v) => update({ suggestions: v })} />
+          </Field>
+        </div>
+      )}
       <DontKnowEditor value={question.dontKnow} onChange={(dontKnow) => update({ dontKnow })} />
     </div>
   ),
@@ -53,9 +86,18 @@ export const textType: QuestionTypePlugin<TextQuestion> = {
       disabled: !!dontKnow,
       onChange: (e: { target: { value: string } }) => onChange(e.target.value === '' ? null : e.target.value),
     };
+    // Suggestions (EVO-016) : recalculées à chaque affichage avec les réponses courantes ; aucune → texte simple.
+    const list = question.suggestions ? suggestionsOf(question.suggestions, env) : [];
+    const input = (p: typeof props) => (question.multiline ? <Textarea rows={5} {...p} /> : <Input autoComplete="off" {...p} />);
     return (
       <div className="space-y-2">
-        {question.multiline ? <Textarea rows={5} {...props} /> : <Input {...props} />}
+        {list.length && !dontKnow ? (
+          <SuggestBox list={list} value={props.value} id={inputId} onChange={(t) => onChange(t === '' ? null : t)}>
+            {(combo) => input({ ...props, ...combo })}
+          </SuggestBox>
+        ) : (
+          input(props)
+        )}
         {question.dontKnow && (
           <Checkbox data-testid="dont-know" label={env.label(dontKnowLabel(question))} checked={!!dontKnow} onChange={(e) => onDontKnow?.(e.target.checked)} />
         )}

@@ -7,4 +7,5 @@ export {
   type Session, type SummaryEntry,
 } from './session';
 export { choiceOptions, groupId, type ResolvedOption, type ResolvedGroup } from './options';
+export { suggestionList, filterSuggestions, referencedChoices } from './suggestions';
 export { edgeTrace, type EdgeTrace } from './trace';

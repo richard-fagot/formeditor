@@ -1,5 +1,5 @@
 {
-  "formatVersion": 11,
+  "formatVersion": 12,
   "kind": "questionnaire",
   "id": "q_remboursement",
   "key": "demande_remboursement",

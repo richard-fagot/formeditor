@@ -13,6 +13,7 @@ utilitaires purs. Aucun import externe : c'est la base de tous les autres module
   `cle.groupe`), `OTHER_GROUP` (`AUTRE`).
   « Ne sais pas » (EVO-006) : `dontKnow?: DontKnowOption` (`{ label? }`) sur toute question sauf structure (`dontKnow?: never`),
   `hasDontKnow`, `DONT_KNOW_SUFFIX` / `DONT_KNOW_REF` (`nsp` : marqueur `<clé>_nsp`, référence `cle.nsp`), `DONT_KNOW_GROUP` (`NSP`), `DONT_KNOW_LABEL`.
+  Suggestions (EVO-016) : `TextQuestion.suggestions?` (expression renvoyant une liste ; présente, même vide = activée).
 - Mail, téléphone, adresse, civilité (EVO-007) : `EmailQuestion`, `PhoneQuestion` (`defaultCountry?`, `countries?`, `lineType?`),
   `AddressQuestion` (`defaultCountry?`, `countries?`, `minLength?`, `maxLength?`, `verify?`), `CivilityQuestion` (`labels?`, `short?`,
   `undisclosed?`) ; `COUNTRY_SUFFIX` / `COUNTRY_REF` (`pays` : `<clé>_pays`, `cle.pays`), `DEFAULT_COUNTRY` (`FR`), `hasCountry`,
@@ -28,7 +29,7 @@ utilitaires purs. Aucun import externe : c'est la base de tous les autres module
   (surcharges non orphelines d'un appel).
 - `graph.ts` : `Edge` (dont `caption?`, libellé de lecture, EVO-005), `Graph`.
 - `documents.ts` : `Questionnaire` (porte `start`), `Library` (`fragments`), `Fragment` (`entry?`, pas de `start`), `LabelSet`, `Project`, `SystemVariable` (dont `caption?`), `Scenario`,
-  `Layout` (dont `comments?` : `ReviewComment` `{ node, x?, y?, text, replies }`, commentaires de révision, EVO-011), `Workspace` (projet complet en mémoire), `Bundle`, `FORMAT_VERSION` (11). `Questionnaire.status?` (`draft` | `validated`) et `validatedAt?` (EVO-015).
+  `Layout` (dont `comments?` : `ReviewComment` `{ node, x?, y?, text, replies }`, commentaires de révision, EVO-011), `Workspace` (projet complet en mémoire), `Bundle`, `FORMAT_VERSION` (12). `Questionnaire.status?` (`draft` | `validated`) et `validatedAt?` (EVO-015).
 - `graph.ts` : `Graph` = `nodes` + `edges` (sans départ).
 - `validation.ts` (EVO-015) : `QuestionnaireStatus`, `isValidated(q)`, `lockedChanges(avant, après)` → ids des questionnaires validés avant
   dont le contenu verrouillé a changé ou qui ont disparu (questionnaire hors `status` / `validatedAt`, mise en page hors `comments`, entrée du projet).
