@@ -1,6 +1,6 @@
 # EVO-010 — Copier-coller de questions et duplication d'objets
 
-Statut : en cours
+Statut : fait 2026-10-13
 Dépend de : EVO-008 (fragments, pour le collage dans et depuis un fragment)
 
 ## Besoin

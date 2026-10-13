@@ -138,7 +138,7 @@ Mis à jour le 2026-10-13 — jusqu'à EVO-010
 - **Définir le départ** — Sélectionner le nœud, bouton « Définir comme départ » (section « Départ ») du panneau de propriétés,
   ou palette « Définir comme départ ». Le départ peut être un nœud fragment : le parcours commence alors par la première
   question du fragment. Indisponible dans un fragment (voir « Définir l'entrée d'un fragment », §10). `[cmd: node.setStart]`
-- **Dupliquer des nœuds** — Sélectionner un ou plusieurs nœuds puis `Ctrl+D` (logigramme) ou palette « Dupliquer ». Les copies
+- **Dupliquer des nœuds** — Sélectionner un ou plusieurs nœuds puis `Ctrl+D` (logigramme), clic droit sur un nœud « Dupliquer » ou palette « Dupliquer ». Les copies
   sont décalées et sélectionnées ; les arêtes entre nœuds copiés sont copiées, pas les autres ; clés et alias rendus uniques. `[cmd: node.duplicate]`
 - **Copier des nœuds** — Sélectionner un ou plusieurs nœuds puis `Ctrl+C` (logigramme), clic droit sur un nœud « Copier », ou
   palette « Copier ». Tous les types de nœuds se copient, avec tout leur contenu ; les arêtes entre nœuds copiés (conditions,
@@ -152,7 +152,7 @@ Mis à jour le 2026-10-13 — jusqu'à EVO-010
   **de la sélection** à cette clé (conditions, contraintes, libellés `{…}`, entrées dynamiques) sont réécrites ; une
   référence à une question **non copiée** est gardée telle quelle et signalée par « Problèmes » si la cible ne l'a pas. Une
   instance de fragment ou de question de bibliothèque reste une référence au même élément. Le rôle de départ n'est pas
-  collé : la cible garde son départ (un questionnaire vide prend le premier nœud collé). Dans un **fragment**, les fins ne
+  collé : la cible garde son départ (un questionnaire vide prend le nœud qui était le départ dans la copie, à défaut le premier nœud collé). Dans un **fragment**, les fins ne
   sont pas collées (ni leurs arêtes) et une instance qui créerait un cycle d'appels (le fragment lui-même…) est refusée ;
   dans un questionnaire, les sorties nommées ne sont pas collées. Une fenêtre « Collage : éléments écartés » liste ce qui
   a été écarté ; le reste est collé. `[cmd: node.paste]`
