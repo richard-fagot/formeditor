@@ -6,7 +6,7 @@ Onglet Bibliothèque et panneau latéral de glisser-déposer. Dépend de `app/co
 ## API
 - `Library` : contenu de l'onglet. À gauche, la liste (jeux de libellés, questions, fragments ; « + » = commandes
   `library.newQuestion` / `library.newFragment`) ; à droite la question `store.libraryItem` (sans élément : jeux de libellés) ;
-  un fragment s'ouvre dans son onglet (`library.show`). Clic droit sur un élément : « Dupliquer » (`library.duplicate`, EVO-010), « Commenter » sur une question (`comment.add`, EVO-011).
+  un fragment s'ouvre dans son onglet (`library.show`). L'élément affiché porte `aria-current` et reste visible dans la liste (`scrollIntoView`, EVO-013). Clic droit sur un élément : « Dupliquer » (`library.duplicate`, EVO-010), « Commenter » sur une question (`comment.add`, EVO-011).
 - `LibraryPanel({ graph })` : panneau filtrable à gauche du logigramme d'un questionnaire. Glisser un élément sur le
   graphe l'insère à cet endroit (`LIBRARY_MIME`, `library.insertItem` avec `position`) ; double-clic ou Entrée l'insère
   à la suite du nœud sélectionné. Dans un fragment, pas de fragment dont l'insertion créerait un cycle d'appels (`insertionCycle`).

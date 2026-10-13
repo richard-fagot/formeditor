@@ -1,5 +1,5 @@
 # Guide utilisateur — Éditeur de questionnaires
-Mis à jour le 2026-10-13 — jusqu'à EVO-012
+Mis à jour le 2026-10-13 — jusqu'à EVO-013
 
 ## Mode d'emploi du guide
 
@@ -167,7 +167,7 @@ Mis à jour le 2026-10-13 — jusqu'à EVO-012
   annule seulement la frappe dans le champ. `[cmd: edit.undo]`
 - **Rétablir** — `Ctrl+Shift+Z` ou `Ctrl+Y`, ou palette « Rétablir ». `[cmd: edit.redo]`
 - **Lire les badges d'un nœud** — « Départ » (« Entrée » dans un fragment) ; « * » obligatoire (« * ? » : obligatoire sous condition) ; « + autre » ;
-  « bib. » élément de bibliothèque ; « 3 / 7 champs » instance de structure dont des champs sont masqués (§10) ; « trad. » traduction manquante ; « ⚠ n » problèmes (rouge si erreur) ; icône bulle : la question a un commentaire de révision (§16).
+  « bib. » élément de bibliothèque (double-clic : l'ouvrir dans la bibliothèque, voir §10) ; « 3 / 7 champs » instance de structure dont des champs sont masqués (§10) ; « trad. » traduction manquante ; « ⚠ n » problèmes (rouge si erreur) ; icône bulle : la question a un commentaire de révision (§16).
 
 ## 4. Logigramme — arêtes et conditions
 
@@ -495,6 +495,14 @@ Concerne le choix unique et le choix multiple. Le booléen et le tri-state n'ont
   du questionnaire utilise le champ masqué, la fenêtre « Champ masqué encore référencé : … » liste ces expressions, et la
   vérification « Champ masqué « … » » les signale (§15). Recocher pour réafficher ; `Ctrl+Z` annule.
 - **Ouvrir la question d'une référence** — Bouton « Ouvrir dans la bibliothèque » du panneau, ou palette. `[cmd: node.openInLibrary]`
+- **Ouvrir l'objet lié depuis son badge « bib. »** — Dans le logigramme (questionnaire, fragment ou vue côte à côte),
+  double-cliquer le badge « bib. » d'une question de bibliothèque ou d'un nœud fragment (info-bulle « Double-clic pour
+  ouvrir dans la bibliothèque »). Une question s'ouvre dans l'onglet « Bibliothèque », sélectionnée dans la liste (déroulée
+  jusqu'à elle) et affichée à droite ; un fragment s'ouvre dans son onglet. Le double-clic sur le badge n'édite pas
+  l'intitulé du nœud ; ailleurs sur le nœud, il l'édite comme avant ; un simple clic sélectionne le nœud. Pas de retour
+  automatique : l'onglet du questionnaire reste ouvert, ses modifications non enregistrées sont conservées. Objet
+  supprimé de la bibliothèque (lien rompu) : fenêtre « Objet de bibliothèque introuvable », on reste sur le questionnaire.
+  `[cmd: library.openRef]`
 - **Afficher un élément de la bibliothèque** — Onglet « Bibliothèque », cliquer l'élément dans la liste de gauche (« Jeux de
   libellés », « Questions », « Fragments »). Une question s'affiche à droite (« Utilisé dans : … » liste les questionnaires
   et fragments qui l'emploient) ; un fragment s'ouvre dans son onglet. `[cmd: library.show]`
@@ -809,6 +817,7 @@ l'objet lui-même et sur la page des commentaires.
 | Supprimer le jeu de libellés | — | `labelSet.delete` |
 | Nouvelle question de bibliothèque | — | `library.newQuestion` |
 | Nouveau fragment | — | `library.newFragment` |
+| Ouvrir dans la bibliothèque | — | `library.openRef` |
 | Bibliothèque | — | `library.show` |
 | Supprimer de la bibliothèque | — | `library.delete` |
 | Insérer depuis la bibliothèque | `I` | `library.insert` |
