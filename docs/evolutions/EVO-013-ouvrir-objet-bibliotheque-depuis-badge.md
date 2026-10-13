@@ -1,6 +1,6 @@
 # EVO-013 — Ouvrir l'objet de bibliothèque depuis son badge « Bib »
 
-Statut : à faire
+Statut : en cours
 Dépend de : EVO-??? (bibliothèque de fragments et de questions, badge « Bib ») — à compléter
 
 ## Besoin
