@@ -101,8 +101,8 @@ export function libraryItemCommands(): Command[] {
       id: 'library.delete', label: 'library.delete', keys: [], scope: 'global', hidden: true,
       run: (item) => {
         if (!isItem(item)) return;
-        // Question réutilisable commentée (EVO-011) : confirmation, le commentaire est supprimé avec elle.
-        if (item.kind === 'question' && commentsOf(st().ws, item.id).length && !window.confirm(makeTranslate(st().uiLang)('comment.confirmDelete'))) return;
+        // Question réutilisable commentée, ou fragment dont des questions sont commentées (EVO-011) : confirmation.
+        if (commentsOf(st().ws, item.id).length && !window.confirm(makeTranslate(st().uiLang)('comment.confirmDelete'))) return;
         st().edit('library', (ws) => deleteLibraryItem(ws, item));
         if (item.kind === 'fragment') st().closeTab(`f:${item.id}`);
         if (st().libraryItem?.id === item.id) showLibraryItem();
