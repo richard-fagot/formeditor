@@ -152,3 +152,48 @@ Ajouter une section « Analyse » en bas de ce fichier :
 
 Faisable sans ambiguïté bloquante → choix notés dans l'analyse et `docs/DECISIONS.md`, puis
 réalisation. Sinon → statut « à arbitrer », options et conséquences, arrêt sans coder.
+
+## Analyse
+
+Prérequis vérifiés : la mise en page d'un graphe est déjà un document à part (`kind: "layout"`, fichiers
+`<clé>.layout.json` et `fragment_<clé>.layout.json`, `layouts[]` du bundle), propre à l'outil et documenté comme
+« à ignorer » par le moteur (FORMAT.md §1) ; l'export **est** la sauvegarde (pas d'export développeurs distinct).
+React Flow affiche librement des nœuds hors du graphe métier. Conclusion : **faisable sans arbitrage**.
+
+1. **Faisabilité et modules** (d'après `docs/MAP.md`) : `core/model` (`ReviewComment`, `Layout.comments`,
+   `FORMAT_VERSION` 9), `format` (schéma `layout`, migration 8 → 9 sans transformation, fichier
+   `question_<clé>.layout.json`), `app/store` (`comment-edits.ts`, état de session `shownComments`, onglet
+   `comments`, historique `library` étendu aux mises en page des questions de bibliothèque, suppression des
+   commentaires avec leur question, duplication sans commentaire), `app/commands` (`comment-commands.ts`),
+   `app/i18n`, nouveau module `ui/comments` (fil de discussion, page des commentaires), `ui/diagram` (nœud
+   commentaire, branche, icône, menu contextuel, mise en page automatique), `ui/library` (menu contextuel, fil
+   sur la question de bibliothèque), `ui/shell` (onglet, bouton de la barre), `docs/spec.md`, `docs/FORMAT.md`,
+   `docs/GUIDE.md`, exemple.
+2. **Rattachement** : un commentaire appartient à un objet (questionnaire, fragment ou question de bibliothèque)
+   et, dans un graphe, à un nœud question de cet objet. Proposition par défaut retenue : les commentaires d'un
+   fragment ou d'une question de bibliothèque ne sont visibles et éditables que dans l'objet d'origine et sur la
+   page des commentaires, jamais depuis un formulaire qui les utilise. Depuis un formulaire, on commente ses nœuds
+   question, **y compris une instance de question de bibliothèque** (le commentaire porte sur cet usage et reste
+   dans le formulaire) ; une question interne à un fragment ne se commente pas depuis l'appelant (le nœud fragment
+   n'est pas une question) : on ouvre le fragment. Une question de bibliothèque n'a pas de logigramme : elle se
+   commente par clic droit dans la liste de l'onglet Bibliothèque et son commentaire s'affiche en tête de sa vue
+   (toujours affiché, sans branche).
+3. **Exclusion de l'export développeurs** : les commentaires sont rangés dans les documents de mise en page
+   (`comments` du `layout`), déjà propres à l'outil : `projet.json`, `bibliotheque.json` et `<clé>.json` n'en
+   contiennent jamais ; dans le bundle, ils sont sous `layouts[].comments`, clé isolée documentée comme ignorable.
+   Aucun second chemin de sérialisation. Le commentaire d'une question de bibliothèque est dans
+   `question_<clé>.layout.json` (`graph` = id de la question, `nodes` vide).
+4. **Nœud commentaire** : nœud React Flow hors flux (ni sélectionnable, ni relié par une arête du graphe),
+   déplaçable, position `x`, `y` mémorisée dans le commentaire ; branche en pointillés partant du côté gauche ou
+   droit de la question selon que le centre du commentaire est à gauche ou à droite du centre de la question.
+   Créé à droite de la question. La mise en page automatique ne place que les nœuds du graphe et déplace chaque
+   commentaire avec sa question (même décalage). Centrage depuis la page : faisable simplement (centre de la vue
+   sur le commentaire) ; retenu.
+5. **Affiché / masqué** : propre à la session (non sauvegardé) ; commentaires masqués à l'ouverture d'un projet ;
+   un commentaire créé est affiché ; l'ouverture depuis la page affiche tous les commentaires de l'objet. Le
+   bouton « tout » affiche tout si au moins un est masqué, sinon masque tout.
+
+Choix complémentaires (aussi dans `docs/DECISIONS.md`) : réponses = textes simples (`replies: string[]`, sans id,
+auteur ni date) ; supprimer un commentaire ne demande pas de confirmation (annulable) ; dupliquer ou coller des
+nœuds, dupliquer un questionnaire ou un fragment ne copie pas les commentaires ; l'image du logigramme montre les
+commentaires affichés.
