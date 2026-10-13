@@ -73,18 +73,22 @@ test('EVO-017 : choix multiple groupé, même séparation', async ({ page }) => 
   expect(errors).toEqual([]);
 });
 
-test('EVO-017 : groupes sans « Autre », ou sans groupe avec ou sans « Autre » : rendu inchangé', async ({ page }) => {
+test('EVO-017 : groupes sans « Autre », ou sans groupe avec ou sans « Autre » : rendu inchangé', async ({ page, browser }) => {
   const grouped = await previewWith(page, GROUPED, []);
   await expect(grouped.preview.getByTestId('choice-group')).toHaveCount(2);
   await expect(grouped.preview.getByTestId('choice-other-apart')).toHaveCount(0);
   expect(grouped.errors).toEqual([]);
 
+  // Une page neuve par tour : sinon la session sauvegardée (IndexedDB) est restaurée, la confirmation
+  // « modifications non exportées » est refusée par Playwright et l'exemple n'est pas rouvert.
   for (const keys of [['a'], []]) {
-    const flat = await previewWith(page, 'Bus\nVoiture', keys);
+    const fresh = await browser.newPage();
+    const flat = await previewWith(fresh, 'Bus\nVoiture', keys);
     const labels = flat.preview.locator('[role=radiogroup] > label');
     await expect(labels).toHaveText(keys.length ? ['Bus', 'Voiture', 'Autre (préciser)'] : ['Bus', 'Voiture']);
     await expect(flat.preview.getByTestId('choice-other-apart')).toHaveCount(0);
     await expect(flat.preview.getByTestId('choice-group')).toHaveCount(0);
     expect(flat.errors).toEqual([]);
+    await fresh.close();
   }
 });
