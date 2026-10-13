@@ -1,5 +1,5 @@
 {
-  "formatVersion": 9,
+  "formatVersion": 10,
   "kind": "library",
   "questions": [
     {
@@ -270,6 +270,16 @@
         },
         {
           "kind": "question",
+          "id": "bn_telephone",
+          "ref": "lq_telephone",
+          "label": {
+            "fr": "Téléphone de {nom} (si connu)",
+            "en": "{nom}'s phone (if known)"
+          },
+          "required": false
+        },
+        {
+          "kind": "question",
           "id": "bn_assurance_connue",
           "key": "assurance_connue",
           "label": {
@@ -321,8 +331,13 @@
           "to": "bn_coordonnees"
         },
         {
-          "id": "be_coordonnees_assurance",
+          "id": "be_coordonnees_telephone",
           "from": "bn_coordonnees",
+          "to": "bn_telephone"
+        },
+        {
+          "id": "be_telephone_assurance",
+          "from": "bn_telephone",
           "to": "bn_assurance_connue"
         },
         {

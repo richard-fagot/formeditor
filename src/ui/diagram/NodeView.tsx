@@ -1,6 +1,6 @@
 import { memo, useEffect, useRef, useState } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
-import { OTHER_TYPES, graphStart, isLibraryQuestion, isVariantLabel, type GraphNode, type Label } from '../../core/model';
+import { OTHER_TYPES, activeOverrides, graphStart, isLibraryQuestion, isVariantLabel, type GraphNode, type Label } from '../../core/model';
 import { questionOfNode } from '../../core/references';
 import { previewText } from '../../plugin-api';
 import { nodeKind, questionType } from '../../registry';
@@ -38,6 +38,9 @@ export const NodeView = memo(function NodeView({ data, selected }: NodeProps & {
     <>
       {isStart && <Badge tone="indigo">{t(graph.kind === 'fragment' ? 'node.entry' : 'node.start')}</Badge>}
       {question?.required && <Badge tone="slate" title={typeof question.required === 'string' ? question.required : undefined}>{typeof question.required === 'string' ? '* ?' : '*'}</Badge>}
+      {((isLibraryQuestion(node) && node.required !== undefined) || (node.kind === 'fragment' && activeOverrides(env.ws, node) > 0)) && (
+        <span data-testid="required-override"><Badge tone="amber" title={t('required.badgeTitle')}>{t('required.badge')}</Badge></span>
+      )}
       {question && OTHER_TYPES.includes(question.type) && 'other' in question && question.other && <Badge>{t('node.badgeOther')}</Badge>}
       {(isLibraryQuestion(node) || node.kind === 'fragment') && <Badge tone="amber" title={t('node.libraryBadge')}>bib.</Badge>}
       {fieldsCount && <Badge tone="amber">{fieldsCount}</Badge>}

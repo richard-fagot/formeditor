@@ -1,5 +1,5 @@
 {
-  "description": "UD avec 2 sinistres : vol lié à un sinistre existant, expertise, tiers identifié ; la confirmation négative reboucle et le type devient dégât des eaux.",
+  "description": "UD avec 2 sinistres : vol lié à un sinistre existant, expertise, tiers identifié ; la confirmation négative reboucle et le type devient dégât des eaux. Téléphone du tiers laissé vide : facultatif dans le fragment (surcharge EVO-012), obligatoire en bibliothèque.",
   "questionnaire": "q_declaration",
   "scenario": "sc_ud_2_sinistres",
   "today": "2026-10-10",
@@ -35,6 +35,10 @@
         "code_postal": "69003",
         "ville": "Lyon"
       }
+    },
+    {
+      "step": "n_bloc_tiers/bn_telephone",
+      "value": null
     },
     {
       "step": "n_bloc_tiers/bn_assurance_connue",
@@ -82,6 +86,7 @@
     "n_tiers",
     "n_bloc_tiers/bn_nom",
     "n_bloc_tiers/bn_coordonnees",
+    "n_bloc_tiers/bn_telephone",
     "n_bloc_tiers/bn_assurance_connue",
     "n_bloc_tiers/bn_compagnie",
     "n_circonstances",
@@ -97,6 +102,7 @@
     "n_tiers",
     "n_bloc_tiers/bn_nom",
     "n_bloc_tiers/bn_coordonnees",
+    "n_bloc_tiers/bn_telephone",
     "n_bloc_tiers/bn_assurance_connue",
     "n_bloc_tiers/bn_compagnie",
     "n_circonstances",

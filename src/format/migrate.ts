@@ -74,6 +74,8 @@ export const MIGRATIONS: Migrations = {
   7: (doc) => bump(doc, 8),
   /** EVO-011 : commentaires de révision `comments` d'une mise en page. Propriété absente = aucun : seul le numéro change. */
   8: (doc) => bump(doc, 9),
+  /** EVO-012 : surcharges du caractère obligatoire (`required`, `requiredOverrides`). Absentes = hérité : seul le numéro change. */
+  9: (doc) => bump(doc, 10),
 };
 
 /** Graphe v6 → v7 : instances de bloc → nœuds fragment. */

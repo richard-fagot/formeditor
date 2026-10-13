@@ -1,6 +1,6 @@
 # EVO-012 — Surcharger le caractère obligatoire d'une question réutilisée
 
-Statut : à faire
+Statut : fait 2026-10-13
 Dépend de : aucune (s'appuie sur la bibliothèque de questions et les fragments existants)
 
 ## Besoin
@@ -138,3 +138,32 @@ Ajouter une section « Analyse » en bas de ce fichier :
 
 Faisable sans ambiguïté bloquante → choix notés dans l'analyse et `docs/DECISIONS.md`, puis
 réalisation. Sinon → statut « à arbitrer », options et conséquences, arrêt sans coder.
+
+## Analyse
+
+Conclusion : **faisable sans ambiguïté bloquante**. Choix ci-dessous, aussi dans `docs/DECISIONS.md`.
+
+1. **Faisabilité, modules** : `core/model` (propriétés de surcharge, résolution `resolveRequired`, liste des
+   questions d'un fragment `fragmentQuestions`), `core/runtime` (la question effective d'une étape porte la valeur
+   résolue : le wizard, l'astérisque et le contrôle `required` de `core/validation` n'ont rien à changer), `format`
+   (schéma, version 10, migration sans transformation), `app/store` (écriture des surcharges), `app/commands`
+   (« Revenir à la valeur héritée »), `ui/properties` (sélecteurs), `ui/diagram` (indicateur), `app/i18n`,
+   `docs/spec.md`, `docs/FORMAT.md`, `docs/GUIDE.md`, exemple. Les vérifications, les références et le renommage ne
+   changent pas (surcharge booléenne, adressée par identifiants de nœuds).
+2. **Adressage** : chaque nœud a un identifiant stable et unique dans son graphe ; deux usages d'une même question
+   dans un fragment sont deux nœuds distincts. Une question vue depuis un appel se désigne donc par le **chemin des
+   identifiants de nœuds** à partir du fragment appelé : `n_tel` (question du fragment), `n_appel/n_tel` (question
+   d'un fragment appelé par ce fragment), sur toute la profondeur. Stockage : sur le nœud fragment,
+   `requiredOverrides: { "<chemin>": true|false }` ; sur une référence de question de bibliothèque,
+   `required: true|false`. Résolution, du plus proche du formulaire au plus lointain : surcharge du nœud fragment le
+   plus externe, puis des appels intérieurs, puis du nœud de la question (référence de bibliothèque), puis la
+   définition (bibliothèque, ou question locale du fragment). Une question locale d'un fragment est aussi
+   surchargeable depuis l'appelant (« pour chacune des questions de ce fragment »).
+3. **Stockage et export** : seule la surcharge est stockée (absente = « Hérité »). L'export n'ajoute **pas** la valeur
+   résolue : l'export est la sauvegarde (règle EVO-011), comme pour `hiddenFields` (EVO-009) ; une seconde valeur
+   ouvrirait l'incohérence. La règle est décrite dans `docs/FORMAT.md` et implémentée une seule fois par le moteur de
+   référence (`core/runtime`), que les tests de référence rejouent. Une surcharge remplace aussi une obligation sous
+   condition (expression) de la définition.
+4. **Surcharge orpheline** (question retirée du fragment ou de la bibliothèque, chemin qui ne désigne plus rien) :
+   **conservée et ignorée**, sans signalement, comme une clé inconnue de `hiddenFields`. Elle reprend effet si le nœud
+   revient (annulation). « Revenir aux valeurs héritées » sur l'appel (palette) retire toutes ses surcharges, orphelines comprises.

@@ -320,9 +320,13 @@
                 "$ref": "#/$defs/key"
               },
               "uniqueItems": true
+            },
+            "required": {
+              "type": "boolean",
+              "description": "Version 10 (EVO-012) : surcharge du caractère obligatoire dans cet usage ; absent = hérité de la bibliothèque."
             }
           },
-          "description": "Question de la bibliothèque, par référence ; libellé surchargeable, champs d'une structure masquables."
+          "description": "Question de la bibliothèque, par référence ; libellé et caractère obligatoire surchargeables, champs d'une structure masquables."
         },
         {
           "description": "Instance (appel) d'un fragment de la bibliothèque, par référence : ses clés sont vues de l'appelant sous `alias.cle`.",
@@ -349,6 +353,16 @@
             },
             "alias": {
               "$ref": "#/$defs/key"
+            },
+            "requiredOverrides": {
+              "type": "object",
+              "description": "Version 10 (EVO-012) : surcharges du caractère obligatoire des questions du fragment, par chemin d'identifiants de nœuds à partir du fragment appelé (`n_tel`, `n_appel/n_tel`) ; absent = hérité. Un chemin qui ne désigne aucune question est ignoré.",
+              "propertyNames": {
+                "pattern": "^[^/]+(/[^/]+)*$"
+              },
+              "additionalProperties": {
+                "type": "boolean"
+              }
             }
           }
         },

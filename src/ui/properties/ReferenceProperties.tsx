@@ -10,12 +10,13 @@ import { Button, Field, Section } from '../../ui-kit';
 import { LabelEditor } from '../expression-editor';
 import { HiddenFields } from './HiddenFields';
 import { KeyInput } from './KeyInput';
+import { FragmentRequired, LibraryRequired } from './RequiredOverride';
 import { useGraphEdit } from './useGraphEdit';
 import { usePluginEnv } from './usePluginEnv';
 
 const open = () => runCommand('node.openInLibrary');
 
-/** Question de bibliothèque référencée : seul l'intitulé est surchargeable localement (spec §3.8). */
+/** Question de bibliothèque référencée : intitulé et caractère obligatoire surchargeables localement (spec §3.8). */
 export function LibraryQuestionProperties({ graph, node }: { graph: GraphRef; node: LibraryQuestionNode }) {
   const t = useT();
   const env = usePluginEnv();
@@ -28,6 +29,7 @@ export function LibraryQuestionProperties({ graph, node }: { graph: GraphRef; no
       <Field label={t('props.label')} hint={node.label ? t('props.overridden') : undefined}>
         <LabelEditor value={node.label ?? q?.label} onChange={(label) => patchNode(node.id, { label })} />
       </Field>
+      <LibraryRequired graph={graph} node={node} />
       <HiddenFields graph={graph} node={node} />
       <div className="flex flex-wrap gap-1">
         {node.label && (
@@ -85,6 +87,7 @@ export function FragmentCallProperties({ graph, node }: { graph: GraphRef; node:
           ))}
         </ul>
       </Field>
+      <FragmentRequired graph={graph} node={node} />
       <Button size="sm" onClick={() => runCommand('node.openFragment')}><ExternalLink className="size-3" />{t('node.openFragment')}</Button>
     </Section>
   );

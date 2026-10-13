@@ -39,6 +39,8 @@ Dépend de `core`, `format`, `app/i18n`, `plugin-api` (utilitaires).
   `removeNodes` retire les commentaires des nœuds supprimés, `deleteLibraryItem` la mise en page de l'élément, la duplication n'en reprend pas.
   Historique `library` : mises en page des fragments **et** des questions de bibliothèque. État de session : `shownComments` (clés affichées, vidé au
   chargement), `centerRequest` (centrage demandé au logigramme), `focusRequest` de genre `comment` (`commentKey`, `#i` pour la réponse i), onglet `comments`.
+- Caractère obligatoire (EVO-012, `required-edits.ts`) : `setRequiredOverride(ws, ref, nodeId, value, path?)` (sans `path` : référence de bibliothèque ;
+  avec `path` : appel de fragment ; `undefined` = hérité, carte vide retirée), `resetRequired` (retire la surcharge ou toutes celles de l'appel), `hasRequiredOverride`.
 - `groupIntoFragment(ws, ref, ids, title)` (`group.ts`) : extrait une sélection en fragment (`canExtract` : ni fin ni sortie) ; `entry` réglée si
   l'entrée n'est pas l'unique nœud sans arête entrante ; entrée unique = départ ou cible
   des arêtes entrantes (`groupEntries` ; plusieurs entrées → refus) ; une sortie par cible extérieure ; références de l'hôte préfixées par l'alias (`qualifyKeys`).

@@ -1,5 +1,5 @@
 {
-  "formatVersion": 9,
+  "formatVersion": 10,
   "kind": "questionnaire",
   "id": "q_remboursement",
   "key": "demande_remboursement",
@@ -14,7 +14,10 @@
       "kind": "fragment",
       "id": "n_ident",
       "ref": "frg_identification_assure",
-      "alias": "ident"
+      "alias": "ident",
+      "requiredOverrides": {
+        "fn_num_secu": false
+      }
     },
     {
       "kind": "info",

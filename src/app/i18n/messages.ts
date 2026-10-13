@@ -1,12 +1,14 @@
 import { SETTINGS_MESSAGES } from './messages-settings';
 import { CLIPBOARD_MESSAGES } from './messages-clipboard';
 import { COMMENT_MESSAGES } from './messages-comments';
+import { REQUIRED_MESSAGES } from './messages-required';
 
 /** Dictionnaire de l'interface de l'outil (français par défaut). `{x}` : paramètre. */
 export const MESSAGES = {
   ...SETTINGS_MESSAGES,
   ...CLIPBOARD_MESSAGES,
   ...COMMENT_MESSAGES,
+  ...REQUIRED_MESSAGES,
   'app.title': { fr: 'Éditeur de questionnaires', en: 'Questionnaire editor' },
   'project.new': { fr: 'Nouveau projet', en: 'New project' },
   'project.open': { fr: 'Ouvrir / importer…', en: 'Open / import…' },
@@ -106,7 +108,7 @@ export const MESSAGES = {
   'props.addVariant': { fr: 'Ajouter une variante', en: 'Add a variant' },
   'props.variantWhen': { fr: 'Si', en: 'If' },
   'props.otherwise': { fr: 'Sinon', en: 'Otherwise' },
-  'props.library': { fr: 'Question de bibliothèque : seuls l’intitulé et, pour une structure, les champs affichés sont modifiables ici.', en: 'Library question: only the label and, for a structure, the displayed fields can be changed here.' },
+  'props.library': { fr: 'Question de bibliothèque : seuls l’intitulé, le caractère obligatoire et, pour une structure, les champs affichés sont modifiables ici.', en: 'Library question: only the label, the required status and, for a structure, the displayed fields can be changed here.' },
   'preview.next': { fr: 'Suivant', en: 'Next' },
   'preview.prev': { fr: 'Précédent', en: 'Previous' },
   'preview.restart': { fr: 'Recommencer', en: 'Restart' },

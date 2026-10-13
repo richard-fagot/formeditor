@@ -7,7 +7,7 @@ Dépend de `core/model`, `core/expressions`.
 - `RuntimeInput` : `{ ws, questionnaireId, sys, env? }`.
 - Étapes : id `nodeId`, `appelId/nodeId` dans un fragment, `a1/a2/nodeId` dans un fragment appelé par un fragment (EVO-008).
   `resolveStep(input, id)` → `Step` (nœud, graphe, `instances` : appels traversés, `instance` / `fragment` : le plus interne,
-  question effective (`effectiveQuestion` : bibliothèque résolue par `instanceQuestion`, intitulé surchargé, champs masqués retirés, EVO-009), `answerPath` = alias puis clé).
+  question effective (`effectiveQuestion` : bibliothèque résolue par `instanceQuestion`, intitulé surchargé, champs masqués retirés, EVO-009 ; caractère obligatoire résolu par `resolveRequired` avec les appels traversés, EVO-012), `answerPath` = alias puis clé).
 - `start(input)`, `next(input, s)`, `back(s)`, `goTo(s, stepId)` (retour depuis une synthèse, empilé),
   `setAnswer(input, s, value, other?)`, `currentStep(input, s)`.
 - `summaryEntries(input, s)` : réponses du parcours effectif avant la page courante.
@@ -45,4 +45,4 @@ Dépend de `core/model`, `core/expressions`.
 - Pas de validation des réponses ici : voir `core/validation` (`validateAnswer`).
 
 ## Tests
-`runtime.test.ts`, `fragments.test.ts` (milieu, départ, sorties, `ident.majeur = false`, deux usages, imbrication, entrée réglée), `trace.test.ts`, `options.test.ts`, `groups.test.ts`, `dont-know.test.ts`, `country.test.ts` ; `tests/reference/paths.test.ts` rejoue `examples/*/chemins/*.json`.
+`runtime.test.ts`, `fragments.test.ts` (milieu, départ, sorties, `ident.majeur = false`, deux usages, imbrication, entrée réglée), `trace.test.ts`, `options.test.ts`, `groups.test.ts`, `dont-know.test.ts`, `country.test.ts`, `hidden-fields.test.ts`, `required.test.ts` ; `tests/reference/paths.test.ts` rejoue `examples/*/chemins/*.json`.

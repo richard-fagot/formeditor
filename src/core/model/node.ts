@@ -4,13 +4,15 @@ import type { Question } from './question';
 /** Question locale : la question est portée par le nœud (id du nœud = id de la question). */
 export type LocalQuestionNode = { kind: 'question' } & Question;
 
-/** Question de la bibliothèque, par référence ; seul le libellé est surchargeable. */
+/** Question de la bibliothèque, par référence ; libellé et caractère obligatoire surchargeables. */
 export interface LibraryQuestionNode {
   kind: 'question';
   id: string;
   /** Id de la question dans la bibliothèque. */
   ref: string;
   label?: Label;
+  /** Surcharge du caractère obligatoire dans cet usage (EVO-012) ; absent = hérité de la bibliothèque. */
+  required?: boolean;
   /** Structure (EVO-009) : clés des champs masqués dans cette instance ; absent = tous affichés. */
   hiddenFields?: string[];
   description?: string;
@@ -26,6 +28,11 @@ export interface FragmentNode {
   ref: string;
   /** Préfixe des clés du fragment vues depuis l'appelant (`alias.cle`). */
   alias: string;
+  /**
+   * Surcharges du caractère obligatoire des questions du fragment (EVO-012), par chemin d'identifiants de nœuds à
+   * partir du fragment appelé (`n_tel`, `n_appel/n_tel`) ; absent = hérité.
+   */
+  requiredOverrides?: Record<string, boolean>;
   description?: string;
 }
 

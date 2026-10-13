@@ -2,7 +2,7 @@ import { newId, OTHER_TYPES, type GraphNode, type Question } from '../../core/mo
 import { commonQuestionFields } from '../../plugin-api';
 import { DEFAULT_QUESTION_TYPE, nodeKind, QUESTION_TYPE_PLUGINS, questionType } from '../../registry';
 import {
-  activeGraphRef, commentsOf, connect, duplicateNodes, freshKey, getGraph, insertNode, removeEdge, removeNodes, scopeOf, updateNode, useStore,
+  activeGraphRef, commentsOf, connect, hasRequiredOverride, resetRequired, duplicateNodes, freshKey, getGraph, insertNode, removeEdge, removeNodes, scopeOf, updateNode, useStore,
   type GraphRef,
 } from '../store';
 import { makeTranslate } from '../i18n';
@@ -100,6 +100,16 @@ export function graphCommands(): Command[] {
     {
       id: 'node.toggleRequired', label: 'node.toggleRequired', keys: ['o'], scope: 'graph', enabled: isLocalQuestion,
       run: () => updateQuestion((q) => ({ ...q, required: q.required ? undefined : true })),
+    },
+    {
+      // EVO-012 : retire la surcharge du caractère obligatoire de la référence sélectionnée, ou toutes celles de l'appel sélectionné.
+      id: 'node.resetRequired', label: 'node.resetRequired', keys: [], scope: 'graph',
+      enabled: () => { const r = ref(); const n = selectedNode(); return !!r && !!n && hasRequiredOverride(st().ws, r, n.id); },
+      run: () => {
+        const r = ref();
+        const n = selectedNode();
+        if (r && n) edit(r, (ws) => void resetRequired(ws, r, n.id));
+      },
     },
     {
       id: 'node.toggleOther', label: 'node.toggleOther', keys: ['a'], scope: 'graph',

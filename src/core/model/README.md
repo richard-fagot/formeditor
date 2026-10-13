@@ -19,11 +19,16 @@ utilitaires purs. Aucun import externe : c'est la base de tous les autres module
   `CIVILITY_CODES`, `CIVILITY_LABELS` (longs / courts, fr / en), `civilityCodes(q)`, `civilityLabel(q, code)`.
 - `node.ts` : `GraphNode` (union par `kind` : question locale ou de bibliothèque, fragment (`FragmentNode` : `ref`, `alias`), info, summary, end, exit),
   `isLocalQuestion`, `isLibraryQuestion`. `LibraryQuestionNode.hiddenFields?` : clés des champs masqués d'une instance de structure (EVO-009).
-- `instance.ts` (EVO-009) : `instanceQuestion(q, node)` (question effective d'une instance : intitulé surchargé, champs masqués retirés dans l'ordre
+- `instance.ts` (EVO-009) : `instanceQuestion(q, node)` (question effective d'une instance : intitulé et `required` (EVO-012) surchargés, champs masqués retirés dans l'ordre
   de la bibliothèque ; clé inconnue ignorée ; tous masqués → masquage ignoré), `visibleFieldKeys`.
+- `required.ts` (EVO-012) : surcharge du caractère obligatoire — `LibraryQuestionNode.required?` (booléen), `FragmentNode.requiredOverrides?`
+  (chemin d'ids de nœuds à partir du fragment appelé → booléen). `resolveRequired(ws, node, instances)` → `{ value, override, holder }` (le plus
+  proche du graphe racine l'emporte ; `holder` : 0 = graphe racine, k = fragment de `instances[k-1]`, `'library'`), `inheritedRequired` (valeur sans
+  la surcharge du niveau 0), `requiredPath`, `fragmentQuestions(ws, fragmentId)` (questions, fragments appelés compris, avec chemin), `activeOverrides`
+  (surcharges non orphelines d'un appel).
 - `graph.ts` : `Edge` (dont `caption?`, libellé de lecture, EVO-005), `Graph`.
 - `documents.ts` : `Questionnaire` (porte `start`), `Library` (`fragments`), `Fragment` (`entry?`, pas de `start`), `LabelSet`, `Project`, `SystemVariable` (dont `caption?`), `Scenario`,
-  `Layout` (dont `comments?` : `ReviewComment` `{ node, x?, y?, text, replies }`, commentaires de révision, EVO-011), `Workspace` (projet complet en mémoire), `Bundle`, `FORMAT_VERSION` (9).
+  `Layout` (dont `comments?` : `ReviewComment` `{ node, x?, y?, text, replies }`, commentaires de révision, EVO-011), `Workspace` (projet complet en mémoire), `Bundle`, `FORMAT_VERSION` (10).
 - `graph.ts` : `Graph` = `nodes` + `edges` (sans départ).
 - `fragment.ts` (EVO-008) : `fragmentRoots` (nœuds sans arête entrante), `fragmentEntry` (`entry`, sinon premier candidat, sinon premier nœud),
   `fragmentExits` (nœuds sans arête sortante), `graphStart` (départ ou entrée), `calledFragments`, `createsCycle`, `fragmentCallers`.
@@ -39,4 +44,4 @@ utilitaires purs. Aucun import externe : c'est la base de tous les autres module
 - `StructureField` exclut le type `structure` (pas de structure imbriquée).
 
 ## Tests
-`keys.test.ts`, `fragment.test.ts`, `instance.test.ts`.
+`keys.test.ts`, `fragment.test.ts`, `instance.test.ts`, `required.test.ts`.
