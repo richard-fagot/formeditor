@@ -1,4 +1,4 @@
-# Format des questionnaires — version 12
+# Format des questionnaires — version 13
 
 Ce document décrit le format JSON produit par l'éditeur de questionnaires. Il s'adresse à l'équipe
 de développement (et à l'IA qui l'assiste) chargée de construire le moteur cible et les formulaires
@@ -34,7 +34,7 @@ libellés et interpolation — 6. Nœuds — 7. Questions — 8. Réponses — 9
 | `<clé>.layout.json`, `fragment_<clé>.layout.json`, `question_<clé>.layout.json` | `layout` | Positions des nœuds dans l'éditeur et commentaires de révision (version 9, §1.1). | **non** (à ignorer) |
 | `<projet>.bundle.json` | `bundle` | `project`, `library`, `questionnaires[]`, `layouts[]` dans un seul fichier. | oui (même contenu) |
 
-- Chaque fichier (et le bundle) porte `formatVersion` (entier, actuellement `12`) et `kind`.
+- Chaque fichier (et le bundle) porte `formatVersion` (entier, actuellement `13`) et `kind`.
 - L'outil migre automatiquement à l'ouverture un fichier d'une version antérieure ; il refuse un fichier
   d'une version plus récente. Un moteur cible peut refuser toute version qu'il ne connaît pas.
 - Tout élément (projet, questionnaire, nœud, arête, question, fragment, variable, scénario, jeu de libellés)
@@ -189,7 +189,7 @@ Résolution d'un libellé : variante → langue (avec repli) → interpolation.
 
 | Propriétés de type **libellé** (variantes possibles, interpolées) | Propriétés **texte multilingue** |
 | --- | --- |
-| Question : `label`, `help`, `placeholder` ; option : `label` ; groupe d'options : `group` (§7.3) ; `other.label` ; `dontKnow.label` (§7.7) ; surcharge `label` d'une question de bibliothèque ; `info` : `title`, `text` ; `summary` : `title` ; `end` : `title`, `message` | Interpolées, sans variantes : `messages.<param>`, `constraints[].message` (§9). Non interpolées : `title` d'un questionnaire ou d'un fragment, `unit`, `repeat.addLabel`, `yes`/`no`/`unknown` d'un jeu de libellés, `label` d'une sortie nommée |
+| Question : `label`, `help`, `placeholder` ; option : `label` ; groupe d'options : `group` (§7.3) ; `other.label` ; `dontKnow.label` (§7.7) ; surcharge `label` d'une question de bibliothèque ; `info` : `title`, `text` ; `summary` : `title` ; `end` : `title`, `message` | Interpolées, sans variantes : `messages.<param>`, `constraints[].message` (§9). Non interpolées : `title` d'un questionnaire ou d'un fragment, `unit`, `repeat.addLabel`, `yes`/`no` d'un jeu de libellés, `label` d'une sortie nommée |
 
 ### 5.3 Interpolation
 
@@ -310,7 +310,6 @@ champs de structure ne sont pas appliquées (comportement actuel de l'outil).
 | `single` | chaîne : `value` de l'option | `options[]` (entrées, §7.3), `other?` |
 | `multiple` | tableau de chaînes | `options[]` (entrées, §7.3), `other?`, `minSelected?`, `maxSelected?` |
 | `boolean` | `true` / `false` | `labelSet?` (id d'un jeu `boolean` ; défaut « Oui / Non »), `other?` |
-| `tristate` | `true` / `false` / `"unknown"` | `labelSet?` (id d'un jeu `tristate` ; défaut « Oui / Non / Ne sait pas »), `other?` |
 | `structure` | objet `{ <clé du champ>: réponse }`, ou **tableau** de tels objets si répétable | `fields[]`, `repeat?` |
 | `email` (v6) | chaîne : le mail, nom de domaine en minuscules | aucun (§7.8) |
 | `phone` (v6) | chaîne E.164 (`"+33612345678"`) ; pays sous `<clé>_pays` | `defaultCountry?` (défaut `"FR"`), `countries?` (pays autorisés, défaut : tous), `lineType?` (`"mobile"` \| `"fixed"`) (§7.8) |
@@ -365,7 +364,7 @@ valeur peut figurer dans deux groupes : une option est identifiée par le couple
 ]
 ```
 
-### 7.4 « Autre (préciser) » (`single`, `multiple`, `boolean`, `tristate`)
+### 7.4 « Autre (préciser) » (`single`, `multiple`, `boolean`)
 
 `other: { "label"?, "detailRequired"? }` ajoute, après les autres, un choix de valeur `"other"`
 (libellé par défaut « Autre (préciser) ») qui ouvre un champ texte de précision. La précision est
@@ -410,7 +409,7 @@ statiques. La migration 1 → 2 place cette `source` en dernière entrée de `op
 `dontKnow: { "label"? }` ajoute un choix « Ne sais pas » (libellé par défaut « Ne sais pas », sinon `label`, un
 libellé comme celui d'une option, §5.2) qui permet de répondre explicitement « je ne sais pas » ; absent = désactivé.
 
-- Affichage : pour `single`, `multiple`, `boolean`, `tristate`, `civility`, dernier choix, après « Autre », hors de tout groupe ;
+- Affichage : pour `single`, `multiple`, `boolean`, `civility`, dernier choix, après « Autre », hors de tout groupe ;
   pour `text`, `date`, `number`, `email`, `phone`, `address`, case à cocher sous le champ (cochée : champ vidé et désactivé).
 - **Exclusive** : la choisir remplace toute autre réponse ; toute autre réponse l'annule.
 - Réponse (§8) : valeur **vide** (`null` ; `[]` pour `multiple`), marqueur `<clé>_nsp: true` à côté, et pour
@@ -501,7 +500,7 @@ Les réponses d'un parcours forment un objet indexé par clé :
   "victimes": [{ "prenom": "Léa", "nom": "Morel", "hospitalise": true, "duree_hospitalisation": 3 }],
   "montant_estime": 950.5,
   "tiers_implique": true,
-  "tiers": { "nom": "Dupont", "coordonnees": { "adresse": "12 rue des Lilas", "code_postal": "69003", "ville": "Lyon" }, "assurance_connue": "unknown" },
+  "tiers": { "nom": "Dupont", "coordonnees": { "adresse": "12 rue des Lilas", "code_postal": "69003", "ville": "Lyon" }, "assurance_connue": null, "assurance_connue_nsp": true },
   "circonstances": null,
   "qualite_declarant": "conjoint", "qualite_declarant_group": "SC",
   "canaux_contact": ["email", "other"], "canaux_contact_other": "Par l'amicale", "canaux_contact_group": ["", "AUTRE"]
@@ -796,8 +795,8 @@ lieu d'afficher la fin. La réponse n'est pas effacée : l'utilisateur la corrig
 - `fragments[]` (version 7) : `{ id, key, title, description?, entry?, nodes, edges }` (§11.3) ; nœuds : questions
   (locales ou de bibliothèque), `info`, `summary`, `fragment` (appel d'un autre fragment), `exit` ; pas de `start`
   ni de `end`. Les questionnaires et fragments y font **référence** (`ref`) : une modification s'applique à tous les appelants.
-- `labelSets[]` : `{ id, key, kind: "boolean" | "tristate", yes, no, unknown? }` : libellés des valeurs
-  `true`, `false` et `"unknown"` (tri-state) ; référencés par `labelSet` d'une question du même `kind`.
+- `labelSets[]` : `{ id, key, kind: "boolean", yes, no }` : libellés des valeurs `true` et `false` ; référencés
+  par `labelSet` d'une question `boolean` (« Ne sais pas » a son propre libellé, §7.7).
 
 ## 13. Vérifications de l'éditeur
 
@@ -841,7 +840,7 @@ L'exemple fourni ne produit aucun problème.
 | Libellé et aide à variantes, `$exists(victimes[hospitalise])`, nombre réel à 2 décimales | `n_montant` |
 | `$addDays` interpolé | `n_expertise` |
 | Booléen avec `default: false` | `n_tiers` |
-| Fragment **au milieu** du parcours, avec alias, deux sorties nommées, structure non répétable, tri-state à jeu de libellés, accès à une clé de l'appelant (`{date_sinistre}`) | `n_bloc_tiers` → `blk_identite_tiers` |
+| Fragment **au milieu** du parcours, avec alias, deux sorties nommées, structure non répétable, booléen à jeu de libellés avec « Ne sais pas » (version 13), accès à une clé de l'appelant (`{date_sinistre}`) | `n_bloc_tiers` → `blk_identite_tiers` |
 | Fragment **en première position** (`start` sur le nœud fragment), sorties implicites (`num_secu`, `representant_legal`), arête de l'appelant `ident.majeur = false` (version 7) | `q_remboursement` : `n_ident` → `frg_identification_assure` ; chemins `remboursement_majeur.json`, `remboursement_mineur.json` |
 | `required` calculé ; aide à variantes (`type_sinistre_other`, `$daysBetween`) | `n_circonstances` |
 | Choix multiple avec « Autre » ; `'telephone' in canaux_contact` | `n_canaux`, `e_canaux_tel` |
@@ -909,7 +908,7 @@ doit égaler `path`, toutes les réponses doivent avoir été consommées et l'i
 
 Toute évolution incompatible incrémente `formatVersion` et s'accompagne d'une migration dans l'outil,
 des schémas, de ce document et de l'exemple. Les ajouts compatibles (nouvelle propriété facultative)
-sont documentés ici. Version actuelle : **12**.
+sont documentés ici. Version actuelle : **13**.
 
 | Version | Changement | Migration |
 | --- | --- | --- |
@@ -924,3 +923,4 @@ sont documentés ici. Version actuelle : **12**.
 | 10 | Surcharge du caractère obligatoire (EVO-012) : `required?` (booléen) d'une référence de bibliothèque, `requiredOverrides?` (chemin d'ids → booléen) d'un nœud fragment ; résolution du plus proche au plus lointain (§6.1). | Aucune transformation (propriétés absentes = hérité) ; seul `formatVersion` change. |
 | 11 | État de validation d'un questionnaire (EVO-015) : `status?` (`"draft"` \| `"validated"`) et `validatedAt?` (date). | Aucune transformation (propriétés absentes = non validé) ; seul `formatVersion` change. |
 | 12 | Suggestions d'un champ texte (EVO-016) : `suggestions?` (expression renvoyant une liste, §7.9). | Aucune transformation (propriété absente = pas de suggestions) ; seul `formatVersion` change. |
+| 13 | Suppression du type `tristate` et des jeux de libellés `kind: "tristate"` (EVO-018) : « oui / non / ne sait pas » = `boolean` avec `dontKnow` (§7.7). | Chaque question ou champ `tristate` devient `boolean` avec `dontKnow` (gardé s'il existait, sinon `{}`) ; `default: "unknown"` est retiré ; chaque jeu `tristate` devient `boolean` sans `unknown`. Les expressions ne sont **pas** réécrites : `cle = "unknown"` devient faux pour toute réponse, à remplacer par `cle.nsp`. |

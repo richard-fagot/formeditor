@@ -15,9 +15,8 @@ Onglet Bibliothèque et panneau latéral de glisser-déposer. Dépend de `app/co
   puis panneau latéral, logigramme éditable (`Diagram` avec `GraphRef` fragment : les commandes du graphe y agissent), problèmes, propriétés.
 
 ## Composants
-- `LabelSets` : jeux de libellés (`kind` booléen ou tri-state, clé, libellés multilingues vrai / faux /
-  « ne sait pas »). Création et suppression par les commandes `labelSet.addBoolean`, `labelSet.addTristate`,
-  `labelSet.delete` ; saisie des libellés par `store.edit('library', …)` (frappes regroupées).
+- `LabelSets` : jeux de libellés booléens (clé, libellés multilingues vrai / faux ; plus de jeu tri-state, EVO-018).
+  Création et suppression par les commandes `labelSet.addBoolean`, `labelSet.delete` ; saisie des libellés par `store.edit('library', …)` (frappes regroupées).
 - `LibraryQuestionView` : commentaire de révision en tête s'il existe (`CommentThread`, EVO-011) ; question de bibliothèque, éditée avec `QuestionEditor` (`ui/properties`) dans l'historique
   `library` ; usages listés ; portée des expressions = réunion des graphes qui l'utilisent (`items.ts`).
 - `items.ts` : `itemTitle`, `itemUsages`, `libraryQuestionScope`.

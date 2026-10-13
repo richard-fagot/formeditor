@@ -80,7 +80,31 @@ export const MIGRATIONS: Migrations = {
   10: (doc) => bump(doc, 11),
   /** EVO-016 : suggestions `suggestions` d'un champ texte. Propriété absente = aucune : seul le numéro change. */
   11: (doc) => bump(doc, 12),
+  /** EVO-018 : le tri-state disparaît ; chaque tri-state devient un booléen avec « Ne sais pas », chaque jeu tri-state un jeu booléen. */
+  12: (doc) => bump(withoutTristate(doc) as Doc, 13),
 };
+
+/**
+ * v12 → v13 (EVO-018), conversion minimale : `type: "tristate"` → `"boolean"` avec `dontKnow` (existant gardé),
+ * `default: "unknown"` retiré ; jeu `kind: "tristate"` → `"boolean"`, troisième libellé `unknown` abandonné.
+ * Les expressions ne sont pas réécrites.
+ */
+function withoutTristate(v: unknown): unknown {
+  if (Array.isArray(v)) return v.map(withoutTristate);
+  if (!v || typeof v !== 'object') return v;
+  const out: Doc = {};
+  for (const [k, x] of Object.entries(v as Doc)) out[k] = withoutTristate(x);
+  if (out.type === 'tristate') {
+    out.type = 'boolean';
+    if (out.default === 'unknown') delete out.default;
+    out.dontKnow ??= {};
+  }
+  if (out.kind === 'tristate' && 'yes' in out) {
+    out.kind = 'boolean';
+    delete out.unknown;
+  }
+  return out;
+}
 
 /** Graphe v6 → v7 : instances de bloc → nœuds fragment. */
 const graphV7 = (g: Doc): Doc =>

@@ -1,6 +1,6 @@
 # EVO-018 — Supprimer le type tristate
 
-Statut : à arbitrer
+Statut : en cours
 Dépend de : EVO-006 (option « ne sait pas » du type booléen) — réutilisée comme cible de remplacement
 
 ## Besoin
@@ -165,3 +165,31 @@ Ce qui **ne peut pas** être reproduit, faute d'équivalent dans le booléen « 
 À trancher aussi, quelle que soit l'option : l'ajout de la dépendance `format → core/references` (ou un autre
 point de passage, par ex. la conversion après `importFiles` dans `app`, au prix d'un schéma v13 qui accepterait
 encore `tristate` en entrée) ; la règle de fusion d'un tri-state qui avait déjà « Ne sais pas ».
+
+## Arbitrage (utilisateur, 2026-10-13)
+
+Remplace les options A, B et C ci-dessus.
+
+- Conversion **minimale**, à l'import d'un projet, par une migration de format ordinaire dans `format`
+  (`formatVersion` 12 → 13). Toute question (ou champ de structure) `tristate` devient un `boolean` avec l'option
+  « Ne sais pas » (EVO-006) activée. C'est tout. L'ouverture, l'import et le rechargement (session restaurée par
+  `importFiles`) passent tous par cette migration.
+- Non fait :
+  - pas de réécriture d'expressions, donc pas de dépendance `format → core/references` ;
+  - pas de reprise de la valeur par défaut « ne sait pas » : `default: "unknown"` est simplement retiré ;
+  - pas de traitement des cas limites (quatre réponses, ordre avec « Autre ») : le seul projet réel n'en a pas.
+- Jeux de libellés : un jeu tri-state devient un jeu booléen ; son troisième libellé est abandonné, le booléen
+  « Ne sais pas » ayant déjà son propre libellé.
+
+Critères d'acceptation **abandonnés** (contraires à l'arbitrage) :
+- « Quand un tristate avait une valeur par défaut, alors le booléen converti a la valeur par défaut équivalente » :
+  tenu seulement pour oui / non ; « ne sait pas » est retiré.
+- « Quand une condition d'affichage ou un calcul référençait un tristate, alors il donne le même résultat après
+  conversion, pour chacune des trois réponses » : les expressions ne sont pas réécrites (`cle = true` / `false`
+  inchangés ; `cle = "unknown"` est à remplacer à la main par `cle.nsp`).
+
+Tests des critères retenus : `src/format/migrate-tristate.test.ts` (migration, défaut, jeux de libellés, import
+unitaire, pas de nouvelle conversion, projet sans tri-state, schéma), `src/registry/registry.test.ts` et
+`src/app/commands/commands.test.ts` (type et jeu tri-state retirés), `tests/smoke/evo-018.spec.ts` (types proposés,
+ouverture et rechargement silencieux, propriétés, wizard Oui / Non / Ne sais pas, branches, export stable),
+`tests/reference` (exemple converti, chemin `ud_tiers_inconnu.json` en « Ne sais pas »), `scripts/guide` (guide).

@@ -209,7 +209,7 @@ test('types au clavier, saisie rapide des options, champs de structure, jeu de l
   await page.keyboard.type('Couleur préférée');
   await page.keyboard.press('Enter');
   const node = page.locator('.react-flow__node').first();
-  for (const [key, text] of [['d', '<date>'], ['r', '<réel>'], ['3', 'Ne sait pas'], ['u', '']] as const) {
+  for (const [key, text] of [['d', '<date>'], ['r', '<réel>'], ['b', 'Oui / Non'], ['u', '']] as const) {
     await page.keyboard.press(key);
     if (text) await expect(node).toContainText(text);
   }
@@ -236,12 +236,11 @@ test('types au clavier, saisie rapide des options, champs de structure, jeu de l
   const bundle = JSON.parse(readFileSync(await (await download).path(), 'utf8'));
   expect(bundle.questionnaires[0].nodes[0].fields[0].constraints).toEqual([{ rule: "champ_1 != 'x'", message: { fr: 'Pas x' } }]);
 
-  // Bibliothèque : jeu de libellés tri-state, puis choisi dans les propriétés d'un tri-state.
+  // Bibliothèque : jeu de libellés booléen.
   await page.keyboard.press('Control+k');
-  await page.keyboard.type('jeu de libellés tri-state');
+  await page.keyboard.type('jeu de libellés booléen');
   await page.keyboard.press('Enter');
-  await expect(page.getByTestId('label-sets').locator('input').first()).toHaveValue('oui_non_ne_sait_pas');
-  await expect(page.getByTestId('label-sets').locator('input[value="Ne sait pas"]')).toBeVisible();
+  await expect(page.getByTestId('label-sets').locator('input').first()).toHaveValue('oui_non');
   // Annuler au clavier hors du logigramme (focus sur un bouton de la bibliothèque).
   await page.getByTestId('label-sets').getByRole('button', { name: 'Supprimer' }).focus();
   await page.keyboard.press('Control+z');
