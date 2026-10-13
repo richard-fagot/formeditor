@@ -37,6 +37,8 @@ export interface RenderEnv extends EditorEnv {
   options(q: Question): ResolvedOption[];
   /** Environnement dont le contexte est enrichi (occurrence d'une structure : clés sœurs sans préfixe). */
   scoped(extra: Record<string, unknown>): RenderEnv;
+  /** Contrôles de saisie de la prévisualisation (EVO-014) ; `false` : aucun message de contrôle affiché par le champ. */
+  checks?: boolean;
 }
 
 /** Propriétés communes à toutes les questions, conservées lors d'un changement de type. */

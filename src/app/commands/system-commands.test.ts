@@ -92,4 +92,16 @@ describe('commandes de l’état du système', () => {
     runCommand('preview.toggleDebug');
     expect(st().previewPanels).toEqual({ system: !before.system, debug: !before.debug });
   });
+
+  it('EVO-014 : bascule les contrôles de saisie (activés par défaut), efface les erreurs affichées, hors projet', () => {
+    expect(st().previewChecks).toBe(true);
+    st().set((s) => void (s.preview.qx = { attempted: true }));
+    const ws = st().ws;
+    runCommand('preview.toggleChecks');
+    expect(st().previewChecks).toBe(false);
+    expect(st().ws).toBe(ws);
+    runCommand('preview.toggleChecks');
+    expect(st().previewChecks).toBe(true);
+    expect(st().preview.qx?.attempted).toBe(false);
+  });
 });

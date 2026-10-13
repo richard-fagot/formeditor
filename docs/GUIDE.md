@@ -1,5 +1,5 @@
 # Guide utilisateur — Éditeur de questionnaires
-Mis à jour le 2026-10-13 — jusqu'à EVO-013
+Mis à jour le 2026-10-13 — jusqu'à EVO-014
 
 ## Mode d'emploi du guide
 
@@ -603,6 +603,14 @@ Concerne le choix unique et le choix multiple. Le booléen et le tri-state n'ont
   Une option d'un groupe s'y affiche « Groupe — Option » (ex. « Victime directe — Conjoint ») ; « Ne sais pas », par son libellé.
 - **Comprendre un retour forcé avant la fin** — Une réponse devenue invalide (option disparue après un changement d'état du
   système…) empêche d'atteindre la fin : le wizard ramène à la question avec son message jusqu'à correction.
+- **Naviguer sans saisir de valeurs** — Bouton « Contrôles de saisie » de la barre de prévisualisation (activé par défaut),
+  ou palette « Activer / désactiver les contrôles de saisie de la prévisualisation ». Désactivés : un bandeau « Contrôles de
+  saisie désactivés » s'affiche ; « Suivant », « Revenir à la synthèse » et la fin ne sont plus bloqués par l'obligatoire,
+  les formats, bornes, longueurs, nombres de réponses ou contraintes ; aucun message d'erreur ; les valeurs saisies, même
+  invalides, sont gardées. Les conditions des arêtes et d'affichage s'appliquent toujours, sur les réponses vides comprises
+  (une condition non évaluable est fausse : la branche « sinon » est suivie). Réactivés : la page courante est contrôlée au
+  prochain « Suivant » ; les pages déjà franchies ne sont pas revérifiées. L'état est gardé tant que l'éditeur reste ouvert
+  (changement de questionnaire ou de projet compris) et n'est jamais enregistré dans le projet. `[cmd: preview.toggleChecks]`
 - **Voir quelles questions sont exigées** — L'astérisque rouge et le blocage de « Suivant » sur une question laissée vide
   suivent la valeur **effective** du caractère obligatoire, surcharges comprises (§10) ; une question non présentée (chemin
   non emprunté, champ masqué) n'est jamais exigée.
@@ -838,6 +846,7 @@ l'objet lui-même et sur la page des commentaires.
 | Enregistrer l’état du système comme nouveau scénario | — | `preview.saveScenario` |
 | Afficher / masquer le panneau d’état du système | — | `preview.toggleSystem` |
 | Afficher / masquer le panneau de débogage | — | `preview.toggleDebug` |
+| Activer / désactiver les contrôles de saisie de la prévisualisation | — | `preview.toggleChecks` |
 | Paramètres | — | `tab.settings` |
 | Ajouter une langue | — | `lang.add` |
 | Retirer la langue | — | `lang.remove` |

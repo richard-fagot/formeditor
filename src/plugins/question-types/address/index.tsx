@@ -66,7 +66,7 @@ function AddressField({ question, value, country, onChange, env, inputId, errors
             commit(e.target.value, picked);
           }} onBlur={blur} />
       </div>
-      {!(errors[''] ?? []).length && blurErrors.map((m, i) => <p key={i} className="text-sm text-rose-600" role="alert">{m}</p>)}
+      {env.checks !== false && !(errors[''] ?? []).length && blurErrors.map((m, i) => <p key={i} className="text-sm text-rose-600" role="alert">{m}</p>)}
       {question.dontKnow && (
         <Checkbox data-testid="dont-know" label={env.label(dontKnowLabel(question))} checked={!!dontKnow} onChange={(e) => onDontKnow?.(e.target.checked)} />
       )}

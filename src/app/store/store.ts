@@ -35,6 +35,8 @@ export interface PreviewState {
   /** Synthèse d'où l'on est revenu modifier une réponse (bouton « Revenir à la synthèse »). */
   returnTo?: string;
   lang?: string;
+  /** Pages quittées contrôles de saisie désactivés (EVO-014) : non revérifiées par la garde de fin. */
+  unchecked?: string[];
 }
 
 /** État applicatif ; l'état de l'export d'image est dans `image-state.ts`. */
@@ -76,6 +78,8 @@ export interface AppState extends ImageState {
   libraryPanel: boolean;
   /** Panneaux repliables de la prévisualisation : état du système, débogage. */
   previewPanels: { system: boolean; debug: boolean };
+  /** Contrôles de saisie de la prévisualisation (EVO-014) : état de l'éditeur, non enregistré dans le projet. */
+  previewChecks: boolean;
 }
 
 /** Champ à mettre en saisie : intitulé, condition, variable, texte d'un commentaire (`commentKey`, `#i` pour la réponse i). */
@@ -144,6 +148,7 @@ export const useStore = create<Store>()(
     layoutRequest: 0,
     libraryPanel: true,
     previewPanels: { system: true, debug: false },
+    previewChecks: true,
     ...initialImageState(),
 
     edit(scope, recipe, key) {

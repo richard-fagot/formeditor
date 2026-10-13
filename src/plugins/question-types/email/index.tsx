@@ -38,7 +38,7 @@ function EmailField({ question, value, onChange, env, inputId, errors, dontKnow,
     <div className="space-y-2">
       <Input id={inputId} type="text" inputMode="email" autoComplete="email" value={text} placeholder={env.label(question.placeholder)} disabled={!!dontKnow}
         onChange={(e) => change(e.target.value)} onBlur={blur} />
-      {!(errors[''] ?? []).length && blurErrors.map((m, i) => <p key={i} className="text-sm text-rose-600" role="alert">{m}</p>)}
+      {env.checks !== false && !(errors[''] ?? []).length && blurErrors.map((m, i) => <p key={i} className="text-sm text-rose-600" role="alert">{m}</p>)}
       {question.dontKnow && (
         <Checkbox data-testid="dont-know" label={env.label(dontKnowLabel(question))} checked={!!dontKnow} onChange={(e) => onDontKnow?.(e.target.checked)} />
       )}

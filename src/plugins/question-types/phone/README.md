@@ -10,3 +10,4 @@ défaut s'il n'est pas `FR`, « mobile » / « fixe » si un type de ligne est e
   (`<clé>_pays`). À la sortie du champ : format national et contrôle (`formatErrors`, messages `phone` / `lineType`).
 - Synthèse : format international lisible (`+33 6 12 34 56 78`).
 - Contrôles, normalisation et pays : `core/contact` (`libphonenumber-js`, métadonnées `max`).
+- `env.checks === false` (contrôles de saisie désactivés en prévisualisation, EVO-014) : aucun message affiché à la sortie du champ.

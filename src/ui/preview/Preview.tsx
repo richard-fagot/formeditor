@@ -1,5 +1,5 @@
 import { useEffect, useMemo, type ReactNode } from 'react';
-import { Bug, ChevronLeft, ChevronRight, Database, RotateCcw, Undo2 } from 'lucide-react';
+import { Bug, ChevronLeft, ChevronRight, Database, RotateCcw, ShieldCheck, Undo2 } from 'lucide-react';
 import { OTHER_VALUE } from '../../core/model';
 import {
   back, countryPath, currentStep, dontKnowAnswer, dontKnowPath, getAnswer, groupPath, next, otherPath, progress, resume, setAnswer, start, type RuntimeInput, type Session,
@@ -21,9 +21,10 @@ export function Preview({ questionnaireId }: { questionnaireId: string }) {
   const preview = usePreview(questionnaireId);
   const { input, session, lang, uiLang, update, state } = preview;
   const panels = useStore((s) => s.previewPanels);
+  const checks = useStore((s) => s.previewChecks);
   const ws = input.ws;
   const toggle = (id: string, on: boolean, icon: ReactNode, label: string) => (
-    <Button size="sm" variant="ghost" className={cn(on && 'bg-indigo-50 text-indigo-700')} aria-pressed={on} onClick={() => runCommand(id)}>
+    <Button size="sm" variant="ghost" className={cn(on && 'bg-indigo-50 text-indigo-700')} aria-pressed={on} onClick={() => runCommand(id)} data-testid={id}>
       {icon}{label}
     </Button>
   );
@@ -37,14 +38,18 @@ export function Preview({ questionnaireId }: { questionnaireId: string }) {
           </Select>
         </label>
         <MissingTranslations questionnaireId={questionnaireId} lang={lang} />
-        <Button size="sm" variant="ghost" onClick={() => update({ session: start(input), attempted: false, returnTo: undefined })}>
+        <Button size="sm" variant="ghost" onClick={() => update({ session: start(input), attempted: false, returnTo: undefined, unchecked: undefined })}>
           <RotateCcw className="size-3.5" />{t('preview.restart')}
         </Button>
         <div className="ml-auto flex gap-1">
+          {toggle('preview.toggleChecks', checks, <ShieldCheck className="size-3.5" />, t('preview.checks'))}
           {toggle('preview.toggleSystem', panels.system, <Database className="size-3.5" />, t('preview.system'))}
           {toggle('preview.toggleDebug', panels.debug, <Bug className="size-3.5" />, t('preview.debug'))}
         </div>
       </div>
+      {!checks && (
+        <p className="border-b border-amber-200 bg-amber-50 px-4 py-1 text-xs text-amber-800" role="status" data-testid="preview-checks-off">{t('preview.checksOff')}</p>
+      )}
       <div className="flex min-h-0 flex-1">
         <Wizard questionnaireId={questionnaireId} preview={preview} />
         {(panels.system || panels.debug) && (
@@ -92,15 +97,18 @@ const errorsAt = (input: RuntimeInput, s: Session) => (s.history.length ? answer
 function Wizard({ questionnaireId, preview }: { questionnaireId: string; preview: ReturnType<typeof usePreview> }) {
   const t = useT();
   const { input, session, lang, uiLang, update, state } = preview;
+  // Contrôles de saisie (EVO-014) : désactivés, aucune validation de surface ; les conditions s'appliquent toujours.
+  const checks = useStore((s) => s.previewChecks);
+  const unchecked = state?.unchecked ?? [];
   // Fin affichée alors qu'une réponse du chemin est devenue invalide (état du système modifié) : retour à la question.
-  const guarded = guardEnd(input, session);
+  const guarded = checks ? guardEnd(input, session, unchecked) : undefined;
   const guardedStep = guarded?.history.at(-1);
   useEffect(() => {
     if (guarded) update({ session: guarded, attempted: true, returnTo: undefined });
   }, [guardedStep]);
   if (!session.history.length) return <p className="flex-1 p-8 text-slate-400" data-testid="preview">{t('preview.empty')}</p>;
   const step = currentStep(input, session);
-  const env = makeRenderEnv(input, session, step.id, lang, uiLang);
+  const env = makeRenderEnv(input, session, step.id, lang, uiLang, checks);
   const q = step.question;
   const plugin = q ? questionType(q.type) : undefined;
   const value = step.answerPath ? getAnswer(session.answers, step.answerPath) : undefined;
@@ -115,7 +123,7 @@ function Wizard({ questionnaireId, preview }: { questionnaireId: string; preview
     update({ session: on ? setAnswer(input, session, a.value, undefined, a.group, true) : setAnswer(input, session, undefined) });
   };
   const check = () => errorsAt(input, session);
-  const errors = state?.attempted ? check() : [];
+  const errors = checks && state?.attempted ? check() : [];
   const errorMap: Record<string, string[]> = {};
   for (const e of errors) (errorMap[e.path] ??= []).push(env.label(e.message));
   const isEnd = step.node.kind === 'end';
@@ -125,14 +133,16 @@ function Wizard({ questionnaireId, preview }: { questionnaireId: string; preview
 
   /** Avance (validation d'abord) ; `move` calcule la nouvelle session. */
   const advance = (move: (s: Session) => Session, revalidate = false) => {
-    if (check().length) return update({ attempted: true, session });
+    if (checks && check().length) return update({ attempted: true, session });
     const moved = move(session);
     // Pas de fin tant qu'une réponse du chemin est invalide : retour à la première concernée, erreurs affichées.
-    const guardedEnd = guardEnd(input, moved);
+    const guardedEnd = checks ? guardEnd(input, moved, unchecked) : undefined;
     if (guardedEnd) return update({ session: guardedEnd, attempted: true, returnTo: undefined });
     const s = moved;
+    // Contrôles désactivés : pages quittées mémorisées, non revérifiées après réactivation.
+    const skipped = checks ? {} : { unchecked: [...new Set([...unchecked, ...s.history.slice(session.history.length - 1, -1)])] };
     // Retour à la synthèse arrêté sur une page déjà répondue mais devenue invalide : erreurs affichées.
-    update({ session: s, attempted: revalidate && errorsAt(input, s).length > 0, ...(s.history.at(-1) === state?.returnTo ? { returnTo: undefined } : {}) });
+    update({ session: s, attempted: checks && revalidate && errorsAt(input, s).length > 0, ...skipped, ...(s.history.at(-1) === state?.returnTo ? { returnTo: undefined } : {}) });
   };
   const select = () => useStore.getState().select({ graph: { kind: 'questionnaire', id: questionnaireId }, nodes: [hostNodeId] });
   const Page = nodeKind(step.node.kind).Page;
@@ -168,7 +178,7 @@ function Wizard({ questionnaireId, preview }: { questionnaireId: string; preview
           </Button>
           <div className="flex gap-2">
             {returnTo && !isEnd && (
-              <Button data-testid="preview-back-to-summary" onClick={() => advance((s) => resume(input, s, returnTo, (x) => !errorsAt(input, x).length), true)}>
+              <Button data-testid="preview-back-to-summary" onClick={() => advance((s) => resume(input, s, returnTo, (x) => !checks || !errorsAt(input, x).length), true)}>
                 <Undo2 className="size-4" />{t('preview.backToSummary')}
               </Button>
             )}

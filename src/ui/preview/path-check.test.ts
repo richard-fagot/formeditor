@@ -43,6 +43,12 @@ describe('fin de parcours bloquée par une réponse devenue invalide (EVO-001)',
     expect(guardEnd(changed, { ...atEnd, answers: withAnswer(atEnd.answers, ['sinistre_lie'], 'S-102') })).toBeUndefined();
   });
 
+  it('EVO-014 : page quittée contrôles désactivés, non revérifiée après réactivation', () => {
+    const changed: RuntimeInput = { ...input, sys: { ...sys, sinistres: (sys.sinistres as { id: string }[]).filter((x) => x.id !== 'S-101') } };
+    expect(firstInvalidStep(changed, atEnd.answers, ['n_lien'])).toBeUndefined();
+    expect(guardEnd(changed, atEnd, ['n_lien'])).toBeUndefined();
+  });
+
   it('réponse précédente modifiée : la valeur choisie plus loin n’est plus proposée', () => {
     const q = {
       formatVersion: FORMAT_VERSION, kind: 'questionnaire', id: 'q', key: 'q', title: { fr: 'Q' }, start: 'n1',

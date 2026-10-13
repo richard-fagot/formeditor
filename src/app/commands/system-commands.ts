@@ -94,5 +94,13 @@ export function systemCommands(): Command[] {
       id: 'preview.toggleDebug', label: 'preview.toggleDebug', keys: [], scope: 'global',
       run: () => st().set((s) => void (s.previewPanels.debug = !s.previewPanels.debug)),
     },
+    {
+      // Réactivés : erreurs effacées, contrôlées à la prochaine tentative de navigation (EVO-014).
+      id: 'preview.toggleChecks', label: 'preview.toggleChecks', keys: [], scope: 'global',
+      run: () => st().set((s) => {
+        s.previewChecks = !s.previewChecks;
+        for (const p of Object.values(s.preview)) p.attempted = false;
+      }),
+    },
   ];
 }
