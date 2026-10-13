@@ -1,6 +1,6 @@
 # EVO-017 — Séparer « Autre (préciser) » des groupes de choix dans la prévisualisation
 
-Statut : à faire
+Statut : en cours
 Dépend de : aucune
 
 ## Besoin
