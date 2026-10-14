@@ -1,5 +1,5 @@
 import {
-  createsCycle, deriveKey, isValidKey, newId, OTHER_VALUE, uniqueKey, type GraphNode, type Label, type LocalizedText, type Question, type Workspace,
+  createsCycle, deriveKey, fragmentCallers, isValidKey, newId, OTHER_VALUE, uniqueKey, type GraphNode, type Label, type LocalizedText, type Question, type Workspace,
 } from '../../core/model';
 import { collectExpressions, findUsages, renameKey, type FoundExpression, type Owner } from '../../core/references';
 import { previewText } from '../../plugin-api';
@@ -141,12 +141,37 @@ export function setFieldHidden(ws: Workspace, ref: GraphRef, nodeId: string, fie
   return true;
 }
 
-/** Expressions du graphe qui référencent ce champ de l'instance (`cle.champ…`, `cle.champ_other`) : avertissement au masquage. */
+/**
+ * Expressions qui référencent ce champ de l'instance (`cle.champ…`, `cle.champ_other`) : avertissement au masquage.
+ * Dans un fragment, aussi celles des appelants (`alias.cle.champ`, imbriqués : `a1.a2.cle.champ`).
+ */
 export function hiddenFieldUsages(ws: Workspace, ref: GraphRef, nodeId: string, field: string): FoundExpression[] {
   const inst = structureInstance(ws, ref, nodeId);
   if (!inst) return [];
+  return usagesIn(ws, ref, [[inst.q.key, field], [inst.q.key, `${field}_${OTHER_VALUE}`]], 0);
+}
+
+/**
+ * Appelant d'où vient une expression listée par `hiddenFieldUsages` : titre du questionnaire ou du fragment dans la
+ * langue du contenu, sinon sa clé ; `undefined` pour une expression du graphe où le champ est masqué.
+ */
+export function hiddenUsageCaller(ws: Workspace, ref: GraphRef, usage: FoundExpression, env: { contentLang: string; defaultLang: string }): string | undefined {
+  const o = usage.loc.owner;
+  if ((o.kind !== 'questionnaire' && o.kind !== 'fragment') || (o.kind === ref.kind && o.id === ref.id)) return undefined;
+  const g = o.kind === 'questionnaire' ? ws.questionnaires.find((x) => x.id === o.id) : ws.library.fragments.find((x) => x.id === o.id);
+  return g ? previewText(g.title, env).trim() || g.key : o.id;
+}
+
+function usagesIn(ws: Workspace, ref: GraphRef, paths: string[][], depth: number): FoundExpression[] {
+  if (depth > 20) return []; // cycle d'appels : signalé ailleurs
   const mine = (f: FoundExpression) => f.loc.owner.kind === ref.kind && f.loc.owner.id === ref.id;
-  return [...findUsages(ws, [inst.q.key, field]), ...findUsages(ws, [inst.q.key, `${field}_${OTHER_VALUE}`])].filter(mine);
+  const out = paths.flatMap((p) => findUsages(ws, p)).filter(mine);
+  if (ref.kind !== 'fragment') return out;
+  for (const c of fragmentCallers(ws, ref.id)) {
+    const aliases = getGraph(ws, c)?.nodes.flatMap((n) => (n.kind === 'fragment' && n.ref === ref.id ? [n.alias] : [])) ?? [];
+    out.push(...usagesIn(ws, c, aliases.flatMap((a) => paths.map((p) => [a, ...p])), depth + 1));
+  }
+  return out;
 }
 
 /**

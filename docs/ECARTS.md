@@ -2,30 +2,30 @@
 
 Écarts non bloquants relevés en relecture, à corriger seulement à la demande.
 
-| Date | Origine | Gravité | Constat | Fichier(s) |
-| --- | --- | --- | --- | --- |
-| 2026-10-12 | EVO-007 (environnement) | mineur | `npm run check` rouge à l'étape Playwright seulement : navigateurs de `@playwright/test` 1.64 (chromium 1248, firefox) non installables dans ce conteneur (`cdn.playwright.dev` bloqué par le proxy). Les 24 tests de fumée passent sous le Chromium 1194 présent (`/opt/pw-browsers`, `executablePath` dans une configuration locale non versionnée) ; Firefox non exécuté. À relancer dans un conteneur où `npx playwright install chromium firefox` aboutit. | `playwright.config.ts`, `tests/smoke/*` |
-| 2026-10-12 | EVO-007 | mineur | Le message `option` de la civilité (produit par `contactErrors` sur une donnée importée invalide) n'est pas proposé à la surcharge par `messageParams`, contrairement au choix unique. | `src/core/validation/field.ts:168-181` |
-| 2026-10-12 | EVO-007 | mineur | `displayFormatters` associe la mise en forme à la première question de même clé trouvée dans tout l'espace de travail : une question texte homonyme d'une civilité ou d'un téléphone ailleurs peut être reformatée à l'interpolation. | `src/core/contact/display.ts:18-28` |
-| 2026-10-12 | EVO-008 | mineur | Le test « vue côte à côte » adapté ne vérifie plus l'indisponibilité avec un seul questionnaire (l'exemple en a désormais deux). | `src/app/commands/settings-commands.test.ts:60` |
-| 2026-10-12 | EVO-008 | mineur | Commentaires parlant encore de « bloc ». | `src/app/commands/edit-commands.ts:46`, `src/app/commands/image-commands.ts:6`, `src/ui/diagram/Diagram.tsx:115`, `src/core/model/question.ts:81` |
-| 2026-10-12 | EVO-008 | mineur | Une question de bibliothèque utilisée seulement dans un fragment a ses références signalées « inconnues » (`scopesFor` ne prend que les questionnaires ; préexistant avec les blocs). | `src/core/validation/refs-check.ts` |
-| 2026-10-12 | EVO-008 | mineur | Débogage : sur la dernière page d'un fragment, « Conditions évaluées » ne montre pas les arêtes de l'appelant qui seront suivies. | prévisualisation |
-| 2026-10-12 | EVO-009 | mineur | L'avertissement au masquage ne liste que les expressions du graphe de l'instance ; dans un fragment, les références `alias.cle.champ` des appelants n'y figurent pas (la vérification `hiddenField` les signale ensuite). | `src/app/store/library-edits.ts:146-150` |
-| 2026-10-12 | EVO-009 | mineur | Titre de la fenêtre d'avertissement assemblé en dur avec « : » à la française (espace fautive en anglais). | `src/ui/properties/HiddenFields.tsx:25` |
-| 2026-10-13 | harnais | mineur | Conteneur cloud : navigateurs Playwright non téléchargeables (proxy) ; fumée sur Chromium 1194 préinstallé, sans Firefox. Sur `main` (avant EVO-012), `app.spec.ts:252` échoue de façon reproductible (vue du fragment : 1 nœud au lieu de 2) ; non investigué, le test est corrigé dans EVO-012. | `playwright.config.ts`, `tests/smoke/app.spec.ts` |
-| 2026-10-13 | EVO-012 | mineur | La provenance « Hérité » affiche la clé du fragment et non son nom (titre). | `src/ui/properties/RequiredOverride.tsx:203`, `src/app/i18n/messages-required.ts:10` |
-| 2026-10-13 | EVO-012 | mineur | Pas de test direct : une question surchargée « Obligatoire » mais non présentée n'est pas exigée (moteur inchangé sur ce point). | `src/core/runtime/required.test.ts` |
-| 2026-10-13 | EVO-013 | mineur | Le défilement jusqu'à la question ouverte n'est pas réellement testé (liste d'exemple trop courte, `toBeInViewport` passe toujours). | `tests/smoke/evo-013.spec.ts:344` |
-| 2026-10-13 | EVO-014 | mineur | Pas de test vérifiant que les messages de format des plugins mail, téléphone et adresse se taisent contrôles désactivés (seul un nombre hors bornes est testé). | `tests/smoke/evo-014.spec.ts` |
-| 2026-10-13 | EVO-014 | mineur | Une page quittée contrôles désactivés reste exclue de la garde de fin jusqu'à « Recommencer », même revisitée contrôles activés (cas limite non documenté). | `src/ui/preview/Preview.tsx:375`, `src/ui/preview/path-check.ts:21` |
-| 2026-10-13 | EVO-015 | mineur | Formulaire validé importé sans fichier de mise en page : le premier commentaire crée la mise en page, ce que le verrou prend pour une modification, donc l'ajout est refusé (contraire à « commentaires hors verrou »). Pas de test. | `src/core/model/validation.ts:16-20`, `src/app/store/graph.ts:18-25` |
-| 2026-10-13 | EVO-016 | mineur | Le libellé d'une option est cherché dans tous les questionnaires, fragments et bibliothèque : deux choix de même clé → le premier trouvé l'emporte. Pas de test. | `src/core/runtime/suggestions.ts:39-41`, `src/plugins/question-types/text/index.tsx:27-33` |
-| 2026-10-13 | EVO-016 | mineur | Critères « valeur unique » et « doublons » couverts seulement en unitaire. | `src/core/runtime/suggestions.test.ts` |
-| 2026-10-13 | EVO-017 | mineur | Le test « projet antérieur » réécrit les options avant de prévisualiser : il ne vérifie pas une question groupée enregistrée telle quelle (format inchangé, risque faible). | `tests/smoke/evo-017.spec.ts:13-41` |
-| 2026-10-14 | EVO-018 | mineur | Le titre du test « le format courant est la version 12 » ne correspond plus à sa vérification (`>= 12`). | `src/format/format.test.ts:371-372` |
-| 2026-10-14 | EVO-018 | mineur | Cas d'un tri-state ayant déjà « Ne sais pas » (option conservée) non testé. | `src/format/migrate-tristate.test.ts:31`, `src/format/migrate.ts:109` |
-| 2026-10-14 | harnais | mineur | D'autres tests de fumée rouvrant l'exemple plusieurs fois dans la même page pourraient réutiliser la session restaurée (cause du défaut corrigé dans `evo-017.spec.ts`). Non vérifié. | `tests/smoke/` |
-| 2026-10-14 | EVO-019 | mineur | Le critère « outline masqué, prévisualisation identique » n'est vérifié qu'en partie (largeur du wizard, sans comparaison au rendu antérieur). | `tests/smoke/evo-019.spec.ts:188-195` |
-| 2026-10-14 | EVO-019 | mineur | Dans l'outline (lecture seule), le double-clic sur le badge « bib. » lance encore `library.openRef` et quitte la prévisualisation ; ni désactivé, ni testé, ni décrit. | `src/ui/diagram/NodeView.tsx:45-48` |
-| 2026-10-14 | EVO-020 | mineur | Les chemins attendus n'ont pas de JSON Schema : le test du kit vérifie seulement leurs clés obligatoires (§15) ; leur rejeu est couvert par `tests/reference/paths.test.ts`. | `scripts/kit-dev.test.ts` |
+Catégories :
+
+- **CODE** : le code ne respecte pas la spec (comportement faux ou incomplet).
+- **TEST** : comportement conforme, mais test absent, partiel ou trop faible pour le prouver.
+- **SPEC** : comportement du code non décrit (ou ambigu) dans la spec ou le guide.
+- **I18N** : texte destiné à l'utilisateur incorrect dans une des langues.
+- **TEXT** : commentaire de code ou titre de test obsolète.
+- **ENV** : l'environnement d'exécution de Claude est limitant (conteneur, proxy, navigateurs).
+
+| Date | Origine | Gravité | Catégorie | Constat | Fichier(s) |
+| --- | --- | --- | --- | --- | --- |
+| 2026-10-12 | EVO-007 (environnement) | mineur | ENV | `npm run check` rouge à l'étape Playwright seulement : navigateurs de `@playwright/test` 1.64 (chromium 1248, firefox) non installables dans ce conteneur (`cdn.playwright.dev` bloqué par le proxy). Les 24 tests de fumée passent sous le Chromium 1194 présent (`/opt/pw-browsers`, `executablePath` dans une configuration locale non versionnée) ; Firefox non exécuté. À relancer dans un conteneur où `npx playwright install chromium firefox` aboutit. | `playwright.config.ts`, `tests/smoke/*` |
+| 2026-10-12 | EVO-008 | mineur | TEST | Le test « vue côte à côte » adapté ne vérifie plus l'indisponibilité avec un seul questionnaire (l'exemple en a désormais deux). | `src/app/commands/settings-commands.test.ts:60` |
+| 2026-10-12 | EVO-008 | mineur | TEXT | Commentaires parlant encore de « bloc ». | `src/app/commands/edit-commands.ts:46`, `src/app/commands/image-commands.ts:6`, `src/ui/diagram/Diagram.tsx:115`, `src/core/model/question.ts:81` |
+| 2026-10-12 | EVO-009 | mineur | I18N | Titre de la fenêtre d'avertissement assemblé en dur avec « : » à la française (espace fautive en anglais). | `src/ui/properties/HiddenFields.tsx:25` |
+| 2026-10-13 | harnais | mineur | ENV | Conteneur cloud : navigateurs Playwright non téléchargeables (proxy) ; fumée sur Chromium 1194 préinstallé, sans Firefox. Sur `main` (avant EVO-012), `app.spec.ts:252` échoue de façon reproductible (vue du fragment : 1 nœud au lieu de 2) ; non investigué, le test est corrigé dans EVO-012. | `playwright.config.ts`, `tests/smoke/app.spec.ts` |
+| 2026-10-13 | EVO-012 | mineur | TEST | Pas de test direct : une question surchargée « Obligatoire » mais non présentée n'est pas exigée (moteur inchangé sur ce point). | `src/core/runtime/required.test.ts` |
+| 2026-10-13 | EVO-013 | mineur | TEST | Le défilement jusqu'à la question ouverte n'est pas réellement testé (liste d'exemple trop courte, `toBeInViewport` passe toujours). | `tests/smoke/evo-013.spec.ts:344` |
+| 2026-10-13 | EVO-014 | mineur | TEST | Pas de test vérifiant que les messages de format des plugins mail, téléphone et adresse se taisent contrôles désactivés (seul un nombre hors bornes est testé). | `tests/smoke/evo-014.spec.ts` |
+| 2026-10-13 | EVO-014 | mineur | SPEC | Une page quittée contrôles désactivés reste exclue de la garde de fin jusqu'à « Recommencer », même revisitée contrôles activés (cas limite non documenté). | `src/ui/preview/Preview.tsx:375`, `src/ui/preview/path-check.ts:21` |
+| 2026-10-13 | EVO-016 | mineur | TEST | Critères « valeur unique » et « doublons » couverts seulement en unitaire. | `src/core/runtime/suggestions.test.ts` |
+| 2026-10-13 | EVO-017 | mineur | TEST | Le test « projet antérieur » réécrit les options avant de prévisualiser : il ne vérifie pas une question groupée enregistrée telle quelle (format inchangé, risque faible). | `tests/smoke/evo-017.spec.ts:13-41` |
+| 2026-10-14 | EVO-018 | mineur | TEXT | Le titre du test « le format courant est la version 12 » ne correspond plus à sa vérification (`>= 12`). | `src/format/format.test.ts:371-372` |
+| 2026-10-14 | EVO-018 | mineur | TEST | Cas d'un tri-state ayant déjà « Ne sais pas » (option conservée) non testé. | `src/format/migrate-tristate.test.ts:31`, `src/format/migrate.ts:109` |
+| 2026-10-14 | harnais | mineur | TEST | D'autres tests de fumée rouvrant l'exemple plusieurs fois dans la même page pourraient réutiliser la session restaurée (cause du défaut corrigé dans `evo-017.spec.ts`). Non vérifié. | `tests/smoke/` |
+| 2026-10-14 | EVO-019 | mineur | TEST | Le critère « outline masqué, prévisualisation identique » n'est vérifié qu'en partie (largeur du wizard, sans comparaison au rendu antérieur). | `tests/smoke/evo-019.spec.ts:188-195` |
+| 2026-10-14 | EVO-020 | mineur | TEST | Les chemins attendus n'ont pas de JSON Schema : le test du kit vérifie seulement leurs clés obligatoires (§15) ; leur rejeu est couvert par `tests/reference/paths.test.ts`. | `scripts/kit-dev.test.ts` |

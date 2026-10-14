@@ -1,5 +1,5 @@
 import type { FC, ReactNode } from 'react';
-import type { GraphNode, Label, LangCode, LocalizedText, Question, QuestionType, Workspace } from '../core/model';
+import type { Graph, GraphNode, Label, LangCode, LocalizedText, Question, QuestionType, Workspace } from '../core/model';
 
 /** Environnement de l'éditeur, transmis aux plugins. */
 export interface EditorEnv {
@@ -39,6 +39,8 @@ export interface RenderEnv extends EditorEnv {
   scoped(extra: Record<string, unknown>): RenderEnv;
   /** Contrôles de saisie de la prévisualisation (EVO-014) ; `false` : aucun message de contrôle affiché par le champ. */
   checks?: boolean;
+  /** Graphe de la page affichée : questionnaire, ou fragment pour une page d'un fragment (clés cherchées d'abord ici). */
+  graph?: Graph;
 }
 
 /** Propriétés communes à toutes les questions, conservées lors d'un changement de type. */

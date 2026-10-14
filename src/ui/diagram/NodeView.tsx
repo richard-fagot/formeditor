@@ -44,8 +44,9 @@ export const NodeView = memo(function NodeView({ data, selected }: NodeProps & {
       {question && OTHER_TYPES.includes(question.type) && 'other' in question && question.other && <Badge>{t('node.badgeOther')}</Badge>}
       {(isLibraryQuestion(node) || node.kind === 'fragment') && (
         // EVO-013 : double-clic = ouvrir l'objet lié ; `nopan` écarte le zoom du fond, stopPropagation l'édition du nœud.
-        <span data-testid="library-badge" className="nopan" title={t('node.libraryBadge')}
-          onDoubleClick={(e) => { e.stopPropagation(); runCommand('library.openRef', { kind: node.kind, id: node.ref }); }}>
+        // Outline de la prévisualisation (EVO-019, lecture seule) : double-clic sans effet, pas d'info-bulle.
+        <span data-testid="library-badge" className="nopan" title={outline ? undefined : t('node.libraryBadge')}
+          onDoubleClick={(e) => { e.stopPropagation(); if (!outline) runCommand('library.openRef', { kind: node.kind, id: node.ref }); }}>
           <Badge tone="amber">bib.</Badge>
         </span>
       )}

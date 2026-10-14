@@ -341,7 +341,8 @@ Dans le wizard, le contrôle s'applique à la sortie du champ (message sous le c
   ligne ; codes fixes `MME`, `M`. `[cmd: node.type.civility]`
 - **Régler une civilité** — « Libellés courts (« Mme », « M. ») » ; « Option « Ne se prononce pas » (code NP) » (en dernier) ;
   « Libellé — MME » / « — M » / « — NP » : libellés multilingues remplaçant ceux par défaut (fournis en français et en
-  anglais ; les autres langues du projet sont signalées en traduction manquante). Le code ne change jamais.
+  anglais ; les autres langues du projet sont signalées en traduction manquante). Le code ne change jamais. Message
+  `option` (code non proposé, par exemple dans une donnée importée) personnalisable comme les autres (§9).
 - Logigramme : icône du type ; pour le téléphone et l'adresse, le pays par défaut s'il n'est pas `FR`, « mobile » ou « fixe »
   si un type de ligne est exigé ; pour la civilité, ses libellés.
 
@@ -443,7 +444,8 @@ Concerne le choix unique et le choix multiple. Le booléen n'a pas d'options (§
   unique donne une seule suggestion ; une valeur vide ou non renseignée n'en donne aucune ; nombres et dates sont affichés
   comme dans un texte interpolé (`12`, `2024-05-06`) ; une valeur en double n'est proposée qu'une fois, à sa première
   position ; une valeur d'option d'un choix cité dans l'expression est proposée (et insérée) par son **libellé** dans la
-  langue affichée (`alfa_romeo` → « Alfa Romeo »), jamais `other` : pour ajouter la précision « Autre »,
+  langue affichée (`alfa_romeo` → « Alfa Romeo » ; choix cherché dans le questionnaire ou le fragment affiché, sinon dans
+  la bibliothèque), jamais `other` : pour ajouter la précision « Autre »,
   écrire `$append(marques, marques_other)`. Seules les questions posées avant le champ et les variables `sys.` sont
   permises ; une question après est signalée (« ⚠ », §15) comme dans toute expression.
 - **Combiner** — `=`, `!=`, `<`, `<=`, `>`, `>=` (nombres et dates `AAAA-MM-JJ`) ; `and`, `or`, `$not(…)` ; `'x' in liste` ;
@@ -455,7 +457,8 @@ Concerne le choix unique et le choix multiple. Le booléen n'a pas d'options (§
 - **Insérer une valeur dans un texte** — `{expression}` dans un libellé : `Bonjour {sys.nom_assure}`. C'est la valeur qui
   s'affiche, pas le libellé de l'option. Exceptions : une civilité affiche son libellé dans la langue affichée
   (`{civilite} {nom}` → « Madame Dupont »), un téléphone son format international (`+33 6 12 34 56 78`), quand
-  l'expression est la seule référence à la question. `{{` et `}}` donnent des accolades.
+  l'expression est la seule référence à la question ; le type est celui de la question de cette clé dans le questionnaire
+  ou le fragment affiché, sinon dans la bibliothèque. `{{` et `}}` donnent des accolades.
 - **Exemples prêts à copier** :
   1. `type_sinistre = 'vol'`
   2. `montant > 1000 and $exists(date_sinistre)`
@@ -518,11 +521,11 @@ Concerne le choix unique et le choix multiple. Le booléen n'a pas d'options (§
   fragment qui en inclut un autre), sélectionner le nœud fragment : la liste « Questions du fragment : caractère obligatoire »
   montre chaque question (`alias.cle`, fragments inclus compris : `alias.sous_alias.cle`) avec le même sélecteur et sa
   valeur effective ; « Surchargé » repère celles surchargées dans cet appel, et le nœud fragment porte le badge « surch. ».
-  « Hérité » affiche la valeur et sa provenance (« bibliothèque » ou « fragment <clé> » quand elle est fixée dans le
-  fragment). Règle : **le niveau le plus proche de l'utilisation l'emporte** — l'appelant le plus externe, puis chaque
+  « Hérité » affiche la valeur et sa provenance (« bibliothèque » ou « fragment <titre> » quand elle est fixée dans le
+  fragment ; sa clé s'il n'a pas de titre). Règle : **le niveau le plus proche de l'utilisation l'emporte** — l'appelant le plus externe, puis chaque
   fragment intermédiaire, puis la référence dans le fragment, puis la bibliothèque. Ex. : `Q_TEL` facultative en
-  bibliothèque, « Obligatoire » dans le fragment `coordonnees` ; le formulaire « Adhésion » qui l'appelle sans surcharge
-  l'exige (« Hérité (Obligatoire, fragment coordonnees) ») ; le formulaire « Demande de rappel » la règle sur
+  bibliothèque, « Obligatoire » dans le fragment « Coordonnées » ; le formulaire « Adhésion » qui l'appelle sans surcharge
+  l'exige (« Hérité (Obligatoire, fragment Coordonnées) ») ; le formulaire « Demande de rappel » la règle sur
   « Facultatif » pour lui seul. Une surcharge dont la question a disparu du fragment est ignorée.
 - **Revenir à la valeur héritée** — Choisir « Hérité » dans la liste, ou bouton « Revenir à la valeur héritée » (sous la
   liste d'une référence ; sous la liste des questions d'un nœud fragment, il retire **toutes** les surcharges de l'appel),
@@ -533,7 +536,9 @@ Concerne le choix unique et le choix multiple. Le booléen n'a pas d'options (§
   champ **dans ce questionnaire seulement** (ni la bibliothèque ni les autres usages ne changent) ; le dernier champ affiché
   ne peut pas être décoché. Un champ masqué n'est pas présenté dans la prévisualisation, même s'il est obligatoire. Le nœud
   affiche « n / m champs ». Un champ ajouté plus tard à la structure en bibliothèque apparaît affiché partout. Si une expression
-  du questionnaire utilise le champ masqué, la fenêtre « Champ masqué encore référencé : … » liste ces expressions, et la
+  du questionnaire utilise le champ masqué (dans un fragment, aussi une expression `alias.cle.champ` de ses appelants), la
+  fenêtre « Champ masqué encore référencé : … » liste ces expressions — celles d'un appelant précédées de « appelant « … » »,
+  son titre (sa clé s'il n'en a pas) —, et la
   vérification « Champ masqué « … » » les signale (§15). Recocher pour réafficher ; `Ctrl+Z` annule.
 - **Ouvrir la question d'une référence** — Bouton « Ouvrir dans la bibliothèque » du panneau, ou palette. `[cmd: node.openInLibrary]`
 - **Ouvrir l'objet lié depuis son badge « bib. »** — Dans le logigramme (questionnaire, fragment ou vue côte à côte),
@@ -543,6 +548,7 @@ Concerne le choix unique et le choix multiple. Le booléen n'a pas d'options (§
   l'intitulé du nœud ; ailleurs sur le nœud, il l'édite comme avant ; un simple clic sélectionne le nœud. Pas de retour
   automatique : l'onglet du questionnaire reste ouvert, ses modifications non enregistrées sont conservées. Objet
   supprimé de la bibliothèque (lien rompu) : fenêtre « Objet de bibliothèque introuvable », on reste sur le questionnaire.
+  Dans l'outline de la prévisualisation (lecture seule), ce double-clic est sans effet (ni info-bulle).
   `[cmd: library.openRef]`
 - **Afficher un élément de la bibliothèque** — Onglet « Bibliothèque », cliquer l'élément dans la liste de gauche (« Jeux de
   libellés », « Questions », « Fragments »). Une question s'affiche à droite (« Utilisé dans : … » liste les questionnaires
@@ -677,7 +683,9 @@ Concerne le choix unique et le choix multiple. Le booléen n'a pas d'options (§
   (arête suivie surlignée, `true` / `false` / « sinon » / « erreur »), « Valeurs courantes » (réponses et `sys` ; le groupe
   de l'option choisie apparaît sous `<clé>_group`, « Ne sais pas » sous `<clé>_nsp`, le pays d'un téléphone ou d'une adresse
   sous `<clé>_pays`, à côté de la valeur normalisée). Sur une page d'un fragment, un bandeau « Dans le fragment : »
-  donne le chemin des alias et le nom du fragment ; le chemin parcouru écrit ses questions `alias.cle`. `[cmd: preview.toggleDebug]`
+  donne le chemin des alias et le nom du fragment ; le chemin parcouru écrit ses questions `alias.cle`. Sur la dernière page
+  d'un fragment (ou quand l'arête retenue mène à une sortie nommée), « Puis, à la sortie du fragment : » liste ensuite les
+  arêtes du nœud fragment de l'appelant, évaluées avec ses réponses. `[cmd: preview.toggleDebug]`
 - **Changer la langue de la prévisualisation** — Liste « Langue » de la barre, ou palette « Langue de la prévisualisation
   suivante » (plusieurs langues). Un bandeau compte les textes non traduits, affichés dans la langue par défaut. `[cmd: preview.lang]`
 - **Ne pas voir les commentaires** — Les commentaires de révision (§16) n'apparaissent jamais dans le wizard.
@@ -741,6 +749,7 @@ ou palette « Problèmes ») ; un clic sur un problème sélectionne le nœud ou
 - **Plusieurs sorties sans « sinon »** — Le parcours peut se bloquer → vider la condition d'une des arêtes ou en ajouter une sans condition.
 - **Plusieurs arêtes sans condition : seule la première sert** — Donner une condition aux autres ou les supprimer.
 - **« … » n’est pas posée sur tous les chemins menant ici** — Garder la référence derrière `$exists(cle)` ou revoir le graphe.
+  Pour une question de bibliothèque, signalé dans chaque questionnaire et chaque fragment qui l'utilise, sur sa référence.
 - **Traduction manquante (…) : …** — Saisir le texte dans la langue indiquée (§13). Vaut aussi pour le libellé d'un groupe d'options.
 - **Groupe d’options en double « … »** — Deux groupes d'une question ont le même code (ou, sans code, le même libellé) →
   donner un « Code du groupe » distinct (§7).

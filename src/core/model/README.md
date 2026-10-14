@@ -32,7 +32,7 @@ utilitaires purs. Aucun import externe : c'est la base de tous les autres module
   `Layout` (dont `comments?` : `ReviewComment` `{ node, x?, y?, text, replies }`, commentaires de révision, EVO-011), `Workspace` (projet complet en mémoire), `Bundle`, `FORMAT_VERSION` (13). `Questionnaire.status?` (`draft` | `validated`) et `validatedAt?` (EVO-015).
 - `graph.ts` : `Graph` = `nodes` + `edges` (sans départ).
 - `validation.ts` (EVO-015) : `QuestionnaireStatus`, `isValidated(q)`, `lockedChanges(avant, après)` → ids des questionnaires validés avant
-  dont le contenu verrouillé a changé ou qui ont disparu (questionnaire hors `status` / `validatedAt`, mise en page hors `comments`, entrée du projet).
+  dont le contenu verrouillé a changé ou qui ont disparu (questionnaire hors `status` / `validatedAt`, mise en page hors `comments` — sans position, elle équivaut à son absence —, entrée du projet).
 - `fragment.ts` (EVO-008) : `fragmentRoots` (nœuds sans arête entrante), `fragmentEntry` (`entry`, sinon premier candidat, sinon premier nœud),
   `fragmentExits` (nœuds sans arête sortante), `graphStart` (départ ou entrée), `calledFragments`, `createsCycle`, `fragmentCallers`.
 - `keys.ts` : `deriveKey` (« Date du sinistre » → `date_sinistre`), `uniqueKey`, `isValidKey`, `newId`, `RESERVED_KEYS` (dont `groupe`, `nsp`).

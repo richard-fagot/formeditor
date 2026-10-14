@@ -71,12 +71,32 @@ describe('libellés des options (EVO-016, correction)', () => {
       library: { questions: [choix('l1', 'couleurs')], fragments: [{ id: 'f', nodes: [choix('f1', 'modeles')], edges: [] }], labelSets: [] },
       questionnaires: [{ id: 'q', nodes: [choix('n1', 'marques'), { kind: 'question', id: 'n2', key: 'nom', label: {}, type: 'text' }], edges: [] }],
     } as unknown as Workspace;
-    const keys = (e: string) => referencedChoices(ws, e).map((q) => q.key);
+    const keys = (e: string) => referencedChoices(ws, e, ws.questionnaires[0]).map((q) => q.key);
     expect(keys('$append(marques, nom)')).toEqual(['marques']);
     expect(keys('ident.modeles')).toEqual(['modeles']);
     expect(keys('couleurs')).toEqual(['couleurs']);
     expect(keys('sys.marques')).toEqual([]);
     expect(keys('$inconnue(')).toEqual([]);
+  });
+
+  it('referencedChoices : graphe courant d’abord, puis bibliothèque ; première question de la clé retenue (écart EVO-016)', () => {
+    const choix = (id: string, key: string) => ({ kind: 'question', id, key, label: { fr: key }, type: 'single', options: [] });
+    const texte = (id: string, key: string) => ({ kind: 'question', id, key, label: { fr: key }, type: 'text' });
+    const ws = {
+      project: {}, layouts: [],
+      library: { questions: [choix('l1', 'marques')], fragments: [{ id: 'f', nodes: [choix('f1', 'modeles')], edges: [] }], labelSets: [] },
+      questionnaires: [
+        { id: 'q1', nodes: [choix('a1', 'marques'), { kind: 'question', id: 'r', ref: 'l1' }], edges: [] },
+        { id: 'q2', nodes: [choix('b1', 'marques'), texte('b2', 'modeles')], edges: [] },
+        { id: 'q3', nodes: [texte('c1', 'marques')], edges: [] },
+      ],
+    } as unknown as Workspace;
+    const ids = (e: string, g: number) => referencedChoices(ws, e, ws.questionnaires[g]).map((q) => q.id);
+    expect(ids('marques', 0)).toEqual(['a1']);
+    expect(ids('marques', 1)).toEqual(['b1']);
+    expect(ids('marques', 2)).toEqual([]);
+    expect(ids('ident.modeles', 0)).toEqual(['f1']);
+    expect(ids('modeles', 1)).toEqual([]);
   });
 });
 

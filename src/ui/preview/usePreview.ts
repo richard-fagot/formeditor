@@ -3,6 +3,7 @@ import { evaluate, evaluateCondition, pickText, resolveLabel, type EvalContext }
 import { displayFormatters } from '../../core/contact';
 import { buildContext, choiceOptions, resolveStep, start, type RuntimeInput, type Session } from '../../core/runtime';
 import type { RenderEnv } from '../../plugin-api';
+import type { Graph } from '../../core/model';
 import { systemStateOf, useStore, type PreviewState } from '../../app/store';
 import { questionType } from '../../registry';
 
@@ -14,8 +15,12 @@ export function usePreview(questionnaireId: string) {
   const contentLang = useStore((s) => s.contentLang);
   const lang = p?.lang ?? contentLang;
   const input: RuntimeInput = useMemo(
-    // `display` : interpolation d'une civilité (libellé) et d'un téléphone (format international), EVO-007.
-    () => ({ ws, questionnaireId, sys: systemStateOf(ws, p), env: { defaultLang: ws.project.defaultLanguage, display: displayFormatters(ws) } }),
+    // `display` : interpolation d'une civilité (libellé) et d'un téléphone (format international), EVO-007 ;
+    // remplacé par celui du fragment courant dans `makeRenderEnv`.
+    () => ({
+      ws, questionnaireId, sys: systemStateOf(ws, p),
+      env: { defaultLang: ws.project.defaultLanguage, display: displayFormatters(ws, ws.questionnaires.find((q) => q.id === questionnaireId)) },
+    }),
     [ws, questionnaireId, p],
   );
   const session: Session = useMemo(() => {
@@ -36,13 +41,17 @@ export function usePreview(questionnaireId: string) {
 
 /** Environnement de rendu des plugins à une étape donnée (`checks` : contrôles de saisie, EVO-014). */
 export function makeRenderEnv(input: RuntimeInput, session: Session, stepId: string | undefined, lang: string, uiLang: string, checks = true): RenderEnv {
-  return envOf(input, buildContext(input, session.answers, stepId), lang, uiLang, checks);
+  // Page d'un fragment : mises en forme cherchées d'abord dans ce fragment (EVO-007).
+  const step = stepId ? resolveStep(input, stepId) : undefined;
+  const local = step?.fragment ? { ...input, env: { ...input.env, display: displayFormatters(input.ws, step.fragment) } } : input;
+  const graph = step?.graph ?? input.ws.questionnaires.find((q) => q.id === input.questionnaireId);
+  return envOf(local, buildContext(input, session.answers, stepId), lang, uiLang, checks, graph);
 }
 
 /** Copie sans les valeurs `null` (comme `buildContext`) : une valeur vide n'est pas « renseignée ». */
 const withoutNulls = (o: Record<string, unknown>) => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== null));
 
-function envOf(input: RuntimeInput, ctx: EvalContext, lang: string, uiLang: string, checks: boolean): RenderEnv {
+function envOf(input: RuntimeInput, ctx: EvalContext, lang: string, uiLang: string, checks: boolean, graph?: Graph): RenderEnv {
   const langs = { lang, defaultLang: input.ws.project.defaultLanguage };
   return {
     ws: input.ws,
@@ -56,7 +65,8 @@ function envOf(input: RuntimeInput, ctx: EvalContext, lang: string, uiLang: stri
     evaluate: (e, extra) => evaluate(e, { ...ctx, ...extra }, input.env),
     condition: (e, extra) => evaluateCondition(e, { ...ctx, ...extra }, input.env),
     options: (q) => (q.type === 'single' || q.type === 'multiple' ? choiceOptions(q, ctx, input.env) : []),
-    scoped: (extra) => envOf(input, { ...ctx, ...withoutNulls(extra) }, lang, uiLang, checks),
+    scoped: (extra) => envOf(input, { ...ctx, ...withoutNulls(extra) }, lang, uiLang, checks, graph),
     checks,
+    graph,
   };
 }

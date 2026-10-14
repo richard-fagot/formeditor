@@ -37,15 +37,18 @@ export function checkReferences(ws: Workspace): Issue[] {
     const s = f.loc.structure ? structureOf(f.loc.owner, f.loc.structure) : undefined;
     return s ? base.map((sc) => structureScope(sc, s)) : base;
   };
-  /** Portées dans lesquelles l'expression doit se résoudre (une par appelant pour une question de bibliothèque). */
+  /** Portées dans lesquelles l'expression doit se résoudre (une par questionnaire ou fragment utilisateur pour une question de bibliothèque). */
   const scopesFor = (f: FoundExpression): Scope[] => {
     const o = f.loc.owner;
     let base: Scope[];
     if (o.kind === 'questionnaire') base = [cached(`q:${o.id}`, () => questionnaireScope(ws, o.id))];
     else if (o.kind === 'fragment') base = [cached(`f:${o.id}`, () => fragmentScope(ws, o.id))];
     else {
-      const users = ws.questionnaires.filter((q) => q.nodes.some((n) => n.kind === 'question' && 'ref' in n && n.ref === o.id));
-      base = users.map((q) => cached(`q:${q.id}`, () => questionnaireScope(ws, q.id)));
+      const uses = (g: Graph) => g.nodes.some((n) => n.kind === 'question' && 'ref' in n && n.ref === o.id);
+      base = [
+        ...ws.questionnaires.filter(uses).map((q) => cached(`q:${q.id}`, () => questionnaireScope(ws, q.id))),
+        ...ws.library.fragments.filter(uses).map((x) => cached(`f:${x.id}`, () => fragmentScope(ws, x.id))),
+      ];
       if (!base.length) base = [new Map()];
     }
     return withStructure(f, base);
@@ -147,10 +150,11 @@ function checkGuaranteed(
   // Points de contrôle : (graphe, nœud ou arête) où l'expression est évaluée.
   const checkpoints: { gkey: string; owner: Owner; nodeId?: string; edgeId?: string }[] = [];
   if (o.kind === 'libraryQuestion') {
-    for (const q of ws.questionnaires) {
-      for (const n of q.nodes) if (n.kind === 'question' && 'ref' in n && n.ref === o.id) {
-        checkpoints.push({ gkey: `questionnaire:${q.id}`, owner: { kind: 'questionnaire', id: q.id }, nodeId: n.id });
-      }
+    // Chaque questionnaire et chaque fragment qui utilise la question de bibliothèque.
+    for (const [gkey, g] of graphs) {
+      const i = gkey.indexOf(':');
+      const kind = gkey.slice(0, i) as 'questionnaire' | 'fragment', id = gkey.slice(i + 1);
+      for (const n of g.nodes) if (n.kind === 'question' && 'ref' in n && n.ref === o.id) checkpoints.push({ gkey, owner: { kind, id }, nodeId: n.id });
     }
   } else checkpoints.push({ gkey: `${o.kind}:${o.id}`, owner: o, nodeId: f.loc.nodeId, edgeId: f.loc.edgeId });
   const out: Issue[] = [];
@@ -162,7 +166,7 @@ function checkGuaranteed(
     const before = guaranteed(cp.gkey).get(at);
     if (!before) continue; // nœud inaccessible : déjà signalé
     const known = new Set([...before, ...generated(ws, g, at, edge)]);
-    const ownKeys = o.kind === 'fragment' ? new Set(g.nodes.map((n) => questionOfNode(ws, n)?.key)) : undefined;
+    const ownKeys = cp.owner.kind === 'fragment' ? new Set(g.nodes.map((n) => questionOfNode(ws, n)?.key)) : undefined;
     for (const root of new Set(roots)) {
       if (ownKeys && !ownKeys.has(root)) continue; // clé de l'appelant vue depuis un fragment : non vérifiée
       if (!known.has(root)) out.push(issue('notGuaranteed', cp.owner, { nodeId: cp.nodeId, edgeId: cp.edgeId, property: f.loc.property }, { ref: root }));

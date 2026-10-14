@@ -135,6 +135,9 @@ test('EVO-008 : insérer un fragment au milieu (I), alias en double refusé, pr�
   await expect(preview).toContainText('Numéro de sécurité sociale');
   await palette(page, 'Afficher / masquer le panneau de débogage');
   await expect(page.getByTestId('debug-fragment')).toContainText('ident');
+  // Dernière page du fragment : les arêtes de l'appelant qui seront suivies (écart EVO-008).
+  await expect(page.getByTestId('debug-caller-edges')).toHaveText('Puis, à la sortie du fragment :');
+  await expect(page.getByTestId('debug-edge').last()).toContainText('→ montant');
   await preview.getByRole('textbox').fill('2800575123456');
   await next.click();
   await expect(preview).toContainText('Montant');

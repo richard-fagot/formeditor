@@ -59,7 +59,9 @@ describe('contrôles intégrés des types mail, téléphone, adresse, civilité 
     expect(messageParams(q('email'))).toEqual(['required', 'email']);
     expect(messageParams(q('phone', { lineType: 'fixed' }))).toEqual(['required', 'phone', 'lineType']);
     expect(messageParams(q('address', { maxLength: 100 }))).toEqual(['required', 'address', 'postalCode']);
-    expect(messageParams(q('civility'))).toEqual(['required']);
+    expect(messageParams(q('civility'))).toEqual(['required', 'option']);
+    const civ = q('civility', { messages: { option: { fr: 'Civilité inconnue.' } } });
+    expect(validateAnswer(civ, 'X', {}).map((e) => e.message)).toEqual([{ fr: 'Civilité inconnue.' }]);
   });
 });
 

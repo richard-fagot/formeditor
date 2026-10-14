@@ -12,7 +12,7 @@ export {
 } from './comment-edits';
 export {
   addLibraryQuestion, addFragment, deleteLibraryItem, referenceNode, insertionCycle, placeNode, moveToLibrary, canMoveToLibrary, setLibraryQuestionLabel, renameExit,
-  copyToLibrary, setFieldHidden, hiddenFieldUsages, type RewrittenExpression,
+  copyToLibrary, setFieldHidden, hiddenFieldUsages, hiddenUsageCaller, type RewrittenExpression,
   type LibraryItem,
 } from './library-edits';
 export { setRequiredOverride, resetRequired, hasRequiredOverride } from './required-edits';
