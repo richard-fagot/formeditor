@@ -11,7 +11,8 @@ Dépend de `app/store`, `app/commands` (liaison tracée à la souris : `edge.cre
 - `outline?: OutlineOptions` (EVO-019, prévisualisation) : lecture seule comme `readOnly`, `data-testid="outline"`, pas de `fitView` ;
   `useOutlineCenter` recentre (`setCenter`, zoom `outlineView.ts` : voisins immédiats, borné à [0,5 ; 1], testé) à chaque `focusKey`
   une fois le nœud courant mesuré et le zoom React Flow prêt (`panZoom`) ; `NodeView` : nœud courant `data-outline-current` (anneau vert),
-  question `data-outline="active"` (cliquable) ou `"inactive"` (grisée) ; seul un clic sur une question active appelle `onQuestionClick`.
+  question `data-outline="active"` (cliquable) ou `"inactive"` (grisée) ; seul un clic sur une question active appelle `onQuestionClick` ;
+  badge « bib. » sans info-bulle, double-clic sans effet.
 - `ProblemsPanel({ graph, issues })` : vérifications du §4.6 du graphe, repliable ; clic = sélection.
 - `LIBRARY_MIME` : type des données glissées depuis le panneau de la bibliothèque (`{ kind, id }`).
 

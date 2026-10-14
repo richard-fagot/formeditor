@@ -543,6 +543,7 @@ Concerne le choix unique et le choix multiple. Le booléen n'a pas d'options (§
   l'intitulé du nœud ; ailleurs sur le nœud, il l'édite comme avant ; un simple clic sélectionne le nœud. Pas de retour
   automatique : l'onglet du questionnaire reste ouvert, ses modifications non enregistrées sont conservées. Objet
   supprimé de la bibliothèque (lien rompu) : fenêtre « Objet de bibliothèque introuvable », on reste sur le questionnaire.
+  Dans l'outline de la prévisualisation (lecture seule), ce double-clic est sans effet (ni info-bulle).
   `[cmd: library.openRef]`
 - **Afficher un élément de la bibliothèque** — Onglet « Bibliothèque », cliquer l'élément dans la liste de gauche (« Jeux de
   libellés », « Questions », « Fragments »). Une question s'affiche à droite (« Utilisé dans : … » liste les questionnaires

@@ -222,6 +222,24 @@ test('EVO-019 : déplacer, éditer ou supprimer un nœud depuis l’outline ne m
   expect(await exportText(page)).toBe(before);
 });
 
+test('EVO-019 : double-clic sur le badge « bib. » dans l’outline sans effet (écart)', async ({ page }) => {
+  const s = await setup(page, (t) => {
+    const bundle = JSON.parse(t);
+    const q = bundle.questionnaires[0];
+    bundle.library.questions.push({ id: 'lq_outline', key: 'lib_outline', label: fr('Question de bibliothèque'), type: 'text' });
+    q.nodes.push({ kind: 'question', id: 'n_lib', ref: 'lq_outline' });
+    bundle.layouts.find((l: { graph: string }) => l.graph === q.id).nodes.n_lib = { x: 320, y: 0 };
+    return JSON.stringify(bundle);
+  });
+  const badge = s.node('n_lib').getByTestId('library-badge');
+  await expect(badge).not.toHaveAttribute('title');
+  await badge.dblclick();
+  await expect(s.outline).toBeVisible();
+  await expect(s.heading).toHaveText('Avez-vous des enfants ?');
+  await expect(s.preview).toBeVisible();
+  expect(s.errors).toEqual([]);
+});
+
 test('EVO-019 : un projet antérieur se charge sans erreur et l’outline s’affiche', async ({ page }) => {
   const s = await setup(page, (t) => t.replace(/"formatVersion":\s*\d+/g, '"formatVersion": 11'));
   await expectCentered(page, 'n_q1');
