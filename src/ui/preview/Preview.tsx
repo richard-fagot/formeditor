@@ -13,7 +13,7 @@ import { DebugPanel } from './DebugPanel';
 import { Outline } from './Outline';
 import { Summary } from './Summary';
 import { SystemPanel } from './SystemPanel';
-import { answerErrors, guardEnd } from './path-check';
+import { answerErrors, guardEnd, requiredAt } from './path-check';
 import { makeRenderEnv, usePreview } from './usePreview';
 
 /** Wizard : une page par question, pages d'information, de synthèse et de fin, via le moteur de parcours ; panneaux d'état du système et de débogage. */
@@ -163,7 +163,7 @@ function Wizard({ questionnaireId, preview }: { questionnaireId: string; preview
             <div className="space-y-4">
               <label htmlFor={`f-${step.id}`} className="block text-2xl font-semibold leading-snug text-slate-900">
                 {env.label(q.label)}
-                {q.required === true && <span className="text-rose-500"> *</span>}
+                {requiredAt(input, session.answers, step.id) && <span className="text-rose-500"> *</span>}
               </label>
               {q.help && <p className="text-sm text-slate-500">{env.label(q.help)}</p>}
               <plugin.Field key={step.id} question={q} value={value} other={other} group={group} country={country} errors={errorMap} env={env} inputId={`f-${step.id}`}

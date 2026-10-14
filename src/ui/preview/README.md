@@ -29,7 +29,8 @@ Dépend de `core`, `registry`, `app/store`, `app/commands`, `ui-kit`, `ui/system
   réévaluation immédiate), rétablir les valeurs du scénario, enregistrer comme scénario (`preview.saveScenario`).
 - `path-check.ts` (testé) : `answerErrors` (validation d'une réponse dans le contexte de sa page, avec son groupe lu sous
   `groupPath(answerPath)` et son marqueur sous `dontKnowPath(answerPath)`), `firstInvalidStep`
-  (première réponse invalide du chemin projeté, hors pages `skip`), `guardEnd` : avant d'afficher une fin (après « Suivant », « Revenir
+  (première réponse invalide du chemin projeté, hors pages `skip`), `requiredAt` (EVO-021 : astérisque d'une page, `isRequired` de
+  `core/validation` sur la question de l'étape, surcharges déjà appliquées par `resolveStep`, dans le même contexte que `answerErrors`), `guardEnd` : avant d'afficher une fin (après « Suivant », « Revenir
   à la synthèse » ou un changement de l'état du système), le wizard ramène à la première réponse invalide du chemin
   (`goTo`, erreurs affichées, réponse conservée) ; le parcours ne peut pas se terminer tant qu'elle n'est pas corrigée.
 - `DebugPanel.tsx` : bandeau « Dans le fragment : » (chemin des alias et nom du fragment, EVO-008), chemin parcouru (`alias.cle`), conditions des

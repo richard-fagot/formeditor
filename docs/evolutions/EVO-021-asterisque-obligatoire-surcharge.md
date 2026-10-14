@@ -1,6 +1,6 @@
 # EVO-021 — Astérisque d'obligation conforme à la surcharge en prévisualisation
 
-Statut : à faire
+Statut : fait 2026-10-14
 Dépend de : aucune (s'appuie sur le mécanisme de surcharge de question existant)
 
 ## Besoin
@@ -85,3 +85,29 @@ Ajouter une section « Analyse » en bas de ce fichier :
 
 Faisable sans ambiguïté bloquante → choix notés dans l'analyse et `docs/DECISIONS.md`, puis
 réalisation. Sinon → statut « à arbitrer », options et conséquences, arrêt sans coder.
+
+## Analyse
+
+1. **Faisabilité, modules** : faisable sans ambiguïté bloquante, sans changement du format JSON. Modules (matrice
+   EVO-012 et « Prévisualisation » de `docs/MAP.md`) : `core/validation` (fonction de résolution), `ui/preview`
+   (`path-check.ts`, `Preview.tsx`). `core/model` (`resolveRequired`) et `core/runtime` (`withQuestion`) inchangés.
+2. **Origine de l'écart** : depuis EVO-012, la surcharge est déjà appliquée en amont, une seule fois, par le moteur :
+   `resolveStep` → `withQuestion` (`core/runtime/steps.ts`) remplace `required` de la question de l'étape par
+   `resolveRequired` (surcharges des appels, puis de la référence, puis définition). L'astérisque (`Preview.tsx`) et le
+   contrôle de saisie (`answerErrors` → `validateAnswer`) lisent tous deux cette question de l'étape : **pour une
+   surcharge Obligatoire / Facultatif, l'astérisque suit déjà la surcharge** (test de fumée EVO-012). L'écart restant est
+   purement visuel et ne touche pas la surcharge elle-même : l'astérisque teste `required === true`, alors que le
+   contrôle évalue aussi un « obligatoire si » (`required` expression). Une question héritant d'un « obligatoire si »
+   (pas de surcharge, ou surcharge « Hérité ») peut donc bloquer sans astérisque. Correction : une seule fonction
+   `isRequired(question, ctx, env)` (`core/validation`) utilisée par `validateAnswer` ; la prévisualisation l'appelle
+   via `requiredAt(input, answers, stepId)` (`ui/preview/path-check.ts`), dans le même contexte que `answerErrors`.
+3. **Obligation conditionnelle** : une surcharge est toujours un booléen (schéma EVO-012) et remplace l'expression de la
+   définition ; seule la définition peut porter une expression. L'astérisque l'évalue dynamiquement, à chaque rendu
+   de la page (réponses, réponse en cours comprise, et état du système), avec la même règle que le contrôle (expression
+   non évaluable : faux). Dans le périmètre (même fonction que le blocage), pas d'implémentation partielle.
+4. **Autres rendus** : synthèse de la prévisualisation et export JSON ne montrent pas l'obligation (l'export ne stocke
+   que la surcharge, règle EVO-012). Hors périmètre, non traités : badge « * » / « * ? » du logigramme (déjà valeur
+   effective, EVO-012 ; logigramme sans objet pour cette EVO) ; astérisque des **champs d'une structure**
+   (`plugins/question-types/structure/occurrences.tsx`), non surchargeables, qui teste aussi `required === true`
+   alors que le contrôle évalue un « obligatoire si » de champ (même écart visuel, à traiter par une EVO dédiée si voulu).
+   Pas d'impression dans l'outil.

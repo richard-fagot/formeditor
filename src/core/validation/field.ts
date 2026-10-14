@@ -21,6 +21,11 @@ function bound(b: string | number | undefined, ctx: EvalContext, env: EvalEnv, i
   return evaluate(b, ctx, env);
 }
 
+/** Caractère obligatoire effectif d'une question (surcharges déjà appliquées par le moteur) : « obligatoire si » évalué dans `ctx` (EVO-021). */
+export function isRequired(q: Question | StructureField, ctx: EvalContext, env: EvalEnv = {}): boolean {
+  return typeof q.required === 'string' ? evaluateCondition(q.required, ctx, env) : q.required === true;
+}
+
 function validDate(s: string): boolean {
   if (!ISO_DATE.test(s)) return false;
   const d = new Date(`${s}T00:00:00Z`);
@@ -42,7 +47,7 @@ export function validateAnswer(
   const fail = (param: string, arg?: unknown) =>
     errors.push({ path, param, message: q.messages?.[param] ?? defaultMessage(param, arg) });
 
-  const required = typeof q.required === 'string' ? evaluateCondition(q.required, ctx, env) : q.required === true;
+  const required = isRequired(q, ctx, env);
   // Liste vide d'une structure répétable : vide si facultative ; si obligatoire, `repeat.min` (≥ 1) s'applique,
   // et sans minimum la liste vide est une réponse manquante (`required`).
   const repeatList = required && q.type === 'structure' && !!q.repeat?.min && Array.isArray(value);

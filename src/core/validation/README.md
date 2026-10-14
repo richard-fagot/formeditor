@@ -12,6 +12,8 @@ Dépend de `core/model`, `core/expressions`, `core/references`, `core/runtime` (
   figurer ; dans une structure, lu dans l'occurrence), c'est le couple (groupe, valeur) qui doit être visible. Structure répétable : `[]` est vide si la
   question est facultative (`repeat.min` ignoré) ; obligatoire, `repeat.min` (≥ 1) s'applique, et sans minimum
   la liste vide donne `required`.
+- `isRequired(question, ctx, env?)` (EVO-021) : caractère obligatoire effectif (booléen, ou « obligatoire si » évalué dans `ctx`, non
+  évaluable : faux) ; seule résolution, utilisée par `validateAnswer` et par l'astérisque de la prévisualisation.
 - « Ne sais pas » (EVO-006) : `validateAnswer(…, group?, dontKnow?)` ; marqueur `true` et option activée → aucune erreur
   (obligatoire, contraintes intégrées et libres) ; dans une structure, lu dans l'occurrence (`champ_nsp`). Code de groupe `NSP` réservé.
 - Mail, téléphone, adresse, civilité (EVO-007) : contrôles intégrés de `core/contact` (`email`, `phone`, `lineType`, `address`,
