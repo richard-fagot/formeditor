@@ -23,8 +23,14 @@ export function usePreview(questionnaireId: string) {
     // Une session dont la page courante n'existe plus (graphe modifié) est recommencée.
     return s && s.history.length && s.history.every((id) => resolveStep(input, id)) ? s : start(input);
   }, [p?.session, input]);
+  // Pages affichées (EVO-019, outline) : chaque nouvelle session y ajoute son historique ; `visited: []` les oublie (« Recommencer »).
   const update = (patch: Partial<PreviewState>) =>
-    useStore.getState().set((st) => void (st.preview[questionnaireId] = { ...st.preview[questionnaireId], ...patch }));
+    useStore.getState().set((st) => {
+      const prev = st.preview[questionnaireId];
+      const seen = patch.visited ?? prev?.visited ?? [];
+      const visited = patch.session ? [...new Set([...seen, ...patch.session.history])] : seen;
+      st.preview[questionnaireId] = { ...prev, ...patch, visited };
+    });
   return { input, session, lang, uiLang, update, state: p };
 }
 

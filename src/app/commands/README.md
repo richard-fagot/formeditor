@@ -36,7 +36,7 @@ Catalogue unique des actions utilisateur (spec §4.4). Palette, menus et raccour
   fragment, `node.setStart` et `node.newEnd` sont indisponibles.
 - `system-commands.ts` : `system.addVariable` (ouvre l'onglet, focus sur le nom), `system.deleteVariable`, `system.renameVariable`, `system.renameField`
   (`{ name, next }` ; transaction `transact` : un seul Ctrl+Z annule tout le renommage), `scenario.add` (sans paramètre : valeurs d'exemple ; avec un id :
-  copie), `scenario.delete`, `preview.saveScenario` (prévisualisation affichée ; `arg` = nom), `preview.toggleSystem`, `preview.toggleDebug`, `preview.toggleChecks` (contrôles de saisie, EVO-014 ; efface les erreurs affichées).
+  copie), `scenario.delete`, `preview.saveScenario` (prévisualisation affichée ; `arg` = nom), `preview.toggleSystem`, `preview.toggleDebug`, `preview.toggleChecks` (contrôles de saisie, EVO-014 ; efface les erreurs affichées), `preview.toggleOutline` (outline du logigramme, EVO-019).
 - `settings-commands.ts` : `tab.settings`, langues (`lang.add`, `lang.remove`, `lang.default`, `arg` = code),
   `preview.lang` (langue de la prévisualisation affichée ; sans paramètre : la suivante), raccourcis (`shortcut.set` avec
   `{ id, keys }`, `shortcut.reset` avec un id ou sans paramètre pour tout rétablir), `view.layout` (L, logigramme affiché :

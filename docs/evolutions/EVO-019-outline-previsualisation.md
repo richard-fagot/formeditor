@@ -1,6 +1,6 @@
 # EVO-019 — Outline du logigramme dans la prévisualisation
 
-Statut : à faire
+Statut : fait 2026-10-14
 Dépend de : aucune
 
 ## Besoin
@@ -112,3 +112,34 @@ Ajouter une section « Analyse » en bas de ce fichier :
 
 Faisable sans ambiguïté bloquante → choix notés dans l'analyse et `docs/DECISIONS.md`, puis
 réalisation. Sinon → statut « à arbitrer », options et conséquences, arrêt sans coder.
+
+## Analyse
+
+Conclusion : **faisable sans ambiguïté bloquante** ; aucun impact sur le format JSON.
+
+1. **Faisabilité, modules** (matrice de `docs/MAP.md`, lignes « Prévisualisation » et « Logigramme ») :
+   `ui/preview` (panneau, synchronisation, saut), `ui/diagram` (mode outline du composant existant),
+   `core/runtime` (questions actives, saut : pur, testé d'abord), `app/store` (`previewPanels.outline`),
+   `app/commands` (`preview.toggleOutline`), `app/i18n`, `docs/GUIDE.md`, `docs/spec.md` §5.
+2. **Réutilisation du rendu** : le composant `Diagram` a déjà un mode `readOnly` (vue côte à côte) qui
+   n'autorise ni sélection, ni glisser, ni liaison, ni dépôt, ni édition en place, ni menu, ni commentaires ;
+   chaque instance a son propre `ReactFlowProvider`, et la vue côte à côte prouve que deux instances
+   simultanées fonctionnent. Le contrôle programmatique passe par `useReactFlow().setCenter` à
+   l'intérieur du fournisseur : on ajoute une prop `outline` (nœud courant, nœuds actifs, clic) qui
+   active ce centrage, la mise en évidence et le grisage. Pas de rendu simplifié dédié.
+3. **Questions actives** : l'historique du wizard (`Session.history`) est **tronqué** par « Précédent »
+   (`back`) : il ne conserve pas les questions passées après un retour. Les réponses ne suffisent pas
+   non plus (une question affichée sans réponse, comme Q3 dans l'exemple, doit rester active). On
+   reconstitue donc avec une liste des pages affichées, `PreviewState.visited` (état de l'éditeur, non
+   enregistré), alimentée à chaque nouvelle session du wizard et vidée par « Recommencer ». Questions
+   actives (`core/runtime`, `passedQuestions`) : parcours depuis le départ avec les réponses **actuelles**
+   (`successor`), arrêté à la première page jamais affichée ; ses questions sont actives. Changer « Oui »
+   en « Non » sur Q1 retire Q2 du parcours recalculé : grisée tout de suite, même avant « Suivant ».
+   Saut (`jumpTo`) : l'historique devient le préfixe de ce parcours jusqu'à la question cliquée
+   (« Précédent » reste cohérent), réponses inchangées, sans validation de la page quittée (comme « Précédent »).
+4. **Zoom** : centrage exact sur le nœud courant ; zoom choisi pour que les voisins immédiats (arêtes
+   entrantes et sortantes) tiennent dans le panneau, borné à [0,5 ; 1] : 1 = lisible comme le logigramme
+   à 100 %, 0,5 = plancher de lisibilité. Logigramme très large ou très profond : le plancher l'emporte,
+   un voisin lointain (arête de retour, branche éloignée) peut sortir du cadre ; l'utilisateur zoome ou
+   déplace la vue, recentrée au changement de question suivant. Nœud dans un fragment : le nœud fragment
+   de l'appelant est mis en évidence (comme le clic sur une page de fragment), non cliquable.

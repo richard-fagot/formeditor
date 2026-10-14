@@ -8,6 +8,10 @@ Dépend de `app/store`, `app/commands` (liaison tracée à la souris : `edge.cre
 - `Diagram({ graph, issues, readOnly? })` ; `readOnly` (vue côte à côte) : ni sélection, ni glisser, ni liaison, ni dépôt, pas de focus.
   Questionnaire validé (EVO-015, `locked` du contexte) : sélection gardée, nœuds du graphe non déplaçables (commentaires déplaçables), ni liaison, ni dépôt,
   ni édition en place, pas d'invitation sur un graphe vide ; le store refuse de toute façon toute modification.
+- `outline?: OutlineOptions` (EVO-019, prévisualisation) : lecture seule comme `readOnly`, `data-testid="outline"`, pas de `fitView` ;
+  `useOutlineCenter` recentre (`setCenter`, zoom `outlineView.ts` : voisins immédiats, borné à [0,5 ; 1], testé) à chaque `focusKey`
+  une fois le nœud courant mesuré et le zoom React Flow prêt (`panZoom`) ; `NodeView` : nœud courant `data-outline-current` (anneau vert),
+  question `data-outline="active"` (cliquable) ou `"inactive"` (grisée) ; seul un clic sur une question active appelle `onQuestionClick`.
 - `ProblemsPanel({ graph, issues })` : vérifications du §4.6 du graphe, repliable ; clic = sélection.
 - `LIBRARY_MIME` : type des données glissées depuis le panneau de la bibliothèque (`{ kind, id }`).
 

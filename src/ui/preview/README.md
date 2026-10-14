@@ -33,6 +33,11 @@ Dépend de `core`, `registry`, `app/store`, `app/commands`, `ui-kit`, `ui/system
   (`goTo`, erreurs affichées, réponse conservée) ; le parcours ne peut pas se terminer tant qu'elle n'est pas corrigée.
 - `DebugPanel.tsx` : bandeau « Dans le fragment : » (chemin des alias et nom du fragment, EVO-008), chemin parcouru (`alias.cle`), conditions des
   arêtes sortantes de la page courante (`edgeTrace`), valeurs courantes.
+- `Outline.tsx` (EVO-019) : panneau latéral (bouton `preview.toggleOutline`, `previewPanels.outline`, `data-testid="outline-panel"`) à droite du wizard ;
+  `Diagram` de `ui/diagram` en mode `outline` : nœud courant (`step.instances[0]` pour une page de fragment), questions actives
+  (`passedQuestions` avec `PreviewState.visited`, questions du questionnaire seulement), clic = `jumpTo` ; `focusKey` (longueur de l'historique,
+  étape, compteur de clics) déclenche le recentrage. `usePreview.update` ajoute l'historique de chaque nouvelle session à `visited` ;
+  « Recommencer » passe `visited: []`.
 - Page d'un fragment : le clic sélectionne le nœud fragment du questionnaire (`step.instances[0]`).
 
 ## Pièges

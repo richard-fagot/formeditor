@@ -243,6 +243,8 @@ export const MESSAGES = {
   'preview.saveScenario': { fr: 'Enregistrer l’état du système comme nouveau scénario', en: 'Save the system state as a new scenario' },
   'preview.toggleSystem': { fr: 'Afficher / masquer le panneau d’état du système', en: 'Show / hide the system state panel' },
   'preview.toggleDebug': { fr: 'Afficher / masquer le panneau de débogage', en: 'Show / hide the debug panel' },
+  'preview.toggleOutline': { fr: 'Afficher / masquer l’outline du logigramme', en: 'Show / hide the flowchart outline' },
+  'preview.outline': { fr: 'Outline', en: 'Outline' },
   'preview.toggleChecks': { fr: 'Activer / désactiver les contrôles de saisie de la prévisualisation', en: 'Turn preview input checks on / off' },
   'preview.checks': { fr: 'Contrôles de saisie', en: 'Input checks' },
   'preview.checksOff': { fr: 'Contrôles de saisie désactivés', en: 'Input checks turned off' },
