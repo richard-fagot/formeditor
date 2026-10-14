@@ -28,7 +28,7 @@ Dépend de `core`, `format`, `app/i18n`, `plugin-api` (utilitaires).
   référence ; alias libre pour un fragment ; refusé si `insertionCycle` : fragment dans lui-même ou cycle d'appels), `placeNode`, `moveToLibrary` / `canMoveToLibrary` (question
   locale → bibliothèque, même clé ; refus si la clé y est déjà prise), `copyToLibrary(ws, ref, nodeId, key?)` (EVO-009 : nouveau `Workspace` ; avec `key`,
   renommage propagé avant la copie et `rewritten` = expressions réécrites), `setFieldHidden` (masque / réaffiche un champ d'une instance de structure ;
-  refus du dernier champ affiché ; liste vide → propriété retirée), `hiddenFieldUsages` (expressions du graphe qui lisent le champ), `setLibraryQuestionLabel`, `renameExit` (suit dans les arêtes des instances), type `LibraryItem`.
+  refus du dernier champ affiché ; liste vide → propriété retirée), `hiddenFieldUsages` (expressions du graphe qui lisent le champ ; dans un fragment, aussi `alias.cle.champ` chez ses appelants, imbriqués compris), `setLibraryQuestionLabel`, `renameExit` (suit dans les arêtes des instances), type `LibraryItem`.
 - Copier-coller (EVO-010, `clipboard.ts`) : `copyNodes(ws, ref, ids)` → `Clip` (instantané : nœuds, arêtes internes, positions, départ, id du projet) ;
   `pasteNodes(ws, ref, clip, at?)` : nouveaux ids, clés et alias pris suffixés hors des clés de la cible et de la sélection, références de la sélection réécrites
   (`renameKeysIn`), placés au point `at` (coin haut gauche) ou décalés de `PASTE_OFFSET` ; écartés (`PasteDrop`) : fin dans un fragment, sortie dans un questionnaire,

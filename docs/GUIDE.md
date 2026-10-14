@@ -531,7 +531,8 @@ Concerne le choix unique et le choix multiple. Le booléen n'a pas d'options (§
   champ **dans ce questionnaire seulement** (ni la bibliothèque ni les autres usages ne changent) ; le dernier champ affiché
   ne peut pas être décoché. Un champ masqué n'est pas présenté dans la prévisualisation, même s'il est obligatoire. Le nœud
   affiche « n / m champs ». Un champ ajouté plus tard à la structure en bibliothèque apparaît affiché partout. Si une expression
-  du questionnaire utilise le champ masqué, la fenêtre « Champ masqué encore référencé : … » liste ces expressions, et la
+  du questionnaire utilise le champ masqué (dans un fragment, aussi une expression `alias.cle.champ` de ses appelants), la
+  fenêtre « Champ masqué encore référencé : … » liste ces expressions, et la
   vérification « Champ masqué « … » » les signale (§15). Recocher pour réafficher ; `Ctrl+Z` annule.
 - **Ouvrir la question d'une référence** — Bouton « Ouvrir dans la bibliothèque » du panneau, ou palette. `[cmd: node.openInLibrary]`
 - **Ouvrir l'objet lié depuis son badge « bib. »** — Dans le logigramme (questionnaire, fragment ou vue côte à côte),
