@@ -280,7 +280,7 @@ C'est un écran de projet. On y déclare chaque variable : nom, libellé, type (
 - Groupes d'options : identifiant de groupe en double dans une question, code `AUTRE` ou `NSP` (réservés), groupe sans option.
 - Nœud inaccessible, nœud sans sortie qui n'est pas une fin, boucle sans sortie possible.
 - Nœud avec plusieurs sorties sans « sinon ».
-- Référence à une question **qui n'est pas garantie d'avoir été posée** sur tous les chemins menant au nœud.
+- Référence à une question **qui n'est pas garantie d'avoir été posée** sur tous les chemins menant au nœud (question de bibliothèque : vérifiée dans chaque questionnaire et chaque fragment qui l'utilise).
 - Expression invalide ou mal typée, traduction manquante, élément de bibliothèque introuvable.
 - Fragments (EVO-008) : fragment sans entrée unique (sans entrée explicite), fragment sans sortie, cycle d'appels, alias en double (clé en double), clé attendue absente chez un appelant (signalée dans cet appelant, sur le nœud fragment), fragment inutilisé, fin dans un fragment (projet antérieur), sortie nommée non raccordée ou inconnue. Les nœuds sans arête sortante d'un fragment sont ses sorties, pas des impasses.
 

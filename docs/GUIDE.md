@@ -744,6 +744,7 @@ ou palette « Problèmes ») ; un clic sur un problème sélectionne le nœud ou
 - **Plusieurs sorties sans « sinon »** — Le parcours peut se bloquer → vider la condition d'une des arêtes ou en ajouter une sans condition.
 - **Plusieurs arêtes sans condition : seule la première sert** — Donner une condition aux autres ou les supprimer.
 - **« … » n’est pas posée sur tous les chemins menant ici** — Garder la référence derrière `$exists(cle)` ou revoir le graphe.
+  Pour une question de bibliothèque, signalé dans chaque questionnaire et chaque fragment qui l'utilise, sur sa référence.
 - **Traduction manquante (…) : …** — Saisir le texte dans la langue indiquée (§13). Vaut aussi pour le libellé d'un groupe d'options.
 - **Groupe d’options en double « … »** — Deux groupes d'une question ont le même code (ou, sans code, le même libellé) →
   donner un « Code du groupe » distinct (§7).

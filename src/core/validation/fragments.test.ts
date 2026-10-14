@@ -57,6 +57,17 @@ describe('vérifications des fragments (EVO-008)', () => {
     expect(make('Nom : {nom}')).toEqual([]);
     expect(make('{inconnue}')).toEqual(['unknownReference@lq']);
   });
+  it('question de bibliothèque utilisée seulement dans un fragment : réponse garantie avant usage (écart correctif CODE)', () => {
+    const lib = { kind: 'question', id: 'r', ref: 'lq' } as GraphNode;
+    const make = (nodes: GraphNode[], edges: Edge[], help: string) => {
+      const w = ws([frag('f_ident', nodes, edges)], [quest('q1', [q('motif'), inst('i', 'f_ident', 'ident'), end], [e('motif', 'i'), e('i', 'fin')])]);
+      w.library.questions = [{ id: 'lq', key: 'detail', label: { fr: 'D' }, type: 'text', help: { fr: help } }];
+      return codes(w).filter((c) => c.startsWith('notGuaranteed'));
+    };
+    expect(make([lib, q('nom')], [e('r', 'nom')], 'Nom : {nom}')).toEqual(['notGuaranteed@f_ident/r']);
+    expect(make([q('nom'), lib], [e('nom', 'r')], 'Nom : {nom}')).toEqual([]);
+    expect(make([q('nom'), lib], [e('nom', 'r')], 'Motif : {motif}')).toEqual([]);
+  });
   it('alias en double dans un questionnaire : clé en double', () => {
     const w = ws([ident()], [quest('q1', [q('motif'), inst('i', 'f_ident', 'ident'), inst('j', 'f_ident', 'ident'), end], [e('motif', 'i'), e('i', 'j'), e('j', 'fin')])]);
     expect(codes(w)).toContain('duplicateKey@q1/j');
