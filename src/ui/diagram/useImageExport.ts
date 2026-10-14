@@ -4,6 +4,7 @@ import { toCanvas } from 'html-to-image';
 import { download, imageFileName, imageHeading, imageTitle } from '../../app/commands';
 import { isValidated } from '../../core/model';
 import { getGraph, useStore, useT, type GraphRef } from '../../app/store';
+import { fail, inform } from '../../app/feedback';
 
 const MARGIN = 40;
 const RATIO = 2;
@@ -116,9 +117,9 @@ export function useImageExport(graph: GraphRef, container: RefObject<HTMLDivElem
       const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, 'image/png'));
       if (!blob) throw new Error('canvas.toBlob');
       download(imageFileName(st.ws.project.name, title, q, new Date()), blob);
-      if (ratio < RATIO) st.set((s) => void (s.notice = { title: t('image.reduced'), lines: [t('image.reducedHint', { ratio })] }));
+      if (ratio < RATIO) inform('image.reduced', { key: 'image.reducedHint', params: { ratio } });
     } catch (e) {
-      useStore.getState().set((s) => void (s.notice = { title: t('image.failed'), lines: [e instanceof Error ? e.message : String(e)] }));
+      fail('image.failed', e);
     } finally {
       root.removeAttribute('data-exporting');
       useStore.getState().select(previous);

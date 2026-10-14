@@ -6,6 +6,7 @@ import {
   type GraphRef,
 } from '../store';
 import { makeTranslate } from '../i18n';
+import { confirm } from '../feedback';
 import type { Command } from './types';
 
 const st = () => useStore.getState();
@@ -175,7 +176,7 @@ export function graphCommands(): Command[] {
         const { nodes, edge } = st().selection;
         // Question commentée (EVO-011) : confirmation, le commentaire est supprimé avec elle.
         const commented = commentsOf(st().ws, r.id).some((c) => nodes.includes(c.node));
-        if (commented && !window.confirm(t()('comment.confirmDelete'))) return;
+        if (commented && !confirm('comment.confirmDelete')) return;
         edit(r, (ws) => void (nodes.length ? removeNodes(ws, r, nodes) : edge && removeEdge(ws, r, edge)));
         st().select({ graph: r, nodes: [] });
       },

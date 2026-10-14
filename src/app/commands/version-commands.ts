@@ -4,6 +4,7 @@ import {
 import { todayIso } from '../../core/expressions';
 import { activeQuestionnaire, patchQuestionnaire, setItemValidation, setItemVersion, setValidation, useStore } from '../store';
 import { makeTranslate } from '../i18n';
+import { inform, refuse } from '../feedback';
 import type { Command } from './types';
 
 // Versionning des questionnaires et des éléments de bibliothèque (EVO-022).
@@ -11,7 +12,6 @@ import type { Command } from './types';
 const st = () => useStore.getState();
 const t = () => makeTranslate(st().uiLang);
 const text = (l: LocalizedText) => l[st().contentLang] ?? l[st().ws.project.defaultLanguage];
-const notify = (title: string, lines: string[]) => st().set((s) => void (s.notice = { title, lines }));
 
 /** Nom d'un élément de bibliothèque dans la langue du contenu (intitulé ou titre), sinon sa clé. */
 export function itemName(item: LibraryItemRef): string {
@@ -39,12 +39,12 @@ const itemOf = (arg?: unknown) => { const r = target(arg); return r ? libraryIte
  */
 export function validateQuestionnaire(q: Questionnaire) {
   const name = text(q.title) || q.key;
-  if (!q.version?.trim()) return notify(t()('version.required'), [t()('version.requiredLine', { name })]);
+  if (!q.version?.trim()) return refuse('version.required', { key: 'version.requiredLine', params: { name } });
   st().edit(`q:${q.id}`, (ws) => setValidation(ws, q.id, todayIso()));
   const drafts = provisionalItems(st().ws.library, q);
   if (!drafts.length) return;
   const version = (r: LibraryItemRef) => libraryItemOf(st().ws.library, r)?.version || t()('version.empty');
-  notify(t()('version.provisional'), drafts.map((r) => t()('version.provisionalLine', { name: itemName(r), version: version(r) })));
+  inform('version.provisional', ...drafts.map((r) => ({ key: 'version.provisionalLine' as const, params: { name: itemName(r), version: version(r) } })));
 }
 
 export function versionCommands(): Command[] {
@@ -63,7 +63,7 @@ export function versionCommands(): Command[] {
         const r = target(arg);
         const version = String((arg as { version?: unknown })?.version ?? '');
         if (!r) return;
-        if (isItemValidated(libraryItemOf(st().ws.library, r))) return notify(t()('version.locked'), [itemName(r)]);
+        if (isItemValidated(libraryItemOf(st().ws.library, r))) return refuse('version.locked', { raw: itemName(r) });
         st().edit('library', (ws) => void setItemVersion(ws, r, version), `${r.id}:version`);
       },
     },
@@ -74,7 +74,7 @@ export function versionCommands(): Command[] {
         const r = target(arg);
         const x = itemOf(arg);
         if (!r || !x || isItemValidated(x)) return;
-        if (!x.version?.trim()) return notify(t()('version.required'), [t()('version.requiredLine', { name: itemName(r) })]);
+        if (!x.version?.trim()) return refuse('version.required', { key: 'version.requiredLine', params: { name: itemName(r) } });
         st().edit('library', (ws) => setItemValidation(ws, r, true));
       },
     },
