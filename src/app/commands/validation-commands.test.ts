@@ -138,6 +138,16 @@ describe('validation d’un formulaire (EVO-015)', () => {
     expect(qa().status).toBe('validated');
   });
 
+  it('formulaire validé sans mise en page : le premier commentaire est accepté (écart EVO-015)', () => {
+    runCommand('tab.show', 'q:qb');
+    expect(runCommand('questionnaire.validate')).toBe(true);
+    st().set((s) => void (s.notice = undefined));
+    expect(st().ws.layouts.some((l) => l.graph === 'qb')).toBe(false);
+    runCommand('comment.add', { host: { kind: 'questionnaire', id: 'qb' }, node: 'm1' });
+    expect(st().ws.layouts.find((l) => l.graph === 'qb')?.comments?.map((c) => c.node)).toEqual(['m1']);
+    expect(st().notice).toBeUndefined();
+  });
+
   it('sans validation, comportement inchangé : aucun état écrit', () => {
     runCommand('tab.show', 'q:qa');
     st().select({ graph: A, nodes: ['n1'] });
