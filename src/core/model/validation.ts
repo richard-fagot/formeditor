@@ -12,9 +12,12 @@ function lockedQuestionnaire(q: Questionnaire): string {
   return JSON.stringify(rest);
 }
 
-/** Mise en page verrouillée : positions, sans les commentaires de révision (hors verrou). */
+/**
+ * Mise en page verrouillée : positions, sans les commentaires de révision (hors verrou). Une mise en page sans position
+ * équivaut à son absence (créée par le premier commentaire d'un formulaire importé sans mise en page).
+ */
 function lockedLayout(l: Layout | undefined): string {
-  if (!l) return '';
+  if (!l || !Object.keys(l.nodes).length) return '';
   const { comments: _comments, ...rest } = l;
   return JSON.stringify(rest);
 }

@@ -19,8 +19,8 @@ export function DebugPanel({ input, session, uiLang }: { input: RuntimeInput; se
   const current = session.history.at(-1)!;
   const trace = edgeTrace(input, session.answers, current);
   const step = resolveStep(input, current);
-  const prefix = current.slice(0, current.lastIndexOf('/') + 1);
-  const target = (to: string) => stepName(input, prefix + to, uiLang);
+  // Arête d'un nœud fragment appelant (sortie du fragment, EVO-008) : cible dans le graphe de l'appelant.
+  const target = (from: string, to: string) => stepName(input, from.slice(0, from.lastIndexOf('/') + 1) + to, uiLang);
   // Dans un fragment (EVO-008) : chemin des alias et nom du fragment le plus interne.
   const inFragment = step?.fragment && step.instances.length
     ? `${step.instances.map((i) => i.alias).join('.')} (${step.fragment.title[uiLang] ?? step.fragment.title[input.ws.project.defaultLanguage] ?? step.fragment.key})`
@@ -47,10 +47,13 @@ export function DebugPanel({ input, session, uiLang }: { input: RuntimeInput; se
         <h4 className={h}>{t('preview.conditions')}</h4>
         {!trace.length && <p className="text-slate-400">{t('preview.noCondition')}</p>}
         <ul className="space-y-1">
-          {trace.map(({ edge, result, chosen }) => (
-            <li key={edge.id} className={cn('rounded border px-2 py-1', chosen ? 'border-indigo-300 bg-indigo-50' : 'border-slate-100')} data-testid="debug-edge">
+          {trace.map(({ edge, result, chosen, stepId }, i) => (
+            <li key={`${stepId}|${edge.id}`} className={cn('rounded border px-2 py-1', chosen ? 'border-indigo-300 bg-indigo-50' : 'border-slate-100')} data-testid="debug-edge">
+              {stepId !== trace[i - 1]?.stepId && stepId !== current && (
+                <p className="text-slate-500" data-testid="debug-caller-edges">{t('preview.callerEdges')}</p>
+              )}
               <div className="flex items-center gap-2">
-                <span className="font-mono text-slate-700">→ {target(edge.to)}{edge.exit ? ` (${edge.exit})` : ''}</span>
+                <span className="font-mono text-slate-700">→ {target(stepId, edge.to)}{edge.exit ? ` (${edge.exit})` : ''}</span>
                 <span className="ml-auto">
                   {result === 'else' ? <Badge>{t('edge.else')}</Badge>
                     : result === 'error' ? <Badge tone="rose">{t('preview.error')}</Badge>

@@ -37,15 +37,18 @@ export function checkReferences(ws: Workspace): Issue[] {
     const s = f.loc.structure ? structureOf(f.loc.owner, f.loc.structure) : undefined;
     return s ? base.map((sc) => structureScope(sc, s)) : base;
   };
-  /** Portées dans lesquelles l'expression doit se résoudre (une par appelant pour une question de bibliothèque). */
+  /** Portées dans lesquelles l'expression doit se résoudre (une par questionnaire ou fragment utilisateur pour une question de bibliothèque). */
   const scopesFor = (f: FoundExpression): Scope[] => {
     const o = f.loc.owner;
     let base: Scope[];
     if (o.kind === 'questionnaire') base = [cached(`q:${o.id}`, () => questionnaireScope(ws, o.id))];
     else if (o.kind === 'fragment') base = [cached(`f:${o.id}`, () => fragmentScope(ws, o.id))];
     else {
-      const users = ws.questionnaires.filter((q) => q.nodes.some((n) => n.kind === 'question' && 'ref' in n && n.ref === o.id));
-      base = users.map((q) => cached(`q:${q.id}`, () => questionnaireScope(ws, q.id)));
+      const uses = (g: Graph) => g.nodes.some((n) => n.kind === 'question' && 'ref' in n && n.ref === o.id);
+      base = [
+        ...ws.questionnaires.filter(uses).map((q) => cached(`q:${q.id}`, () => questionnaireScope(ws, q.id))),
+        ...ws.library.fragments.filter(uses).map((x) => cached(`f:${x.id}`, () => fragmentScope(ws, x.id))),
+      ];
       if (!base.length) base = [new Map()];
     }
     return withStructure(f, base);

@@ -7,12 +7,13 @@ Dépend de `core`, `registry`, `app/store`, `app/commands`, `ui-kit`, `ui/system
 ## Fichiers
 - `usePreview.ts` : état par questionnaire dans `store.preview[id]` (session, scénario, état du système édité,
   langue, `returnTo`) ; l'état du système vient de `systemStateOf` (`app/store`). `makeRenderEnv` construit
-  l'environnement de rendu des plugins (libellés résolus, `options` via `choiceOptions`, `scoped`).
+  l'environnement de rendu des plugins (libellés résolus, `options` via `choiceOptions`, `scoped`, `graph` = graphe de la page).
   `RuntimeInput.env.defaultLang` = langue par défaut du projet (identifiant d'un groupe d'options sans code). Le groupe de
   la sélection (`<clé>_group`) est passé au champ (`group`) et enregistré par `setAnswer` ; de même le marqueur « Ne sais pas »
   (`dontKnow`, `onDontKnow` : `dontKnowAnswer` puis `setAnswer(…, true)`, décochée : réponse effacée) et le pays d'un téléphone
-  ou d'une adresse (`country`, `<clé>_pays`, EVO-007). `RuntimeInput.env.display` = `displayFormatters(ws)` (`core/contact`) :
-  interpolation d'une civilité (libellé) et d'un téléphone (format international).
+  ou d'une adresse (`country`, `<clé>_pays`, EVO-007). `RuntimeInput.env.display` = `displayFormatters(ws, questionnaire)` (`core/contact`) :
+  interpolation d'une civilité (libellé) et d'un téléphone (format international) ; sur la page d'un fragment, `makeRenderEnv`
+  le remplace par celui du fragment.
 - `Preview.tsx` : barre (langue : commande `preview.lang` ; nombre de textes non traduits dans la langue affichée, montrés
   dans la langue par défaut ; recommencer, bascule des panneaux : commandes `preview.toggleSystem`,
   `preview.toggleDebug`), `Wizard` (progression, page, précédent / suivant, « Revenir à la synthèse »), panneau latéral.
@@ -32,7 +33,8 @@ Dépend de `core`, `registry`, `app/store`, `app/commands`, `ui-kit`, `ui/system
   à la synthèse » ou un changement de l'état du système), le wizard ramène à la première réponse invalide du chemin
   (`goTo`, erreurs affichées, réponse conservée) ; le parcours ne peut pas se terminer tant qu'elle n'est pas corrigée.
 - `DebugPanel.tsx` : bandeau « Dans le fragment : » (chemin des alias et nom du fragment, EVO-008), chemin parcouru (`alias.cle`), conditions des
-  arêtes sortantes de la page courante (`edgeTrace`), valeurs courantes.
+  arêtes sortantes de la page courante (`edgeTrace`), suivies, en sortie de fragment, de celles de l'appelant
+  (« Puis, à la sortie du fragment : », `debug-caller-edges`), valeurs courantes.
 - `Outline.tsx` (EVO-019) : panneau latéral (bouton `preview.toggleOutline`, `previewPanels.outline`, `data-testid="outline-panel"`) à droite du wizard ;
   `Diagram` de `ui/diagram` en mode `outline` : nœud courant (`step.instances[0]` pour une page de fragment), questions actives
   (`passedQuestions` avec `PreviewState.visited`, questions du questionnaire seulement), clic = `jumpTo` ; `focusKey` (longueur de l'historique,

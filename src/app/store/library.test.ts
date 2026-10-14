@@ -253,4 +253,18 @@ describe('copie en bibliothèque et champs masqués (EVO-009)', () => {
     expect([...new Set(hiddenFieldUsages(ws, r, 'n_rappel', 'mail').map((u) => u.loc.nodeId))]).toEqual(['n_fin_remboursement']);
     expect(hiddenFieldUsages(ws, r, 'n_rappel', 'nom')).toEqual([]);
   });
+
+  it('hiddenFieldUsages dans un fragment : références `alias.cle.champ` des appelants, imbriqués compris (écart EVO-009)', () => {
+    const ws = exampleWorkspace();
+    ws.library.fragments.push(
+      { id: 'fx', key: 'fx', title: { fr: 'fx' }, nodes: [{ kind: 'question', id: 's', ref: 'lq_identite' }], edges: [] },
+      { id: 'fy', key: 'fy', title: { fr: 'fy' }, nodes: [{ kind: 'fragment', id: 'cy', ref: 'fx', alias: 'ax' }, { kind: 'info', id: 'iy', text: { fr: '{ax.identite.mail_other}' } } as never], edges: [] },
+    );
+    const q = Q(ws);
+    q.nodes.push({ kind: 'fragment', id: 'call', ref: 'fx', alias: 'ax' }, { kind: 'fragment', id: 'call2', ref: 'fy', alias: 'ay' });
+    q.edges.push({ id: 'ez', from: 'call', to: 'call2', when: "ax.identite.mail = 'x'" }, { id: 'ez2', from: 'call2', to: q.start, when: "ay.ax.identite.mail = 'y'" });
+    const found = hiddenFieldUsages(ws, { kind: 'fragment', id: 'fx' }, 's', 'mail').map((u) => `${u.loc.owner.id}:${u.loc.edgeId ?? u.loc.nodeId}`);
+    expect(found.sort()).toEqual(['fy:iy', `${q.id}:ez`, `${q.id}:ez2`]);
+    expect(hiddenFieldUsages(ws, { kind: 'fragment', id: 'fx' }, 's', 'nom')).toEqual([]);
+  });
 });

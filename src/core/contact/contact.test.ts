@@ -105,7 +105,7 @@ describe('interpolation : mises en forme par clé (EVO-007)', () => {
     ] }],
     library: { questions: [{ id: 'l1', key: 'civ', label: { fr: 'C' }, type: 'civility' }], fragments: [] },
   } as unknown as Workspace;
-  const display = displayFormatters(ws);
+  const display = displayFormatters(ws, ws.questionnaires[0]);
   it('civilité : libellé (modifié ou par défaut) ; téléphone : format international ; autres types : rien', () => {
     expect(display.civilite!('MME')).toEqual({ fr: 'Mme' });
     expect(display.civilite!('NP')).toEqual({ fr: 'Ne se prononce pas', en: 'Prefer not to say' });
@@ -116,6 +116,25 @@ describe('interpolation : mises en forme par clé (EVO-007)', () => {
   it('« Madame Dupont » en français par le libellé interpolé', () => {
     const label = { fr: '{civ} {nom}' };
     expect(resolveLabel(label, { lang: 'fr', defaultLang: 'fr' }, { civ: 'MME', nom: 'Dupont' }, { display })).toBe('Madame Dupont');
+  });
+});
+
+describe('interpolation : questionnaire ou fragment courant d’abord, puis bibliothèque (écart EVO-007)', () => {
+  const civ = (id: string, key: string) => ({ kind: 'question', id, key, label: { fr: 'C' }, type: 'civility' });
+  const text = (id: string, key: string) => ({ kind: 'question', id, key, label: { fr: 'T' }, type: 'text' });
+  const ws = {
+    questionnaires: [{ id: 'q1', nodes: [text('a', 'civilite')] }, { id: 'q2', nodes: [civ('b', 'civilite'), { kind: 'question', id: 'r', ref: 'l1' }] }],
+    library: { questions: [{ id: 'l1', key: 'tel', label: { fr: 'T' }, type: 'phone' }, { id: 'l2', key: 'civilite', label: { fr: 'C' }, type: 'civility' }],
+      fragments: [{ id: 'f1', nodes: [civ('c', 'genre')] }] },
+  } as unknown as Workspace;
+  it('une question texte homonyme du graphe courant n’est pas reformatée', () => {
+    expect(displayFormatters(ws, ws.questionnaires[0]).civilite).toBeUndefined();
+    expect(displayFormatters(ws, ws.questionnaires[1]).civilite!('MME')).toEqual({ fr: 'Madame', en: 'Madam' });
+  });
+  it('référence de bibliothèque du graphe, puis bibliothèque (questions et fragments)', () => {
+    const d = displayFormatters(ws, ws.questionnaires[0]);
+    expect(d.tel!('+33612345678')).toBe('+33 6 12 34 56 78');
+    expect(d.genre!('M')).toEqual({ fr: 'Monsieur', en: 'Mister' });
   });
 });
 

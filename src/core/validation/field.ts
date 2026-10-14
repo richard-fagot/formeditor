@@ -174,7 +174,7 @@ export function messageParams(q: Question | StructureField): string[] {
     ...(q.type === 'phone' ? ['phone', ...(q.lineType ? ['lineType'] : [])] : []),
     ...(q.type === 'address' ? ['address', 'postalCode'] : []),
     ...(q.type === 'date' ? ['format'] : []),
-    ...(q.type === 'single' || q.type === 'multiple' ? ['option'] : []),
+    ...(q.type === 'single' || q.type === 'multiple' || q.type === 'civility' ? ['option'] : []),
     ...('other' in q && q.other?.detailRequired ? ['otherDetail'] : []),
     ...(q.type === 'structure' && q.repeat?.min !== undefined ? ['minOccurrences'] : []),
     ...(q.type === 'structure' && q.repeat?.max !== undefined ? ['maxOccurrences'] : []),

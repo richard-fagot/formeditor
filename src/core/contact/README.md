@@ -17,8 +17,10 @@ Dépend de `core/model` et de `libphonenumber-js` (métadonnées `max`, embarqu�
   n'est pas proposé) ; `[]` pour les autres types. Utilisé par `core/validation` (`validateAnswer`, `formatErrors`).
 - Pays (`countries.ts`) : `COUNTRIES` (codes ISO 3166-1 alpha-2 de la bibliothèque), `callingCode`, `countryName(code, langue)`
   (`Intl.DisplayNames`, repli : le code), `flagOf` (emoji calculé), `countryChoices(autorisés, langue)` (triés par nom).
-- `displayFormatters(ws)` (`display.ts`) : mises en forme de l'interpolation par clé (civilité → libellé multilingue,
-  téléphone → format international), passées à `EvalEnv.display` par `ui/preview`.
+- `displayFormatters(ws, graphe?)` (`display.ts`) : mises en forme de l'interpolation par clé (civilité → libellé multilingue,
+  téléphone → format international), passées à `EvalEnv.display` par `ui/preview`. Clé cherchée dans le graphe courant
+  (questionnaire ou fragment, références de bibliothèque comprises), puis questions et fragments de la bibliothèque ; la
+  première question trouvée l'emporte, même sans mise en forme.
 
 ## Tests
 `contact.test.ts` (cas limites des RFC, critères d'acceptation de l'EVO-007).

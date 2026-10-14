@@ -56,12 +56,12 @@ test('EVO-012 : nœud fragment — questions listées, surcharge repérée, prov
   const item = page.getByTestId('fragment-required-item').filter({ hasText: 'ident.num_secu' });
   await expect(item).toContainText('Surchargé');
   await expect(item.getByTestId('required-select')).toHaveValue('false');
-  await expect(item.getByTestId('required-select').locator('option').first()).toHaveText('Hérité (Obligatoire, fragment identification_assure)');
+  await expect(item.getByTestId('required-select').locator('option').first()).toHaveText("Hérité (Obligatoire, fragment Identification de l'assuré)");
   await expect(item.getByTestId('required-effective')).toHaveText('Valeur effective : Facultatif (surcharge locale).');
   await item.getByTestId('required-select').selectOption('');
   await expect(item).not.toContainText('Surchargé');
   await expect(node).not.toContainText('surch.');
-  await expect(item.getByTestId('required-effective')).toHaveText('Valeur effective : Obligatoire (fragment identification_assure).');
+  await expect(item.getByTestId('required-effective')).toHaveText("Valeur effective : Obligatoire (fragment Identification de l'assuré).");
   expect(errors).toEqual([]);
 });
 

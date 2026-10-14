@@ -14,7 +14,8 @@ Dépend de `core/model`, `core/expressions`.
 - `resume(input, s, target)` : après un retour depuis une synthèse, avance sur les pages déjà vues et répondues
   jusqu'à `target`, une page nouvelle, une question sans réponse, une page refusée par `accept` (revalidation), une fin ou un blocage.
 - `edgeTrace(input, answers, stepId)` : arêtes sortantes évaluées dans l'ordre (`true` / `false` / `else` / `error`)
-  et arête retenue (débogage).
+  et arête retenue (débogage) ; `stepId` de chaque entrée = étape d'origine. En sortie de fragment (page sans arête sortante,
+  ou arête retenue vers une sortie nommée), les arêtes du nœud fragment appelant suivent (filtrées par sortie, contexte de l'appelant).
 - `progress(input, s)` : progression indicative (0..1).
 - `buildContext(input, answers, stepId?)` : contexte d'évaluation (réponses + `sys` + clés de chaque appel traversé sans préfixe, la plus interne prioritaire ;
   les valeurs `null` sont retirées en profondeur, `answers` garde `null`).
@@ -31,7 +32,9 @@ Dépend de `core/model`, `core/expressions`.
 - Pays (EVO-007) : `setAnswer(…, dontKnow?, country?)` range `<clé>_pays` (`countryPath`) ; absent sinon ; `prune` l'efface avec la réponse.
 - Suggestions d'un champ texte (EVO-016, `suggestions.ts`) : `suggestionList(valeur)` met le résultat de l'expression en liste de textes
   (valeur unique → un élément, vide → aucun, nombres / booléens → texte, objets, vides et `other` écartés, doublons retirés, ordre gardé ; `labelOf` facultatif : libellé affiché à la place d'une valeur d'option) ;
-  `referencedChoices(ws, expr)` : questions à choix dont la clé est le dernier nom d'une référence (hors `sys.`) ;
+  `referencedChoices(ws, expr, graphe?)` : questions à choix dont la clé est le dernier nom d'une référence (hors `sys.`),
+  cherchée dans le graphe courant (références de bibliothèque comprises), puis questions et fragments de la bibliothèque
+  (première question trouvée par clé, même hors choix) ;
   `filterSuggestions(liste, saisie)` : « contient », casse ignorée.
 - Outline de la prévisualisation (EVO-019, `outline.ts`) : `passedQuestions(input, s, visited)` : questions du parcours recalculé
   avec les réponses actuelles depuis le départ, arrêté à la première page jamais affichée (`visited` ∪ historique) ;

@@ -65,6 +65,17 @@ describe('état de validation (EVO-015)', () => {
     expect(lockedChanges(a, commented)).toEqual([]);
   });
 
+  it('sans mise en page importée : celle créée vide par le premier commentaire est hors verrou (écart EVO-015)', () => {
+    const a = ws(q('a', validated));
+    a.layouts = [];
+    const commented = clone(a);
+    commented.layouts.push({ formatVersion: 11, kind: 'layout', graph: 'a', nodes: {}, comments: [{ node: 'n1', x: 1, y: 2, text: 'À revoir', replies: [] }] });
+    expect(lockedChanges(a, commented)).toEqual([]);
+    const placed = clone(commented);
+    placed.layouts[0]!.nodes.n1 = { x: 0, y: 0 };
+    expect(lockedChanges(a, placed)).toEqual(['a']);
+  });
+
   it('dévalider en modifiant le contenu dans la même opération : verrou', () => {
     const a = ws(q('a', validated));
     const b = clone(a);
