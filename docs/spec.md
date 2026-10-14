@@ -147,7 +147,7 @@ Unicité : une clé (ou un alias) est unique dans son questionnaire, et unique d
 - Chaque contrainte associe une **règle** et un **message d'erreur facultatif**, multilingue. Sans message, un message par défaut est généré.
 - Les bornes peuvent être littérales ou des expressions : date postérieure à aujourd'hui, antérieure à une autre réponse ou à une variable système, etc.
 - Une contrainte libre, sous forme d'expression booléenne, couvre les règles croisées entre plusieurs réponses.
-- **Contrôles intégrés** (EVO-007) des types mail, téléphone, adresse et civilité : ce ne sont pas des contraintes à écrire. Chacun a un message par défaut, multilingue et surchargeable comme les autres : `email` (« Adresse mail invalide. »), `phone` (« Numéro de téléphone invalide. », aussi pour un pays non autorisé), `lineType` (« Numéro mobile attendu. » / « Numéro fixe attendu. »), `address` (« Adresse invalide : une ligne de 5–200 caractères, avec au moins une lettre. »), `postalCode` (« Code postal manquant. »).
+- **Contrôles intégrés** (EVO-007) des types mail, téléphone, adresse et civilité : ce ne sont pas des contraintes à écrire. Chacun a un message par défaut, multilingue et surchargeable comme les autres : `email` (« Adresse mail invalide. »), `phone` (« Numéro de téléphone invalide. », aussi pour un pays non autorisé), `lineType` (« Numéro mobile attendu. » / « Numéro fixe attendu. »), `address` (« Adresse invalide : une ligne de 5–200 caractères, avec au moins une lettre. »), `postalCode` (« Code postal manquant. »), et pour la civilité `option` (code non proposé, par exemple dans une donnée importée).
 
 ### 3.8 Bibliothèque et fragments
 
@@ -171,7 +171,7 @@ Unicité : une clé (ou un alias) est unique dans son questionnaire, et unique d
 - Le projet déclare ses langues et une langue par défaut.
 - Tout texte destiné à l'utilisateur final est multilingue : intitulés, options, aides, messages, pages.
 - L'éditeur signale les traductions manquantes. La prévisualisation permet de changer de langue.
-- Civilité (EVO-007) : libellés par défaut fournis en français et en anglais ; dans les autres langues du projet, ils sont signalés comme traductions manquantes. L'interpolation d'une civilité (`{civilite} {nom}`) affiche son libellé dans la langue courante, celle d'un téléphone son format international lisible (`+33 6 12 34 56 78`) ; pour les autres types (choix unique compris), la valeur. Noms de pays : fournis par le navigateur (`Intl.DisplayNames`) dans la langue affichée, sans donnée embarquée.
+- Civilité (EVO-007) : libellés par défaut fournis en français et en anglais ; dans les autres langues du projet, ils sont signalés comme traductions manquantes. L'interpolation d'une civilité (`{civilite} {nom}`) affiche son libellé dans la langue courante, celle d'un téléphone son format international lisible (`+33 6 12 34 56 78`) ; pour les autres types (choix unique compris), la valeur. Le type retenu est celui de la question de cette clé dans le questionnaire ou le fragment courant, sinon dans la bibliothèque. Noms de pays : fournis par le navigateur (`Intl.DisplayNames`) dans la langue affichée, sans donnée embarquée.
 - L'interface de l'outil lui-même est aussi internationalisable (français par défaut).
 
 ### 3.10 Validation d'un formulaire (EVO-015)

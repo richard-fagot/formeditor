@@ -14,8 +14,12 @@ export function usePreview(questionnaireId: string) {
   const contentLang = useStore((s) => s.contentLang);
   const lang = p?.lang ?? contentLang;
   const input: RuntimeInput = useMemo(
-    // `display` : interpolation d'une civilité (libellé) et d'un téléphone (format international), EVO-007.
-    () => ({ ws, questionnaireId, sys: systemStateOf(ws, p), env: { defaultLang: ws.project.defaultLanguage, display: displayFormatters(ws) } }),
+    // `display` : interpolation d'une civilité (libellé) et d'un téléphone (format international), EVO-007 ;
+    // remplacé par celui du fragment courant dans `makeRenderEnv`.
+    () => ({
+      ws, questionnaireId, sys: systemStateOf(ws, p),
+      env: { defaultLang: ws.project.defaultLanguage, display: displayFormatters(ws, ws.questionnaires.find((q) => q.id === questionnaireId)) },
+    }),
     [ws, questionnaireId, p],
   );
   const session: Session = useMemo(() => {
@@ -36,7 +40,10 @@ export function usePreview(questionnaireId: string) {
 
 /** Environnement de rendu des plugins à une étape donnée (`checks` : contrôles de saisie, EVO-014). */
 export function makeRenderEnv(input: RuntimeInput, session: Session, stepId: string | undefined, lang: string, uiLang: string, checks = true): RenderEnv {
-  return envOf(input, buildContext(input, session.answers, stepId), lang, uiLang, checks);
+  // Page d'un fragment : mises en forme cherchées d'abord dans ce fragment (EVO-007).
+  const step = stepId ? resolveStep(input, stepId) : undefined;
+  const local = step?.fragment ? { ...input, env: { ...input.env, display: displayFormatters(input.ws, step.fragment) } } : input;
+  return envOf(local, buildContext(input, session.answers, stepId), lang, uiLang, checks);
 }
 
 /** Copie sans les valeurs `null` (comme `buildContext`) : une valeur vide n'est pas « renseignée ». */

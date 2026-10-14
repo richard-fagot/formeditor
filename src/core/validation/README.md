@@ -18,7 +18,7 @@ Dépend de `core/model`, `core/expressions`, `core/references`, `core/runtime` (
   `postalCode`, `option`) ; pays lu dans `ctx` sous `<clé>_pays` (dans une structure, l'occurrence), sinon `defaultCountry`.
   `formatErrors(q, valeur, pays?)` : ces contrôles seuls (réponse vide → aucun), pour le contrôle à la sortie du champ.
   Messages par défaut dans `messages.ts` (`lineType` : `{0}` = mobile / fixe ; `address` : `{0}` = bornes `5–200`).
-- `messageParams(question)` : paramètres dont le message est personnalisable pour cette question.
+- `messageParams(question)` : paramètres dont le message est personnalisable pour cette question (civilité : `option`).
 - `checkWorkspace(ws)` → `Issue[]` : `code`, `severity`, `owner`, `nodeId?`, `edgeId?`, `property?`, `params`.
 - `describeIssue(issue, lang)` : texte fr/en.
 - `checkGraph`, `guaranteedBefore` (analyse « posée sur tous les chemins »), `expectedKeys(ws, fragmentId)` (clés attendues de l'appelant, triées).

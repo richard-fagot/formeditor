@@ -337,7 +337,8 @@ Dans le wizard, le contrôle s'applique à la sortie du champ (message sous le c
   ligne ; codes fixes `MME`, `M`. `[cmd: node.type.civility]`
 - **Régler une civilité** — « Libellés courts (« Mme », « M. ») » ; « Option « Ne se prononce pas » (code NP) » (en dernier) ;
   « Libellé — MME » / « — M » / « — NP » : libellés multilingues remplaçant ceux par défaut (fournis en français et en
-  anglais ; les autres langues du projet sont signalées en traduction manquante). Le code ne change jamais.
+  anglais ; les autres langues du projet sont signalées en traduction manquante). Le code ne change jamais. Message
+  `option` (code non proposé, par exemple dans une donnée importée) personnalisable comme les autres (§9).
 - Logigramme : icône du type ; pour le téléphone et l'adresse, le pays par défaut s'il n'est pas `FR`, « mobile » ou « fixe »
   si un type de ligne est exigé ; pour la civilité, ses libellés.
 
@@ -451,7 +452,8 @@ Concerne le choix unique et le choix multiple. Le booléen n'a pas d'options (§
 - **Insérer une valeur dans un texte** — `{expression}` dans un libellé : `Bonjour {sys.nom_assure}`. C'est la valeur qui
   s'affiche, pas le libellé de l'option. Exceptions : une civilité affiche son libellé dans la langue affichée
   (`{civilite} {nom}` → « Madame Dupont »), un téléphone son format international (`+33 6 12 34 56 78`), quand
-  l'expression est la seule référence à la question. `{{` et `}}` donnent des accolades.
+  l'expression est la seule référence à la question ; le type est celui de la question de cette clé dans le questionnaire
+  ou le fragment affiché, sinon dans la bibliothèque. `{{` et `}}` donnent des accolades.
 - **Exemples prêts à copier** :
   1. `type_sinistre = 'vol'`
   2. `montant > 1000 and $exists(date_sinistre)`
