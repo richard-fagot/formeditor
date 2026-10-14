@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { callingCode, countryChoices, flagOf, nationalPhone, normalizePhone } from '../../../core/contact';
 import { DEFAULT_COUNTRY, type PhoneQuestion } from '../../../core/model';
 import { formatErrors } from '../../../core/validation';
-import { dontKnowLabel, tr, type FieldProps } from '../../../plugin-api';
-import { Checkbox, Input, Select } from '../../../ui-kit';
+import { dontKnowLabel, tr, useBlurErrors, type FieldProps } from '../../../plugin-api';
+import { Checkbox, FieldErrors, Input, Select } from '../../../ui-kit';
 
 const T = { country: { fr: 'Indicatif pays', en: 'Country code' } };
 
@@ -22,7 +22,7 @@ export function PhoneField({ question, value, country, onChange, env, inputId, e
   const stored = typeof value === 'string' ? value : '';
   const [picked, setPicked] = useState(country ?? initialCountry(question));
   const [text, setText] = useState(stored ? nationalPhone(stored, picked) : '');
-  const [blurErrors, setBlurErrors] = useState<string[]>([]);
+  const blurErrors = useBlurErrors(env, errors);
   // Pays du numéro (`+32…`) : le sélecteur suit, s'il propose ce pays.
   useEffect(() => {
     if (country && (!question.countries?.length || question.countries.includes(country))) setPicked(country);
@@ -32,7 +32,7 @@ export function PhoneField({ question, value, country, onChange, env, inputId, e
     if ((text.trim() ? normalizePhone(text, picked).value : '') !== stored) setText(stored ? nationalPhone(stored, country ?? picked) : '');
   }, [stored]);
   const commit = (t: string, c: string) => {
-    setBlurErrors([]);
+    blurErrors.reset();
     if (!t.trim()) return onChange(null);
     const n = normalizePhone(t, c);
     onChange(n.value, undefined, undefined, n.country);
@@ -40,7 +40,7 @@ export function PhoneField({ question, value, country, onChange, env, inputId, e
   const blur = () => {
     const c = country ?? picked;
     setText(stored ? nationalPhone(stored, c) : '');
-    setBlurErrors(formatErrors(question, stored || null, c).map((e) => env.label(e.message)));
+    blurErrors.onBlur(formatErrors(question, stored || null, c));
   };
   return (
     <div className="space-y-2">
@@ -60,7 +60,7 @@ export function PhoneField({ question, value, country, onChange, env, inputId, e
             commit(e.target.value, picked);
           }} onBlur={blur} />
       </div>
-      {env.checks !== false && !(errors[''] ?? []).length && blurErrors.map((m, i) => <p key={i} className="text-sm text-rose-600" role="alert">{m}</p>)}
+      <FieldErrors messages={blurErrors.shown} />
       {question.dontKnow && (
         <Checkbox data-testid="dont-know" label={env.label(dontKnowLabel(question))} checked={!!dontKnow} onChange={(e) => onDontKnow?.(e.target.checked)} />
       )}

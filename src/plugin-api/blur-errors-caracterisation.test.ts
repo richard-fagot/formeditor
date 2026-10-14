@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { LocalizedText, Question } from '../core/model';
 import { formatErrors } from '../core/validation';
+import { blurMessages, shownBlurErrors } from './index';
 
 /**
  * EVO-025 — tests de caractérisation de la règle « erreur à la sortie du champ » des types mail, téléphone, adresse.
@@ -19,10 +20,9 @@ const labelIn = (lang: string) => (t: LocalizedText | undefined) => t?.[lang] ??
 
 /** Messages calculés à la sortie du champ. */
 const onBlur = (question: Question, stored: string, country: string | undefined, lang = 'fr') =>
-  formatErrors(question, stored || null, country).map((e) => labelIn(lang)(e.message));
+  blurMessages(formatErrors(question, stored || null, country), labelIn(lang));
 /** Messages affichés. */
-const shown = (blur: string[], checks: boolean | undefined, errors: Record<string, string[]>) =>
-  checks !== false && !(errors[''] ?? []).length ? blur : [];
+const shown = (blur: string[], checks: boolean | undefined, errors: Record<string, string[]>) => shownBlurErrors(blur, checks, errors);
 
 describe('EVO-025 — erreurs à la sortie du champ (mail, téléphone, adresse)', () => {
   it('mail : adresse invalide → message ; valide ou vide → aucun', () => {

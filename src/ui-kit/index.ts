@@ -4,3 +4,4 @@ export { Button, Input, Textarea, Select, Checkbox, Field, Section, Badge, Kbd }
 export { LocalizedTextInput } from './LocalizedTextInput';
 export { Dialog } from './Dialog';
 export { ContextMenu, type ContextMenuItem } from './ContextMenu';
+export { FieldErrors } from './FieldErrors';

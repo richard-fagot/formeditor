@@ -3,8 +3,8 @@ import { useEffect, useState } from 'react';
 import { normalizeEmail } from '../../../core/contact';
 import type { EmailQuestion } from '../../../core/model';
 import { formatErrors } from '../../../core/validation';
-import { dontKnowLabel, previewText, tr, type FieldProps, type QuestionTypePlugin } from '../../../plugin-api';
-import { Checkbox, Input } from '../../../ui-kit';
+import { dontKnowLabel, previewText, tr, useBlurErrors, type FieldProps, type QuestionTypePlugin } from '../../../plugin-api';
+import { Checkbox, FieldErrors, Input } from '../../../ui-kit';
 import { DontKnowEditor } from '../../../ui/expression-editor';
 
 const T = {
@@ -20,25 +20,25 @@ const T = {
 function EmailField({ question, value, onChange, env, inputId, errors, dontKnow, onDontKnow }: FieldProps<EmailQuestion>) {
   const stored = typeof value === 'string' ? value : '';
   const [text, setText] = useState(stored);
-  const [blurErrors, setBlurErrors] = useState<string[]>([]);
+  const blurErrors = useBlurErrors(env, errors);
   // Réponse modifiée ailleurs (« Ne sais pas », retour) : le champ suit.
   useEffect(() => {
     if (normalizeEmail(text).value !== stored) setText(stored);
   }, [stored]);
   const change = (t: string) => {
     setText(t);
-    setBlurErrors([]);
+    blurErrors.reset();
     onChange(t.trim() === '' ? null : normalizeEmail(t).value);
   };
   const blur = () => {
     setText(stored);
-    setBlurErrors(formatErrors(question, stored || null).map((e) => env.label(e.message)));
+    blurErrors.onBlur(formatErrors(question, stored || null));
   };
   return (
     <div className="space-y-2">
       <Input id={inputId} type="text" inputMode="email" autoComplete="email" value={text} placeholder={env.label(question.placeholder)} disabled={!!dontKnow}
         onChange={(e) => change(e.target.value)} onBlur={blur} />
-      {env.checks !== false && !(errors[''] ?? []).length && blurErrors.map((m, i) => <p key={i} className="text-sm text-rose-600" role="alert">{m}</p>)}
+      <FieldErrors messages={blurErrors.shown} />
       {question.dontKnow && (
         <Checkbox data-testid="dont-know" label={env.label(dontKnowLabel(question))} checked={!!dontKnow} onChange={(e) => onDontKnow?.(e.target.checked)} />
       )}
