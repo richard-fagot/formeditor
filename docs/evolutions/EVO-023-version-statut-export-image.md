@@ -1,6 +1,6 @@
 # EVO-023 — Version et statut dans l'export d'image du logigramme
 
-Statut : en cours
+Statut : fait 2026-10-14
 Dépend de : EVO-004 (export image du logigramme), EVO-022 (version et statut)
 
 ## Besoin
