@@ -1,5 +1,5 @@
 # Guide utilisateur — Éditeur de questionnaires
-Mis à jour le 2026-10-13 — jusqu'à EVO-019
+Mis à jour le 2026-10-14 — jusqu'à EVO-020
 
 ## Mode d'emploi du guide
 
@@ -60,6 +60,10 @@ Mis à jour le 2026-10-13 — jusqu'à EVO-019
   ou palette. Télécharge `projet.json`, `bibliotheque.json`, `<clé>.json` et `<clé>.layout.json` par questionnaire,
   `fragment_<clé>.layout.json` par fragment, `question_<clé>.layout.json` par question de bibliothèque commentée. Les commentaires
   de révision (§16) ne sont que dans les `.layout.json`, que l'équipe de dev ignore ; le navigateur peut demander d'autoriser les téléchargements multiples. `[cmd: project.exportFiles]`
+- **Livrer aux développeurs** — Exporter les fichiers unitaires et joindre `projet.json`, `bibliotheque.json` et les
+  `<clé>.json` des formulaires **validés** (§17), sans les `.layout.json`. Y joindre la documentation du format : dans le
+  dépôt de l'outil, `npm run kit-dev` crée le répertoire `kit-dev/` (`FORMAT.md`, `schemas/`, `exemple/`, `LISEZMOI.md`) ;
+  relancé, il le remplace.
 - **Savoir si le projet est exporté** — Pastille à côté du nom du projet : « Modifications non exportées » (orange) ou
   « Tout est exporté » (vert). Elle repasse au vert après un export.
 - **Renommer le projet** — Cliquer sur le nom en haut à gauche et le modifier. Il donne son nom au bundle exporté. `[cmd: project.rename]`

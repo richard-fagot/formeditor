@@ -1,4 +1,5 @@
 # Format des questionnaires — version 13
+<!-- Kit développeurs (npm run kit-dev) : les lignes marquées du commentaire « outil » renvoient au code de l'outil et sont retirées du kit ; les chemins src/format/schemas/ et examples/declaration-sinistre/ y deviennent schemas/ et exemple/. --> <!-- outil -->
 
 Ce document décrit le format JSON produit par l'éditeur de questionnaires. Il s'adresse à l'équipe
 de développement (et à l'IA qui l'assiste) chargée de construire le moteur cible et les formulaires
@@ -8,10 +9,10 @@ Livrables :
 
 - **Schémas** : `src/format/schemas/*.schema.json` (JSON Schema 2020-12), un par type de fichier, plus
   `common.schema.json` (définitions partagées). Ils fixent la **structure** ; ce document fixe le **sens**.
-- **Exemple complet** : `examples/declaration-sinistre/` (projet, bibliothèque, questionnaire, mise en page).
+- **Exemple complet** : `examples/declaration-sinistre/` (projet, bibliothèque, questionnaires).
 - **Jeux de test** : `examples/declaration-sinistre/chemins/*.json`, parcours attendus par scénario (§15).
-- Implémentation de référence (TypeScript, facultative à lire) : moteur de parcours `src/core/runtime`,
-  expressions `src/core/expressions`, validation des réponses `src/core/validation` (`validateAnswer`).
+- Implémentation de référence (TypeScript, facultative à lire) : moteur de parcours `src/core/runtime`, <!-- outil -->
+  expressions `src/core/expressions`, validation des réponses `src/core/validation` (`validateAnswer`). <!-- outil -->
 
 Conventions : « doit » marque une règle que le moteur cible doit respecter pour se comporter comme la
 prévisualisation de l'outil. L'ordre des propriétés d'un objet n'a pas de sens ; l'ordre des tableaux
@@ -55,7 +56,7 @@ libellés et interpolation — 6. Nœuds — 7. Questions — 8. Réponses — 9
 
 ```json
 {
-  "formatVersion": 9,
+  "formatVersion": 13,
   "kind": "layout",
   "graph": "q_declaration",
   "nodes": { "n_date": { "x": 0, "y": 320 } },
@@ -84,7 +85,7 @@ Squelette d'un questionnaire :
 
 ```json
 {
-  "formatVersion": 6,
+  "formatVersion": 13,
   "kind": "questionnaire",
   "id": "q_declaration",
   "key": "declaration_sinistre",
@@ -270,7 +271,8 @@ contraintes) n'est surchargé ici.
 
 Une surcharge reste figée quand la valeur héritée change, même si elle lui était égale. Un chemin (ou une
 référence) qui ne désigne plus aucune question est **ignoré** sans erreur. La valeur résolue n'est pas exportée :
-le moteur cible applique cette règle (implémentation de référence : `resolveRequired`, `src/core/model/required.ts`).
+le moteur cible applique cette règle.
+(Implémentation de référence : `resolveRequired`, `src/core/model/required.ts`.) <!-- outil -->
 Une question non présentée (chemin non emprunté, champ masqué) n'est jamais exigée.
 
 ```json
@@ -609,9 +611,9 @@ Le message d'une erreur est `messages.<paramètre>` s'il existe, sinon le messag
 ### 10.1 Langage
 
 Les expressions sont écrites en **JSONata 1.8** (implémentations en JavaScript, Java, .NET, Python…),
-avec les **clés** lisibles. Elles apparaissent dans : `when` des arêtes, des options, des variantes et
-des champs de structure ; `required` ; `defaultExpr` ; `min` / `max` non littéraux ; `constraints[].rule` ;
-`from` / `label` / `value` des entrées dynamiques ; et entre accolades dans les textes interpolés.
+avec les **clés** lisibles. Elles apparaissent dans : `when` des arêtes, des options, des groupes d'options, des entrées dynamiques,
+des variantes et des champs de structure ; `required` ; `defaultExpr` ; `min` / `max` non littéraux ; `constraints[].rule` ;
+`from` / `label` / `value` des entrées dynamiques ; `suggestions` d'un texte (§7.9) ; et entre accolades dans les textes interpolés.
 
 Une **condition** (`when`, `required`, règle libre) est vraie **seulement si** l'expression vaut le
 booléen `true`. Toute autre valeur (`false`, absente, chaîne, objet, liste) ou une erreur d'évaluation
@@ -850,7 +852,7 @@ L'exemple fourni ne produit aucun problème.
 | Libellés de lecture `caption` (version 4) : arête conditionnée, « sinon », arête de sortie nommée ; variable et champ de liste | `e_qualite_ayant_droit`, `e_qualite_montant`, `e_bloc_non_identifie` ; `sys.type_adherent`, `sys.sinistres` (`nature`) |
 | Mail, téléphone, adresse, civilité (version 6) : structure de bibliothèque non utilisée par le questionnaire (civilité obligatoire, téléphone mobile, adresse à vérifier) | `lq_souscripteur` (bibliothèque) |
 | Champs masqués (version 8) : structure `identite` (7 champs, tous obligatoires) réduite à nom, prénom, mail dans une instance ; `{identite.mail}` dans la fin | `q_remboursement` : `n_rappel` → `lq_identite`, `n_fin_remboursement` ; chemins `remboursement_*.json` |
-| Commentaire de révision (version 9) : question commentée, deux réponses, nœud commentaire à gauche de la question | `declaration_sinistre.layout.json` : `comments` sur `n_date` |
+| Commentaire de révision (version 9) : question commentée, deux réponses, nœud commentaire à gauche de la question | `declaration_sinistre.layout.json` : `comments` sur `n_date` | <!-- outil -->
 | Surcharge du caractère obligatoire (version 10, §6.1) : téléphone obligatoire en bibliothèque, rendu facultatif dans un fragment (laissé vide) ; question d'un fragment rendue facultative depuis un questionnaire | `blk_identite_tiers` : `bn_telephone` → `lq_telephone` (chemins `ud_tiers_inconnu.json`, `ud_vol_avec_boucle.json`) ; `q_remboursement` : `n_ident.requiredOverrides` |
 | Formulaire validé (version 11) : `status: "validated"`, `validatedAt` ; la déclaration de sinistre reste non validée | `demande_remboursement.json` |
 | Suggestions d'un champ texte (version 12) : nom d'une victime, suggestion tirée du nom de l'assuré (`$substringAfter(sys.nom_assure, ' ')`, valeur unique) | `n_victimes` : champ `nom` |

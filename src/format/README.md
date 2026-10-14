@@ -25,6 +25,8 @@ sérialisation, import/export unitaire et bundle. Dépend uniquement de `core/mo
 Piège (Ajv) : un `params_<type>` sans propriété propre doit tout de même déclarer `properties` non vide (`params_email` déclare
 `type`), sinon Ajv tient `type` pour évalué même quand aucun `if` ne correspond, et un type inconnu passe `unevaluatedProperties`.
 Le sens de chaque propriété (navigation, validation, expressions) est dans `docs/FORMAT.md`.
+Kit développeurs (EVO-020) : `npm run kit-dev` copie schémas, `docs/FORMAT.md` et l'exemple dans `kit-dev/` ; les lignes de
+FORMAT.md marquées `<!-- outil -->` (renvois au code) y sont retirées.
 
 ## Invariants
 - Changement du format → schéma + entrée dans `MIGRATIONS` + `FORMAT_VERSION` + `docs/FORMAT.md` + exemple.
