@@ -9,8 +9,11 @@ Catalogue unique des actions utilisateur (spec §4.4). Palette, menus et raccour
   `arg` : paramètre fourni par un bouton ou un champ (onglet, langue, valeur saisie) ; les commandes qui
   l'exigent sont `hidden` (absentes de la palette).
 - `setPastePoint(graphe, position?)` : position du pointeur sur le logigramme (collage, EVO-010).
-- `download(name, texte | Blob)` ; `imageFileName(projet, titre, date)` (`<projet> - <titre> - AAAAMMJJ.png`, caractères
-  interdits → `_`), `imageTitle(questionnaire, langue, langueParDéfaut)` (`image-file.ts`, fonctions pures).
+- `download(name, texte | Blob)` ; `imageFileName(projet, titre, { version, status }, date)`
+  (`<projet> - <titre> - <version> - <final|provisoire> - AAAAMMJJ.png`, EVO-023 : segments repris de
+  `format/questionnaireFileName`, caractères interdits → `_`), `imageHeading(titre, version, libelléStatut)`
+  (`<titre> — <version> — <statut>`, version vide omise), `imageTitle(questionnaire, langue, langueParDéfaut)`
+  (`image-file.ts`, fonctions pures).
 
 ## Fichiers
 - `project-commands.ts` : projet (nouveau, ouvrir/importer, exemple, exporter), onglets, palette.

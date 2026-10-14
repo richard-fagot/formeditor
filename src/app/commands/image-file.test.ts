@@ -3,25 +3,25 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { exampleWorkspace } from '../../../tests/reference/example';
 import { useStore } from '../store';
 import { command, runCommand } from './index';
-import { imageFileName, imageTitle, safeFileName, stamp } from './image-file';
+import { imageFileName, imageHeading, imageTitle, safeFileName, stamp } from './image-file';
 
 const st = () => useStore.getState();
 
 describe('nom du fichier image (EVO-004)', () => {
   it('suit le modèle « projet - questionnaire - AAAAMMJJ.png » avec la date locale', () => {
-    expect(imageFileName('Déclarations de sinistre', 'Déclaration de sinistre', new Date(2026, 0, 5, 23, 59)))
-      .toBe('Déclarations de sinistre - Déclaration de sinistre - 20260105.png');
+    expect(imageFileName('Déclarations de sinistre', 'Déclaration de sinistre', {}, new Date(2026, 0, 5, 23, 59)))
+      .toBe('Déclarations de sinistre - Déclaration de sinistre - provisoire - 20260105.png');
     expect(stamp(new Date(2026, 11, 31))).toBe('20261231');
   });
 
   it('remplace les caractères interdits, réduit les espaces, retire espaces et points finaux', () => {
     expect(safeFileName('a/b\\c:d*e?f"g<h>i|j\u0001k')).toBe('a_b_c_d_e_f_g_h_i_j_k');
     expect(safeFileName('  Projet   v2.  ')).toBe('Projet v2');
-    expect(imageFileName('Assur: 2026', 'Sinistre / auto ?', new Date(2026, 9, 12))).toBe('Assur_ 2026 - Sinistre _ auto _ - 20261012.png');
+    expect(imageFileName('Assur: 2026', 'Sinistre / auto ?', {}, new Date(2026, 9, 12))).toBe('Assur_ 2026 - Sinistre _ auto _ - provisoire - 20261012.png');
   });
 
   it('nom de projet vide → « projet »', () => {
-    expect(imageFileName('  ', 'Q', new Date(2026, 9, 12))).toBe('projet - Q - 20261012.png');
+    expect(imageFileName('  ', 'Q', {}, new Date(2026, 9, 12))).toBe('projet - Q - provisoire - 20261012.png');
   });
 
   it('titre dans la langue affichée, repli sur la langue par défaut puis la clé', () => {
@@ -29,6 +29,30 @@ describe('nom du fichier image (EVO-004)', () => {
     expect(imageTitle(q, 'en', 'fr')).toBe('Claim');
     expect(imageTitle(q, 'de', 'fr')).toBe('Déclaration');
     expect(imageTitle({ key: 'decl', title: {} }, 'de', 'fr')).toBe('decl');
+  });
+});
+
+describe('version et statut dans l’image (EVO-023)', () => {
+  const d = new Date(2026, 9, 14);
+  it('« blessure » en 1.0.5 provisoire → `<projet> - blessure - 1.0.5 - provisoire - AAAAMMJJ.png`', () => {
+    expect(imageFileName('sinistres', 'blessure', { version: '1.0.5' }, d)).toBe('sinistres - blessure - 1.0.5 - provisoire - 20261014.png');
+    expect(imageFileName('sinistres', 'blessure', { version: '1.0.5', status: 'draft' }, d)).toBe('sinistres - blessure - 1.0.5 - provisoire - 20261014.png');
+  });
+  it('validé en 1.0.4 → le nom contient `- 1.0.4 - final -`', () => {
+    expect(imageFileName('sinistres', 'dc', { version: '1.0.4', status: 'validated' }, d)).toContain(' - 1.0.4 - final - ');
+  });
+  it('version vide → segment omis', () => {
+    expect(imageFileName('sinistres', 'blessure', { version: '' }, d)).toBe('sinistres - blessure - provisoire - 20261014.png');
+    expect(imageFileName('sinistres', 'blessure', { version: '  ' }, d)).toBe('sinistres - blessure - provisoire - 20261014.png');
+  });
+  it('caractère interdit dans la version → `_`', () => {
+    expect(imageFileName('sinistres', 'blessure', { version: '1/2' }, d)).toBe('sinistres - blessure - 1_2 - provisoire - 20261014.png');
+  });
+  it('titre dessiné : titre — version — statut, version vide omise', () => {
+    expect(imageHeading('blessure', '1.0.5', 'Provisoire')).toBe('blessure — 1.0.5 — Provisoire');
+    expect(imageHeading('dc', '1.0.4', 'Validated')).toBe('dc — 1.0.4 — Validated');
+    expect(imageHeading('blessure', ' ', 'Provisoire')).toBe('blessure — Provisoire');
+    expect(imageHeading('blessure', undefined, 'Provisoire')).toBe('blessure — Provisoire');
   });
 });
 
@@ -75,5 +99,12 @@ describe('guide (EVO-004)', () => {
     expect(guide).toContain('[cmd: view.exportImage]');
     expect(guide).toMatch(/\*\*Exporter le logigramme en SVG\*\*/);
     expect(Number(/jusqu'à EVO-(\d+)/.exec(guide)?.[1])).toBeGreaterThanOrEqual(4);
+  });
+
+  it('décrit le nom du fichier image et le titre avec version et statut (EVO-023)', () => {
+    const guide = readFileSync('docs/GUIDE.md', 'utf8');
+    expect(guide).toContain('`<projet> - <questionnaire> - <version> - <final|provisoire> - AAAAMMJJ.png`');
+    expect(guide).toContain('« <titre> — <version> — <statut> »');
+    expect(Number(/jusqu'à EVO-(\d+)/.exec(guide)?.[1])).toBeGreaterThanOrEqual(23);
   });
 });

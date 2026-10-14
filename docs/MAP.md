@@ -27,7 +27,7 @@ La section « Modules » est générée par `npm run map` ; le reste est rédig�
 
 | Module | Responsabilité | API publique (`index.ts`) | Dépendances | Fichiers |
 | --- | --- | --- | --- | --- |
-| `app/commands` | Catalogue unique des actions utilisateur (spec §4.4). Palette, menus et raccourcis s'appuient tous dessus : | type Command, labelOf, download, imageFileName, imageTitle, setPastePoint, commands, command, runCommand | app/i18n, app/store, core/expressions, core/model, format, plugin-api, registry | 28 |
+| `app/commands` | Catalogue unique des actions utilisateur (spec §4.4). Palette, menus et raccourcis s'appuient tous dessus : | type Command, labelOf, download, imageFileName, imageHeading, imageTitle, type ImageVersion, setPastePoint, commands, command, runCommand | app/i18n, app/store, core/expressions, core/model, format, plugin-api, registry | 28 |
 | `app/i18n` | Textes de l'interface de l'outil (dictionnaire simple, `fr` par défaut, `en`). Les textes destinés à | MESSAGES, type MessageKey, UI_LANGUAGES, Translate, makeTranslate | — | 8 |
 | `app/persistence` | Sauvegarde automatique du projet dans IndexedDB (idb-keyval), en continu (délai 500 ms après chaque | restoreSession, startAutosave | app/store, core/model, format, idb-keyval | 1 |
 | `app/shortcuts` | Liaisons clavier (tinykeys) vers les commandes de `app/commands`. | bindShortcuts, isTyping, keysOf, formatKey, comboOf, normalizeKey | app/commands, app/store, tinykeys | 4 |

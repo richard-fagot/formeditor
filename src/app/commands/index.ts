@@ -16,7 +16,7 @@ import type { Command } from './types';
 
 export { type Command, labelOf } from './types';
 export { download } from './files';
-export { imageFileName, imageTitle } from './image-file';
+export { imageFileName, imageHeading, imageTitle, type ImageVersion } from './image-file';
 export { setPastePoint } from './clipboard-commands';
 
 let catalog: Command[] | undefined;

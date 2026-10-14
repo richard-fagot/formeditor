@@ -155,7 +155,7 @@ test('EVO-004 : logigramme entier zoomé, thème sombre, titre, 2×, nom du fich
   const png = await exportWithEnter(page);
   await expect(dialog).toHaveCount(0);
 
-  expect(png.name).toBe(`Déclarations de sinistre - Déclaration de sinistre - ${today()}.png`);
+  expect(png.name).toBe(`Déclarations de sinistre - Déclaration de sinistre - 1.0.5 - provisoire - ${today()}.png`);
   // Tous les nœuds, à 2× la taille à 100 %, marges et en-tête de titre compris.
   const all = await flowGeometry(page, { probes: [{ sel: '[data-edge-label]' }, { sel: '[data-id="n_type"] span', text: '*' }] });
   expect(all.count).toBe(19);
