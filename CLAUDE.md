@@ -62,6 +62,7 @@ sans cérémonie. Préférer la solution la plus simple qui respecte la spec.
 - Changement du format JSON → schéma, migration (`formatVersion`), `docs/FORMAT.md` et exemple mis à jour.
 - Toute action utilisateur passe par le catalogue de commandes (`app/commands`), donc par la palette et les raccourcis.
 - Tout texte destiné à l'utilisateur final est multilingue.
+- Signaler un problème (refus, information, échec, confirmation, problème du projet, erreur de champ) : API selon `docs/ERREURS.md`.
 - `docs/GUIDE.md` : toute action ajoutée, modifiée ou supprimée met à jour le guide (entrée, balise `[cmd: …]`,
   `npm run guide` pour l'index des raccourcis). `npm run check` contrôle la cohérence avec le catalogue de commandes.
 

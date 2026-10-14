@@ -2,7 +2,7 @@
 
 État applicatif (Zustand + immer) : projet (`ws`), onglets, sous-vue par questionnaire, sélection,
 demande de focus, palette, langues, raccourcis personnalisés, historique, états de prévisualisation.
-Dépend de `core`, `format`, `app/i18n`, `plugin-api` (utilitaires).
+Dépend de `core`, `format`, `app/i18n`, `app/feedback`, `plugin-api` (utilitaires).
 
 ## API
 - `useStore` ; actions : `edit(scope, recipe, key?)` (sans effet : aucun point ; si la modification touche d'autres portées — renommage propagé,
@@ -24,7 +24,7 @@ Dépend de `core`, `format`, `app/i18n`, `plugin-api` (utilitaires).
 - Versions des éléments de bibliothèque (EVO-022, `version-edits.ts`) : `setItemVersion(ws, item, version)` (refusé, `false`, sur un élément
   validé ; vide = retirée), `setItemValidation(ws, item, validé)`.
 - Verrou des formulaires validés (EVO-015, `refused` dans `store.ts`) : après `edit`, `transact`, `silent`, `undo`, `redo`, si `lockedChanges` (core/model)
-  signale un questionnaire validé modifié ou supprimé, l'état d'avant est remis (projet, historique, onglets, sélection) et `notice` l'explique
+  signale un questionnaire validé modifié ou supprimé, l'état d'avant est remis (projet, historique, onglets, sélection) et `notice` l'explique (`refuse` d'`app/feedback`, branché par `bindFeedback` dans `store.ts`)
   (sauf `silent`). La duplication d'un questionnaire ne reprend pas son état de validation.
 - Bibliothèque (`library-edits.ts`) : `addLibraryQuestion`, `addFragment`, `deleteLibraryItem`, `referenceNode(ws, ref, item, id)` (nœud
   référence ; alias libre pour un fragment ; refusé si `insertionCycle` : fragment dans lui-même ou cycle d'appels), `placeNode`, `moveToLibrary` / `canMoveToLibrary` (question

@@ -14,7 +14,7 @@ Dépend de `core`, `registry`, `app/store`, `app/commands`, `ui-kit`, `ui/system
   ou d'une adresse (`country`, `<clé>_pays`, EVO-007). `RuntimeInput.env.display` = `displayFormatters(ws, questionnaire)` (`core/contact`) :
   interpolation d'une civilité (libellé) et d'un téléphone (format international) ; sur la page d'un fragment, `makeRenderEnv`
   le remplace par celui du fragment.
-- `Preview.tsx` : barre (langue : commande `preview.lang` ; nombre de textes non traduits dans la langue affichée, montrés
+- `Preview.tsx` : barre (langue : commande `preview.lang` ; nombre de textes non traduits dans la langue affichée (`useIssues` d'`app/issues`), montrés
   dans la langue par défaut ; recommencer, bascule des panneaux : commandes `preview.toggleSystem`,
   `preview.toggleDebug`), `Wizard` (progression, page, précédent / suivant, « Revenir à la synthèse »), panneau latéral.
   « Suivant » valide la réponse (`core/validation`) ; les erreurs s'affichent après une tentative.

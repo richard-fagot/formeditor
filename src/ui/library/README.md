@@ -12,7 +12,7 @@ Onglet Bibliothèque et panneau latéral de glisser-déposer. Dépend de `app/co
   à la suite du nœud sélectionné. Dans un fragment, pas de fragment dont l'insertion créerait un cycle d'appels (`insertionCycle`).
 - `FragmentView({ id })` (EVO-008) : contenu de l'onglet `f:<id>` (`ui/shell`) : bandeau « Fragment de la bibliothèque · n appelant(s) »
   (`fragmentCallers`), bouton « Commentaires » (`comment.toggleAll`, EVO-011) et bouton du panneau latéral ; titre, clé, description (`store.edit('library')`), suppression (`library.delete`) ;
-  puis panneau latéral, logigramme éditable (`Diagram` avec `GraphRef` fragment : les commandes du graphe y agissent), problèmes, propriétés.
+  puis panneau latéral, logigramme éditable (`Diagram` avec `GraphRef` fragment : les commandes du graphe y agissent), problèmes (`useIssues` d'`app/issues`), propriétés.
 
 ## Composants
 - `LabelSets` : jeux de libellés booléens (clé, libellés multilingues vrai / faux ; plus de jeu tri-state, EVO-018).
