@@ -231,6 +231,12 @@
             "address",
             "civility"
           ]
+        },
+        "version": {
+          "$ref": "#/$defs/version"
+        },
+        "status": {
+          "$ref": "#/$defs/itemStatus"
         }
       },
       "unevaluatedProperties": false
@@ -519,6 +525,34 @@
     "formatVersion": {
       "type": "integer",
       "minimum": 1
+    },
+    "version": {
+      "description": "Version (EVO-022) : texte libre géré à la main (convention X.Y.Z), sans contrôle de format ; absente = vide.",
+      "type": "string"
+    },
+    "itemStatus": {
+      "description": "Statut (EVO-022) : absent ou draft = provisoire ; validated = validé (« final »), version figée.",
+      "enum": [
+        "draft",
+        "validated"
+      ]
+    },
+    "versionRef": {
+      "description": "Version de référence d'un élément de bibliothèque utilisé (EVO-022), relevée à la validation du questionnaire.",
+      "type": "object",
+      "required": [
+        "version",
+        "status"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "version": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/itemStatus"
+        }
+      }
     },
     "countryCode": {
       "type": "string",

@@ -3,6 +3,7 @@ import { CLIPBOARD_MESSAGES } from './messages-clipboard';
 import { COMMENT_MESSAGES } from './messages-comments';
 import { REQUIRED_MESSAGES } from './messages-required';
 import { VALIDATION_MESSAGES } from './messages-validation';
+import { VERSION_MESSAGES } from './messages-version';
 
 /** Dictionnaire de l'interface de l'outil (français par défaut). `{x}` : paramètre. */
 export const MESSAGES = {
@@ -11,6 +12,7 @@ export const MESSAGES = {
   ...COMMENT_MESSAGES,
   ...REQUIRED_MESSAGES,
   ...VALIDATION_MESSAGES,
+  ...VERSION_MESSAGES,
   'app.title': { fr: 'Éditeur de questionnaires', en: 'Questionnaire editor' },
   'project.new': { fr: 'Nouveau projet', en: 'New project' },
   'project.open': { fr: 'Ouvrir / importer…', en: 'Open / import…' },

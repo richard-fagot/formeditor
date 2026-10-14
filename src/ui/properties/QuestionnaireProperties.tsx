@@ -1,16 +1,32 @@
-import type { Questionnaire } from '../../core/model';
+import { isValidated, type Questionnaire } from '../../core/model';
+import { questionnaireFileName } from '../../format';
 import { runCommand } from '../../app/commands';
 import { questionnaireKeys, useEditorEnv, useT } from '../../app/store';
-import { Field, LocalizedTextInput, Section, Textarea } from '../../ui-kit';
+import { Badge, Field, Input, LocalizedTextInput, Section, Textarea } from '../../ui-kit';
 import { KeyInput } from './KeyInput';
 
-/** Propriétés du questionnaire (rien n'est sélectionné) : titre multilingue, clé (nom du fichier), description. */
+/**
+ * Propriétés du questionnaire (rien n'est sélectionné) : titre multilingue, clé (nom du fichier exporté), version et
+ * statut (EVO-022 ; version grisée tant qu'il est validé, par le `fieldset` du panneau), description.
+ */
 export function QuestionnaireProperties({ questionnaire: q }: { questionnaire: Questionnaire }) {
   const t = useT();
   const env = useEditorEnv();
-  const file = env.ws.project.questionnaires.find((e) => e.id === q.id)?.file ?? `${q.key}.json`;
+  const file = questionnaireFileName(q);
+  const validated = isValidated(q);
   return (
     <Section title={t('questionnaire.properties')}>
+      <div className="flex items-end gap-3">
+        <div className="flex-1" title={validated ? t('version.locked') : undefined} data-testid="version-field">
+          <Field label={t('version.label')} htmlFor="prop-questionnaire-version">
+            <Input id="prop-questionnaire-version" value={q.version ?? ''} placeholder="1.0.0"
+              onChange={(e) => runCommand('questionnaire.setVersion', e.target.value)} />
+          </Field>
+        </div>
+        <span className="pb-1.5" data-testid="version-status">
+          <Badge tone={validated ? 'emerald' : 'slate'}>{validated ? t('version.final') : t('version.draft')}</Badge>
+        </span>
+      </div>
       <Field label={t('questionnaire.title')}>
         <LocalizedTextInput languages={env.languages} activeLang={env.contentLang} value={q.title}
           onChange={(title) => runCommand('questionnaire.setTitle', title)} />

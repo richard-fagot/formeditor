@@ -1,5 +1,5 @@
 {
-  "formatVersion": 13,
+  "formatVersion": 14,
   "kind": "questionnaire",
   "id": "q_declaration",
   "key": "declaration_sinistre",
@@ -8,6 +8,22 @@
     "en": "Claim declaration"
   },
   "description": "Déclaration d'un sinistre par un adhérent connecté.",
+  "version": "1.0.5",
+  "status": "draft",
+  "libraryVersions": {
+    "lq_date_sinistre": {
+      "version": "1.0.0",
+      "status": "validated"
+    },
+    "blk_identite_tiers": {
+      "version": "1.1.0",
+      "status": "validated"
+    },
+    "lq_telephone": {
+      "version": "1.0.0",
+      "status": "validated"
+    }
+  },
   "start": "n_intro",
   "nodes": [
     {

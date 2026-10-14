@@ -128,3 +128,35 @@ Ajouter une section « Analyse » en bas de ce fichier :
 
 Faisable sans ambiguïté bloquante → choix notés dans l'analyse et `docs/DECISIONS.md`, puis
 réalisation. Sinon → statut « à arbitrer », options et conséquences, arrêt sans coder.
+
+## Analyse
+
+1. **Faisabilité, modules** : faisable sans ambiguïté bloquante. Modules (matrices « Faire évoluer le format »,
+   EVO-015 et « Questions et fragments de bibliothèque » de `docs/MAP.md`) : `core/model` (`versioning.ts` : types,
+   dépendances, versions de référence, alertes ; `documents.ts`), `format` (schémas, migration 13 → 14, `files.ts` :
+   nom des fichiers exportés, `status` et `libraryVersions` écrits dans le fichier du questionnaire), `app/store`
+   (`setValidation`, `version-edits.ts`, `duplicate.ts`), `app/commands` (`questionnaire.validate`, `version-commands.ts`),
+   `app/i18n`, `ui/properties` (`QuestionnaireProperties`), `ui/library` (`ItemVersion`), `ui/shell` (`QuestionnaireView` :
+   alerte), `examples/`, `docs/FORMAT.md`, `docs/GUIDE.md`.
+2. **Dépendances** : parcours **indirect** retenu, peu coûteux : depuis un questionnaire, les nœuds `question` à `ref`
+   (questions de bibliothèque) et `fragment` (fragments), puis récursivement le graphe de chaque fragment appelé
+   (ensemble des visités : pas de boucle même si un cycle était importé). Les champs d'une structure sont portés par la
+   question (pas de référence). Les jeux de libellés ne sont pas versionnés : ce ne sont pas des éléments « utilisés »
+   par un nœud (désignés par clé, sans lien suivi).
+3. **Stockage** : dans le questionnaire, propriété `libraryVersions` : id de l'élément → `{ version, status }`, relevée
+   à chaque validation (questions et fragments utilisés, directement ou non) ; retirée à la dévalidation (comme `status`),
+   relevée de nouveau à la revalidation ; hors verrou de lecture seule. `version` (texte libre, absente = vide) sur le questionnaire,
+   `version` et `status` (`draft` | `validated`, absent = provisoire) sur chaque question et fragment de la bibliothèque.
+   Le statut reste `status` (`validated` = « final », absent ou `draft` = « provisoire ») : pas de second champ `statut`.
+   Migration 13 → 14 : seul `formatVersion` change ; pour un questionnaire validé, un élément utilisé absent de
+   `libraryVersions` a pour version de référence la version vide, ce qui équivaut à des références initialisées sur les
+   versions actuelles (toutes vides) : aucune fausse alerte. Alerte seulement sur un questionnaire **validé**.
+4. **Export** : les éléments de bibliothèque restent dans `bibliotheque.json` (pas de fichier par élément), avec leur
+   `version` et leur `status`. Le fichier du questionnaire s'appelle `<clé> - <version> - <final|provisoire>.json`
+   (version vide : segment omis ; caractères interdits → `_`), sa mise en page `<même nom>.layout.json`, et `projet.json`
+   exporté désigne ces noms. Il porte toujours `status` (`draft` écrit s'il est absent) et `libraryVersions` (versions de
+   référence s'il est validé, sinon versions actuelles des éléments utilisés ; omis s'il n'en utilise aucun). Le bundle
+   reste l'image exacte du projet en mémoire ; à l'import d'un fichier de questionnaire provisoire, `status` et
+   `libraryVersions` sont retirés (équivalents à leur absence).
+5. **Arbitrage interne** : « validation refusée si la version est vide » prime sur « sans version, comportement
+   identique » (critère explicite) ; un formulaire déjà validé sans version (projet antérieur) le reste.

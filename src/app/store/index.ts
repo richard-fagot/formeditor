@@ -20,6 +20,7 @@ export { copyNodes, pasteNodes, duplicateNodes, PASTE_OFFSET, type Clip, type Pa
 export { duplicateQuestionnaire, duplicateLibraryItem, type CopyName } from './duplicate';
 export { groupIntoFragment, groupEntries, canExtract } from './group';
 export { questionnaireKeys, canRenameQuestionnaire, renameQuestionnaire, patchQuestionnaire, setValidation } from './questionnaire-edits';
+export { setItemVersion, setItemValidation } from './version-edits';
 export {
   addVariable, deleteVariable, renameVariable, renameListField, setVariableType, addScenario, deleteScenario, valueError,
   exampleSystemState, scenarioOf, systemStateOf,

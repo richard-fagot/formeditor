@@ -1,10 +1,12 @@
 {
-  "formatVersion": 13,
+  "formatVersion": 14,
   "kind": "library",
   "questions": [
     {
       "id": "lq_date_sinistre",
       "key": "date_sinistre",
+      "version": "1.0.0",
+      "status": "validated",
       "label": {
         "fr": "Date du sinistre",
         "en": "Date of the claim"
@@ -28,6 +30,8 @@
     {
       "id": "lq_telephone",
       "key": "telephone",
+      "version": "1.0.0",
+      "status": "validated",
       "label": {
         "fr": "Numéro de téléphone",
         "en": "Phone number"
@@ -49,6 +53,7 @@
     {
       "id": "lq_souscripteur",
       "key": "souscripteur",
+      "version": "0.1.0",
       "label": {
         "fr": "Souscripteur",
         "en": "Policyholder"
@@ -112,6 +117,8 @@
     {
       "id": "lq_identite",
       "key": "identite",
+      "version": "2.1.0",
+      "status": "validated",
       "label": {
         "fr": "Vos coordonnées",
         "en": "Your contact details"
@@ -199,6 +206,8 @@
     {
       "id": "blk_identite_tiers",
       "key": "identite_tiers",
+      "version": "1.1.0",
+      "status": "validated",
       "title": {
         "fr": "Identité du tiers",
         "en": "Third party identity"
@@ -362,6 +371,8 @@
     {
       "id": "frg_identification_assure",
       "key": "identification_assure",
+      "version": "1.2.0",
+      "status": "validated",
       "title": {
         "fr": "Identification de l'assuré",
         "en": "Policyholder identification"

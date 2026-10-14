@@ -35,7 +35,7 @@ Version du format : **${version}** (propriété \`formatVersion\` de chaque fich
 ## Fichiers à joindre par l'équipe métier
 
 Dans l'éditeur, « Exporter les fichiers unitaires », puis joindre \`projet.json\`, \`bibliotheque.json\` et les
-fichiers des questionnaires, **sans** les fichiers de mise en page (\`.layout.json\`, propres à l'outil).
+fichiers des questionnaires (\`<clé> - <version> - <final|provisoire>.json\`, FORMAT.md §4.1), **sans** les fichiers de mise en page (\`.layout.json\`, propres à l'outil).
 
 Seuls les questionnaires validés (\`"status": "validated"\`) sont livrables ; un questionnaire sans \`status\`
 ou en \`"draft"\` est un brouillon.

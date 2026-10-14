@@ -1,8 +1,9 @@
 import type { Graph } from './graph';
 import type { LangCode, LocalizedText } from './text';
 import type { Question } from './question';
+import type { VersionRef, Versioned } from './versioning';
 
-export const FORMAT_VERSION = 13;
+export const FORMAT_VERSION = 14;
 
 export interface Questionnaire extends Graph {
   formatVersion: number;
@@ -11,10 +12,17 @@ export interface Questionnaire extends Graph {
   key: string;
   title: LocalizedText;
   description?: string;
+  /** Version (EVO-022) : texte libre géré à la main, absente = vide ; figée tant que le questionnaire est validé. */
+  version?: string;
   /** État de validation (EVO-015) : absent = `draft` (non validé) ; `validated` = en lecture seule. */
   status?: 'draft' | 'validated';
   /** Date de validation (`AAAA-MM-JJ`), présente seulement quand le questionnaire est validé. */
   validatedAt?: string;
+  /**
+   * Versions de référence (EVO-022) : id de l'élément de bibliothèque utilisé (directement ou par un fragment) →
+   * version et statut relevés à la dernière validation.
+   */
+  libraryVersions?: Record<string, VersionRef>;
   /** Nœud de départ (peut être un nœud fragment : le parcours commence sur l'entrée du fragment). */
   start: string;
 }
@@ -23,7 +31,7 @@ export interface Questionnaire extends Graph {
  * Fragment de questionnaire (EVO-008) : morceau de parcours sans départ ni fin, appelé par référence.
  * Entrée : `entry` si réglée, sinon le nœud sans arête entrante ; sorties : nœuds sans arête sortante.
  */
-export interface Fragment extends Graph {
+export interface Fragment extends Graph, Versioned {
   id: string;
   key: string;
   title: LocalizedText;
@@ -44,7 +52,8 @@ export interface LabelSet {
 export interface Library {
   formatVersion: number;
   kind: 'library';
-  questions: Question[];
+  /** Questions réutilisables, avec version et statut (EVO-022). */
+  questions: (Question & Versioned)[];
   fragments: Fragment[];
   labelSets: LabelSet[];
 }

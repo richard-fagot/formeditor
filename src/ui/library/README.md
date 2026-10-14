@@ -20,3 +20,5 @@ Onglet Bibliothèque et panneau latéral de glisser-déposer. Dépend de `app/co
 - `LibraryQuestionView` : commentaire de révision en tête s'il existe (`CommentThread`, EVO-011) ; question de bibliothèque, éditée avec `QuestionEditor` (`ui/properties`) dans l'historique
   `library` ; usages listés ; portée des expressions = réunion des graphes qui l'utilisent (`items.ts`).
 - `items.ts` : `itemTitle`, `itemUsages`, `libraryQuestionScope`.
+- `ItemVersion({ item })` (EVO-022) : version (`library.setVersion`, grisée si validé, infobulle), statut, « Valider » / « Dévalider » (`library.validate` / `library.unvalidate`),
+  questionnaires qui l'utilisent (`itemUsers`) ; en tête de `LibraryQuestionView` et dans le bandeau de `FragmentView`.

@@ -40,8 +40,8 @@ export function duplicateQuestionnaire(ws: Workspace, id: string, name: CopyName
   const key = uniqueKey(q.key, ws.questionnaires.map((x) => x.key));
   const { nodes, edges, ids } = cloneGraph(ws, q, copyId);
   const title = copyTitle(q.title, ws.questionnaires.map((x) => x.title), name);
-  // La copie d'un formulaire validé n'est pas validée (EVO-015).
-  const { status: _status, validatedAt: _at, ...rest } = clone(q);
+  // La copie d'un formulaire validé n'est pas validée (EVO-015), sans versions de référence (EVO-022) ; version gardée.
+  const { status: _status, validatedAt: _at, libraryVersions: _refs, ...rest } = clone(q);
   ws.questionnaires.splice(i + 1, 0, { ...rest, id: copyId, key, title, nodes, edges, start: ids.get(q.start) ?? '' });
   const entries = ws.project.questionnaires;
   const at = entries.findIndex((e) => e.id === id);
@@ -57,6 +57,7 @@ export function duplicateLibraryItem(ws: Workspace, item: LibraryItem, name: Cop
     const q = lib.questions[i];
     if (!q) return undefined;
     const copy = clone(q);
+    delete copy.status; // copie provisoire (EVO-022), version gardée
     copy.id = newId('lq');
     copy.key = uniqueKey(q.key, lib.questions.map((x) => x.key));
     const title = copyTitle(otherwise(q.label), lib.questions.map((x) => otherwise(x.label)), name);
@@ -69,7 +70,8 @@ export function duplicateLibraryItem(ws: Workspace, item: LibraryItem, name: Cop
   if (!f) return undefined;
   const copyId = newId('frg');
   const { nodes, edges, ids } = cloneGraph(ws, f, copyId);
-  const copy = { ...clone(f), id: copyId, key: uniqueKey(f.key, lib.fragments.map((x) => x.key)), title: copyTitle(f.title, lib.fragments.map((x) => x.title), name), nodes, edges };
+  const { status: _status, ...source } = clone(f); // copie provisoire (EVO-022), version gardée
+  const copy = { ...source, id: copyId, key: uniqueKey(f.key, lib.fragments.map((x) => x.key)), title: copyTitle(f.title, lib.fragments.map((x) => x.title), name), nodes, edges };
   if (f.entry) copy.entry = ids.get(f.entry);
   lib.fragments.splice(i + 1, 0, copy);
   return copyId;

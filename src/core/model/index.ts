@@ -9,3 +9,4 @@ export * from './fragment';
 export * from './instance';
 export * from './required';
 export * from './validation';
+export * from './versioning';

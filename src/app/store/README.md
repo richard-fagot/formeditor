@@ -19,8 +19,10 @@ Dépend de `core`, `format`, `app/i18n`, `plugin-api` (utilitaires).
   passe avant le « sinon »), `removeNodes`, `removeEdge`, `moveEdge`, `updateNode` (retire les `undefined`),
   `getGraph`, `layoutOf`, `usedKeys`, `freshKey`.
 - Questionnaire (`questionnaire-edits.ts`) : `renameQuestionnaire` (clé + fichier `<clé>.json` du projet),
-  `canRenameQuestionnaire`, `questionnaireKeys`, `patchQuestionnaire` (titre, description), `setValidation(ws, id, date?)` (EVO-015 : avec date, valide ;
-  sans, retire `status` et `validatedAt`).
+  `canRenameQuestionnaire`, `questionnaireKeys`, `patchQuestionnaire` (titre, description, `version` EVO-022), `setValidation(ws, id, date?)` (EVO-015 : avec date, valide
+  et relève `libraryVersions` (EVO-022, `versionSnapshot`) ; sans, retire `status`, `validatedAt` et `libraryVersions`).
+- Versions des éléments de bibliothèque (EVO-022, `version-edits.ts`) : `setItemVersion(ws, item, version)` (refusé, `false`, sur un élément
+  validé ; vide = retirée), `setItemValidation(ws, item, validé)`.
 - Verrou des formulaires validés (EVO-015, `refused` dans `store.ts`) : après `edit`, `transact`, `silent`, `undo`, `redo`, si `lockedChanges` (core/model)
   signale un questionnaire validé modifié ou supprimé, l'état d'avant est remis (projet, historique, onglets, sélection) et `notice` l'explique
   (sauf `silent`). La duplication d'un questionnaire ne reprend pas son état de validation.
@@ -35,7 +37,7 @@ Dépend de `core`, `format`, `app/i18n`, `plugin-api` (utilitaires).
   instance créant un cycle ; départ = rôle non collé (un questionnaire vide prend le départ collé ou le premier nœud). État `clipboard`.
   `duplicateNodes(ws, ref, ids)` (Ctrl+D) = `copyNodes` puis `pasteNodes` dans le même graphe.
 - Duplication (EVO-010, `duplicate.ts`) : `duplicateQuestionnaire(ws, id, copyName)` (juste après, clé et fichier uniques), `duplicateLibraryItem(ws, item, copyName)`
-  (question ou fragment, juste après, clé unique) ; « Copie de » par langue (`CopyName`), nœuds et arêtes réidentifiés, mise en page reprise, références conservées.
+  (question ou fragment, juste après, clé unique) ; « Copie de » par langue (`CopyName`), nœuds et arêtes réidentifiés, mise en page reprise, références conservées ; copie provisoire (sans `status` ni `libraryVersions`, EVO-022), version gardée.
 - Commentaires de révision (EVO-011, `comment-edits.ts`) : rangés dans `layout.comments` de l'objet (`CommentHost` : questionnaire, fragment,
   question de bibliothèque ; `CommentRef` = objet + nœud ; `commentKey`, `hostScope`) : `commentOf`, `commentsOf`, `allComments` (questionnaires, fragments,
   questions), `addComment` (un par question, à droite de la question ; sans position pour une question de bibliothèque), `setCommentText`, `moveComment`,

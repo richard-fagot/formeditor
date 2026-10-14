@@ -82,6 +82,11 @@ export const MIGRATIONS: Migrations = {
   11: (doc) => bump(doc, 12),
   /** EVO-018 : le tri-state disparaît ; chaque tri-state devient un booléen avec « Ne sais pas », chaque jeu tri-state un jeu booléen. */
   12: (doc) => bump(withoutTristate(doc) as Doc, 13),
+  /**
+   * EVO-022 : `version` (questionnaire, question et fragment de bibliothèque), `status` d'un élément, `libraryVersions`.
+   * Absents = version vide, provisoire, référence vide (aucune alerte) : seul le numéro change.
+   */
+  13: (doc) => bump(doc, 14),
 };
 
 /**

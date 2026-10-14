@@ -12,7 +12,7 @@ vient des plugins (`registry`). Dépend de `app/store`, `registry`, `core`, `ui-
 ## Composants
 - Contraintes et messages : `ConstraintsEditor` (`ui/expression-editor`), paramètres par `messageParams`.
 - `PropertiesPanel({ graph })` : fournit la portée des références à l'éditeur d'expression (`ExpressionEnvProvider`).
-- `QuestionnaireProperties` : titre multilingue, clé (= nom du fichier, unique, `KeyInput`), description.
+- `QuestionnaireProperties` : version (`questionnaire.setVersion`, `version-field` avec infobulle quand le formulaire est validé) et statut (`version-status`, EVO-022), titre multilingue, clé (unique, `KeyInput` ; nom du fichier exporté `questionnaireFileName` en aide), description.
 - `QuestionProperties` : intitulé (clé dérivée), clé (renommage propagé, `KeyInput`), type, obligatoire
   (booléen ou expression), valeur par défaut littérale (`DefaultValueInput`) et calculée (`defaultExpr`), aide, texte indicatif, paramètres du type (plugin, avec `renameField` pour les champs de structure), contraintes libres,
   messages d'erreur par contrainte, description.

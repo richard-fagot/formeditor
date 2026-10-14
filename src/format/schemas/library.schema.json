@@ -43,6 +43,12 @@
           "key": {
             "$ref": "common.schema.json#/$defs/key"
           },
+          "version": {
+            "$ref": "common.schema.json#/$defs/version"
+          },
+          "status": {
+            "$ref": "common.schema.json#/$defs/itemStatus"
+          },
           "title": {
             "$ref": "common.schema.json#/$defs/localizedText"
           },

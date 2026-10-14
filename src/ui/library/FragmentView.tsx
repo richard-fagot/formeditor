@@ -8,6 +8,7 @@ import { Button, cn, Field, Input, LocalizedTextInput } from '../../ui-kit';
 import { Diagram, ProblemsPanel } from '../diagram';
 import { KeyInput, PropertiesPanel, usePluginEnv } from '../properties';
 import { LibraryPanel } from './LibraryPanel';
+import { ItemVersion } from './ItemVersion';
 
 /** Modifie le fragment dans l'historique de la bibliothèque (frappes regroupées par champ). */
 function patch(id: string, field: string, p: Partial<Fragment>) {
@@ -64,6 +65,7 @@ export function FragmentView({ id }: { id: string }) {
         <Button size="sm" variant="danger" onClick={() => runCommand('library.delete', { kind: 'fragment', id })}>
           <Trash2 className="size-3" />{t('props.delete')}
         </Button>
+        <ItemVersion item={{ kind: 'fragment', id }} />
         <p className="w-full text-xs text-slate-500">{t('library.fragmentHint')}</p>
       </div>
       <div className="flex min-h-0 flex-1">

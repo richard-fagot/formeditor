@@ -3,4 +3,4 @@ export { SCHEMAS, validateDocument, documentKind, type DocumentKind } from './va
 export { migrate, MIGRATIONS, type Migrations } from './migrate';
 export { serialize } from './serialize';
 export { newWorkspace, emptyLibrary, toBundle } from './workspace';
-export { exportBundle, exportFiles, importFiles, PROJECT_FILE, LIBRARY_FILE, type FileContent, type ImportResult } from './files';
+export { exportBundle, exportFiles, importFiles, questionnaireFileName, PROJECT_FILE, LIBRARY_FILE, type FileContent, type ImportResult } from './files';
