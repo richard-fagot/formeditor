@@ -19,9 +19,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -36,14 +36,14 @@ jobs:
         run: npm run kit-dev
 
       - name: Artefact index.html
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: index-html
           path: dist/index.html
           if-no-files-found: error
 
       - name: Artefact kit-dev
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: kit-dev
           path: kit-dev/
@@ -51,7 +51,7 @@ jobs:
 
       - name: Préparation GitHub Pages
         if: vars.DEPLOY_PAGES == 'true'
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: dist/
 
@@ -67,4 +67,4 @@ jobs:
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - id: deploy
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
