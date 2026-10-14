@@ -664,7 +664,7 @@ Concerne le choix unique et le choix multiple. Le booléen n'a pas d'options (§
   obligatoire surchargée « Facultatif » s'affiche sans astérisque et peut rester vide ; une question facultative surchargée
   « Obligatoire » a son astérisque et bloque « Suivant » si elle est laissée vide ; un intitulé surchargé ne change rien ;
   sans surcharge, c'est la définition. Une même question peut donc avoir l'astérisque dans un formulaire ou un appel de
-  fragment et pas dans un autre. Astérisque et blocage vont toujours ensemble : une question « obligatoire sous condition »
+  fragment et pas dans un autre. Astérisque et blocage vont toujours ensemble (contrôles de saisie activés, hors « Ne sais pas » coché) : une question « obligatoire sous condition »
   (sans surcharge) a son astérisque dès que sa condition est vraie avec les réponses déjà données (et l'état du système),
   recalculé à chaque affichage de la page. Une question non présentée (chemin non emprunté, champ masqué) n'est jamais exigée.
 - **Afficher l'outline du logigramme** — Bouton « Outline » de la barre de prévisualisation, ou palette « Afficher / masquer

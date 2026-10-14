@@ -1,6 +1,6 @@
 # EVO-021 — Astérisque d'obligation conforme à la surcharge en prévisualisation
 
-Statut : en cours
+Statut : fait 2026-10-14
 Dépend de : aucune (s'appuie sur le mécanisme de surcharge de question existant)
 
 ## Besoin
