@@ -42,9 +42,10 @@ Dépend de `app/store`, `app/commands` (liaison tracée à la souris : `edge.cre
   `view.exportImageRun` ; le hook réagit à `imageRequest` : `html-to-image` (`toCanvas`, version 1.11.11 épinglée) sur
   `.react-flow__viewport` avec `transform` forcé (boîte des nœuds ∪ tracés d'arêtes, marge 40 px), fond blanc, `pixelRatio` 2
   (réduit et signalé au-delà de 16 384 px), poignées filtrées ; « sélection » : filtre sur `data-id` des nœuds / arêtes et
-  `data-edge-label` des libellés. Titre dessiné sur un second canvas. Pièges : sélection vidée puis restaurée, transitions
+  `data-edge-label` des libellés. Titre dessiné sur un second canvas : `imageHeading` (titre — version — statut dans la
+  langue de l'interface, EVO-023) ; nom du fichier par `imageFileName` (version et statut). Pièges : sélection vidée puis restaurée, transitions
   coupées (`[data-exporting]`, `index.css`), attente d'une tâche + une image avant capture : sinon surbrillance figée.
-  Seulement pour le logigramme modifiable d'un questionnaire. Test : `tests/smoke/evo-004.spec.ts`.
+  Seulement pour le logigramme modifiable d'un questionnaire. Tests : `tests/smoke/evo-004.spec.ts`, `tests/smoke/evo-023.spec.ts`.
 - Copier-coller (EVO-010, `useDiagramMenu.tsx`) : position du pointeur transmise à `setPastePoint` (Ctrl+V colle au pointeur) ; clic droit sur un nœud
   (Copier, Coller, Dupliquer ; le nœud est sélectionné s'il ne l'était pas) ou sur le fond (Coller au point du clic), menu `ContextMenu` de `ui-kit`.
 - Commentaires de révision (EVO-011) : `useCommentNodes` ajoute un nœud React Flow `comment:<nœud>` (`CommentNodeView` : `CommentThread` de `ui/comments`,

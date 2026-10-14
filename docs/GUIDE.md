@@ -1,5 +1,5 @@
 # Guide utilisateur — Éditeur de questionnaires
-Mis à jour le 2026-10-14 — jusqu'à EVO-022
+Mis à jour le 2026-10-14 — jusqu'à EVO-023
 
 ## Mode d'emploi du guide
 
@@ -143,8 +143,12 @@ Mis à jour le 2026-10-14 — jusqu'à EVO-022
   questionnaire en en-tête » (cochée par défaut) ; `Entrée` ou « Exporter » lance l'export (« Export en cours… » pendant
   la capture). L'image PNG contient tout le logigramme quels que soient le zoom et la portion visible, tel qu'affiché
   (aperçus, conditions, badges), sans contrôles, fond quadrillé, poignées ni surbrillance de sélection ; fond blanc,
-  marge, résolution 2×. Fichier téléchargé : `<projet> - <questionnaire> - AAAAMMJJ.png` (titre dans la langue des
-  contenus affichée ; `\ / : * ? " < > |` remplacés par `_`). Les choix sont retenus dans le navigateur. Disponible dans la
+  marge, résolution 2×. Fichier téléchargé : `<projet> - <questionnaire> - <version> - <final|provisoire> - AAAAMMJJ.png`
+  (titre dans la langue des contenus affichée ; segment version omis si la version est vide ; `final` / `provisoire`
+  comme pour le fichier JSON ; `\ / : * ? " < > |` remplacés par `_`), par exemple
+  `sinistres - blessure - 1.0.5 - provisoire - 20261014.png`. Titre dessiné en en-tête (case cochée) :
+  « <titre> — <version> — <statut> », statut « Validé » ou « Provisoire » dans la langue de l'interface, version omise si
+  elle est vide ; case décochée : aucun titre. Les choix sont retenus dans le navigateur. Disponible dans la
   vue Logigramme d'un questionnaire non vide (pas pour un fragment ni la vue côte à côte).
   `[cmd: view.exportImage]` `[cmd: view.exportImageRun]`
 - **Ajuster la vue au graphe** — `F` (logigramme), palette « Ajuster la vue », ou bouton cadre des contrôles en bas à gauche. `[cmd: view.fit]`

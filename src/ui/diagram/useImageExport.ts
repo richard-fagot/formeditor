@@ -1,7 +1,8 @@
 import { useEffect, useRef, type RefObject } from 'react';
 import { useReactFlow, type Rect } from '@xyflow/react';
 import { toCanvas } from 'html-to-image';
-import { download, imageFileName, imageTitle } from '../../app/commands';
+import { download, imageFileName, imageHeading, imageTitle } from '../../app/commands';
+import { isValidated } from '../../core/model';
 import { getGraph, useStore, useT, type GraphRef } from '../../app/store';
 
 const MARGIN = 40;
@@ -110,10 +111,11 @@ export function useImageExport(graph: GraphRef, container: RefObject<HTMLDivElem
         style: { transform: `translate(${MARGIN - b.x}px, ${MARGIN - b.y}px) scale(1)`, width: `${width}px`, height: `${height}px` },
       });
       const title = imageTitle(q, st.contentLang, st.ws.project.defaultLanguage);
-      const canvas = st.imageOptions.title ? withTitle(capture, title, ratio) : capture;
+      const heading = imageHeading(title, q.version, t(isValidated(q) ? 'version.final' : 'version.draft'));
+      const canvas = st.imageOptions.title ? withTitle(capture, heading, ratio) : capture;
       const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, 'image/png'));
       if (!blob) throw new Error('canvas.toBlob');
-      download(imageFileName(st.ws.project.name, title, new Date()), blob);
+      download(imageFileName(st.ws.project.name, title, q, new Date()), blob);
       if (ratio < RATIO) st.set((s) => void (s.notice = { title: t('image.reduced'), lines: [t('image.reducedHint', { ratio })] }));
     } catch (e) {
       useStore.getState().set((s) => void (s.notice = { title: t('image.failed'), lines: [e instanceof Error ? e.message : String(e)] }));

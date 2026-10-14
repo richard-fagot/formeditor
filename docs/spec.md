@@ -374,7 +374,8 @@ Le logigramme d'un questionnaire s'exporte en **image PNG**, pour l'insérer dan
 - **Dialogue d'options** : périmètre (logigramme entier, ou sélection seule si des nœuds sont sélectionnés : nœuds sélectionnés et arêtes entre eux), titre du questionnaire en en-tête (coché par défaut). Les derniers choix sont retenus dans le navigateur ; `Entrée` lance l'export.
 - **Contenu** : tout le logigramme quels que soient le zoom et la portion visible, tel qu'affiché (aperçus, conditions abrégées, fragments repliés ou dépliés, badges), **sans** mini-carte, contrôles, fond quadrillé, poignées ni surbrillance de sélection.
 - **Rendu** : fond blanc, thème clair, marge autour du contenu, résolution au moins 2× la taille à 100 %.
-- **Fichier** téléchargé : `<projet> - <questionnaire> - AAAAMMJJ.png` ; les caractères interdits dans un nom de fichier sont remplacés par `_`.
+- **Fichier** téléchargé (EVO-023) : `<projet> - <questionnaire> - <version> - <final|provisoire> - AAAAMMJJ.png` ; version vide → segment version omis ; `final` / `provisoire` : mêmes mots, non traduits, que le nom du fichier JSON (§3.10, EVO-022) ; les caractères interdits dans un nom de fichier, y compris dans la version, sont remplacés par `_`.
+- **Titre dessiné** (option cochée, EVO-023) : titre du questionnaire, puis la version (si elle n'est pas vide) et le statut dans la langue de l'interface (« Validé » / « Provisoire », comme dans le panneau de propriétés), séparés par « — ». Option décochée : aucun titre.
 - **Pas de SVG** : un SVG produit par capture du HTML n'est qu'un `foreignObject`, que les outils bureautiques n'affichent pas.
 
 ## 7. Contraintes

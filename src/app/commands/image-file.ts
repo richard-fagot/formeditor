@@ -1,4 +1,5 @@
-import type { LocalizedText } from '../../core/model';
+import type { ItemStatus, LocalizedText } from '../../core/model';
+import { questionnaireFileName } from '../../format';
 
 // Nom du fichier de l'image du logigramme (EVO-004, spec §6.4). Fonctions pures.
 
@@ -17,9 +18,24 @@ export function stamp(d: Date): string {
   return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}`;
 }
 
-/** `<projet> - <questionnaire> - AAAAMMJJ.png` ; nom de projet vide → `projet`. */
-export function imageFileName(project: string, title: string, date: Date): string {
-  return `${safeFileName(project) || 'projet'} - ${safeFileName(title) || 'questionnaire'} - ${stamp(date)}.png`;
+/** Version et statut du questionnaire exporté (EVO-023). */
+export interface ImageVersion {
+  version?: string;
+  status?: ItemStatus;
+}
+
+/**
+ * `<projet> - <questionnaire> - <version> - <final|provisoire> - AAAAMMJJ.png` (EVO-023) ; version vide → segment omis ;
+ * nom de projet vide → `projet`. Segments version et statut repris de `questionnaireFileName` (EVO-022).
+ */
+export function imageFileName(project: string, title: string, q: ImageVersion, date: Date): string {
+  const name = questionnaireFileName({ key: safeFileName(title) || 'questionnaire', version: q.version, status: q.status });
+  return `${safeFileName(project) || 'projet'} - ${name.replace(/\.json$/, '')} - ${stamp(date)}.png`;
+}
+
+/** Titre dessiné (EVO-023) : `<titre> — <version> — <statut>`, version vide omise ; `statusLabel` dans la langue de l'interface. */
+export function imageHeading(title: string, version: string | undefined, statusLabel: string): string {
+  return [title, version?.trim(), statusLabel].filter(Boolean).join(' — ');
 }
 
 /** Titre du questionnaire dans la langue affichée, sinon la langue par défaut, sinon sa clé. */
