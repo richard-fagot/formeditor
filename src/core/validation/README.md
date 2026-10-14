@@ -47,7 +47,8 @@ Dépend de `core/model`, `core/expressions`, `core/references`, `core/runtime` (
 - Champs masqués (EVO-009, `refs-check.ts`) : une référence du graphe qui vise un champ masqué d'une de ses instances (`hiddenFieldPaths` :
   `cle.champ…`, `cle.champ_other`, `alias.cle.champ` via un fragment appelé) → `hiddenField` (erreur) au lieu de `unknownReference` ;
   références internes à la définition (champ frère) non signalées.
-- Question de bibliothèque : ses références doivent se résoudre dans chaque questionnaire et chaque fragment qui l'utilise (portée du fragment : ses clés et celles de ses appelants).
+- Question de bibliothèque : ses références doivent se résoudre dans chaque questionnaire et chaque fragment qui l'utilise (portée du fragment : ses clés et celles de ses appelants) ;
+  `notGuaranteed` y est contrôlé de même, sur chaque référence à la question (dans un fragment, seules ses propres clés).
 - Le typage des expressions se limite à la syntaxe et à l'existence des références.
 
 ## Tests

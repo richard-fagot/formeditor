@@ -171,6 +171,7 @@ export const MESSAGES = {
   'props.fieldsHint': { fr: 'Masquer un champ dans ce questionnaire seulement ; la définition en bibliothèque n’est pas modifiée. Au moins un champ reste affiché.', en: 'Hide a field in this questionnaire only; the library definition is not changed. At least one field stays displayed.' },
   'props.fieldShown': { fr: 'affiché', en: 'displayed' },
   'hidden.warning': { fr: 'Champ masqué encore référencé', en: 'Hidden field still referenced' },
+  'hidden.caller': { fr: 'appelant « {name} »', en: 'caller "{name}"' },
   'node.fieldsCount': { fr: '{shown} / {total} champs', en: '{shown} / {total} fields' },
   'node.openInLibrary': { fr: 'Ouvrir dans la bibliothèque', en: 'Open in library' },
   'node.openFragment': { fr: 'Ouvrir le fragment', en: 'Open the fragment' },

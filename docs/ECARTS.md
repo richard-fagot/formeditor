@@ -28,5 +28,3 @@ Catégories :
 | 2026-10-14 | EVO-018 | mineur | TEST | Cas d'un tri-state ayant déjà « Ne sais pas » (option conservée) non testé. | `src/format/migrate-tristate.test.ts:31`, `src/format/migrate.ts:109` |
 | 2026-10-14 | harnais | mineur | TEST | D'autres tests de fumée rouvrant l'exemple plusieurs fois dans la même page pourraient réutiliser la session restaurée (cause du défaut corrigé dans `evo-017.spec.ts`). Non vérifié. | `tests/smoke/` |
 | 2026-10-14 | EVO-019 | mineur | TEST | Le critère « outline masqué, prévisualisation identique » n'est vérifié qu'en partie (largeur du wizard, sans comparaison au rendu antérieur). | `tests/smoke/evo-019.spec.ts:188-195` |
-| 2026-10-14 | correctif écarts CODE | mineur | CODE | Une question de bibliothèque utilisée seulement dans un fragment échappe au contrôle « réponse garantie avant usage » (`notGuaranteed`), qui ne parcourt que les questionnaires. | `src/core/validation/` |
-| 2026-10-14 | correctif écarts CODE | mineur | CODE | Avertissement de masquage : une expression venant d'un appelant de fragment est listée sans le nom de cet appelant. | `src/app/store/library-edits.ts` |
