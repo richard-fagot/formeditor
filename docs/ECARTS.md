@@ -26,3 +26,5 @@
 | 2026-10-14 | EVO-018 | mineur | Le titre du test « le format courant est la version 12 » ne correspond plus à sa vérification (`>= 12`). | `src/format/format.test.ts:371-372` |
 | 2026-10-14 | EVO-018 | mineur | Cas d'un tri-state ayant déjà « Ne sais pas » (option conservée) non testé. | `src/format/migrate-tristate.test.ts:31`, `src/format/migrate.ts:109` |
 | 2026-10-14 | harnais | mineur | D'autres tests de fumée rouvrant l'exemple plusieurs fois dans la même page pourraient réutiliser la session restaurée (cause du défaut corrigé dans `evo-017.spec.ts`). Non vérifié. | `tests/smoke/` |
+| 2026-10-14 | EVO-019 | mineur | Le critère « outline masqué, prévisualisation identique » n'est vérifié qu'en partie (largeur du wizard, sans comparaison au rendu antérieur). | `tests/smoke/evo-019.spec.ts:188-195` |
+| 2026-10-14 | EVO-019 | mineur | Dans l'outline (lecture seule), le double-clic sur le badge « bib. » lance encore `library.openRef` et quitte la prévisualisation ; ni désactivé, ni testé, ni décrit. | `src/ui/diagram/NodeView.tsx:45-48` |

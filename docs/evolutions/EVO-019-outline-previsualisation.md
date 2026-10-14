@@ -1,6 +1,6 @@
 # EVO-019 — Outline du logigramme dans la prévisualisation
 
-Statut : en cours
+Statut : fait 2026-10-14
 Dépend de : aucune
 
 ## Besoin

@@ -655,7 +655,7 @@ Concerne le choix unique et le choix multiple. Le booléen n'a pas d'options (§
   l’outline du logigramme ». Un panneau à droite du wizard montre le logigramme du questionnaire en lecture seule (rien ne
   s'y déplace ni ne s'y modifie) ; le wizard occupe la largeur restante. Masqué, la prévisualisation est inchangée. L'état
   affiché / masqué est gardé pendant la session (changement d'onglet compris), jamais enregistré dans le projet. `[cmd: preview.toggleOutline]`
-- **Suivre la page dans l'outline** — À chaque changement de page (« Suivant », « Précédent », branche, saut), l'outline se
+- **Suivre la page dans l'outline** — À chaque changement de page (« Suivant », « Précédent », branche, saut, clic dans la synthèse), l'outline se
   recentre sur le nœud de la page affichée, entouré en vert (page d'un fragment : le nœud fragment), avec ses voisins
   immédiats visibles si possible. On peut zoomer (molette) ou déplacer la vue (glisser le fond) : le changement de page
   suivant recentre.
