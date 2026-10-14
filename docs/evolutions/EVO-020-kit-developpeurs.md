@@ -1,6 +1,6 @@
 # EVO-020 — Kit de livraison aux développeurs
 
-Statut : en cours
+Statut : fait 2026-10-14
 Dépend de : aucune
 
 ## Besoin

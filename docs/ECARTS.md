@@ -28,3 +28,4 @@
 | 2026-10-14 | harnais | mineur | D'autres tests de fumée rouvrant l'exemple plusieurs fois dans la même page pourraient réutiliser la session restaurée (cause du défaut corrigé dans `evo-017.spec.ts`). Non vérifié. | `tests/smoke/` |
 | 2026-10-14 | EVO-019 | mineur | Le critère « outline masqué, prévisualisation identique » n'est vérifié qu'en partie (largeur du wizard, sans comparaison au rendu antérieur). | `tests/smoke/evo-019.spec.ts:188-195` |
 | 2026-10-14 | EVO-019 | mineur | Dans l'outline (lecture seule), le double-clic sur le badge « bib. » lance encore `library.openRef` et quitte la prévisualisation ; ni désactivé, ni testé, ni décrit. | `src/ui/diagram/NodeView.tsx:45-48` |
+| 2026-10-14 | EVO-020 | mineur | Les chemins attendus n'ont pas de JSON Schema : le test du kit vérifie seulement leurs clés obligatoires (§15) ; leur rejeu est couvert par `tests/reference/paths.test.ts`. | `scripts/kit-dev.test.ts` |
