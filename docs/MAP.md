@@ -17,6 +17,8 @@ La section « Modules » est générée par `npm run map` ; le reste est rédig�
 - `docs/GUIDE.md` : guide utilisateur (une entrée par action, balise `[cmd: id]` par commande du catalogue). `scripts/guide/` :
   `npm run guide` régénère son index des raccourcis depuis `app/commands` ; `npm run guide:check` (dans `npm run check`) et
   `scripts/guide/guide.test.ts` échouent si une commande n'est pas balisée, si une balise est inconnue ou si l'index est périmé.
+- `scripts/kit-dev.mjs` : `npm run kit-dev` (re)crée `kit-dev/` (ignoré par git) : `FORMAT.md`, `schemas/`, `exemple/` sans
+  `*.layout.json`, `LISEZMOI.md` ; test `scripts/kit-dev.test.ts` (EVO-020).
 
 ## Modules
 

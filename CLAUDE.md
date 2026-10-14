@@ -80,6 +80,7 @@ sans cérémonie. Préférer la solution la plus simple qui respecte la spec.
 | `npm run check` | Harnais complet |
 | `npm run map` | Régénère la partie factuelle de `docs/MAP.md` |
 | `npm run guide` | Régénère l'index des raccourcis de `docs/GUIDE.md` |
+| `npm run kit-dev` | (Re)crée `kit-dev/` : FORMAT.md, schémas, exemple sans `*.layout.json`, LISEZMOI.md, à livrer aux développeurs |
 | `npm run build` | Produit `dist/index.html` (fichier unique) |
 
 ## Orchestration par sous-agents

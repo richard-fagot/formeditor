@@ -350,7 +350,8 @@ L'import accepte un bundle ou des fichiers unitaires. L'export propose les deux.
 - **Livré avec** :
   - un **JSON Schema** par type de fichier ;
   - un document **FORMAT.md** qui explique le modèle, la sémantique de navigation, la grammaire des expressions et l'interpolation, avec des exemples ;
-  - un **questionnaire d'exemple** complet (ex. déclaration de sinistre) qui sert aussi de jeu de test.
+  - un **questionnaire d'exemple** complet (ex. déclaration de sinistre) qui sert aussi de jeu de test ;
+  - réunis par `npm run kit-dev` (EVO-020) dans un répertoire `kit-dev/` prêt à joindre aux JSON des questionnaires : `FORMAT.md`, `schemas/`, `exemple/` (sans `*.layout.json`, avec `chemins/`) et un `LISEZMOI.md` (contenu, version du format, fichiers à joindre, seuls les questionnaires validés sont livrables).
 - Facultatif à étudier : une implémentation de référence du moteur de parcours et de l'évaluateur d'expressions, réutilisable par l'équipe de dev.
 
 ### 6.3 Persistance
