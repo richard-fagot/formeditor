@@ -1,0 +1,25 @@
+/** Textes du versionning des questionnaires et des éléments de bibliothèque (EVO-022). */
+export const VERSION_MESSAGES = {
+  'version.label': { fr: 'Version', en: 'Version' },
+  'version.hint': { fr: 'Texte libre (convention : X.Y.Z), figé une fois validé.', en: 'Free text (convention: X.Y.Z), frozen once validated.' },
+  'version.locked': { fr: 'Désactiver la validation pour modifier la version', en: 'Unvalidate to change the version' },
+  'version.status': { fr: 'Statut', en: 'Status' },
+  'version.final': { fr: 'Validé', en: 'Validated' },
+  'version.draft': { fr: 'Provisoire', en: 'Draft' },
+  'version.empty': { fr: '(sans version)', en: '(no version)' },
+  'version.required': { fr: 'Validation impossible', en: 'Validation refused' },
+  'version.requiredLine': { fr: 'Saisissez une version pour « {name} » avant de le valider.', en: 'Enter a version for “{name}” before validating it.' },
+  'version.provisional': { fr: 'Éléments de bibliothèque provisoires', en: 'Draft library items' },
+  'version.provisionalLine': {
+    fr: '« {name} » ({version}) n’est pas validé dans la bibliothèque.',
+    en: '“{name}” ({version}) is not validated in the library.',
+  },
+  'version.alertTitle': { fr: 'Éléments de bibliothèque modifiés depuis la validation', en: 'Library items changed since validation' },
+  'version.alertLine': { fr: '{name} : {from} → {to}', en: '{name}: {from} → {to}' },
+  'version.users': { fr: 'Questionnaires qui l’utilisent : {list}', en: 'Questionnaires using it: {list}' },
+  'version.noUser': { fr: 'Aucun questionnaire ne l’utilise.', en: 'No questionnaire uses it.' },
+  'version.userValidated': { fr: '{name} (validé)', en: '{name} (validated)' },
+  'version.validate': { fr: 'Valider', en: 'Validate' },
+  'library.validate': { fr: 'Valider l’élément de bibliothèque', en: 'Validate the library item' },
+  'library.unvalidate': { fr: 'Dévalider l’élément de bibliothèque', en: 'Unvalidate the library item' },
+} satisfies Record<string, { fr: string; en: string }>;

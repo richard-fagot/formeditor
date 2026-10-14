@@ -10,6 +10,7 @@ import { PropertiesPanel } from '../properties';
 import { Preview } from '../preview';
 import { LibraryPanel } from '../library';
 import { ComparePane } from './ComparePane';
+import { VersionAlert } from './VersionAlert';
 
 /** Onglet de questionnaire : sous-onglets Logigramme / Prévisualisation. */
 export function QuestionnaireView({ id }: { id: string }) {
@@ -98,6 +99,7 @@ export function QuestionnaireView({ id }: { id: string }) {
                   <BadgeCheck className="size-4" />{t('validation.badge')}
                 </span>
               )}
+              <VersionAlert id={id} />
             </div>
             <ProblemsPanel graph={graph} issues={issues} />
           </div>

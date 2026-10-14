@@ -1,5 +1,5 @@
 # Guide utilisateur — Éditeur de questionnaires
-Mis à jour le 2026-10-14 — jusqu'à EVO-021
+Mis à jour le 2026-10-14 — jusqu'à EVO-022
 
 ## Mode d'emploi du guide
 
@@ -14,6 +14,7 @@ Mis à jour le 2026-10-14 — jusqu'à EVO-021
 - **Projet** : tout le travail (questionnaires, bibliothèque, état du système, scénarios, langues) ; un seul ouvert à la fois.
 - **Questionnaire** : un graphe de nœuds reliés par des arêtes ; un onglet par questionnaire.
 - **Formulaire validé** : questionnaire relu et approuvé par les métiers, livrable aux développeurs ; marqué « Validé » et en lecture seule jusqu'à sa dévalidation (section 17).
+- **Version** : texte libre saisi à la main sur un questionnaire ou un élément de bibliothèque (convention `X.Y.Z`), figé tant que l'objet est validé ; statut « Validé » (final) ou « Provisoire » (section 18).
 - **Nœud** : question, page d'information, page de synthèse, fin, nœud fragment (ou sortie nommée, dans un fragment).
 - **Départ** : nœud par lequel commence le parcours d'un questionnaire (badge « Départ »). Le premier nœud créé l'est d'office ;
   ce peut être un nœud fragment.
@@ -45,11 +46,12 @@ Mis à jour le 2026-10-14 — jusqu'à EVO-021
   par un projet vierge (un questionnaire vide). Confirmation si des modifications ne sont pas exportées ; non annulable. `[cmd: project.new]`
 - **Ouvrir ou importer des fichiers** — `Ctrl+O`, bouton « Ouvrir / importer… » ou palette. Choisir un ou plusieurs `.json`.
   Un bundle ou un `projet.json` remplace le projet (confirmation si non exporté, non annulable) ; des fichiers
-  `<questionnaire>.json`, `bibliotheque.json` ou `.layout.json` seuls sont fusionnés dans le projet ouvert. `[cmd: project.open]`
+  fichiers de questionnaire, `bibliotheque.json` ou `.layout.json` seuls sont fusionnés dans le projet ouvert (le nom des
+  fichiers est indifférent). `[cmd: project.open]`
 - **Comprendre un import refusé** — Un seul fichier invalide et rien n'est chargé : la boîte « Import impossible »
   liste les erreurs par fichier. Les fichiers d'une ancienne version du format sont migrés automatiquement, sans message
   (ex. un ancien tri-state devient un booléen avec « Ne sais pas » activée, §6 ; même chose au rechargement de la page).
-- **Importer un questionnaire dans le projet ouvert** — « Ouvrir / importer… » avec seulement son `<clé>.json` (et son
+- **Importer un questionnaire dans le projet ouvert** — « Ouvrir / importer… » avec seulement son fichier (et son
   `.layout.json`) : il est ajouté et s'ouvre dans un onglet, ou remplace celui de même identifiant (sans ouvrir d'onglet). `[cmd: project.open]`
 - **Remplacer la bibliothèque** — Importer seul un `bibliotheque.json` : il remplace toute la bibliothèque du projet.
 - **Ouvrir l'exemple « déclaration de sinistre »** — Icône étincelles de la barre de projet (info-bulle « Ouvrir l’exemple
@@ -57,11 +59,16 @@ Mis à jour le 2026-10-14 — jusqu'à EVO-021
 - **Exporter le projet** — `Ctrl+S` (actif même pendant une saisie), bouton « Exporter (bundle) » ou palette. Télécharge
   `<nom_du_projet>.bundle.json`, qui contient tout (questionnaires, bibliothèque, mises en page et commentaires de révision). `[cmd: project.export]`
 - **Exporter les fichiers unitaires** — Icône fichier JSON de la barre de projet (info-bulle « Exporter les fichiers unitaires »)
-  ou palette. Télécharge `projet.json`, `bibliotheque.json`, `<clé>.json` et `<clé>.layout.json` par questionnaire,
+  ou palette. Télécharge `projet.json`, `bibliotheque.json` et, par questionnaire, `<clé> - <version> - <final|provisoire>.json`
+  (ex. `blessure - 1.0.5 - provisoire.json`, `dc - 1.0.4 - final.json` ; sans version : `blessure - provisoire.json` ;
+  un caractère interdit dans un nom de fichier, comme `/`, devient `_`) et sa mise en page au même nom en `.layout.json`,
   `fragment_<clé>.layout.json` par fragment, `question_<clé>.layout.json` par question de bibliothèque commentée. Les commentaires
-  de révision (§16) ne sont que dans les `.layout.json`, que l'équipe de dev ignore ; le navigateur peut demander d'autoriser les téléchargements multiples. `[cmd: project.exportFiles]`
+  de révision (§16) ne sont que dans les `.layout.json`, que l'équipe de dev ignore ; le navigateur peut demander d'autoriser les téléchargements multiples.
+  Chaque fichier de questionnaire contient sa version, son statut et la version et le statut des éléments de bibliothèque
+  qu'il utilise (section 18). `[cmd: project.exportFiles]`
 - **Livrer aux développeurs** — Exporter les fichiers unitaires et joindre `projet.json`, `bibliotheque.json` et les
-  `<clé>.json` des formulaires **validés** (§17), sans les `.layout.json`. Y joindre la documentation du format : dans le
+  fichiers des formulaires **validés** (`… - final.json`, §17), sans les `.layout.json`. Pour ne livrer que ce qui a
+  changé, joindre ceux dont la version a changé depuis la dernière livraison (section 18). Y joindre la documentation du format : dans le
   dépôt de l'outil, `npm run kit-dev` crée le répertoire `kit-dev/` (`FORMAT.md`, `schemas/`, `exemple/`, `LISEZMOI.md`) ;
   relancé, il le remplace.
 - **Savoir si le projet est exporté** — Pastille à côté du nom du projet : « Modifications non exportées » (orange) ou
@@ -253,7 +260,8 @@ libres » et « Description (pour l’équipe de dev) ». Chaque saisie est enre
   (ex. `sys.date_effet_contrat`).
 - **Décrire la question pour l'équipe de dev** — Section « Description (pour l’équipe de dev) » : texte libre, exporté, jamais affiché.
 - **Modifier les propriétés du questionnaire** — Rien sélectionné (clic dans le vide) ou palette « Propriétés du questionnaire » :
-  « Titre du questionnaire » (nom de l'onglet), « Clé du questionnaire » (donne le nom du fichier, ex. `sinistre.json`),
+  « Version » et statut (section 18), « Titre du questionnaire » (nom de l'onglet), « Clé du questionnaire » (début du nom
+  du fichier exporté, affiché dessous, ex. `sinistre - 1.0.0 - provisoire.json`),
   « Description (pour l’équipe de dev) ». `[cmd: questionnaire.properties]` `[cmd: questionnaire.setTitle]`
   `[cmd: questionnaire.rename]` `[cmd: questionnaire.setDescription]`
 
@@ -814,10 +822,13 @@ logigramme ; le survol indique la date de validation. L'état est enregistré da
 Chaque formulaire se valide indépendamment des autres. Un formulaire non validé s'affiche et se modifie comme avant.
 
 - **Valider le formulaire** — Bouton « Valider le formulaire » de la barre du logigramme, ou palette : le formulaire
-  affiché passe à l'état validé (date du jour). Annulable (`Ctrl+Z`). `[cmd: questionnaire.validate]`
+  affiché passe à l'état validé (date du jour). Annulable (`Ctrl+Z`). Refusé si sa version est vide (« Validation
+  impossible : saisissez une version… », section 18). La validation mémorise la version des éléments de bibliothèque qu'il
+  utilise ; s'il en utilise un **provisoire**, la fenêtre « Éléments de bibliothèque provisoires » les liste, sans
+  empêcher la validation. `[cmd: questionnaire.validate]`
 - **Consulter un formulaire validé** — Il est en **lecture seule** : on ne peut plus modifier ses questions, réponses,
   propriétés, expressions, ni ses nœuds et arêtes (créer, relier, déplacer, supprimer, changer le rang, le départ), ni son
-  titre, sa clé ou sa description, quel que soit le moyen : panneau de propriétés (champs grisés), logigramme (nœuds
+  titre, sa clé, sa description ou sa version, quel que soit le moyen : panneau de propriétés (champs grisés), logigramme (nœuds
   figés, ni liaison, ni dépôt depuis la bibliothèque, ni édition en place), raccourcis, palette, collage, mise en page
   automatique, import d'un fichier de questionnaire. Une tentative affiche « Formulaire validé : modification impossible ».
   Restent possibles : sélectionner, lire les propriétés, prévisualiser, exporter, copier des nœuds vers un autre
@@ -832,6 +843,38 @@ Chaque formulaire se valide indépendamment des autres. Un formulaire non valid�
 - **Annuler / rétablir autour d'une validation** — Valider et dévalider sont des étapes de l'historique du formulaire :
   `Ctrl+Z` juste après une validation la retire, `Ctrl+Shift+Z` la rétablit. Tant que le formulaire est validé, seuls les
   commentaires de révision entrent encore dans son historique : remonter plus loin les annule d'abord, puis la validation.
+
+## 18. Versions des questionnaires et des éléments de bibliothèque
+
+Chaque questionnaire et chaque élément de bibliothèque (question ou fragment) porte une **version** libre et un **statut**
+« Validé » (final) ou « Provisoire ». L'outil n'impose ni format ni incrément (convention recommandée : `X.Y.Z`) et ne
+compare pas les versions : par convention, la version en production est la plus haute qu'un questionnaire ait obtenue.
+Sans version, tout fonctionne comme avant, sauf la validation (refusée) et le suffixe de statut des fichiers exportés.
+
+- **Saisir la version d'un questionnaire** — Rien sélectionné : champ « Version » en tête du panneau de propriétés, avec
+  le statut « Validé » / « Provisoire » à côté. La saisie est enregistrée telle quelle ; vide tant que le questionnaire
+  est provisoire, si on veut. `Ctrl+Z` annule. `[cmd: questionnaire.setVersion]`
+- **Version figée par la validation** — Tant que l'objet est validé, le champ « Version » est grisé (info-bulle
+  « Désactiver la validation pour modifier la version »). Pour changer de version : dévalider, modifier la version,
+  revalider. Dévalider puis revalider sans toucher à la version est permis (correction sans nouvelle livraison).
+- **Saisir la version d'un élément de bibliothèque** — En tête de la question (onglet « Bibliothèque ») ou dans le
+  bandeau du fragment (son onglet) : champ « Version », statut, et dessous « Questionnaires qui l’utilisent : … »
+  (directement ou par un fragment, « (validé) » après ceux qui le sont), ou « Aucun questionnaire ne l’utilise. ».
+  `[cmd: library.setVersion]`
+- **Valider / dévalider un élément de bibliothèque** — Bouton « Valider » (« Dévalider » une fois validé) à côté du
+  statut, ou palette « Valider l’élément de bibliothèque » / « Dévalider l’élément de bibliothèque » sur l'élément
+  affiché. Valider sans version est refusé (« Validation impossible »). Dévalider ne demande pas de confirmation. La
+  validation d'un élément ne fige que sa version : son contenu reste modifiable (et s'applique à ses usages).
+  `Ctrl+Z` annule. `[cmd: library.validate]` `[cmd: library.unvalidate]`
+- **Repérer un questionnaire à faire évoluer** — Quand la version d'un élément de bibliothèque utilisé par un formulaire
+  **validé** change, le logigramme de ce formulaire affiche en haut à gauche l'alerte « Éléments de bibliothèque modifiés
+  depuis la validation » avec une ligne par élément (« Vos coordonnées : 2.1.0 → 2.2.0 »). Elle ne bloque rien ; pour la
+  lever, dévalider le formulaire, lui donner une nouvelle version, puis le revalider (la revalidation mémorise les
+  nouvelles versions). Un projet antérieur (sans versions) n'affiche aucune alerte.
+- **Dupliquer** — La copie d'un questionnaire ou d'un élément de bibliothèque garde sa version mais est provisoire.
+- **Exporter** — Le nom des fichiers et leur contenu (version, statut, versions des éléments utilisés) : section 1,
+  « Exporter les fichiers unitaires ». Les éléments de bibliothèque restent dans `bibliotheque.json`, avec leur version et
+  leur statut.
 
 ## Ce que l'outil ne fait pas
 
@@ -970,6 +1013,10 @@ Chaque formulaire se valide indépendamment des autres. Un formulaire non valid�
 | Supprimer le commentaire | — | `comment.delete` |
 | Ouvrir | — | `comment.open` |
 | Commentaires | — | `tab.comments` |
+| Version | — | `questionnaire.setVersion` |
+| Version | — | `library.setVersion` |
+| Valider l’élément de bibliothèque | — | `library.validate` |
+| Dévalider l’élément de bibliothèque | — | `library.unvalidate` |
 | Aller au nœud suivant | `↓` | `nav.down` |
 | Aller au nœud précédent | `↑` | `nav.up` |
 | Aller au nœud voisin suivant | `→` | `nav.right` |

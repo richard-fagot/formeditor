@@ -6,9 +6,9 @@ export type QuestionnaireStatus = 'draft' | 'validated';
 /** Questionnaire validé : en lecture seule tant qu'il n'est pas dévalidé. */
 export const isValidated = (q: Questionnaire | undefined): boolean => q?.status === 'validated';
 
-/** Contenu verrouillé d'un questionnaire : tout sauf son état de validation. */
+/** Contenu verrouillé d'un questionnaire : tout sauf son état de validation et ses versions de référence (EVO-022). */
 function lockedQuestionnaire(q: Questionnaire): string {
-  const { status: _status, validatedAt: _at, ...rest } = q;
+  const { status: _status, validatedAt: _at, libraryVersions: _refs, ...rest } = q;
   return JSON.stringify(rest);
 }
 

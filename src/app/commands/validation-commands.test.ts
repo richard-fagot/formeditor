@@ -8,7 +8,7 @@ import { runCommand } from './index';
 const st = () => useStore.getState();
 const q = (id: string, key: string): GraphNode => ({ kind: 'question', id, key, label: { fr: key }, type: 'text' }) as GraphNode;
 const graph = (id: string, key: string, nodes: GraphNode[], edges: Questionnaire['edges'] = []): Questionnaire =>
-  ({ formatVersion: 11, kind: 'questionnaire', id, key, title: { fr: key }, start: nodes[0]?.id ?? '', nodes, edges });
+  ({ formatVersion: 11, kind: 'questionnaire', id, key, title: { fr: key }, version: '1.0', start: nodes[0]?.id ?? '', nodes, edges });
 
 /** `qa` : n1 → n2 (condition sur `sys.age`), `qb` : m1 ; variable système `age`. */
 function workspace(): Workspace {

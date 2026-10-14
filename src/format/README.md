@@ -9,13 +9,15 @@ sérialisation, import/export unitaire et bundle. Dépend uniquement de `core/mo
   placée après les options statiques, questionnaires, bibliothèque et bundle, champs de structure compris ;
   2 → 3 : groupes d'options ; 3 → 4 : libellés `caption` (EVO-005) ; 4 → 5 : « Ne sais pas » (EVO-006) ; 5 → 6 : types mail, téléphone, adresse, civilité (EVO-007) ; seul `formatVersion` change, documents d'un bundle compris ;
   6 → 7 (EVO-008) : `library.blocks` → `library.fragments` (`start` → `entry` seulement s'il n'est pas l'unique nœud sans arête entrante),
-  nœuds `block` → `fragment`, bundle compris) ; 7 → 8 (EVO-009) : `hiddenFields` d'une instance, seul `formatVersion` change ; 8 → 9 (EVO-011) : `comments` d'une mise en page, seul `formatVersion` change ; 9 → 10 (EVO-012) : `required` d'une référence, `requiredOverrides` d'un appel, seul `formatVersion` change ; 10 → 11 (EVO-015) : `status` / `validatedAt` d'un questionnaire, seul `formatVersion` change ; 11 → 12 (EVO-016) : `suggestions` d'un champ texte, seul `formatVersion` change ; 12 → 13 (EVO-018) : tout `type: "tristate"` → `"boolean"` + `dontKnow` (existant gardé, sinon `{}`), `default: "unknown"` retiré, jeu `kind: "tristate"` → `"boolean"` sans `unknown` ; expressions non réécrites.
+  nœuds `block` → `fragment`, bundle compris) ; 7 → 8 (EVO-009) : `hiddenFields` d'une instance, seul `formatVersion` change ; 8 → 9 (EVO-011) : `comments` d'une mise en page, seul `formatVersion` change ; 9 → 10 (EVO-012) : `required` d'une référence, `requiredOverrides` d'un appel, seul `formatVersion` change ; 10 → 11 (EVO-015) : `status` / `validatedAt` d'un questionnaire, seul `formatVersion` change ; 11 → 12 (EVO-016) : `suggestions` d'un champ texte, seul `formatVersion` change ; 12 → 13 (EVO-018) : tout `type: "tristate"` → `"boolean"` + `dontKnow` (existant gardé, sinon `{}`), `default: "unknown"` retiré, jeu `kind: "tristate"` → `"boolean"` sans `unknown` ; expressions non réécrites ; 13 → 14 (EVO-022) : `version`, `status` d'un élément, `libraryVersions`, seul `formatVersion` change.
 - `serialize(doc)` : JSON indenté 2 espaces, ordre des clés conservé, `\n` final.
 - `newWorkspace(name, lang)`, `emptyLibrary()`, `toBundle(ws)`.
-- `exportFiles(ws) → FileContent[]` (`projet.json`, `bibliotheque.json`, `<q>.json`, `<q>.layout.json`, `fragment_<cle>.layout.json`, `question_<cle>.layout.json` : commentaires d'une question de bibliothèque, EVO-011).
+- `questionnaireFileName(q)` (EVO-022) : `<clé> - <version> - <final|provisoire>.json` (version vide omise, caractères interdits → `_`).
+- `exportFiles(ws) → FileContent[]` (`projet.json` aux noms exportés, `bibliotheque.json` (`version`, `status` après `key`), `<nom>.json` (`status` toujours écrit, `libraryVersions` : références si validé, sinon versions actuelles), `<nom>.layout.json`, `fragment_<cle>.layout.json`, `question_<cle>.layout.json` : commentaires d'une question de bibliothèque, EVO-011).
 - `exportBundle(ws) → string`.
 - `importFiles(files, current?) → { workspace?, errors }` : bundle ou fichiers unitaires ; sans `projet.json`,
-  les fichiers sont fusionnés dans `current`. Un fichier invalide → rien n'est chargé.
+  les fichiers sont fusionnés dans `current`. Un fichier invalide → rien n'est chargé. Questionnaire provisoire importé :
+  `status` et `libraryVersions` retirés (EVO-022).
 
 ## Schémas
 `schemas/*.schema.json` sont des **livrables** pour l'équipe de dev ; ils sont la source de vérité
@@ -33,4 +35,4 @@ FORMAT.md marquées `<!-- outil -->` (renvois au code) y sont retirées.
 - L'aller-retour import/export de l'exemple est identique à l'octet près (`tests/reference/format.test.ts`).
 
 ## Tests
-`format.test.ts` (unitaires, migration 1 → 2 sur `fixtures/*-v1.json`, migration 2 → 3 et groupes, migration 3 → 4 et libellés `caption`, migration 4 → 5 et « Ne sais pas », migration 5 → 6 et types EVO-007, migration 6 → 7 et fragments EVO-008, migration 7 → 8 et champs masqués EVO-009, version 9 et commentaires EVO-011, version 10 et surcharges du caractère obligatoire EVO-012, version 11 et état de validation EVO-015, version 12 et suggestions EVO-016) ; `migrate-tristate.test.ts` (migration 12 → 13, EVO-018) ; `tests/reference/format.test.ts` (exemple).
+`format.test.ts` (unitaires, migration 1 → 2 sur `fixtures/*-v1.json`, migration 2 → 3 et groupes, migration 3 → 4 et libellés `caption`, migration 4 → 5 et « Ne sais pas », migration 5 → 6 et types EVO-007, migration 6 → 7 et fragments EVO-008, migration 7 → 8 et champs masqués EVO-009, version 9 et commentaires EVO-011, version 10 et surcharges du caractère obligatoire EVO-012, version 11 et état de validation EVO-015, version 12 et suggestions EVO-016) ; `migrate-tristate.test.ts` (migration 12 → 13, EVO-018) ; `versioning.test.ts` (version 14, noms et contenu des fichiers, EVO-022) ; `tests/reference/format.test.ts` (exemple).

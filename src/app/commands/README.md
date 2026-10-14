@@ -22,7 +22,11 @@ Catalogue unique des actions utilisateur (spec §4.4). Palette, menus et raccour
 - `edit-commands.ts` : `edge.moveUp` / `edge.moveDown` (Alt+↑ / Alt+↓, arête sélectionnée), `edge.create`
   (glisser sur le logigramme), `questionnaire.properties`, `questionnaire.setTitle` / `rename` / `setDescription`,
   `project.rename`, `questionnaire.validate` / `questionnaire.unvalidate` (EVO-015 : `arg` = id, sinon le questionnaire affiché ; chacune activée
-  selon l'état ; dévalider demande confirmation, `window.confirm`).
+  selon l'état ; dévalider demande confirmation, `window.confirm` ; valider : `validateQuestionnaire` de `version-commands.ts`).
+- `version-commands.ts` (EVO-022) : `questionnaire.setVersion` (masquée, `arg` = texte ; frappes regroupées), `library.setVersion`
+  (masquée, `{ kind, id, version }` ; élément validé → `notice`), `library.validate` / `library.unvalidate` (`arg` = `{ kind, id }`, sinon le fragment de
+  l'onglet actif ou la question affichée dans l'onglet Bibliothèque ; valider sans version → `notice` « Validation impossible » ; dévalider sans confirmation).
+  `validateQuestionnaire(q)` : refus sans version (`notice`), sinon validation puis `notice` non bloquante listant les éléments provisoires utilisés ; `itemName`.
 - `library-commands.ts` : jeux de libellés (`labelSet.addBoolean`, `labelSet.delete` avec l'id ; plus de jeu tri-state, EVO-018).
 - `library-item-commands.ts` : `library.newQuestion`, `library.newFragment` (ouvre l'onglet `f:<id>`), `library.openRef` (EVO-013, badge « bib. » : `{ kind, id }`, objet introuvable → `notice`, sinon comme `library.show`), `library.show` (question : onglet
   Bibliothèque ; fragment : son onglet) / `library.delete` (`arg` = `{ kind, id }` ; ferme l'onglet du fragment),

@@ -1,10 +1,10 @@
 import { isValidated, type LocalizedText } from '../../core/model';
-import { todayIso } from '../../core/expressions';
 import {
   activeGraphRef, activeQuestionnaire, canRenameQuestionnaire, connect, getGraph, moveEdge, patchQuestionnaire, renameQuestionnaire,
   scopeOf, setValidation, useStore, type GraphRef,
 } from '../store';
 import { makeTranslate } from '../i18n';
+import { validateQuestionnaire } from './version-commands';
 import type { Command } from './types';
 
 const st = () => useStore.getState();
@@ -79,11 +79,12 @@ export function editCommands(): Command[] {
     },
     {
       // EVO-015 : un point d'historique du questionnaire ; le verrou ne porte pas sur l'état de validation.
+      // EVO-022 : refusée sans version ; alerte non bloquante sur les éléments de bibliothèque provisoires.
       id: 'questionnaire.validate', label: 'questionnaire.validate', keys: [], scope: 'global',
       enabled: (arg) => { const q = target(arg); return !!q && !isValidated(q); },
       run: (arg) => {
         const q = target(arg);
-        if (q && !isValidated(q)) st().edit(`q:${q.id}`, (ws) => setValidation(ws, q.id, todayIso()));
+        if (q && !isValidated(q)) validateQuestionnaire(q);
       },
     },
     {

@@ -90,7 +90,7 @@ describe('commentaires de révision (EVO-011)', () => {
       expect(commentOf(back.workspace!, C1)).toEqual({ node: 'n1', x: 300, y: 0, text: 'Borner ?\nÀ voir.', replies: ['Oui.'] });
     }
     // Absents du questionnaire destiné aux développeurs.
-    expect(exportFiles(st().ws).find((f) => f.name === 'declaration.json')!.text).not.toContain('Borner');
+    expect(exportFiles(st().ws).find((f) => f.name === 'declaration - provisoire.json')!.text).not.toContain('Borner');
   });
 
   it('supprimer le commentaire retire le texte et les réponses ; annulable', () => {

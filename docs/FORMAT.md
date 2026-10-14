@@ -1,4 +1,4 @@
-# Format des questionnaires — version 13
+# Format des questionnaires — version 14
 <!-- Kit développeurs (npm run kit-dev) : les lignes marquées du commentaire « outil » renvoient au code de l'outil et sont retirées du kit ; les chemins src/format/schemas/ et examples/declaration-sinistre/ y deviennent schemas/ et exemple/. --> <!-- outil -->
 
 Ce document décrit le format JSON produit par l'éditeur de questionnaires. Il s'adresse à l'équipe
@@ -31,11 +31,11 @@ libellés et interpolation — 6. Nœuds — 7. Questions — 8. Réponses — 9
 | --- | --- | --- | --- |
 | `projet.json` | `project` | Métadonnées, langues, dictionnaire de l'état du système, scénarios, liste des questionnaires. | oui |
 | `bibliotheque.json` | `library` | Questions, fragments et jeux de libellés réutilisables. | oui |
-| `<clé>.json` | `questionnaire` | Un questionnaire : nœuds, arêtes, questions locales, références à la bibliothèque. | oui |
-| `<clé>.layout.json`, `fragment_<clé>.layout.json`, `question_<clé>.layout.json` | `layout` | Positions des nœuds dans l'éditeur et commentaires de révision (version 9, §1.1). | **non** (à ignorer) |
+| `<clé> - <version> - <final\|provisoire>.json` (§4.1) | `questionnaire` | Un questionnaire : nœuds, arêtes, questions locales, références à la bibliothèque. | oui |
+| `<nom du questionnaire>.layout.json`, `fragment_<clé>.layout.json`, `question_<clé>.layout.json` | `layout` | Positions des nœuds dans l'éditeur et commentaires de révision (version 9, §1.1). | **non** (à ignorer) |
 | `<projet>.bundle.json` | `bundle` | `project`, `library`, `questionnaires[]`, `layouts[]` dans un seul fichier. | oui (même contenu) |
 
-- Chaque fichier (et le bundle) porte `formatVersion` (entier, actuellement `13`) et `kind`.
+- Chaque fichier (et le bundle) porte `formatVersion` (entier, actuellement `14`) et `kind`.
 - L'outil migre automatiquement à l'ouverture un fichier d'une version antérieure ; il refuse un fichier
   d'une version plus récente. Un moteur cible peut refuser toute version qu'il ne connaît pas.
 - Tout élément (projet, questionnaire, nœud, arête, question, fragment, variable, scénario, jeu de libellés)
@@ -49,14 +49,14 @@ libellés et interpolation — 6. Nœuds — 7. Questions — 8. Réponses — 9
   avec `label` / `title` (textes multilingues) ni avec `description` (explication longue).
 - Le format ne contient aucune donnée de présentation, sauf les fichiers `layout` (outil seulement).
 - Les **commentaires de révision** (version 9, §1.1) ne figurent que dans les fichiers `layout` : jamais dans `projet.json`,
-  `bibliotheque.json` ni `<clé>.json`.
+  `bibliotheque.json` ni le fichier d'un questionnaire.
 - Les fichiers sont écrits en UTF-8, indentés de 2 espaces, terminés par un saut de ligne.
 
 ### 1.1 Mise en page et commentaires de révision (`layout`, outil seulement)
 
 ```json
 {
-  "formatVersion": 13,
+  "formatVersion": 14,
   "kind": "layout",
   "graph": "q_declaration",
   "nodes": { "n_date": { "x": 0, "y": 320 } },
@@ -85,11 +85,13 @@ Squelette d'un questionnaire :
 
 ```json
 {
-  "formatVersion": 13,
+  "formatVersion": 14,
   "kind": "questionnaire",
   "id": "q_declaration",
   "key": "declaration_sinistre",
   "title": { "fr": "Déclaration de sinistre", "en": "Claim declaration" },
+  "version": "1.0.5",
+  "status": "draft",
   "start": "n_intro",
   "nodes": [ … ],
   "edges": [ … ]
@@ -116,7 +118,7 @@ Unicité des clés (l'outil le vérifie, §13) :
 | Clés des questions de la bibliothèque | la bibliothèque |
 | Clés des champs d'une structure | cette structure |
 | Noms des variables système ; noms des champs d'une variable `list` | le dictionnaire ; la liste |
-| Clé d'un questionnaire | le projet (elle donne le nom du fichier `<clé>.json`) |
+| Clé d'un questionnaire | le projet (elle commence le nom du fichier, §4.1) |
 
 ## 3. Projet (`projet.json`)
 
@@ -127,7 +129,7 @@ Unicité des clés (l'outil le vérifie, §13) :
 | `defaultLanguage` | Langue de repli (§5.1), présente dans `languages`. |
 | `systemState[]` | Dictionnaire de l'état du système (§3.1). |
 | `scenarios[]` | Jeux de valeurs de l'état du système pour la prévisualisation et les tests (§3.2). |
-| `questionnaires[]` | `{ "id", "file" }` : id du questionnaire et nom de son fichier (`<clé>.json`). |
+| `questionnaires[]` | `{ "id", "file" }` : id du questionnaire et nom de son fichier (`<clé> - <version> - <final\|provisoire>.json`, §4.1). |
 
 ### 3.1 État du système
 
@@ -151,19 +153,34 @@ les expressions (§10.4). Exemple : `sys.sinistres` est une liste d'objets `{ id
 `{ "id", "name", "description?", "values": { "<nom>": <valeur>, … } }` : un état du système complet,
 nommé (« UD avec 2 sinistres », « Contrat résilié »…). Les chemins attendus (§15) s'y réfèrent.
 
-## 4. Questionnaire (`<clé>.json`)
+## 4. Questionnaire (`<clé> - <version> - <statut>.json`)
 
 | Propriété | Sens |
 | --- | --- |
 | `id` | Identifiant (référencé par `projet.json` et par les chemins attendus). |
-| `key` | Clé `snake_case`, nom du fichier. |
+| `key` | Clé `snake_case`, début du nom du fichier (§4.1). |
 | `title` | Titre, texte multilingue simple (§5). |
 | `description?` | Libre. |
 | `status?` | État de validation (version 11, EVO-015) : `"draft"` (non validé, valeur par défaut si absent) ou `"validated"` : relu et approuvé par les métiers, **livrable aux développeurs** ; l'éditeur le garde en lecture seule jusqu'à sa dévalidation. Sans effet sur le parcours. |
 | `validatedAt?` | Date de validation `AAAA-MM-JJ` (version 11), présente seulement si `status` vaut `"validated"`. |
+| `version?` | Version (version 14, EVO-022) : texte libre géré à la main (convention `X.Y.Z`), sans contrôle de format ni comparaison ; absente = vide. Obligatoire pour valider, figée tant que le questionnaire est validé. Par convention, la version en production est la plus haute qu'il ait obtenue. |
+| `libraryVersions?` | Versions des éléments de bibliothèque utilisés (version 14, EVO-022), directement ou par un fragment (récursivement) : `{ "<id de la question ou du fragment>": { "version": "2.1.0", "status": "validated" } }` (`version` vide = sans version). Questionnaire validé : **versions de référence** relevées à sa dernière validation ; sinon, versions actuelles au moment de l'export. Absent s'il n'utilise aucun élément. Sans effet sur le parcours. |
 | `start` | Id du nœud de départ ; peut être un nœud `fragment` (le parcours commence alors sur l'entrée du fragment, §11.3). |
 | `nodes[]` | Nœuds (§6). |
 | `edges[]` | Arêtes (§11.1) ; **leur ordre compte**. |
+
+### 4.1 Fichier exporté, version et statut (version 14)
+
+- Nom du fichier : `<clé> - <version> - <final|provisoire>.json` (`final` si `status` vaut `"validated"`), par exemple
+  `blessure - 1.0.5 - provisoire.json`, `dc - 1.0.4 - final.json`. Version vide : le segment est omis
+  (`blessure - provisoire.json`) ; caractères interdits dans un nom de fichier (`\ / : * ? " < > |`, caractères de
+  contrôle) remplacés par `_` (`1/2` → `1_2`). `projet.json` désigne ces noms (`questionnaires[].file`).
+- Le fichier exporté porte toujours `status` (`"draft"` écrit s'il est absent) et, s'il utilise des éléments de
+  bibliothèque, `libraryVersions` ; la version et le statut actuels de chaque élément sont dans `bibliotheque.json` (§12).
+- Le bundle est l'image exacte du projet dans l'éditeur : `status` et `libraryVersions` n'y figurent que pour un
+  questionnaire validé.
+- Alerte de l'éditeur (non bloquante) : un questionnaire validé dont un élément utilisé a changé de version depuis sa
+  validation (élément absent de `libraryVersions` : référence vide, cas d'un fichier antérieur à la version 14).
 
 Un fragment de bibliothèque (§12) est un graphe de même forme (`nodes`, `edges`), **sans** `start` : son entrée est implicite ou donnée par `entry` (§11.3).
 
@@ -794,7 +811,10 @@ lieu d'afficher la fin. La réponse n'est pas effacée : l'utilisateur la corrig
 
 - `questions[]` : questions réutilisables (§7), référencées par `{ "kind": "question", "id", "ref", "label"?, "hiddenFields"?, "required"? }` (§6).
   Leur clé est vue sans préfixe dans le graphe qui les référence (questionnaire, ou fragment puis `alias.cle`).
-- `fragments[]` (version 7) : `{ id, key, title, description?, entry?, nodes, edges }` (§11.3) ; nœuds : questions
+- `version?`, `status?` (version 14, EVO-022) sur chaque question et chaque fragment : version libre (absente = vide) et
+  statut `"draft"` (provisoire, valeur par défaut si absent) ou `"validated"` (validé : version figée). Le contenu d'un
+  élément validé reste modifiable ; seule sa version est figée. Placés après `key`.
+- `fragments[]` (version 7) : `{ id, key, version?, status?, title, description?, entry?, nodes, edges }` (§11.3) ; nœuds : questions
   (locales ou de bibliothèque), `info`, `summary`, `fragment` (appel d'un autre fragment), `exit` ; pas de `start`
   ni de `end`. Les questionnaires et fragments y font **référence** (`ref`) : une modification s'applique à tous les appelants.
 - `labelSets[]` : `{ id, key, kind: "boolean", yes, no }` : libellés des valeurs `true` et `false` ; référencés
@@ -827,7 +847,7 @@ L'exemple fourni ne produit aucun problème.
 
 ## 14. Exemple commenté
 
-`examples/declaration-sinistre/` : déclaration d'un sinistre par un adhérent connecté (langues `fr`, `en`), et demande de remboursement (`demande_remboursement.json`, version 7 ; champs masqués, version 8).
+`examples/declaration-sinistre/` : déclaration d'un sinistre par un adhérent connecté (langues `fr`, `en`), et demande de remboursement (`demande_remboursement - 1.0.4 - final.json`, version 7 ; champs masqués, version 8).
 
 | Fonctionnalité | Où |
 | --- | --- |
@@ -852,9 +872,10 @@ L'exemple fourni ne produit aucun problème.
 | Libellés de lecture `caption` (version 4) : arête conditionnée, « sinon », arête de sortie nommée ; variable et champ de liste | `e_qualite_ayant_droit`, `e_qualite_montant`, `e_bloc_non_identifie` ; `sys.type_adherent`, `sys.sinistres` (`nature`) |
 | Mail, téléphone, adresse, civilité (version 6) : structure de bibliothèque non utilisée par le questionnaire (civilité obligatoire, téléphone mobile, adresse à vérifier) | `lq_souscripteur` (bibliothèque) |
 | Champs masqués (version 8) : structure `identite` (7 champs, tous obligatoires) réduite à nom, prénom, mail dans une instance ; `{identite.mail}` dans la fin | `q_remboursement` : `n_rappel` → `lq_identite`, `n_fin_remboursement` ; chemins `remboursement_*.json` |
-| Commentaire de révision (version 9) : question commentée, deux réponses, nœud commentaire à gauche de la question | `declaration_sinistre.layout.json` : `comments` sur `n_date` | <!-- outil -->
+| Commentaire de révision (version 9) : question commentée, deux réponses, nœud commentaire à gauche de la question | `declaration_sinistre - 1.0.5 - provisoire.layout.json` : `comments` sur `n_date` | <!-- outil -->
 | Surcharge du caractère obligatoire (version 10, §6.1) : téléphone obligatoire en bibliothèque, rendu facultatif dans un fragment (laissé vide) ; question d'un fragment rendue facultative depuis un questionnaire | `blk_identite_tiers` : `bn_telephone` → `lq_telephone` (chemins `ud_tiers_inconnu.json`, `ud_vol_avec_boucle.json`) ; `q_remboursement` : `n_ident.requiredOverrides` |
-| Formulaire validé (version 11) : `status: "validated"`, `validatedAt` ; la déclaration de sinistre reste non validée | `demande_remboursement.json` |
+| Formulaire validé (version 11) : `status: "validated"`, `validatedAt` ; la déclaration de sinistre reste non validée | `demande_remboursement - 1.0.4 - final.json` |
+| Versions (version 14) : questionnaire validé `1.0.4` et ses versions de référence (fragment et structure validés) ; déclaration provisoire `1.0.5` avec les versions actuelles des éléments utilisés (tous validés) ; structure de bibliothèque provisoire `0.1.0` (`lq_souscripteur`, non utilisée) | `demande_remboursement - 1.0.4 - final.json`, `declaration_sinistre - 1.0.5 - provisoire.json` : `libraryVersions` ; `bibliotheque.json` : `version`, `status` |
 | Suggestions d'un champ texte (version 12) : nom d'une victime, suggestion tirée du nom de l'assuré (`$substringAfter(sys.nom_assure, ' ')`, valeur unique) | `n_victimes` : champ `nom` |
 
 Après la date, on demande le lien avec un sinistre existant s'il y en a un d'antérieur, puis on va aux
@@ -910,7 +931,7 @@ doit égaler `path`, toutes les réponses doivent avoir été consommées et l'i
 
 Toute évolution incompatible incrémente `formatVersion` et s'accompagne d'une migration dans l'outil,
 des schémas, de ce document et de l'exemple. Les ajouts compatibles (nouvelle propriété facultative)
-sont documentés ici. Version actuelle : **13**.
+sont documentés ici. Version actuelle : **14**.
 
 | Version | Changement | Migration |
 | --- | --- | --- |
@@ -926,3 +947,4 @@ sont documentés ici. Version actuelle : **13**.
 | 11 | État de validation d'un questionnaire (EVO-015) : `status?` (`"draft"` \| `"validated"`) et `validatedAt?` (date). | Aucune transformation (propriétés absentes = non validé) ; seul `formatVersion` change. |
 | 12 | Suggestions d'un champ texte (EVO-016) : `suggestions?` (expression renvoyant une liste, §7.9). | Aucune transformation (propriété absente = pas de suggestions) ; seul `formatVersion` change. |
 | 13 | Suppression du type `tristate` et des jeux de libellés `kind: "tristate"` (EVO-018) : « oui / non / ne sait pas » = `boolean` avec `dontKnow` (§7.7). | Chaque question ou champ `tristate` devient `boolean` avec `dontKnow` (gardé s'il existait, sinon `{}`) ; `default: "unknown"` est retiré ; chaque jeu `tristate` devient `boolean` sans `unknown`. Les expressions ne sont **pas** réécrites : `cle = "unknown"` devient faux pour toute réponse, à remplacer par `cle.nsp`. |
+| 14 | Versionning (EVO-022) : `version?` (texte libre) et `libraryVersions?` (id → `{ version, status }`) d'un questionnaire ; `version?` et `status?` (`"draft"` \| `"validated"`) d'une question et d'un fragment de bibliothèque ; nom du fichier exporté `<clé> - <version> - <final\|provisoire>.json` (§4.1). | Aucune transformation (version vide, élément provisoire, référence vide : aucune alerte) ; seul `formatVersion` change. |

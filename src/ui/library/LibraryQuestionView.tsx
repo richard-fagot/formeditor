@@ -8,6 +8,7 @@ import { ExpressionEnvProvider } from '../expression-editor';
 import { QuestionEditor, usePluginEnv, type QuestionTarget } from '../properties';
 import { itemUsages, libraryQuestionScope } from './items';
 import { CommentThread } from '../comments';
+import { ItemVersion } from './ItemVersion';
 
 /** Question de la bibliothèque : mêmes propriétés qu'une question locale, modifiées pour tous ses usages. */
 export function LibraryQuestionView({ id }: { id: string }) {
@@ -46,6 +47,7 @@ export function LibraryQuestionView({ id }: { id: string }) {
           </div>
           {/* Commentaire de révision (EVO-011) : toujours affiché, la question n'a pas de logigramme. */}
           <CommentThread cref={{ host: { kind: 'question', id }, node: id }} className="mx-4 mt-3" />
+          <ItemVersion item={{ kind: 'question', id }} className="mx-4 mt-3" />
           <QuestionEditor question={q} target={target} />
         </div>
       </div>

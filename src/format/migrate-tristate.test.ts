@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { FORMAT_VERSION } from '../core/model';
 import { exportBundle, exportFiles, importFiles } from './files';
-import { migrate } from './migrate';
+import { migrate, MIGRATIONS } from './migrate';
 import { serialize } from './serialize';
 import { validateDocument } from './validate';
 
@@ -39,7 +39,7 @@ const load = (doc: Doc) => importFiles([{ name: 'session.bundle.json', text: JSO
 
 describe('migration 12 → 13 (EVO-018 : suppression du tri-state)', () => {
   it('le format courant est la version 13', () => {
-    expect(FORMAT_VERSION).toBe(13);
+    expect(FORMAT_VERSION).toBeGreaterThanOrEqual(13);
   });
 
   it('ouverture d’un projet : chaque tri-state devient un booléen avec « Ne sais pas », le reste conservé, sans erreur', () => {
@@ -82,7 +82,9 @@ describe('migration 12 → 13 (EVO-018 : suppression du tri-state)', () => {
     const bundle = exportBundle(ws);
     expect(migrate(JSON.parse(bundle))).toEqual(JSON.parse(bundle));
     expect(load(JSON.parse(bundle)).workspace).toEqual(ws);
-    expect(importFiles(exportFiles(ws)).workspace).toEqual(ws);
+    // Fichiers unitaires : noms versionnés (EVO-022), réexport identique.
+    const files = exportFiles(ws);
+    expect(exportFiles(importFiles(files).workspace!)).toEqual(files);
   });
 
   it('projet sans tri-state : seul le numéro de version change', () => {
@@ -90,7 +92,7 @@ describe('migration 12 → 13 (EVO-018 : suppression du tri-state)', () => {
     b.questionnaires[0].nodes = [b.questionnaires[0].nodes[2]];
     b.questionnaires[0].edges = [];
     b.library = { formatVersion: 12, kind: 'library', questions: [], fragments: [], labelSets: [] };
-    const m = migrate(b);
+    const m = migrate(b, MIGRATIONS, 13);
     expect(m).toEqual({ ...b, formatVersion: 13, project: { ...b.project, formatVersion: 13 }, library: { ...b.library, formatVersion: 13 },
       questionnaires: [{ ...b.questionnaires[0], formatVersion: 13 }] });
   });

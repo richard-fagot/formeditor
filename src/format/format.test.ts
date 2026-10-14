@@ -646,10 +646,11 @@ describe('import / export', () => {
   it('exporte des fichiers unitaires nommés et les réimporte à l’identique', () => {
     const original = ws();
     const files = exportFiles(original);
-    expect(files.map((f) => f.name)).toEqual(['projet.json', 'bibliotheque.json', 'test.json', 'test.layout.json']);
+    // Noms versionnés (EVO-022) : `<clé> - provisoire.json`, repris dans `projet.json`.
+    expect(files.map((f) => f.name)).toEqual(['projet.json', 'bibliotheque.json', 'test - provisoire.json', 'test - provisoire.layout.json']);
     const back = importFiles(files);
     expect(back.errors).toEqual([]);
-    expect(back.workspace).toEqual(original);
+    expect(back.workspace).toEqual({ ...original, project: { ...original.project, questionnaires: [{ id: 'q1', file: 'test - provisoire.json' }] } });
   });
   it('réimporte un bundle à l’identique', () => {
     const original = ws();

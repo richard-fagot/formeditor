@@ -65,6 +65,17 @@ describe('état de validation (EVO-015)', () => {
     expect(lockedChanges(a, commented)).toEqual([]);
   });
 
+  it('versions de référence (EVO-022) hors verrou, version du formulaire sous verrou', () => {
+    const a = ws(q('a', { ...validated, version: '1.0', libraryVersions: { lq: { version: '1', status: 'validated' } } }));
+    const un = clone(a);
+    delete un.questionnaires[0]!.status;
+    delete un.questionnaires[0]!.libraryVersions;
+    expect(lockedChanges(a, un)).toEqual([]);
+    const bumped = clone(a);
+    bumped.questionnaires[0]!.version = '1.1';
+    expect(lockedChanges(a, bumped)).toEqual(['a']);
+  });
+
   it('sans mise en page importée : celle créée vide par le premier commentaire est hors verrou (écart EVO-015)', () => {
     const a = ws(q('a', validated));
     a.layouts = [];

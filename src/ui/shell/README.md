@@ -14,7 +14,7 @@ Cadre de l'application. Dépend de `app/*`, `ui/*`, `ui-kit`.
 - `QuestionnaireView` : sous-onglets Logigramme / Prévisualisation ; boutons mise en page automatique (`view.layout`), image du logigramme
   (`view.exportImage`, grisé sur un questionnaire vide ou pendant l'export : « Export en cours… ») vue
   côte à côte (`view.compare`) et « Commentaires » (`comment.toggleAll`, grisé sans commentaire, EVO-011), « Valider le formulaire » (`validate`) ou « Dévalider » (`unvalidate`) selon l'état (EVO-015),
-  marqueur « Validé » en haut à gauche du logigramme (`diagram-validated`) ; panneau latéral de la bibliothèque (`ui/library`, affiché / masqué par `view.libraryPanel`,
+  marqueur « Validé » en haut à gauche du logigramme (`diagram-validated`), dessous l'alerte de dépendance `VersionAlert` (`version-alert`, EVO-022 : `versionAlerts`) ; panneau latéral de la bibliothèque (`ui/library`, affiché / masqué par `view.libraryPanel`,
   masqué pendant la vue côte à côte), graphe + panneau Problèmes (`ui/diagram`), propriétés à droite.
 - `ComparePane` : vue côte à côte, logigramme d'un autre questionnaire en lecture seule (`Diagram readOnly`), choix du questionnaire, fermeture.
 - `CopyDialog` (EVO-009) : copie en bibliothèque dont la clé est prise (`copyRequest`) : « Nouvelle clé » proposée suffixée,
