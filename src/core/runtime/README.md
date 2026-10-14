@@ -32,7 +32,9 @@ Dépend de `core/model`, `core/expressions`.
 - Pays (EVO-007) : `setAnswer(…, dontKnow?, country?)` range `<clé>_pays` (`countryPath`) ; absent sinon ; `prune` l'efface avec la réponse.
 - Suggestions d'un champ texte (EVO-016, `suggestions.ts`) : `suggestionList(valeur)` met le résultat de l'expression en liste de textes
   (valeur unique → un élément, vide → aucun, nombres / booléens → texte, objets, vides et `other` écartés, doublons retirés, ordre gardé ; `labelOf` facultatif : libellé affiché à la place d'une valeur d'option) ;
-  `referencedChoices(ws, expr)` : questions à choix dont la clé est le dernier nom d'une référence (hors `sys.`) ;
+  `referencedChoices(ws, expr, graphe?)` : questions à choix dont la clé est le dernier nom d'une référence (hors `sys.`),
+  cherchée dans le graphe courant (références de bibliothèque comprises), puis questions et fragments de la bibliothèque
+  (première question trouvée par clé, même hors choix) ;
   `filterSuggestions(liste, saisie)` : « contient », casse ignorée.
 - Outline de la prévisualisation (EVO-019, `outline.ts`) : `passedQuestions(input, s, visited)` : questions du parcours recalculé
   avec les réponses actuelles depuis le départ, arrêté à la première page jamais affichée (`visited` ∪ historique) ;

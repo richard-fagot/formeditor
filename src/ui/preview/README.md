@@ -7,7 +7,7 @@ Dépend de `core`, `registry`, `app/store`, `app/commands`, `ui-kit`, `ui/system
 ## Fichiers
 - `usePreview.ts` : état par questionnaire dans `store.preview[id]` (session, scénario, état du système édité,
   langue, `returnTo`) ; l'état du système vient de `systemStateOf` (`app/store`). `makeRenderEnv` construit
-  l'environnement de rendu des plugins (libellés résolus, `options` via `choiceOptions`, `scoped`).
+  l'environnement de rendu des plugins (libellés résolus, `options` via `choiceOptions`, `scoped`, `graph` = graphe de la page).
   `RuntimeInput.env.defaultLang` = langue par défaut du projet (identifiant d'un groupe d'options sans code). Le groupe de
   la sélection (`<clé>_group`) est passé au champ (`group`) et enregistré par `setAnswer` ; de même le marqueur « Ne sais pas »
   (`dontKnow`, `onDontKnow` : `dontKnowAnswer` puis `setAnswer(…, true)`, décochée : réponse effacée) et le pays d'un téléphone

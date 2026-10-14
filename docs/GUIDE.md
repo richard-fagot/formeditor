@@ -440,7 +440,8 @@ Concerne le choix unique et le choix multiple. Le booléen n'a pas d'options (§
   unique donne une seule suggestion ; une valeur vide ou non renseignée n'en donne aucune ; nombres et dates sont affichés
   comme dans un texte interpolé (`12`, `2024-05-06`) ; une valeur en double n'est proposée qu'une fois, à sa première
   position ; une valeur d'option d'un choix cité dans l'expression est proposée (et insérée) par son **libellé** dans la
-  langue affichée (`alfa_romeo` → « Alfa Romeo »), jamais `other` : pour ajouter la précision « Autre »,
+  langue affichée (`alfa_romeo` → « Alfa Romeo » ; choix cherché dans le questionnaire ou le fragment affiché, sinon dans
+  la bibliothèque), jamais `other` : pour ajouter la précision « Autre »,
   écrire `$append(marques, marques_other)`. Seules les questions posées avant le champ et les variables `sys.` sont
   permises ; une question après est signalée (« ⚠ », §15) comme dans toute expression.
 - **Combiner** — `=`, `!=`, `<`, `<=`, `>`, `>=` (nombres et dates `AAAA-MM-JJ`) ; `and`, `or`, `$not(…)` ; `'x' in liste` ;

@@ -23,10 +23,13 @@ const T = {
   suggestionsBadge: { fr: 'Avec suggestions', en: 'With suggestions' },
 };
 
-/** Suggestions (EVO-016) : la valeur d'une option d'un choix référencé est remplacée par son libellé dans la langue courante. */
+/**
+ * Suggestions (EVO-016) : la valeur d'une option d'un choix référencé est remplacée par son libellé dans la langue courante ;
+ * choix cherché d'abord dans le graphe de la page, puis dans la bibliothèque.
+ */
 function suggestionsOf(expr: string, env: RenderEnv): string[] {
   const labels = new Map<string, string>();
-  for (const q of referencedChoices(env.ws, expr)) {
+  for (const q of referencedChoices(env.ws, expr, env.graph)) {
     for (const o of env.options(q)) if (!labels.has(o.value)) labels.set(o.value, typeof o.label === 'string' ? o.label : env.label(o.label));
   }
   return suggestionList(env.evaluate(expr), (v) => labels.get(v));

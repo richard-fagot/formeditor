@@ -1,5 +1,5 @@
 import { extractReferences } from '../expressions';
-import { isLocalQuestion, OTHER_VALUE, type Question, type Workspace } from '../model';
+import { isLocalQuestion, OTHER_VALUE, type Graph, type Question, type Workspace } from '../model';
 
 /** Élément affichable : texte, nombre ou booléen converti en texte (règle de l'interpolation) ; sinon rien. */
 function asText(v: unknown): string | undefined {
@@ -32,13 +32,26 @@ const isChoice = (q: Question) => q.type === 'single' || q.type === 'multiple';
 
 /**
  * Questions à choix référencées par l'expression : clé égale au dernier nom d'une référence (`marques`,
- * `alias.marques`) hors variables système, cherchée dans les questionnaires, fragments et la bibliothèque.
+ * `alias.marques`) hors variables système. Chaque clé est cherchée d'abord dans `graph` (questionnaire ou fragment
+ * courant, références de bibliothèque comprises), puis dans la bibliothèque (questions, puis fragments) ; la première
+ * question trouvée l'emporte (si ce n'est pas un choix, la clé n'a pas de libellés).
  */
-export function referencedChoices(ws: Workspace, expr: string): Question[] {
+export function referencedChoices(ws: Workspace, expr: string, graph?: Graph): Question[] {
   const keys = new Set(extractReferences(expr).filter((p) => p[0] !== 'sys').map((p) => p[p.length - 1]));
   if (!keys.size) return [];
-  const local = [...ws.questionnaires, ...ws.library.fragments].flatMap((g) => g.nodes.filter(isLocalQuestion));
-  return [...local, ...ws.library.questions].filter((q) => isChoice(q) && keys.has(q.key));
+  const found = new Map<string, Question>();
+  const add = (q: Question | undefined) => {
+    if (q && keys.has(q.key) && !found.has(q.key)) found.set(q.key, q);
+  };
+  const addGraph = (g: Graph) => {
+    for (const n of g.nodes) {
+      if (n.kind === 'question') add(isLocalQuestion(n) ? n : ws.library.questions.find((x) => x.id === n.ref));
+    }
+  };
+  if (graph) addGraph(graph);
+  ws.library.questions.forEach(add);
+  ws.library.fragments.forEach(addGraph);
+  return [...found.values()].filter(isChoice);
 }
 
 /** Suggestions qui contiennent la saisie, casse ignorée (saisie vide : toutes). */
