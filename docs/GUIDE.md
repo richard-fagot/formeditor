@@ -1,5 +1,5 @@
 # Guide utilisateur — Éditeur de questionnaires
-Mis à jour le 2026-10-14 — jusqu'à EVO-020
+Mis à jour le 2026-10-14 — jusqu'à EVO-021
 
 ## Mode d'emploi du guide
 
@@ -527,6 +527,8 @@ Concerne le choix unique et le choix multiple. Le booléen n'a pas d'options (§
   bibliothèque, « Obligatoire » dans le fragment « Coordonnées » ; le formulaire « Adhésion » qui l'appelle sans surcharge
   l'exige (« Hérité (Obligatoire, fragment Coordonnées) ») ; le formulaire « Demande de rappel » la règle sur
   « Facultatif » pour lui seul. Une surcharge dont la question a disparu du fragment est ignorée.
+  En prévisualisation, l'astérisque de chaque page suit la valeur après surcharge de cet appel (§12, « Voir quelles
+  questions sont exigées »).
 - **Revenir à la valeur héritée** — Choisir « Hérité » dans la liste, ou bouton « Revenir à la valeur héritée » (sous la
   liste d'une référence ; sous la liste des questions d'un nœud fragment, il retire **toutes** les surcharges de l'appel),
   ou palette sur la référence ou le nœud fragment sélectionné. La valeur effective redevient celle du niveau supérieur.
@@ -658,9 +660,13 @@ Concerne le choix unique et le choix multiple. Le booléen n'a pas d'options (§
   (une condition non évaluable est fausse : la branche « sinon » est suivie). Réactivés : la page courante est contrôlée au
   prochain « Suivant » ; les pages déjà franchies ne sont pas revérifiées. L'état est gardé tant que l'éditeur reste ouvert
   (changement de questionnaire ou de projet compris) et n'est jamais enregistré dans le projet. `[cmd: preview.toggleChecks]`
-- **Voir quelles questions sont exigées** — L'astérisque rouge et le blocage de « Suivant » sur une question laissée vide
-  suivent la valeur **effective** du caractère obligatoire, surcharges comprises (§10) ; une question non présentée (chemin
-  non emprunté, champ masqué) n'est jamais exigée.
+- **Voir quelles questions sont exigées** — L'astérisque rouge reflète l'obligation **après surcharge** (§10) : une question
+  obligatoire surchargée « Facultatif » s'affiche sans astérisque et peut rester vide ; une question facultative surchargée
+  « Obligatoire » a son astérisque et bloque « Suivant » si elle est laissée vide ; un intitulé surchargé ne change rien ;
+  sans surcharge, c'est la définition. Une même question peut donc avoir l'astérisque dans un formulaire ou un appel de
+  fragment et pas dans un autre. Astérisque et blocage vont toujours ensemble : une question « obligatoire sous condition »
+  (sans surcharge) a son astérisque dès que sa condition est vraie avec les réponses déjà données (et l'état du système),
+  recalculé à chaque affichage de la page. Une question non présentée (chemin non emprunté, champ masqué) n'est jamais exigée.
 - **Afficher l'outline du logigramme** — Bouton « Outline » de la barre de prévisualisation, ou palette « Afficher / masquer
   l’outline du logigramme ». Un panneau à droite du wizard montre le logigramme du questionnaire en lecture seule (rien ne
   s'y déplace ni ne s'y modifie) ; le wizard occupe la largeur restante. Masqué, la prévisualisation est inchangée. L'état

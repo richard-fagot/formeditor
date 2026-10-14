@@ -1,5 +1,5 @@
 import { buildContext, currentStep, dontKnowPath, getAnswer, goTo, groupPath, otherPath, projectedSteps, resolveStep, type Answers, type RuntimeInput, type Session } from '../../core/runtime';
-import { validateAnswer } from '../../core/validation';
+import { isRequired, validateAnswer } from '../../core/validation';
 
 /** Erreurs de validation de la réponse à une page question, dans le contexte de cette page. */
 export function answerErrors(input: RuntimeInput, answers: Answers, stepId: string) {
@@ -10,8 +10,23 @@ export function answerErrors(input: RuntimeInput, answers: Answers, stepId: stri
   const other = getAnswer(answers, otherPath(step.answerPath)) as string | undefined;
   const group = getAnswer(answers, groupPath(step.answerPath));
   const dontKnow = getAnswer(answers, dontKnowPath(step.answerPath));
-  const ctx = buildContext(input, answers, stepId);
-  return validateAnswer(q, value, { ...ctx, ...(value === null || value === undefined ? {} : { [q.key]: value }) }, input.env, other, '', group, dontKnow);
+  return validateAnswer(q, value, pageContext(input, answers, stepId, q.key, value), input.env, other, '', group, dontKnow);
+}
+
+/** Contexte de validation d'une page : celui de la page, réponse courante comprise (sous sa clé). */
+function pageContext(input: RuntimeInput, answers: Answers, stepId: string, key: string, value: unknown) {
+  return { ...buildContext(input, answers, stepId), ...(value === null || value === undefined ? {} : { [key]: value }) };
+}
+
+/**
+ * Astérisque d'une page question (EVO-021) : caractère obligatoire effectif (surcharges appliquées par le moteur,
+ * « obligatoire si » évalué), même résolution et même contexte que le contrôle de `answerErrors`.
+ */
+export function requiredAt(input: RuntimeInput, answers: Answers, stepId: string): boolean {
+  const step = resolveStep(input, stepId);
+  const q = step?.question;
+  if (!q || !step.answerPath) return false;
+  return isRequired(q, pageContext(input, answers, stepId, q.key, getAnswer(answers, step.answerPath)), input.env);
 }
 
 /** Première page du chemin effectif dont la réponse (connue) est devenue invalide (spec §5) ; `skip` : pages non revérifiées (EVO-014). */
