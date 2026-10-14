@@ -20,7 +20,7 @@ vient des plugins (`registry`). Dépend de `app/store`, `registry`, `core`, `ui-
   reste proposée, marquée « (?) »), suppression (`node.delete`).
 - `LibraryQuestionProperties` : question de bibliothèque référencée ; intitulé et caractère obligatoire (`LibraryRequired`, EVO-012) surchargeables
   (« Reprendre l'intitulé de la bibliothèque » retire la surcharge), « Ouvrir dans la bibliothèque ». Structure : `HiddenFields` (EVO-009),
-  case « affiché » par champ (`setFieldHidden`, la dernière affichée est grisée), avertissement `notice` si le champ masqué est référencé (`hiddenFieldUsages`).
+  case « affiché » par champ (`setFieldHidden`, la dernière affichée est grisée), avertissement `notice` si le champ masqué est référencé (`hiddenFieldUsages` ; ligne d'un appelant de fragment préfixée « appelant « nom » », `hiddenUsageCaller`).
 - Question locale : section « Bibliothèque », bouton « Copier dans la bibliothèque » (`node.toLibrary`, EVO-009).
 - `RequiredOverride.tsx` (EVO-012) : `LibraryRequired` (référence : sélecteur « Caractère obligatoire » « Hérité (valeur, provenance : bibliothèque, surcharge locale, fragment par son titre sinon sa clé) » / « Obligatoire »
   / « Facultatif », valeur effective et provenance dessous, bouton « Revenir à la valeur héritée » = `node.resetRequired`) ; `FragmentRequired` (appel :

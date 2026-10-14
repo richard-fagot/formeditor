@@ -4,7 +4,7 @@ import { checkWorkspace } from '../../core/validation';
 import { start, next, setAnswer, currentStep, resolveStep } from '../../core/runtime';
 import type { FragmentNode, Questionnaire, Workspace } from '../../core/model';
 import {
-  addFragment, addLibraryQuestion, blankWorkspace, canMoveToLibrary, copyToLibrary, deleteLibraryItem, groupEntries, groupIntoFragment, hiddenFieldUsages, insertNode, moveToLibrary,
+  addFragment, addLibraryQuestion, blankWorkspace, canMoveToLibrary, copyToLibrary, deleteLibraryItem, groupEntries, groupIntoFragment, hiddenFieldUsages, hiddenUsageCaller, insertNode, moveToLibrary,
   referenceNode, removeNodes, renameExit, setFieldHidden, setLibraryQuestionLabel, type GraphRef,
 } from './index';
 
@@ -266,5 +266,22 @@ describe('copie en bibliothèque et champs masqués (EVO-009)', () => {
     const found = hiddenFieldUsages(ws, { kind: 'fragment', id: 'fx' }, 's', 'mail').map((u) => `${u.loc.owner.id}:${u.loc.edgeId ?? u.loc.nodeId}`);
     expect(found.sort()).toEqual(['fy:iy', `${q.id}:ez`, `${q.id}:ez2`]);
     expect(hiddenFieldUsages(ws, { kind: 'fragment', id: 'fx' }, 's', 'nom')).toEqual([]);
+  });
+
+  it('hiddenUsageCaller : appelant désigné par son titre, sinon sa clé ; rien pour le graphe masqué (correctif écarts CODE)', () => {
+    const ws = exampleWorkspace();
+    ws.library.fragments.push(
+      { id: 'fx', key: 'fx', title: { fr: 'fx' }, nodes: [{ kind: 'question', id: 's', ref: 'lq_identite' }, { kind: 'info', id: 'ix', text: { fr: '{identite.mail}' } } as never], edges: [] },
+      { id: 'fy', key: 'fy_cle', title: {}, nodes: [{ kind: 'fragment', id: 'cy', ref: 'fx', alias: 'ax' }, { kind: 'info', id: 'iy', text: { fr: '{ax.identite.mail}' } } as never], edges: [] },
+    );
+    const q = Q(ws);
+    q.title = { fr: 'Remboursement', en: 'Refund' };
+    q.nodes.push({ kind: 'fragment', id: 'call', ref: 'fx', alias: 'ax' });
+    q.edges.push({ id: 'ez', from: 'call', to: q.start, when: "ax.identite.mail = 'x'" });
+    const ref: GraphRef = { kind: 'fragment', id: 'fx' };
+    const names = (lang: string) => Object.fromEntries(hiddenFieldUsages(ws, ref, 's', 'mail')
+      .map((u) => [u.loc.owner.id, hiddenUsageCaller(ws, ref, u, { contentLang: lang, defaultLang: 'fr' }) ?? null]));
+    expect(names('fr')).toEqual({ fx: null, fy: 'fy_cle', [q.id]: 'Remboursement' });
+    expect(names('en')[q.id]).toBe('Refund');
   });
 });

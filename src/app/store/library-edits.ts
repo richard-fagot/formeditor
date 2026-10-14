@@ -151,6 +151,17 @@ export function hiddenFieldUsages(ws: Workspace, ref: GraphRef, nodeId: string, 
   return usagesIn(ws, ref, [[inst.q.key, field], [inst.q.key, `${field}_${OTHER_VALUE}`]], 0);
 }
 
+/**
+ * Appelant d'où vient une expression listée par `hiddenFieldUsages` : titre du questionnaire ou du fragment dans la
+ * langue du contenu, sinon sa clé ; `undefined` pour une expression du graphe où le champ est masqué.
+ */
+export function hiddenUsageCaller(ws: Workspace, ref: GraphRef, usage: FoundExpression, env: { contentLang: string; defaultLang: string }): string | undefined {
+  const o = usage.loc.owner;
+  if ((o.kind !== 'questionnaire' && o.kind !== 'fragment') || (o.kind === ref.kind && o.id === ref.id)) return undefined;
+  const g = o.kind === 'questionnaire' ? ws.questionnaires.find((x) => x.id === o.id) : ws.library.fragments.find((x) => x.id === o.id);
+  return g ? previewText(g.title, env).trim() || g.key : o.id;
+}
+
 function usagesIn(ws: Workspace, ref: GraphRef, paths: string[][], depth: number): FoundExpression[] {
   if (depth > 20) return []; // cycle d'appels : signalé ailleurs
   const mine = (f: FoundExpression) => f.loc.owner.kind === ref.kind && f.loc.owner.id === ref.id;

@@ -1,13 +1,13 @@
 import type { LibraryQuestionNode } from '../../core/model';
 import { previewText } from '../../plugin-api';
-import { hiddenFieldUsages, scopeOf, setFieldHidden, useStore, useT, type GraphRef } from '../../app/store';
+import { hiddenFieldUsages, hiddenUsageCaller, scopeOf, setFieldHidden, useStore, useT, type GraphRef } from '../../app/store';
 import { Checkbox, Field } from '../../ui-kit';
 import { usePluginEnv } from './usePluginEnv';
 
 /**
  * Champs d'une instance de structure de bibliothèque (EVO-009) : case « affiché » par champ, dans l'ordre de la
  * bibliothèque ; le dernier champ affiché ne peut pas être décoché. Masquer un champ référencé avertit en listant
- * les expressions concernées.
+ * les expressions concernées (celles d'un appelant de fragment précédées du nom de cet appelant).
  */
 export function HiddenFields({ graph, node }: { graph: GraphRef; node: LibraryQuestionNode }) {
   const t = useT();
@@ -21,7 +21,11 @@ export function HiddenFields({ graph, node }: { graph: GraphRef; node: LibraryQu
     const usages = show ? [] : hiddenFieldUsages(st.ws, graph, node.id, key);
     st.edit(scopeOf(graph), (ws) => void setFieldHidden(ws, graph, node.id, key, !show));
     if (usages.length) {
-      const lines = usages.map((u) => `${u.loc.nodeId ?? u.loc.edgeId ?? ''} · ${u.loc.property} : ${u.text}`);
+      const lines = usages.map((u) => {
+        const caller = hiddenUsageCaller(st.ws, graph, u, env);
+        const where = `${u.loc.nodeId ?? u.loc.edgeId ?? ''} · ${u.loc.property} : ${u.text}`;
+        return caller ? `${t('hidden.caller', { name: caller })} · ${where}` : where;
+      });
       st.set((s) => void (s.notice = { title: `${t('hidden.warning')} : ${q.key}.${key}`, lines }));
     }
   };
