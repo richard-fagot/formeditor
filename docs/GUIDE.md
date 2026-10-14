@@ -516,11 +516,11 @@ Concerne le choix unique et le choix multiple. Le booléen n'a pas d'options (§
   fragment qui en inclut un autre), sélectionner le nœud fragment : la liste « Questions du fragment : caractère obligatoire »
   montre chaque question (`alias.cle`, fragments inclus compris : `alias.sous_alias.cle`) avec le même sélecteur et sa
   valeur effective ; « Surchargé » repère celles surchargées dans cet appel, et le nœud fragment porte le badge « surch. ».
-  « Hérité » affiche la valeur et sa provenance (« bibliothèque » ou « fragment <clé> » quand elle est fixée dans le
-  fragment). Règle : **le niveau le plus proche de l'utilisation l'emporte** — l'appelant le plus externe, puis chaque
+  « Hérité » affiche la valeur et sa provenance (« bibliothèque » ou « fragment <titre> » quand elle est fixée dans le
+  fragment ; sa clé s'il n'a pas de titre). Règle : **le niveau le plus proche de l'utilisation l'emporte** — l'appelant le plus externe, puis chaque
   fragment intermédiaire, puis la référence dans le fragment, puis la bibliothèque. Ex. : `Q_TEL` facultative en
-  bibliothèque, « Obligatoire » dans le fragment `coordonnees` ; le formulaire « Adhésion » qui l'appelle sans surcharge
-  l'exige (« Hérité (Obligatoire, fragment coordonnees) ») ; le formulaire « Demande de rappel » la règle sur
+  bibliothèque, « Obligatoire » dans le fragment « Coordonnées » ; le formulaire « Adhésion » qui l'appelle sans surcharge
+  l'exige (« Hérité (Obligatoire, fragment Coordonnées) ») ; le formulaire « Demande de rappel » la règle sur
   « Facultatif » pour lui seul. Une surcharge dont la question a disparu du fragment est ignorée.
 - **Revenir à la valeur héritée** — Choisir « Hérité » dans la liste, ou bouton « Revenir à la valeur héritée » (sous la
   liste d'une référence ; sous la liste des questions d'un nœud fragment, il retire **toutes** les surcharges de l'appel),

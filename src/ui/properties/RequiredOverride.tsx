@@ -1,7 +1,7 @@
 import { RotateCcw } from 'lucide-react';
 import {
   fragmentQuestions, inheritedRequired, resolveRequired, type FragmentNode, type LibraryQuestionNode, type QuestionNode,
-  type RequiredResolution, type Workspace,
+  type RequiredResolution,
 } from '../../core/model';
 import { questionOfNode } from '../../core/references';
 import { previewText } from '../../plugin-api';
@@ -15,12 +15,17 @@ type T = ReturnType<typeof useT>;
 const valueText = (t: T, v: RequiredResolution['value']) =>
   t(typeof v === 'string' ? 'required.when' : v ? 'required.yes' : 'required.no');
 
-/** Provenance : bibliothèque, surcharge locale (niveau 0) ou fragment du niveau `holder` (appelé par `instances[holder-1]`). */
-function originText(t: T, ws: Workspace, r: RequiredResolution, instances: readonly FragmentNode[]) {
+type Env = ReturnType<typeof usePluginEnv>;
+
+/**
+ * Provenance : bibliothèque, surcharge locale (niveau 0) ou fragment du niveau `holder` (appelé par `instances[holder-1]`),
+ * désigné par son titre dans la langue du contenu, sinon sa clé.
+ */
+function originText(t: T, env: Env, r: RequiredResolution, instances: readonly FragmentNode[]) {
   if (r.holder === 'library') return t('required.fromLibrary');
   if (r.holder === 0) return t('required.local');
-  const f = ws.library.fragments.find((x) => x.id === instances[r.holder as number - 1]?.ref);
-  return t('required.fromFragment', { name: f ? f.key : '?' });
+  const f = env.ws.library.fragments.find((x) => x.id === instances[r.holder as number - 1]?.ref);
+  return t('required.fromFragment', { name: f ? previewText(f.title, env).trim() || f.key : '?' });
 }
 
 /**
@@ -40,12 +45,12 @@ function RequiredSelect({ graph, nodeId, question, instances, path, label }: {
   return (
     <div className="space-y-0.5">
       <Select aria-label={label} data-testid="required-select" value={own === undefined ? '' : String(own)} onChange={(e) => set(e.target.value)}>
-        <option value="">{t('required.inherited', { value: valueText(t, inherited.value), from: originText(t, env.ws, inherited, instances) })}</option>
+        <option value="">{t('required.inherited', { value: valueText(t, inherited.value), from: originText(t, env, inherited, instances) })}</option>
         <option value="true">{t('required.yes')}</option>
         <option value="false">{t('required.no')}</option>
       </Select>
       <p className="text-xs text-slate-500" data-testid="required-effective">
-        {t('required.effective', { value: valueText(t, effective.value), origin: originText(t, env.ws, effective, instances) })}
+        {t('required.effective', { value: valueText(t, effective.value), origin: originText(t, env, effective, instances) })}
       </p>
     </div>
   );
