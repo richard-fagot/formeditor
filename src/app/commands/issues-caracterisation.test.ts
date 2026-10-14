@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Workspace } from '../../core/model';
 import { checkWorkspace, type Issue } from '../../core/validation';
+import { issuesOf, selectIssues } from '../issues';
 import { exampleWorkspace } from './example';
 
 /**
@@ -10,18 +11,18 @@ import { exampleWorkspace } from './example';
  */
 
 /** QuestionnaireView.tsx:28, ComparePane.tsx:15, Outline.tsx:16 : problèmes d'un questionnaire. */
-const ofQuestionnaire = (ws: Workspace, id: string) => checkWorkspace(ws).filter((i) => i.owner.kind === 'questionnaire' && i.owner.id === id);
+const ofQuestionnaire = (ws: Workspace, id: string) => selectIssues(issuesOf(ws), { owner: { kind: 'questionnaire', id } });
 /** library/FragmentView.tsx:32 : problèmes d'un fragment. */
-const ofFragment = (ws: Workspace, id: string) => checkWorkspace(ws).filter((i) => i.owner.kind === 'fragment' && i.owner.id === id);
+const ofFragment = (ws: Workspace, id: string) => selectIssues(issuesOf(ws), { owner: { kind: 'fragment', id } });
 /** settings/TranslationsSection.tsx:34 : traductions manquantes. */
-const translations = (ws: Workspace) => checkWorkspace(ws).filter((i) => i.code === 'missingTranslation');
+const translations = (ws: Workspace) => selectIssues(issuesOf(ws), { code: 'missingTranslation' });
 /** system-state/SystemState.tsx:18 : dictionnaire de l'état du système. */
-const ofSystem = (ws: Workspace) => checkWorkspace(ws).filter((i) => i.owner.kind === 'system');
+const ofSystem = (ws: Workspace) => selectIssues(issuesOf(ws), { owner: { kind: 'system' } });
 /** preview/Preview.tsx:87-90 : nombre de textes non traduits dans `lang` (questionnaire et éléments de bibliothèque qu'il utilise). */
 function previewMissing(ws: Workspace, questionnaireId: string, lang: string): number {
   const q = ws.questionnaires.find((x) => x.id === questionnaireId);
   const used = new Set([questionnaireId, ...(q?.nodes ?? []).flatMap((x) => ('ref' in x && typeof x.ref === 'string' ? [x.ref] : []))]);
-  return checkWorkspace(ws).filter((i) => i.code === 'missingTranslation' && used.has(i.owner.id) && i.params.lang?.split(', ').includes(lang)).length;
+  return selectIssues(issuesOf(ws), { code: 'missingTranslation', ownerIds: [...used], lang }).length;
 }
 
 const summary = (issues: Issue[]) => issues.map((i) => `${i.owner.kind}:${i.owner.id} ${i.code}${i.params.lang ? ` (${i.params.lang})` : ''}`);

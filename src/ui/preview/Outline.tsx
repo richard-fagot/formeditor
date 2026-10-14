@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
-import { checkWorkspace } from '../../core/validation';
 import { currentStep, jumpTo, passedQuestions } from '../../core/runtime';
 import type { GraphRef } from '../../app/store';
+import { useIssues } from '../../app/issues';
 import { Diagram } from '../diagram';
 import type { usePreview } from './usePreview';
 
@@ -13,7 +13,7 @@ export function Outline({ questionnaireId, preview }: { questionnaireId: string;
   const { input, session, state, update } = preview;
   const [clicks, setClicks] = useState(0);
   const graph: GraphRef = useMemo(() => ({ kind: 'questionnaire', id: questionnaireId }), [questionnaireId]);
-  const issues = useMemo(() => checkWorkspace(input.ws).filter((i) => i.owner.kind === 'questionnaire' && i.owner.id === questionnaireId), [input.ws, questionnaireId]);
+  const issues = useIssues({ owner: { kind: 'questionnaire', id: questionnaireId } });
   const visited = state?.visited;
   // Seules les questions du questionnaire sont cliquables ; une page d'un fragment est représentée par son nœud fragment.
   const active = useMemo(

@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { X } from 'lucide-react';
-import { checkWorkspace } from '../../core/validation';
 import { runCommand } from '../../app/commands';
 import { useStore, useT, type GraphRef } from '../../app/store';
+import { useIssues } from '../../app/issues';
 import { Select } from '../../ui-kit';
 import { Diagram } from '../diagram';
 
@@ -12,7 +12,7 @@ export function ComparePane({ activeId, compareId }: { activeId: string; compare
   const ws = useStore((s) => s.ws);
   const lang = useStore((s) => s.contentLang);
   const graph: GraphRef = useMemo(() => ({ kind: 'questionnaire', id: compareId }), [compareId]);
-  const issues = useMemo(() => checkWorkspace(ws).filter((i) => i.owner.kind === 'questionnaire' && i.owner.id === compareId), [ws, compareId]);
+  const issues = useIssues({ owner: { kind: 'questionnaire', id: compareId } });
   const others = ws.questionnaires.filter((q) => q.id !== activeId);
   return (
     <section className="flex min-w-0 flex-1 flex-col border-l-4 border-slate-200" data-testid="compare-pane" aria-label={t('view.compare')}>

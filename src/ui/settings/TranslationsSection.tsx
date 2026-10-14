@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react';
-import { checkWorkspace, describeIssue, type Issue } from '../../core/validation';
+import { useState } from 'react';
+import { describeIssue, type Issue } from '../../core/validation';
 import { questionOfNode } from '../../core/references';
 import { runCommand } from '../../app/commands';
 import { getGraph, useStore, useT, type GraphRef } from '../../app/store';
+import { useIssues } from '../../app/issues';
 import { Select } from '../../ui-kit';
 
 /** Va à l'objet concerné : onglet du questionnaire (logigramme), du fragment ou de la bibliothèque, nœud sélectionné. */
@@ -31,7 +32,7 @@ export function TranslationsSection() {
   const uiLang = useStore((s) => s.uiLang);
   const lang = useStore((s) => s.contentLang);
   const [only, setOnly] = useState('');
-  const issues = useMemo(() => checkWorkspace(ws).filter((i) => i.code === 'missingTranslation'), [ws]);
+  const issues = useIssues({ code: 'missingTranslation' });
   const shown = only ? issues.filter((i) => i.params.lang?.split(', ').includes(only)) : issues;
   const ownerName = (i: Issue) => {
     const o = i.owner;
