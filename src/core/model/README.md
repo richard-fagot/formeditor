@@ -33,7 +33,7 @@ utilitaires purs. Aucun import externe : c'est la base de tous les autres module
 - `graph.ts` : `Graph` = `nodes` + `edges` (sans départ).
 - `validation.ts` (EVO-015) : `QuestionnaireStatus`, `isValidated(q)`, `lockedChanges(avant, après)` → ids des questionnaires validés avant
   dont le contenu verrouillé a changé ou qui ont disparu (questionnaire hors `status` / `validatedAt`, mise en page hors `comments` — sans position, elle équivaut à son absence —, entrée du projet).
-- `versioning.ts` (EVO-022) : `ItemStatus`, `Versioned` (`version?`, `status?` d'une question ou d'un fragment de bibliothèque), `VersionRef`,
+- `versioning.ts` (EVO-022 ; types `ItemStatus`, `Versioned` (`version?`, `status?` d’une question ou d’un fragment), `VersionRef` dans `documents.ts`) :
   `LibraryItemRef`, `VersionAlert`, `isItemValidated`, `libraryItemOf`, `usedLibraryItems(lib, graphe)` (directs puis par les fragments appelés,
   récursivement, sans doublon), `versionSnapshot` (versions de référence), `versionAlerts(lib, q)` (questionnaire validé seulement ; absent des
   références = vide), `provisionalItems`, `itemUsers(ws, item)`. `Questionnaire.version?`, `Questionnaire.libraryVersions?` (hors verrou de `lockedChanges`).

@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import type { Fragment, Questionnaire, Workspace } from './documents';
+import type { Fragment, Questionnaire, Versioned, Workspace } from './documents';
 import type { GraphNode } from './node';
 import type { Question } from './question';
 import {
-  isItemValidated, itemUsers, libraryItemOf, provisionalItems, usedLibraryItems, versionAlerts, versionSnapshot, type Versioned,
+  isItemValidated, itemUsers, libraryItemOf, provisionalItems, usedLibraryItems, versionAlerts, versionSnapshot,
 } from './versioning';
 
 const lq = (id: string, extra: Versioned = {}): Question & Versioned => ({ id, key: id, label: { fr: id }, type: 'text', ...extra }) as Question & Versioned;

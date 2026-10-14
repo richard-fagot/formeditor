@@ -1,21 +1,6 @@
-import type { Fragment, Library, Questionnaire, Workspace } from './documents';
+import type { Fragment, Library, Questionnaire, VersionRef, Versioned, Workspace } from './documents';
 import type { Graph } from './graph';
 import type { Question } from './question';
-
-/** Statut d'un questionnaire ou d'un élément de bibliothèque (EVO-022) : absent = `draft` (provisoire) ; `validated` = final. */
-export type ItemStatus = 'draft' | 'validated';
-
-/** Version (texte libre, absente = vide) et statut d'un élément de bibliothèque (EVO-022). */
-export interface Versioned {
-  version?: string;
-  status?: ItemStatus;
-}
-
-/** Version de référence d'un élément utilisé, relevée à la validation d'un questionnaire. */
-export interface VersionRef {
-  version: string;
-  status: ItemStatus;
-}
 
 /** Élément de bibliothèque désigné par sa nature et son id. */
 export interface LibraryItemRef {

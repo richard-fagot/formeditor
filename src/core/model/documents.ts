@@ -1,9 +1,23 @@
 import type { Graph } from './graph';
 import type { LangCode, LocalizedText } from './text';
 import type { Question } from './question';
-import type { VersionRef, Versioned } from './versioning';
 
 export const FORMAT_VERSION = 14;
+
+/** Statut d'un questionnaire ou d'un élément de bibliothèque (EVO-022) : absent = `draft` (provisoire) ; `validated` = final. */
+export type ItemStatus = 'draft' | 'validated';
+
+/** Version (texte libre, absente = vide) et statut d'un élément de bibliothèque (EVO-022). */
+export interface Versioned {
+  version?: string;
+  status?: ItemStatus;
+}
+
+/** Version de référence d'un élément utilisé, relevée à la validation d'un questionnaire. */
+export interface VersionRef {
+  version: string;
+  status: ItemStatus;
+}
 
 export interface Questionnaire extends Graph {
   formatVersion: number;
