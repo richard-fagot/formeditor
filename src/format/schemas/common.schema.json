@@ -225,7 +225,6 @@
             "single",
             "multiple",
             "boolean",
-            "tristate",
             "structure",
             "email",
             "phone",
@@ -252,7 +251,6 @@
             "single",
             "multiple",
             "boolean",
-            "tristate",
             "email",
             "phone",
             "address",
@@ -645,18 +643,6 @@
       },
       "required": []
     },
-    "params_tristate": {
-      "type": "object",
-      "properties": {
-        "labelSet": {
-          "type": "string"
-        },
-        "other": {
-          "$ref": "#/$defs/otherOption"
-        }
-      },
-      "required": []
-    },
     "params_structure": {
       "type": "object",
       "properties": {
@@ -953,21 +939,6 @@
           },
           "then": {
             "$ref": "#/$defs/params_boolean"
-          }
-        },
-        {
-          "if": {
-            "properties": {
-              "type": {
-                "const": "tristate"
-              }
-            },
-            "required": [
-              "type"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/params_tristate"
           }
         },
         {

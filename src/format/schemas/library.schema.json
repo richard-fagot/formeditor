@@ -90,17 +90,13 @@
           },
           "kind": {
             "enum": [
-              "boolean",
-              "tristate"
+              "boolean"
             ]
           },
           "yes": {
             "$ref": "common.schema.json#/$defs/localizedText"
           },
           "no": {
-            "$ref": "common.schema.json#/$defs/localizedText"
-          },
-          "unknown": {
             "$ref": "common.schema.json#/$defs/localizedText"
           },
           "description": {

@@ -7,7 +7,7 @@ utilitaires purs. Aucun import externe : c'est la base de tous les autres module
 - `text.ts` : `LocalizedText`, `Label` (texte ou variantes `{variants, otherwise}`), `Expression`, `isVariantLabel`, `labelTexts`.
 - `question.ts` : `Question` (union discriminée par `type`), `QUESTION_TYPES`, `ChoiceEntry` (entrée d'un choix :
   `ChoiceOption` statique ou `DynamicEntry` `{ from, label?, value?, when? }`, discriminées par `isDynamicEntry` = présence de `from`),
-  `OtherOption`, `StructureField`, `OTHER_VALUE` (`"other"`), `UNKNOWN_VALUE` (`"unknown"`).
+  `OtherOption`, `StructureField`, `OTHER_VALUE` (`"other"`). Plus de type tri-state (EVO-018) : booléen avec `dontKnow`.
   Groupes (EVO-003) : `ChoiceGroup` `{ group, code?, when?, options: ChoiceItem[] }` (reconnu à `group`, `isChoiceGroup`),
   `ChoiceItem` (option ou entrée dynamique), `GROUP_SUFFIX` (`group` : réponse `<clé>_group`), `GROUP_REF` (`groupe` :
   `cle.groupe`), `OTHER_GROUP` (`AUTRE`).
@@ -28,8 +28,8 @@ utilitaires purs. Aucun import externe : c'est la base de tous les autres module
   la surcharge du niveau 0), `requiredPath`, `fragmentQuestions(ws, fragmentId)` (questions, fragments appelés compris, avec chemin), `activeOverrides`
   (surcharges non orphelines d'un appel).
 - `graph.ts` : `Edge` (dont `caption?`, libellé de lecture, EVO-005), `Graph`.
-- `documents.ts` : `Questionnaire` (porte `start`), `Library` (`fragments`), `Fragment` (`entry?`, pas de `start`), `LabelSet`, `Project`, `SystemVariable` (dont `caption?`), `Scenario`,
-  `Layout` (dont `comments?` : `ReviewComment` `{ node, x?, y?, text, replies }`, commentaires de révision, EVO-011), `Workspace` (projet complet en mémoire), `Bundle`, `FORMAT_VERSION` (12). `Questionnaire.status?` (`draft` | `validated`) et `validatedAt?` (EVO-015).
+- `documents.ts` : `Questionnaire` (porte `start`), `Library` (`fragments`), `Fragment` (`entry?`, pas de `start`), `LabelSet` (`kind: 'boolean'`, `yes`, `no`), `Project`, `SystemVariable` (dont `caption?`), `Scenario`,
+  `Layout` (dont `comments?` : `ReviewComment` `{ node, x?, y?, text, replies }`, commentaires de révision, EVO-011), `Workspace` (projet complet en mémoire), `Bundle`, `FORMAT_VERSION` (13). `Questionnaire.status?` (`draft` | `validated`) et `validatedAt?` (EVO-015).
 - `graph.ts` : `Graph` = `nodes` + `edges` (sans départ).
 - `validation.ts` (EVO-015) : `QuestionnaireStatus`, `isValidated(q)`, `lockedChanges(avant, après)` → ids des questionnaires validés avant
   dont le contenu verrouillé a changé ou qui ont disparu (questionnaire hors `status` / `validatedAt`, mise en page hors `comments`, entrée du projet).

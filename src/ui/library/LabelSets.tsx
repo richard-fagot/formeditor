@@ -12,7 +12,7 @@ function patch(id: string, field: string, p: Partial<LabelSet>) {
   }, `${id}:${field}`);
 }
 
-/** Jeux de libellés de la bibliothèque : « Oui / Non » et variantes tri-state, réutilisés par les questions. */
+/** Jeux de libellés de la bibliothèque : « Oui / Non » et variantes, réutilisés par les questions. */
 export function LabelSets() {
   const t = useT();
   const env = useEditorEnv();
@@ -25,7 +25,6 @@ export function LabelSets() {
       <div className="flex flex-wrap items-center gap-2">
         <h2 className="text-lg font-semibold text-slate-800">{t('library.labelSets')}</h2>
         <Button size="sm" className="ml-auto" onClick={() => runCommand('labelSet.addBoolean')}><Plus className="size-3" />{t('library.kind.boolean')}</Button>
-        <Button size="sm" onClick={() => runCommand('labelSet.addTristate')}><Plus className="size-3" />{t('library.kind.tristate')}</Button>
       </div>
       <p className="text-sm text-slate-500">{t('library.labelSetsHint')}</p>
       {!sets.length && <p className="text-sm text-slate-400">{t('library.noLabelSet')}</p>}
@@ -38,16 +37,15 @@ export function LabelSets() {
                 <Input className={keyOk ? 'font-mono' : 'border-rose-400 font-mono'} value={l.key}
                   onChange={(e) => patch(l.id, 'key', { key: e.target.value.trim() })} />
               </Field>
-              <Badge tone="indigo">{t(l.kind === 'boolean' ? 'library.kind.boolean' : 'library.kind.tristate')}</Badge>
+              <Badge tone="indigo">{t('library.kind.boolean')}</Badge>
               <Button size="sm" variant="danger" className="ml-auto" onClick={() => runCommand('labelSet.delete', l.id)}>
                 <Trash2 className="size-3" />{t('props.delete')}
               </Button>
             </div>
             {!keyOk && <p className="text-xs text-rose-600">{t('props.keyInvalid')}</p>}
-            <div className="grid gap-3 md:grid-cols-3">
+            <div className="grid gap-3 md:grid-cols-2">
               <Field label={t('library.yes')}>{text(l.yes, (yes) => patch(l.id, 'yes', { yes }))}</Field>
               <Field label={t('library.no')}>{text(l.no, (no) => patch(l.id, 'no', { no }))}</Field>
-              {l.kind === 'tristate' && <Field label={t('library.unknown')}>{text(l.unknown, (unknown) => patch(l.id, 'unknown', { unknown }))}</Field>}
             </div>
           </div>
         );

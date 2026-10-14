@@ -1,5 +1,5 @@
 {
-  "formatVersion": 12,
+  "formatVersion": 13,
   "kind": "library",
   "questions": [
     {
@@ -286,9 +286,10 @@
             "fr": "Connaissez-vous l'assureur de {nom} ?",
             "en": "Do you know {nom}'s insurer?"
           },
-          "type": "tristate",
+          "type": "boolean",
           "required": true,
-          "labelSet": "ls_oui_non_nsp"
+          "labelSet": "ls_oui_non_nsp",
+          "dontKnow": {}
         },
         {
           "kind": "question",
@@ -480,7 +481,7 @@
     {
       "id": "ls_oui_non_nsp",
       "key": "oui_non_nsp",
-      "kind": "tristate",
+      "kind": "boolean",
       "yes": {
         "fr": "Oui",
         "en": "Yes"
@@ -488,10 +489,6 @@
       "no": {
         "fr": "Non",
         "en": "No"
-      },
-      "unknown": {
-        "fr": "Ne sait pas",
-        "en": "Don't know"
       }
     },
     {

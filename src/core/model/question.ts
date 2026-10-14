@@ -1,7 +1,7 @@
 import type { Expression, Label, LocalizedText } from './text';
 
 export const QUESTION_TYPES = [
-  'text', 'date', 'number', 'single', 'multiple', 'boolean', 'tristate', 'structure',
+  'text', 'date', 'number', 'single', 'multiple', 'boolean', 'structure',
   'email', 'phone', 'address', 'civility',
 ] as const;
 export type QuestionType = (typeof QUESTION_TYPES)[number];
@@ -146,11 +146,6 @@ export interface BooleanQuestion extends QuestionBase {
   labelSet?: string;
   other?: OtherOption;
 }
-export interface TristateQuestion extends QuestionBase {
-  type: 'tristate';
-  labelSet?: string;
-  other?: OtherOption;
-}
 
 /** Mail (EVO-007) : RFC 5321 `Mailbox` ; réponse : domaine en minuscules, partie locale telle que saisie. */
 export interface EmailQuestion extends QuestionBase {
@@ -211,7 +206,7 @@ export interface StructureQuestion extends QuestionBase {
 
 export type Question =
   | TextQuestion | DateQuestion | NumberQuestion | SingleChoiceQuestion
-  | MultipleChoiceQuestion | BooleanQuestion | TristateQuestion | StructureQuestion
+  | MultipleChoiceQuestion | BooleanQuestion | StructureQuestion
   | EmailQuestion | PhoneQuestion | AddressQuestion | CivilityQuestion;
 
 /** Valeur réservée de l'option « Autre ». */
@@ -263,8 +258,5 @@ export const civilityLabel = (q: CivilityQuestion, code: CivilityCode): Localize
 /** Types dont la réponse porte un pays (`<clé>_pays`). */
 export const hasCountry = (q: { type: string }): boolean => q.type === 'phone' || q.type === 'address';
 
-/** Valeur « ne sait pas » d'un tri-state. */
-export const UNKNOWN_VALUE = 'unknown';
-
 /** Types qui acceptent l'option « Autre (préciser) ». */
-export const OTHER_TYPES: readonly QuestionType[] = ['single', 'multiple', 'boolean', 'tristate'];
+export const OTHER_TYPES: readonly QuestionType[] = ['single', 'multiple', 'boolean'];

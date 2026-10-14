@@ -30,7 +30,7 @@ function checkKeys(ws: Workspace, g: Graph, owner: Owner, out: Issue[]) {
 
 function checkQuestion(ws: Workspace, q: Question, owner: Owner, nodeId: string, out: Issue[]) {
   checkGroups(ws, q, owner, nodeId, out);
-  if ((q.type === 'boolean' || q.type === 'tristate') && q.labelSet && !ws.library.labelSets.some((l) => l.id === q.labelSet)) {
+  if (q.type === 'boolean' && q.labelSet && !ws.library.labelSets.some((l) => l.id === q.labelSet)) {
     out.push(issue('libraryMissing', owner, { nodeId }, { ref: q.labelSet }));
   }
   if (q.type === 'structure') {
@@ -76,7 +76,6 @@ function checkTranslations(ws: Workspace, out: Issue[]) {
     const owner: Owner = { kind: 'libraryQuestion', id: l.id };
     text(l.yes, owner, `${l.key}.yes`);
     text(l.no, owner, `${l.key}.no`);
-    if (l.kind === 'tristate') text(l.unknown ?? {}, owner, `${l.key}.unknown`);
   }
 }
 
