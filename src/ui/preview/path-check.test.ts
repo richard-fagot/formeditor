@@ -3,11 +3,11 @@ import { describe, expect, it } from 'vitest';
 import { EXAMPLE_DIR, exampleWorkspace } from '../../../tests/reference/example';
 import { FORMAT_VERSION, type Questionnaire } from '../../core/model';
 import { newWorkspace } from '../../format';
-import { currentStep, next, setAnswer, start, withAnswer, type RuntimeInput, type Session } from '../../core/runtime';
+import { currentStep, dontKnowAnswer, next, setAnswer, start, withAnswer, type RuntimeInput, type Session } from '../../core/runtime';
 import { answerErrors, firstInvalidStep, guardEnd } from './path-check';
 
 const ws = exampleWorkspace();
-const chemin = JSON.parse(readFileSync(`${EXAMPLE_DIR}/chemins/ud_tiers_inconnu.json`, 'utf8')) as { answers: { step: string; value: unknown; other?: string }[] };
+const chemin = JSON.parse(readFileSync(`${EXAMPLE_DIR}/chemins/ud_tiers_inconnu.json`, 'utf8')) as { answers: { step: string; value: unknown; other?: string; dontKnow?: boolean }[] };
 const sys = ws.project.scenarios.find((s) => s.id === 'sc_ud_2_sinistres')!.values as Record<string, unknown>;
 
 /** Rejoue le chemin attendu jusqu'à la fin, avec le sinistre S-101 choisi comme sinistre lié. */
@@ -17,7 +17,8 @@ function playToEnd(input: RuntimeInput): Session {
   for (let i = 0; i < 100 && currentStep(input, s).node.kind !== 'end'; i++) {
     if (queue[0]?.step === currentStep(input, s).id) {
       const a = queue.shift()!;
-      s = setAnswer(input, s, a.value, a.other);
+      const nsp = a.dontKnow ? dontKnowAnswer(currentStep(input, s).question!) : undefined;
+      s = nsp ? setAnswer(input, s, nsp.value, undefined, nsp.group, true) : setAnswer(input, s, a.value, a.other);
     }
     s = next(input, s);
   }

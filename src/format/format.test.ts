@@ -599,14 +599,14 @@ describe('suggestions d’un champ texte (EVO-016, version 12)', () => {
   };
 
   it('le format courant est la version 12', () => {
-    expect(FORMAT_VERSION).toBe(12);
+    expect(FORMAT_VERSION).toBeGreaterThanOrEqual(12);
   });
 
   it('un projet version 11 se charge sans erreur, ses champs texte sans suggestions', () => {
     const back = importFiles([{ name: 'ancien.bundle.json', text: JSON.stringify(v11()) }]);
     expect(back.errors).toEqual([]);
     const q = back.workspace!.questionnaires[0]!;
-    expect(q.formatVersion).toBe(12);
+    expect(q.formatVersion).toBe(FORMAT_VERSION);
     expect(q.nodes[0]).not.toHaveProperty('suggestions');
   });
 

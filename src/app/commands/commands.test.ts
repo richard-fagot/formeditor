@@ -65,13 +65,13 @@ describe('commandes ajoutées au catalogue', () => {
 
 describe('jeux de libellés (bibliothèque)', () => {
   beforeEach(() => st().loadWorkspace(blankWorkspace()));
-  it('crée un jeu booléen ou tri-state, puis le supprime ; annulable dans l’historique de la bibliothèque', () => {
-    expect(runCommand('labelSet.addTristate')).toBe(true);
+  it('crée un jeu booléen, puis le supprime ; annulable dans l’historique de la bibliothèque ; plus de jeu tri-state (EVO-018)', () => {
+    expect(runCommand('labelSet.addTristate')).toBe(false);
+    expect(runCommand('labelSet.addBoolean')).toBe(true);
     expect(runCommand('labelSet.addBoolean')).toBe(true);
     const [tri, bool] = st().ws.library.labelSets;
-    expect(tri).toMatchObject({ kind: 'tristate', key: 'oui_non_ne_sait_pas', yes: { fr: 'Oui' }, unknown: { fr: 'Ne sait pas' } });
-    expect(bool).toMatchObject({ kind: 'boolean', key: 'oui_non' });
-    expect(bool!.unknown).toBeUndefined();
+    expect(tri).toEqual({ id: tri!.id, kind: 'boolean', key: 'oui_non', yes: { fr: 'Oui' }, no: { fr: 'Non' } });
+    expect(bool).toMatchObject({ kind: 'boolean', key: 'oui_non_2' });
     expect(st().activeTab).toBe('library');
     runCommand('labelSet.delete', tri!.id);
     expect(st().ws.library.labelSets.map((l) => l.id)).toEqual([bool!.id]);

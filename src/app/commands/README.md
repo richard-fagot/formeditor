@@ -23,7 +23,7 @@ Catalogue unique des actions utilisateur (spec §4.4). Palette, menus et raccour
   (glisser sur le logigramme), `questionnaire.properties`, `questionnaire.setTitle` / `rename` / `setDescription`,
   `project.rename`, `questionnaire.validate` / `questionnaire.unvalidate` (EVO-015 : `arg` = id, sinon le questionnaire affiché ; chacune activée
   selon l'état ; dévalider demande confirmation, `window.confirm`).
-- `library-commands.ts` : jeux de libellés (`labelSet.addBoolean`, `labelSet.addTristate`, `labelSet.delete` avec l'id).
+- `library-commands.ts` : jeux de libellés (`labelSet.addBoolean`, `labelSet.delete` avec l'id ; plus de jeu tri-state, EVO-018).
 - `library-item-commands.ts` : `library.newQuestion`, `library.newFragment` (ouvre l'onglet `f:<id>`), `library.openRef` (EVO-013, badge « bib. » : `{ kind, id }`, objet introuvable → `notice`, sinon comme `library.show`), `library.show` (question : onglet
   Bibliothèque ; fragment : son onglet) / `library.delete` (`arg` = `{ kind, id }` ; ferme l'onglet du fragment),
   `library.insert` (I : palette en mode bibliothèque), `library.insertItem` (`{ kind, id, graph?, position? }` : à la suite de

@@ -2,7 +2,7 @@ import type { Graph } from './graph';
 import type { LangCode, LocalizedText } from './text';
 import type { Question } from './question';
 
-export const FORMAT_VERSION = 12;
+export const FORMAT_VERSION = 13;
 
 export interface Questionnaire extends Graph {
   formatVersion: number;
@@ -35,11 +35,9 @@ export interface Fragment extends Graph {
 export interface LabelSet {
   id: string;
   key: string;
-  kind: 'boolean' | 'tristate';
+  kind: 'boolean';
   yes: LocalizedText;
   no: LocalizedText;
-  /** Troisième valeur d'un tri-state. */
-  unknown?: LocalizedText;
   description?: string;
 }
 

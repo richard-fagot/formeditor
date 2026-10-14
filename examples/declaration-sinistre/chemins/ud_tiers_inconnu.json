@@ -42,7 +42,7 @@
     },
     {
       "step": "n_bloc_tiers/bn_assurance_connue",
-      "value": "unknown"
+      "dontKnow": true
     },
     {
       "step": "n_circonstances",

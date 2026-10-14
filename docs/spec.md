@@ -31,7 +31,7 @@ L'outil sert à **spécifier** des questionnaires métier (déclarations de sini
 | Référence | Désignation d'une valeur : réponse à une question, sous-champ, variable système. Utilisable dans les conditions, les libellés et les sources de valeurs. Remplace le « champ paramétré » de la version initiale. |
 | Expression | Formule booléenne ou calculée, écrite en texte, qui combine des références. |
 | Scénario | Jeu de valeurs nommé de l'état du système, utilisé pour la prévisualisation. |
-| Jeu de libellés | Libellés personnalisés d'un booléen ou d'un tri-state (ex. « Oui / Non / Ne sait pas »), partagés via la bibliothèque. |
+| Jeu de libellés | Libellés personnalisés d'un booléen (ex. « Oui / Non »), partagés via la bibliothèque. |
 
 ## 3. Spécifications fonctionnelles
 
@@ -80,16 +80,17 @@ Une question comporte :
 | Choix unique | Liste d'options. |
 | Choix multiple | Liste d'options, nombre de sélections min et max. |
 | Booléen | « Oui / Non » par défaut, ou un jeu de libellés de la bibliothèque. |
-| Tri-state | Booléen avec une troisième valeur (« Ne sait pas »…), via un jeu de libellés. |
 | Mail (EVO-007) | Aucun. Contrôle intégré : adresse conforme à la RFC 5322 (`addr-spec`) restreinte par la RFC 5321 (`Mailbox`) : partie locale en `dot-atom` ou entre guillemets, domaine en noms de domaine (labels de 63 caractères au plus, sans tiret en bord) ou littéral IP (`[192.0.2.1]`, `[IPv6:2001:db8::1]`), 64 octets pour la partie locale et 254 caractères au total, ni commentaire ni espace repliable ; ASCII seulement (RFC 6531 / 6532 refusées). Valeur : domaine en minuscules, partie locale telle que saisie. |
 | Téléphone (EVO-007) | Pays par défaut (France), pays autorisés (tous par défaut), type de ligne attendu (indifférent, mobile, fixe). Saisie : sélecteur d'indicatif (drapeau, pays, indicatif) et numéro ; espaces, points, tirets, parenthèses acceptés ; un numéro en `+` ou `00` fixe le pays et prime sur le sélecteur. Contrôles intégrés : numéro valide pour le pays (plan de numérotation) et pays autorisé ; type de ligne si exigé. Valeur : E.164 (`+33612345678`), réaffichée au format national à la sortie du champ. |
 | Adresse (EVO-007) | Pays par défaut (France), pays autorisés, longueur min/max (5 / 200), indicateur « adresse à vérifier par un service de normalisation » (exporté, jamais exécuté : l'outil n'appelle aucun service). Saisie : sélecteur de pays (masqué si un seul pays est autorisé) et une seule ligne. Contrôles intégrés : au moins une lettre, longueur dans les bornes, ni retour à la ligne ni caractère de contrôle (tous alphabets acceptés) ; en France, un code postal à 5 chiffres. Valeur : la ligne saisie. |
 | Civilité (EVO-007) | Choix unique prédéfini, codes fixes : Madame (`MME`), Monsieur (`M`), « Ne se prononce pas » (`NP`, facultative, désactivée par défaut, en dernier). Libellés longs ou courts (« Mme », « M. »), modifiables et multilingues. Pas de « Autre (préciser) », d'option ajoutée ni de source dynamique. Saisie : boutons radio sur une ligne. |
 | Structure | Groupe de champs de tous types sauf structure. Chaque champ a sa clé, ses contraintes et sa condition d'affichage. Peut être **répétable** (min/max d'occurrences, ex. plusieurs victimes ou témoins), avec un bouton « Ajouter » pour créer une occurrence et la possibilité d'en supprimer une. Une instance d'une structure de bibliothèque peut masquer certains de ses champs (EVO-009, §3.8). |
 
-**Autre (préciser)**, applicable au choix unique, au choix multiple, au booléen et au tri-state : ajoute une option qui ouvre un champ texte. Libellé éditable, précision obligatoire ou facultative. Elle est toujours affichée en dernier.
+**Oui / non / ne sait pas** (EVO-018) : un booléen avec l'option « Ne sais pas » activée. Le type tri-state est supprimé ; un projet qui en contient est converti à l'ouverture, à l'import et au rechargement de la page (migration de format, §6.2).
 
-**Ne sais pas** (EVO-006), applicable à toute question sauf la structure elle-même (ses champs peuvent l'avoir), désactivée par défaut : permet de répondre explicitement « je ne sais pas », distinct de « pas de réponse ». Son libellé (« Ne sais pas » par défaut) se comporte exactement comme celui d'une option : multilingue, interpolé, à variantes, traductions manquantes signalées. Choix unique ou multiple, booléen, tri-state : dernière option, après « Autre (préciser) », hors de tout groupe. Texte, date, nombre : case à cocher sous le champ ; cochée, le champ est vidé et désactivé ; décochée, il revient vide. Elle est **exclusive** (la cocher décoche les autres options ; cocher une autre option ou saisir la décoche), **satisfait** une question obligatoire, et aucune contrainte (intégrée ou libre) ne s'applique quand elle est cochée. Ce n'est pas une option de la liste : absente de la saisie rapide, non réordonnable, non conditionnable. Réglée dans le panneau de propriétés juste après « Autre (préciser) » (en fin de section du type pour les saisies), ou par la palette (« Activer « Ne sais pas » », sans raccourci par défaut). L'outil n'a pas de table de décision : rien n'y est généré.
+**Autre (préciser)**, applicable au choix unique, au choix multiple et au booléen : ajoute une option qui ouvre un champ texte. Libellé éditable, précision obligatoire ou facultative. Elle est toujours affichée en dernier.
+
+**Ne sais pas** (EVO-006), applicable à toute question sauf la structure elle-même (ses champs peuvent l'avoir), désactivée par défaut : permet de répondre explicitement « je ne sais pas », distinct de « pas de réponse ». Son libellé (« Ne sais pas » par défaut) se comporte exactement comme celui d'une option : multilingue, interpolé, à variantes, traductions manquantes signalées. Choix unique ou multiple, booléen : dernière option, après « Autre (préciser) », hors de tout groupe. Texte, date, nombre : case à cocher sous le champ ; cochée, le champ est vidé et désactivé ; décochée, il revient vide. Elle est **exclusive** (la cocher décoche les autres options ; cocher une autre option ou saisir la décoche), **satisfait** une question obligatoire, et aucune contrainte (intégrée ou libre) ne s'applique quand elle est cochée. Ce n'est pas une option de la liste : absente de la saisie rapide, non réordonnable, non conditionnable. Réglée dans le panneau de propriétés juste après « Autre (préciser) » (en fin de section du type pour les saisies), ou par la palette (« Activer « Ne sais pas » », sans raccourci par défaut). L'outil n'a pas de table de décision : rien n'y est généré.
 
 **Options d'un choix unique ou multiple** : une suite ordonnée d'**entrées**, affichées strictement dans l'ordre saisi. Chaque entrée est :
 
@@ -106,7 +107,7 @@ Saisie rapide (§4.3) : `# Libellé` ouvre un groupe (la ligne ne contient que l
 
 **Mail, téléphone, adresse, civilité** (EVO-007) : utilisables comme question et comme champ de structure. Les espaces de début et de fin de saisie sont retirés avant contrôle ; une saisie invalide est conservée telle quelle pour être corrigée. Une question facultative laissée vide n'est pas contrôlée. Obligatoire, contraintes libres, conditions d'affichage et « Ne sais pas » s'appliquent comme aux autres types. Dans le logigramme, le nœud affiche une icône du type, et pour le téléphone et l'adresse le pays par défaut s'il n'est pas la France et le type de ligne exigé. Dans la prévisualisation, les contrôles s'appliquent à la sortie du champ et à la validation de la page ; le panneau de débogage montre la valeur normalisée et le pays.
 
-Le booléen et le tri-state n'ont pas d'entrées : leurs libellés viennent du jeu de libellés (EVO-001, arbitrage A).
+Le booléen n'a pas d'entrées : leurs libellés viennent du jeu de libellés (EVO-001, arbitrage A).
 
 ### 3.5 Clés et références (proposition)
 
@@ -204,7 +205,7 @@ Une question est un rectangle : intitulé en gras en haut, clé en discret, puis
 
 | Type | Aperçu |
 | --- | --- |
-| Booléen / tri-state | Les libellés (« Oui / Non / Ne sait pas »). |
+| Booléen | Les libellés (« Oui / Non »). |
 | Texte | `<texte>`, ou `<texte long>`. |
 | Date | `<date>`. |
 | Nombre | `<entier naturel>`, `<réel>`, etc. |
@@ -213,7 +214,7 @@ Une question est un rectangle : intitulé en gras en haut, clé en discret, puis
 | Groupe d'options (choix) | Intitulé du groupe en gras, ses options dessous ; même troncature « … ». |
 | Entrée dynamique (choix) | La référence affichée **à sa position** parmi les options, ex. `<sys.sinistres : date>` ou `<couleur_preferee>`. |
 | Structure | Miniature des champs, tronquée par « … ». Mention « × n » si répétable. |
-| « Ne sais pas » (EVO-006) | Choix, booléen, tri-state : son libellé en italique, en dernier. Texte, date, nombre : « + Ne sais pas » en italique après l'aperçu du type. |
+| « Ne sais pas » (EVO-006) | Choix, booléen : son libellé en italique, en dernier. Texte, date, nombre : « + Ne sais pas » en italique après l'aperçu du type. |
 
 Badges discrets : obligatoire, « Autre », condition, référence bibliothèque (« bib. », double-clic : ouvrir l'objet lié, EVO-013, §3.8), traduction manquante, nombre de champs affichés d'une instance de structure dont des champs sont masqués (« 3 / 7 champs », EVO-009), « surch. » sur une question de bibliothèque dont le caractère obligatoire est surchargé ou sur un nœud fragment qui surcharge celui d'au moins une de ses questions (EVO-012). Le badge obligatoire montre la valeur effective du graphe affiché. Les autres nœuds (fragment, information, synthèse, fin) ont chacun une forme distincte.
 
@@ -247,7 +248,7 @@ Tous les raccourcis sont **paramétrables** dans un écran dédié. Chaque actio
 | Nouvelle branche conditionnée | Shift+N |
 | Insérer depuis la bibliothèque | I |
 | Nouvelle page d'information / synthèse / fin | Alt+I / Alt+S / Alt+F |
-| Type : texte, date, nombre, choix unique, choix multiple, booléen, tri-state, structure | T, D, R, U, M, B, 3, S |
+| Type : texte, date, nombre, choix unique, choix multiple, booléen, structure | T, D, R, U, M, B, S |
 | Type : mail, téléphone, adresse, civilité (EVO-007) | Shift+E, Shift+T, Shift+A, Shift+C |
 | Basculer obligatoire | O |
 | Activer « Autre (préciser) » | A |
@@ -345,6 +346,7 @@ L'import accepte un bundle ou des fichiers unitaires. L'export propose les deux.
 - **Commentaires de révision** (EVO-011) : propriété facultative `comments` d'une mise en page (`{ node, x?, y?, text, replies[] }`), donc absents de `projet.json`, `bibliotheque.json` et `<questionnaire>.json` ; dans le bundle, sous `layouts[].comments`, à ignorer par le moteur. Pas d'export distinct pour les développeurs : l'export est la sauvegarde. Format version 9 ; un fichier antérieur se migre sans transformation (aucun commentaire).
 - **État de validation** (EVO-015, §3.10) : propriétés facultatives `status` (`"draft"` | `"validated"`, absente = non validé) et `validatedAt` (date `AAAA-MM-JJ`) d'un questionnaire, exportées pour indiquer aux développeurs les formulaires livrables ; sans effet sur le parcours. Format version 11 ; un fichier antérieur se migre sans transformation (tous les formulaires non validés).
 - **« Ne sais pas »** (EVO-006) : propriété facultative `dontKnow` (`{}` ou `{ "label": … }`) d'une question ou d'un champ de structure ; réponse « Ne sais pas » = valeur vide et marqueur `<clé>_nsp: true` (groupe `NSP` pour un choix). Format version 5 ; un fichier antérieur se migre sans transformation (propriété absente = désactivée).
+- **Suppression du tri-state** (EVO-018) : format version 13. Migration minimale : chaque question ou champ `type: "tristate"` devient `"boolean"` avec `dontKnow` (gardé s'il existait, sinon `{}`), `default: "unknown"` est retiré (oui / non conservés) ; chaque jeu de libellés `kind: "tristate"` devient `"boolean"` sans son troisième libellé `unknown`. Les expressions ne sont pas réécrites (`cle = "unknown"` est à remplacer à la main par `cle.nsp`). La conversion est silencieuse ; la session restaurée au rechargement passe par le même import, donc par la migration.
 - **Livré avec** :
   - un **JSON Schema** par type de fichier ;
   - un document **FORMAT.md** qui explique le modèle, la sémantique de navigation, la grammaire des expressions et l'interpolation, avec des exemples ;

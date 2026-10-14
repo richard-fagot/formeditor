@@ -28,7 +28,7 @@ Mis à jour le 2026-10-13 — jusqu'à EVO-019
   Il remplace le « bloc » des versions précédentes : un projet ancien s'ouvre avec ses blocs devenus fragments.
 - **Fragment ou bloc ?** Il n'y a plus que des fragments : un ancien bloc garde ses **sorties nommées** (facultatives), un
   fragment neuf n'en a pas besoin, chacun de ses nœuds sans arête sortante est une sortie.
-- **Jeu de libellés** : libellés d'un booléen (« Oui / Non ») ou d'un tri-state (« Oui / Non / Ne sait pas »).
+- **Jeu de libellés** : libellés d'un booléen (« Oui / Non »).
 - **État du système** : variables fournies par le logiciel hôte (`sys.profil`), déclarées dans un dictionnaire ; chacune
   peut porter un **libellé** de lecture (« Profil de l'utilisateur connecté »).
 - **Libellé (de lecture)** : nom court, en une seule langue, destiné au concepteur et à l'équipe de dev ; jamais montré à
@@ -47,7 +47,8 @@ Mis à jour le 2026-10-13 — jusqu'à EVO-019
   Un bundle ou un `projet.json` remplace le projet (confirmation si non exporté, non annulable) ; des fichiers
   `<questionnaire>.json`, `bibliotheque.json` ou `.layout.json` seuls sont fusionnés dans le projet ouvert. `[cmd: project.open]`
 - **Comprendre un import refusé** — Un seul fichier invalide et rien n'est chargé : la boîte « Import impossible »
-  liste les erreurs par fichier. Les fichiers d'une ancienne version du format sont migrés automatiquement.
+  liste les erreurs par fichier. Les fichiers d'une ancienne version du format sont migrés automatiquement, sans message
+  (ex. un ancien tri-state devient un booléen avec « Ne sais pas » activée, §6 ; même chose au rechargement de la page).
 - **Importer un questionnaire dans le projet ouvert** — « Ouvrir / importer… » avec seulement son `<clé>.json` (et son
   `.layout.json`) : il est ajouté et s'ouvre dans un onglet, ou remplace celui de même identifiant (sans ouvrir d'onglet). `[cmd: project.open]`
 - **Remplacer la bibliothèque** — Importer seul un `bibliotheque.json` : il remplace toute la bibliothèque du projet.
@@ -229,16 +230,16 @@ libres » et « Description (pour l’équipe de dev) ». Chaque saisie est enre
 - **Rendre une question obligatoire sous condition** — Case « Obligatoire » décochée, champ « Obligatoire si… (expression,
   facultatif) » : ex. `type_sinistre = 'accident'`.
 - **Ajouter « Ne sais pas »** — Case « Option « Ne sais pas » » du panneau (section du type : juste après « Autre
-  (préciser) » pour les choix, le booléen et le tri-state ; en fin de section pour texte, date et nombre ; aussi dans un
+  (préciser) » pour les choix et le booléen ; en fin de section pour texte, date et nombre ; aussi dans un
   champ de structure, jamais sur la structure elle-même), ou palette « Activer « Ne sais pas » » (bascule, question locale
   sélectionnée). Désactivée par défaut. `[cmd: node.toggleDontKnow]`
 - **Régler « Ne sais pas »** — « Libellé de l'option » (défaut « Ne sais pas ») : multilingue, `{…}` interpolé, variantes
   conditionnelles, traductions manquantes signalées, comme une option. Effet dans le wizard :
-  - choix unique ou multiple, booléen, tri-state : dernière option, après « Autre (préciser) », hors de tout groupe ;
+  - choix unique ou multiple, booléen : dernière option, après « Autre (préciser) », hors de tout groupe ;
     exclusive (la cocher décoche les autres options, cocher une autre option la décoche) ;
   - texte, date, nombre : case « Ne sais pas » sous le champ ; cochée, le champ est vidé et désactivé ; décochée, il revient vide.
   Cochée, elle satisfait une question obligatoire et aucun contrôle (format, min/max, longueur, contraintes) ne s'applique.
-  Logigramme : dernière ligne en italique (choix ; « / libellé » en fin de ligne pour oui/non et tri-state), « + Ne sais pas » en italique après l'aperçu (saisie). Pas de table de
+  Logigramme : dernière ligne en italique (choix ; « / libellé » en fin de ligne pour oui/non), « + Ne sais pas » en italique après l'aperçu (saisie). Pas de table de
   décision dans l'outil : rien d'autre à régler.
 - **Ajouter un texte d'aide** — Champ « Aide » (affiché sous l'intitulé dans le wizard ; variantes possibles).
 - **Ajouter un texte indicatif dans le champ** — « Texte indicatif » (types texte et nombre seulement).
@@ -292,10 +293,11 @@ Changer de type : sélectionner une question locale (pas une référence de bibl
 - **Passer une question en booléen** — `B` ou palette « Type : Booléen ». `[cmd: node.type.boolean]`
 - **Changer les libellés Oui / Non** — Liste « Jeu de libellés » : « Oui / Non (par défaut) » ou un jeu booléen de la
   bibliothèque (§10). Les libellés ne se saisissent pas dans la question.
-
-### Tri-state
-- **Passer une question en tri-state** — `3` ou palette « Type : Tri-state ». `[cmd: node.type.tristate]`
-- **Changer les trois libellés** — Liste « Jeu de libellés » : « Oui / Non / Ne sait pas (par défaut) » ou un jeu tri-state de la bibliothèque.
+- **Modéliser « oui / non / ne sait pas »** — Booléen avec la case « Option « Ne sais pas » » cochée (§5) : le wizard
+  propose Oui, Non, Ne sais pas, dans cet ordre. Il n'y a plus de type tri-state : un projet qui en contenait est converti
+  à l'ouverture, à l'import ou au rechargement de la page (booléen, « Ne sais pas » cochée ; une valeur par défaut « ne sait
+  pas » est retirée ; un jeu de libellés tri-state devient un jeu booléen et perd son troisième libellé). Les expressions ne
+  sont pas réécrites : `cle = "unknown"` devient `cle.nsp` à la main.
 
 ### Structure
 - **Passer une question en structure** — `S` ou palette « Type : Structure ». `[cmd: node.type.structure]`
@@ -341,7 +343,7 @@ Dans le wizard, le contrôle s'applique à la sortie du champ (message sous le c
 
 ## 7. Options
 
-Concerne le choix unique et le choix multiple. Le booléen et le tri-state n'ont pas d'options (§6).
+Concerne le choix unique et le choix multiple. Le booléen n'a pas d'options (§6).
 
 - **Saisir les options** — Champ « Options (une par ligne) » : une ligne = une option ; collage de plusieurs lignes accepté ;
   lignes vides ignorées. Une puce `* ` ou `- ` en tête est facultative et retirée. La valeur technique est dérivée du
@@ -396,7 +398,7 @@ Concerne le choix unique et le choix multiple. Le booléen et le tri-state n'ont
 - **Afficher une option sous condition** — Déplier l'entrée, « Condition d'affichage » (ex. `sys.profil = 'pro'`). Une entrée
   dynamique dont la condition est fausse n'affiche rien. Une valeur déjà proposée plus haut n'est pas répétée.
 - **Ajouter « Autre (préciser) »** — `A` (logigramme ; palette « Activer « Autre (préciser) » », bascule) ou case « Option
-  « Autre (préciser) » ». Affichée en dernier ; ouvre un champ texte dans le wizard. Aussi pour booléen et tri-state. `[cmd: node.toggleOther]`
+  « Autre (préciser) » ». Affichée en dernier ; ouvre un champ texte dans le wizard. Aussi pour le booléen. `[cmd: node.toggleOther]`
 - **Régler « Autre (préciser) »** — « Libellé de l'option » (défaut « Autre (préciser) ») et « Précision obligatoire ».
   La précision se lit dans les expressions par `<clé>_other`.
 
@@ -591,9 +593,9 @@ Concerne le choix unique et le choix multiple. Le booléen et le tri-state n'ont
   `conjoint`) et ses propres réponses (`assure.nom`, `conjoint.nom`).
 - **Faire appeler un fragment par un autre** — Dans l'onglet du fragment, l'insérer comme dans un questionnaire (`I`) ;
   ses questions sont vues `alias.cle` dans le fragment et `alias.sous_alias.cle` chez l'appelant extérieur.
-- **Créer un jeu de libellés** — Onglet « Bibliothèque », entrée « Jeux de libellés », boutons « + Booléen » / « + Tri-state »,
-  ou palette « Nouveau jeu de libellés booléen » / « … tri-state ». Puis « Clé », « Vrai (oui) », « Faux (non) »,
-  « Troisième valeur (ne sait pas) ». `[cmd: labelSet.addBoolean]` `[cmd: labelSet.addTristate]`
+- **Créer un jeu de libellés** — Onglet « Bibliothèque », entrée « Jeux de libellés », bouton « + Booléen »,
+  ou palette « Nouveau jeu de libellés booléen ». Puis « Clé », « Vrai (oui) », « Faux (non) ». Pour « ne sait pas »,
+  régler le libellé de l'option « Ne sais pas » de la question (§5). `[cmd: labelSet.addBoolean]`
 - **Supprimer un jeu de libellés** — Bouton « Supprimer » de sa carte. Les questions qui l'utilisaient affichent les libellés
   par défaut et sont signalées « Élément de bibliothèque introuvable » : leur choisir un autre jeu. `[cmd: labelSet.delete]`
 
@@ -835,6 +837,8 @@ Chaque formulaire se valide indépendamment des autres. Un formulaire non valid�
   est un indicateur pour l'équipe de dev, aucun service n'est appelé.
 - **Accepter un mail avec accents** (adresses internationalisées RFC 6531 / 6532) : refusé.
 - **Importer un seul fragment ou une seule question de bibliothèque** : `bibliotheque.json` remplace toute la bibliothèque.
+- **Créer un tri-state** (supprimé, EVO-018) : booléen avec « Ne sais pas » (§6) ; les expressions d'un ancien tri-state
+  converti (`= "unknown"`) ne sont pas réécrites.
 - **Commentaires** : ni auteur, ni date, ni statut « résolu », ni mention, ni notification ; pas de réponse à une réponse.
 - **Extraire en fragment une sélection d'un fragment**, ou qui contient une fin : l'extraction part d'un questionnaire.
 
@@ -871,7 +875,6 @@ Chaque formulaire se valide indépendamment des autres. Un formulaire non valid�
 | Type : Choix unique | `U` | `node.type.single` |
 | Type : Choix multiple | `M` | `node.type.multiple` |
 | Type : Booléen | `B` | `node.type.boolean` |
-| Type : Tri-state | `3` | `node.type.tristate` |
 | Type : Structure | `S` | `node.type.structure` |
 | Type : Mail | `Shift+E` | `node.type.email` |
 | Type : Téléphone | `Shift+T` | `node.type.phone` |
@@ -899,7 +902,6 @@ Chaque formulaire se valide indépendamment des autres. Un formulaire non valid�
 | Dévalider | — | `questionnaire.unvalidate` |
 | Nom du projet | — | `project.rename` |
 | Nouveau jeu de libellés booléen | — | `labelSet.addBoolean` |
-| Nouveau jeu de libellés tri-state | — | `labelSet.addTristate` |
 | Supprimer le jeu de libellés | — | `labelSet.delete` |
 | Nouvelle question de bibliothèque | — | `library.newQuestion` |
 | Nouveau fragment | — | `library.newFragment` |
