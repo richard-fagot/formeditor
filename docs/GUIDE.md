@@ -828,7 +828,7 @@ Chaque formulaire se valide indépendamment des autres. Un formulaire non valid�
   empêcher la validation. `[cmd: questionnaire.validate]`
 - **Consulter un formulaire validé** — Il est en **lecture seule** : on ne peut plus modifier ses questions, réponses,
   propriétés, expressions, ni ses nœuds et arêtes (créer, relier, déplacer, supprimer, changer le rang, le départ), ni son
-  titre, sa clé ou sa description, quel que soit le moyen : panneau de propriétés (champs grisés), logigramme (nœuds
+  titre, sa clé, sa description ou sa version, quel que soit le moyen : panneau de propriétés (champs grisés), logigramme (nœuds
   figés, ni liaison, ni dépôt depuis la bibliothèque, ni édition en place), raccourcis, palette, collage, mise en page
   automatique, import d'un fichier de questionnaire. Une tentative affiche « Formulaire validé : modification impossible ».
   Restent possibles : sélectionner, lire les propriétés, prévisualiser, exporter, copier des nœuds vers un autre

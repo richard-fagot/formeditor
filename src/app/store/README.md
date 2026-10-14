@@ -18,7 +18,7 @@ Dépend de `core`, `format`, `app/i18n`, `plugin-api` (utilitaires).
 - Édition pure du graphe (`graph.ts`, sur brouillon immer) : `insertNode`, `connect` (une arête conditionnée
   passe avant le « sinon »), `removeNodes`, `removeEdge`, `moveEdge`, `updateNode` (retire les `undefined`),
   `getGraph`, `layoutOf`, `usedKeys`, `freshKey`.
-- Questionnaire (`questionnaire-edits.ts`) : `renameQuestionnaire` (clé + fichier `<clé>.json` du projet),
+- Questionnaire (`questionnaire-edits.ts`) : `renameQuestionnaire` (clé + fichier `<clé>.json` du projet en mémoire ; à l’export en fichiers, le nom vient de `questionnaireFileName`),
   `canRenameQuestionnaire`, `questionnaireKeys`, `patchQuestionnaire` (titre, description, `version` EVO-022), `setValidation(ws, id, date?)` (EVO-015 : avec date, valide
   et relève `libraryVersions` (EVO-022, `versionSnapshot`) ; sans, retire `status`, `validatedAt` et `libraryVersions`).
 - Versions des éléments de bibliothèque (EVO-022, `version-edits.ts`) : `setItemVersion(ws, item, version)` (refusé, `false`, sur un élément
