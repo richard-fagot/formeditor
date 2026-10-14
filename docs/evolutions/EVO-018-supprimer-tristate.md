@@ -1,6 +1,6 @@
 # EVO-018 — Supprimer le type tristate
 
-Statut : en cours
+Statut : fait 2026-10-14
 Dépend de : EVO-006 (option « ne sait pas » du type booléen) — réutilisée comme cible de remplacement
 
 ## Besoin
