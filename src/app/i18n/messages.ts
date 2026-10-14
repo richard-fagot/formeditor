@@ -256,6 +256,7 @@ export const MESSAGES = {
   'preview.path': { fr: 'Chemin parcouru', en: 'Path taken' },
   'preview.conditions': { fr: 'Conditions évaluées (page courante)', en: 'Evaluated conditions (current page)' },
   'preview.noCondition': { fr: 'Aucune arête sortante.', en: 'No outgoing edge.' },
+  'preview.callerEdges': { fr: 'Puis, à la sortie du fragment :', en: 'Then, on leaving the fragment:' },
   'preview.values': { fr: 'Valeurs courantes', en: 'Current values' },
   'preview.error': { fr: 'erreur', en: 'error' },
   'preview.backToSummary': { fr: 'Revenir à la synthèse', en: 'Back to the summary' },

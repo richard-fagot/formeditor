@@ -14,7 +14,8 @@ Dépend de `core/model`, `core/expressions`.
 - `resume(input, s, target)` : après un retour depuis une synthèse, avance sur les pages déjà vues et répondues
   jusqu'à `target`, une page nouvelle, une question sans réponse, une page refusée par `accept` (revalidation), une fin ou un blocage.
 - `edgeTrace(input, answers, stepId)` : arêtes sortantes évaluées dans l'ordre (`true` / `false` / `else` / `error`)
-  et arête retenue (débogage).
+  et arête retenue (débogage) ; `stepId` de chaque entrée = étape d'origine. En sortie de fragment (page sans arête sortante,
+  ou arête retenue vers une sortie nommée), les arêtes du nœud fragment appelant suivent (filtrées par sortie, contexte de l'appelant).
 - `progress(input, s)` : progression indicative (0..1).
 - `buildContext(input, answers, stepId?)` : contexte d'évaluation (réponses + `sys` + clés de chaque appel traversé sans préfixe, la plus interne prioritaire ;
   les valeurs `null` sont retirées en profondeur, `answers` garde `null`).

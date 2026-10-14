@@ -33,7 +33,8 @@ Dépend de `core`, `registry`, `app/store`, `app/commands`, `ui-kit`, `ui/system
   à la synthèse » ou un changement de l'état du système), le wizard ramène à la première réponse invalide du chemin
   (`goTo`, erreurs affichées, réponse conservée) ; le parcours ne peut pas se terminer tant qu'elle n'est pas corrigée.
 - `DebugPanel.tsx` : bandeau « Dans le fragment : » (chemin des alias et nom du fragment, EVO-008), chemin parcouru (`alias.cle`), conditions des
-  arêtes sortantes de la page courante (`edgeTrace`), valeurs courantes.
+  arêtes sortantes de la page courante (`edgeTrace`), suivies, en sortie de fragment, de celles de l'appelant
+  (« Puis, à la sortie du fragment : », `debug-caller-edges`), valeurs courantes.
 - `Outline.tsx` (EVO-019) : panneau latéral (bouton `preview.toggleOutline`, `previewPanels.outline`, `data-testid="outline-panel"`) à droite du wizard ;
   `Diagram` de `ui/diagram` en mode `outline` : nœud courant (`step.instances[0]` pour une page de fragment), questions actives
   (`passedQuestions` avec `PreviewState.visited`, questions du questionnaire seulement), clic = `jumpTo` ; `focusKey` (longueur de l'historique,

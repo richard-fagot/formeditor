@@ -40,3 +40,34 @@ describe('edgeTrace', () => {
     expect(edgeTrace(inp, {}, 'zz')).toEqual([]);
   });
 });
+
+describe('edgeTrace : dernière page d’un fragment (écart EVO-008)', () => {
+  const fnodes: GraphNode[] = [q('x', 'x'), q('y', 'y'), { kind: 'exit', id: 'ko', name: 'refus' }];
+  const fedges = [e('x', 'y', 'x > 0'), e('x', 'ko')];
+  const qnodes: GraphNode[] = [{ kind: 'fragment', id: 'i', ref: 'f', alias: 'al' }, q('a', 'a'), q('b', 'b'), { kind: 'end', id: 'fin', message: { fr: 'fin' } }];
+  const qedges: Edge[] = [{ ...e('i', 'fin'), exit: 'refus' }, e('i', 'a', 'al.y > 5'), e('i', 'b'), e('a', 'fin'), e('b', 'fin')];
+  const fin: RuntimeInput = {
+    ...inp,
+    ws: {
+      ...inp.ws,
+      library: { ...inp.ws.library, fragments: [{ id: 'f', key: 'f', title: { fr: 'f' }, nodes: fnodes, edges: fedges }] },
+      questionnaires: [{ ...inp.ws.questionnaires[0]!, start: 'i', nodes: qnodes, edges: qedges }],
+    } as Workspace,
+  };
+  const ids = (t: ReturnType<typeof edgeTrace>) => t.map((x) => [x.stepId, x.edge.id, x.result, x.chosen]);
+  it('sortie implicite : arêtes de l’appelant évaluées dans son contexte', () => {
+    expect(ids(edgeTrace(fin, { al: { x: 1, y: 9 } }, 'i/y'))).toEqual([
+      ['i', 'i_a', true, true],
+      ['i', 'i_b', 'else', false],
+    ]);
+  });
+  it('arête vers une sortie nommée : arêtes de l’appelant de cette sortie à la suite', () => {
+    expect(ids(edgeTrace(fin, { al: { x: 0 } }, 'i/x'))).toEqual([
+      ['i/x', 'x_y', false, false],
+      ['i/x', 'x_ko', 'else', true],
+      ['i', 'i_fin', 'else', true],
+      ['i', 'i_a', false, false],
+      ['i', 'i_b', 'else', false],
+    ]);
+  });
+});

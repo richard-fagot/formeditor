@@ -675,7 +675,9 @@ Concerne le choix unique et le choix multiple. Le booléen n'a pas d'options (§
   (arête suivie surlignée, `true` / `false` / « sinon » / « erreur »), « Valeurs courantes » (réponses et `sys` ; le groupe
   de l'option choisie apparaît sous `<clé>_group`, « Ne sais pas » sous `<clé>_nsp`, le pays d'un téléphone ou d'une adresse
   sous `<clé>_pays`, à côté de la valeur normalisée). Sur une page d'un fragment, un bandeau « Dans le fragment : »
-  donne le chemin des alias et le nom du fragment ; le chemin parcouru écrit ses questions `alias.cle`. `[cmd: preview.toggleDebug]`
+  donne le chemin des alias et le nom du fragment ; le chemin parcouru écrit ses questions `alias.cle`. Sur la dernière page
+  d'un fragment (ou quand l'arête retenue mène à une sortie nommée), « Puis, à la sortie du fragment : » liste ensuite les
+  arêtes du nœud fragment de l'appelant, évaluées avec ses réponses. `[cmd: preview.toggleDebug]`
 - **Changer la langue de la prévisualisation** — Liste « Langue » de la barre, ou palette « Langue de la prévisualisation
   suivante » (plusieurs langues). Un bandeau compte les textes non traduits, affichés dans la langue par défaut. `[cmd: preview.lang]`
 - **Ne pas voir les commentaires** — Les commentaires de révision (§16) n'apparaissent jamais dans le wizard.
