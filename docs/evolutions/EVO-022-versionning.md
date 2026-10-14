@@ -1,6 +1,6 @@
 # EVO-022 — Versionning des questionnaires et des éléments de bibliothèque
 
-Statut : à faire
+Statut : en cours
 Dépend de : aucune (s'appuie sur la validation existante des questionnaires et des éléments de bibliothèque)
 
 ## Besoin
