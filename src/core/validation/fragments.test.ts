@@ -47,6 +47,16 @@ describe('vérifications des fragments (EVO-008)', () => {
     const b = frag('fb', [inst('ia', 'fa')]);
     expect(codes(ws([a, b], [quest('q', [inst('x', 'fa'), end], [e('x', 'fin')])]))).toEqual(expect.arrayContaining(['fragmentCycle@fa', 'fragmentCycle@fb']));
   });
+  it('question de bibliothèque utilisée seulement dans un fragment : références résolues dans ce fragment (écart EVO-008)', () => {
+    const f = frag('f_ident', [q('nom'), { kind: 'question', id: 'r', ref: 'lq' } as GraphNode], [e('nom', 'r')]);
+    const make = (help: string) => {
+      const w = ws([f], [quest('q1', [inst('i', 'f_ident', 'ident'), end], [e('i', 'fin')])]);
+      w.library.questions = [{ id: 'lq', key: 'detail', label: { fr: 'D' }, type: 'text', help: { fr: help } }];
+      return codes(w).filter((c) => c.startsWith('unknownReference'));
+    };
+    expect(make('Nom : {nom}')).toEqual([]);
+    expect(make('{inconnue}')).toEqual(['unknownReference@lq']);
+  });
   it('alias en double dans un questionnaire : clé en double', () => {
     const w = ws([ident()], [quest('q1', [q('motif'), inst('i', 'f_ident', 'ident'), inst('j', 'f_ident', 'ident'), end], [e('motif', 'i'), e('i', 'j'), e('j', 'fin')])]);
     expect(codes(w)).toContain('duplicateKey@q1/j');
