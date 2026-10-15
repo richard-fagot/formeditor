@@ -1,6 +1,6 @@
 # EVO-025 — Refactoring du système de gestion des erreurs
 
-Statut : en cours
+Statut : fait 2026-10-15
 Dépend de : —
 
 ## Besoin
