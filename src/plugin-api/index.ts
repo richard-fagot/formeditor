@@ -4,3 +4,4 @@ export type {
   QuestionPropertiesProps, NodePropertiesProps, QuestionBase, ResolvedOption,
 } from './contract';
 export { tr, commonQuestionFields, previewText, dontKnowLabel } from './helpers';
+export { useBlurErrors, blurMessages, shownBlurErrors, type BlurError } from './blur-errors';

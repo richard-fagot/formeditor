@@ -5,6 +5,7 @@ import {
   insertionCycle, placeNode, referenceNode, scopeOf, useStore, type GraphRef, type LibraryItem,
 } from '../store';
 import { makeTranslate } from '../i18n';
+import { confirm, inform, refuse } from '../feedback';
 import { createAfter, inDiagram } from './graph-commands';
 import type { Command } from './types';
 
@@ -37,8 +38,7 @@ function openRef(arg: unknown) {
   if (!isItem(arg)) return;
   const lib = st().ws.library;
   if ((arg.kind === 'question' ? lib.questions : lib.fragments).some((x) => x.id === arg.id)) return showLibraryItem(arg);
-  const tt = t();
-  st().set((s) => void (s.notice = { title: tt('library.brokenRef'), lines: [tt('library.brokenRefLine', { id: arg.id })] }));
+  refuse('library.brokenRef', { key: 'library.brokenRefLine', params: { id: arg.id } });
 }
 
 /** Insère une référence : à la position donnée (dépôt), sinon à la suite du nœud sélectionné. */
@@ -47,10 +47,9 @@ function insertItem(arg: unknown) {
   const g = r && getGraph(st().ws, r);
   if (!r || !g || !isItem(arg)) return;
   if (insertionCycle(st().ws, r, arg)) {
-    const tt = t();
     const f = st().ws.library.fragments.find((x) => x.id === arg.id);
     const name = f ? (f.title[st().contentLang] ?? f.key) : arg.id;
-    st().set((s) => void (s.notice = { title: tt('insert.refused'), lines: [tt('insert.cycle', { name })] }));
+    refuse('insert.refused', { key: 'insert.cycle', params: { name } });
     return;
   }
   const node = referenceNode(st().ws, r, arg, newId('n'));
@@ -81,8 +80,7 @@ function copyQuestion(arg?: { graph?: GraphRef; nodeId?: string; key?: string })
   st().set((s) => void (s.copyRequest = undefined));
   st().edit(scopeOf(r), () => res.ws);
   if (res.rewritten.length) {
-    const lines = res.rewritten.map((x) => `${x.loc.nodeId ?? x.loc.edgeId ?? ''} · ${x.loc.property} : ${x.before} → ${x.after}`);
-    st().set((s) => void (s.notice = { title: t()('copy.rewritten'), lines }));
+    inform('copy.rewritten', ...res.rewritten.map((x) => ({ raw: `${x.loc.nodeId ?? x.loc.edgeId ?? ''} · ${x.loc.property} : ${x.before} → ${x.after}` })));
   }
 }
 
@@ -113,7 +111,7 @@ export function libraryItemCommands(): Command[] {
       run: (item) => {
         if (!isItem(item)) return;
         // Question réutilisable commentée, ou fragment dont des questions sont commentées (EVO-011) : confirmation.
-        if (commentsOf(st().ws, item.id).length && !window.confirm(makeTranslate(st().uiLang)(item.kind === 'fragment' ? 'comment.confirmDeleteFragment' : 'comment.confirmDelete'))) return;
+        if (commentsOf(st().ws, item.id).length && !confirm(item.kind === 'fragment' ? 'comment.confirmDeleteFragment' : 'comment.confirmDelete')) return;
         st().edit('library', (ws) => deleteLibraryItem(ws, item));
         if (item.kind === 'fragment') st().closeTab(`f:${item.id}`);
         if (st().libraryItem?.id === item.id) showLibraryItem();
@@ -137,18 +135,13 @@ export function libraryItemCommands(): Command[] {
         const r = ref()!;
         const ids = st().selection.nodes;
         const entries = groupEntries(st().ws, r, ids);
-        const tt = t();
-        if (!canExtract(st().ws, r, ids)) {
-          st().set((s) => void (s.notice = { title: tt('group.refused'), lines: [tt('group.forbidden')] }));
-          return;
-        }
+        if (!canExtract(st().ws, r, ids)) return refuse('group.refused', 'group.forbidden');
         if (entries.length > 1) {
           const g = getGraph(st().ws, r)!;
           const name = (id: string) => { const n = g.nodes.find((x) => x.id === id); return n && 'key' in n ? String(n.key) : id; };
-          st().set((s) => void (s.notice = { title: tt('group.refused'), lines: [tt('group.multipleEntries', { list: entries.map(name).join(', ') })] }));
-          return;
+          return refuse('group.refused', { key: 'group.multipleEntries', params: { list: entries.map(name).join(', ') } });
         }
-        const title = { [st().contentLang]: tt('library.newFragmentTitle') };
+        const title = { [st().contentLang]: t()('library.newFragmentTitle') };
         const res = groupIntoFragment(JSON.parse(JSON.stringify(st().ws)), r, ids, title);
         if (!res) return;
         // Le fragment créé touche aussi la bibliothèque : `edit` en fait une transaction (annulable depuis l'un ou l'autre onglet).

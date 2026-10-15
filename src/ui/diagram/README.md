@@ -41,7 +41,7 @@ Dépend de `app/store`, `app/commands` (liaison tracée à la souris : `edge.cre
 - Export en image (EVO-004, `useImageExport.ts`, `ImageDialog.tsx`) : le dialogue (derniers choix, `Entrée` = exporter) appelle
   `view.exportImageRun` ; le hook réagit à `imageRequest` : `html-to-image` (`toCanvas`, version 1.11.11 épinglée) sur
   `.react-flow__viewport` avec `transform` forcé (boîte des nœuds ∪ tracés d'arêtes, marge 40 px), fond blanc, `pixelRatio` 2
-  (réduit et signalé au-delà de 16 384 px), poignées filtrées ; « sélection » : filtre sur `data-id` des nœuds / arêtes et
+  (réduit et signalé au-delà de 16 384 px, `inform` d'`app/feedback` ; échec : `fail`), poignées filtrées ; « sélection » : filtre sur `data-id` des nœuds / arêtes et
   `data-edge-label` des libellés. Titre dessiné sur un second canvas : `imageHeading` (titre — version — statut dans la
   langue de l'interface, EVO-023) ; nom du fichier par `imageFileName` (version et statut). Pièges : sélection vidée puis restaurée, transitions
   coupées (`[data-exporting]`, `index.css`), attente d'une tâche + une image avant capture : sinon surbrillance figée.

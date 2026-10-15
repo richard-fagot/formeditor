@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
 import { BookOpen, Boxes, MessageSquare, Trash2 } from 'lucide-react';
 import { fragmentCallers, type Fragment } from '../../core/model';
-import { checkWorkspace } from '../../core/validation';
 import { runCommand } from '../../app/commands';
 import { useStore, useT, type GraphRef } from '../../app/store';
+import { useIssues } from '../../app/issues';
 import { Button, cn, Field, Input, LocalizedTextInput } from '../../ui-kit';
 import { Diagram, ProblemsPanel } from '../diagram';
 import { KeyInput, PropertiesPanel, usePluginEnv } from '../properties';
@@ -29,7 +29,7 @@ export function FragmentView({ id }: { id: string }) {
   const hasComments = useStore((s) => !!s.ws.layouts.find((l) => l.graph === id)?.comments?.length);
   const fragment = env.ws.library.fragments.find((f) => f.id === id);
   const graph: GraphRef = useMemo(() => ({ kind: 'fragment', id }), [id]);
-  const issues = useMemo(() => checkWorkspace(env.ws).filter((i) => i.owner.kind === 'fragment' && i.owner.id === id), [env.ws, id]);
+  const issues = useIssues({ owner: { kind: 'fragment', id } });
   if (!fragment) return null;
   const callers = fragmentCallers(env.ws, id).map((c) =>
     c.kind === 'questionnaire' ? env.ws.questionnaires.find((q) => q.id === c.id)?.key : env.ws.library.fragments.find((f) => f.id === c.id)?.key);

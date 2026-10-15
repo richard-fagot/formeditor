@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { enableMapSet } from 'immer';
 import { FORMAT_VERSION, lockedChanges, newId, type Workspace } from '../../core/model';
-import { makeTranslate } from '../i18n';
+import { bindFeedback, refuse, type Notice } from '../feedback';
 import type { Session } from '../../core/runtime';
 import { newWorkspace } from '../../format';
 import { record, takeSnapshot, type Scope, type ScopeHistory } from './history';
@@ -64,7 +64,7 @@ export interface AppState extends ImageState {
   history: Record<string, ScopeHistory>;
   preview: Record<string, PreviewState>;
   problemsOpen: boolean;
-  notice?: { title: string; lines: string[] };
+  notice?: Notice;
   /** Copie en bibliothèque en attente d'une autre clé (clé déjà prise, EVO-009). */
   copyRequest?: { graph: GraphRef; nodeId: string };
   /** Presse-papiers interne des nœuds copiés (EVO-010), lié au projet. */
@@ -151,14 +151,13 @@ export const useStore = create<Store>()(
     if (!locked.length) return false;
     set((s) => {
       Object.assign(s, { ws: prev.ws, history: prev.history, tabs: prev.tabs, activeTab: prev.activeTab, selection: prev.selection, libraryItem: prev.libraryItem, compare: prev.compare, dirty: prev.dirty });
-      if (!notify) return;
-      const t = makeTranslate(prev.uiLang);
-      const name = (id: string) => {
-        const q = prev.ws.questionnaires.find((x) => x.id === id)!;
-        return q.title[prev.contentLang] ?? q.title[prev.ws.project.defaultLanguage] ?? q.key;
-      };
-      s.notice = { title: t('validation.locked'), lines: locked.map((id) => t('validation.lockedLine', { name: name(id) })) };
     });
+    if (!notify) return true;
+    const name = (id: string) => {
+      const q = prev.ws.questionnaires.find((x) => x.id === id)!;
+      return q.title[prev.contentLang] ?? q.title[prev.ws.project.defaultLanguage] ?? q.key;
+    };
+    refuse('validation.locked', ...locked.map((id) => ({ key: 'validation.lockedLine' as const, params: { name: name(id) } })));
     return true;
   }
   return {
@@ -281,6 +280,9 @@ export const useStore = create<Store>()(
   };
   }),
 );
+
+// Refus, informations et échecs (app/feedback) écrits dans `notice`, dans la langue de l'interface.
+bindFeedback({ lang: () => useStore.getState().uiLang, set: (recipe) => useStore.getState().set(recipe) });
 
 let txCounter = 0;
 

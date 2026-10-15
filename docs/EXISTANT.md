@@ -1,6 +1,6 @@
 # Existant — fonctionnalités réellement implémentées
 
-État au commit `e6b049b` (2026-10-15), jusqu'à EVO-023. Format JSON : version 14.
+État au commit `d390080` (2026-10-15), jusqu'à EVO-025 (EVO-024 n'existe pas). Format JSON : version 14.
 
 Inventaire **factuel**, établi par lecture du code source (et non de la spec, du guide ou des fiches EVO).
 Il décrit ce que fait le code, y compris quand cela diffère de la spec ; les différences avec les fiches
@@ -45,7 +45,39 @@ d'annulation (`q:<id>` pour un questionnaire, `library` pour la bibliothèque et
 - Plus aucun onglet ouvert : `activeTab` vaut `library` (contenu Bibliothèque affiché même si l'onglet n'est pas dans la liste).
 
 **Références** : `src/ui/shell/App.tsx:17-57`, `src/app/store/store.ts:116-141` (`initialState`, `blankWorkspace`),
-`src/app/store/store.ts:259-265` (`closeTab`).
+`src/app/store/store.ts:258-264` (`closeTab`).
+
+---
+
+### Messages, confirmations et problèmes du projet (`app/feedback`, `app/issues`, EVO-025)
+
+**Comportement observable**
+- Aucun effet visible propre : ces deux modules sont la seule voie vers la fenêtre « notice », `window.confirm` et
+  `checkWorkspace` côté interface. Un seul message à la fois, le dernier remplace le précédent ; aucun niveau affiché.
+
+**Règles de gestion**
+- `app/feedback` : `refuse(titre, ...lignes)` et `inform(titre, ...lignes)` écrivent `notice` de la même façon (seule
+  l'intention diffère) ; `fail(titre, erreur)` affiche une ligne : `erreur.message` si c'est une `Error`, sinon `String(erreur)` ;
+  `confirm(question)` renvoie la réponse de `window.confirm`, seul appel du code.
+- Message : clé `MessageKey`, `{ key, params }`, ou `{ raw }` (texte non traduit : erreurs d'import, nom d'un élément,
+  références réécrites, titre de l'avertissement des champs masqués). Traduction dans la langue de l'interface au moment de l'appel.
+- Branchement : `app/store` appelle `bindFeedback` (langue = `uiLang`, écriture dans l'état) ; sans branchement, langue `fr`
+  et rien n'est écrit.
+- Appelants : commandes de projet (import, confirmation de perte), version et validation, bibliothèque (lien rompu, cycle,
+  extraction refusée, références réécrites, confirmation de suppression), collage, suppression de nœuds commentés,
+  dévalidation, verrou du store (`refused`), export d'image (`inform` image réduite, `fail`), champs masqués.
+- `notice` n'est remis à `undefined` qu'à la fermeture de la fenêtre (`App.tsx:50, 54`) et au chargement d'un projet
+  (`store.ts:247`).
+- `app/issues` : `issuesOf(ws)` = `checkWorkspace(ws)` mémorisé par référence de `ws` (même `ws` → même tableau) ;
+  `selectIssues(issues, filtre)` cumule les critères `owner { kind, id? }`, `ownerIds`, `code`, `lang` (langue contenue dans
+  `params.lang`, liste « fr, en ») et conserve l'ordre ; `useIssues(filtre)` lit `ws` dans le store, filtre comparé par valeur.
+- Vues qui l'utilisent : `QuestionnaireView`, `FragmentView`, `ComparePane`, `Outline`, compteur de traductions de `Preview`,
+  `TranslationsSection`, `SystemState`.
+- Contrôle automatique (Vitest) : hors tests, pas de `window.confirm` ni d'écriture `.notice =` hors d'`app/feedback`
+  (remises à zéro ci-dessus exceptées), pas d'appel à `checkWorkspace(` hors d'`app/issues` et de `core`.
+
+**Références** : `src/app/feedback/feedback.ts:3-61`, `src/app/store/store.ts:149-162` (`refused`), `:285` (`bindFeedback`),
+`src/app/issues/issues.ts:6-41`, `src/app/feedback/single-path.test.ts:20-33`, `docs/ERREURS.md`.
 
 ---
 
@@ -102,8 +134,8 @@ d'annulation (`q:<id>` pour un questionnaire, `library` pour la bibliothèque et
 - Un fragment fermé n'a pas de bouton de réouverture dans la barre (réouverture depuis la bibliothèque ou un nœud fragment).
 - Un onglet dont l'objet n'existe plus affiche son identifiant brut (`q:…`).
 
-**Références** : `src/ui/shell/Tabs.tsx:10-82`, `src/app/commands/shell-commands.ts:16-37`, `src/app/commands/project-commands.ts:67-80`,
-`src/app/store/store.ts:245-265`, `src/app/store/travel.ts:55-…` (`syncTabs`).
+**Références** : `src/ui/shell/Tabs.tsx:10-82`, `src/app/commands/shell-commands.ts:16-37`, `src/app/commands/project-commands.ts:68-81`,
+`src/app/store/store.ts:244-264`, `src/app/store/travel.ts:55-…` (`syncTabs`).
 
 ---
 
@@ -135,7 +167,7 @@ d'annulation (`q:<id>` pour un questionnaire, `library` pour la bibliothèque et
   devient l'actif).
 - En vue Prévisualisation, aucun bouton de la barre du logigramme n'est affiché (y compris Valider/Dévalider).
 
-**Références** : `src/ui/shell/QuestionnaireView.tsx:16-113`, `src/ui/shell/ComparePane.tsx:10-34`,
+**Références** : `src/ui/shell/QuestionnaireView.tsx:16-112`, `src/ui/shell/ComparePane.tsx:10-34`,
 `src/app/commands/settings-commands.ts:83-96`, `src/app/commands/nav-commands.ts:41-48`, `src/ui/diagram/Diagram.tsx:211`.
 
 ---
@@ -323,7 +355,7 @@ libellés `src/app/i18n/messages*.ts` ; raccourcis de types `src/plugins/questio
 - Nouveau projet, exemple, ouverture d'un projet ou d'un bundle : historiques vidés (non annulable).
 - Historique non sauvegardé : perdu au rechargement.
 
-**Références** : `src/app/store/store.ts:149-239`, `src/app/store/history.ts:26-27,80`, `src/app/store/travel.ts`.
+**Références** : `src/app/store/store.ts:149-238`, `src/app/store/history.ts:26-27,80`, `src/app/store/travel.ts`.
 
 ---
 
@@ -399,7 +431,7 @@ libellés `src/app/i18n/messages*.ts` ; raccourcis de types `src/plugins/questio
 - Retrait de la dernière combinaison d'une action : action personnalisée sans raccourci (liste vide).
 - Toute frappe sauf Échap/modificateurs (Tab, Entrée, flèches…) est capturable comme raccourci.
 
-**Références** : `src/ui/settings/Settings.tsx`, `LanguagesSection.tsx:7-45`, `TranslationsSection.tsx:7-78`,
+**Références** : `src/ui/settings/Settings.tsx`, `LanguagesSection.tsx:7-45`, `TranslationsSection.tsx:8-79`,
 `ShortcutsSection.tsx:8-88`, `src/app/store/language-edits.ts:1-25`, `src/app/shortcuts/format.ts:20-39`.
 
 ---
@@ -450,7 +482,7 @@ libellés `src/app/i18n/messages*.ts` ; raccourcis de types `src/plugins/questio
   références de bibliothèque introuvables signalées seulement par les vérifications.
 - Remplacement (projet/bundle) non annulable (historiques vidés).
 
-**Références** : `src/app/commands/project-commands.ts:13-30`, `src/app/commands/files.ts:16-29`, `src/format/files.ts:97-155`,
+**Références** : `src/app/commands/project-commands.ts:14-31`, `src/app/commands/files.ts:16-29`, `src/format/files.ts:97-155`,
 `src/format/validate.ts:24-46`, `src/format/migrate.ts:26-167`.
 
 ---
@@ -478,7 +510,7 @@ libellés `src/app/i18n/messages*.ts` ; raccourcis de types `src/plugins/questio
   l'unicité des clés est imposée à l'édition).
 
 **Références** : `src/format/files.ts:12-95`, `src/format/serialize.ts`, `src/format/workspace.ts:24-27`,
-`src/app/commands/project-commands.ts:39-52`.
+`src/app/commands/project-commands.ts:40-53`.
 
 ---
 
@@ -511,7 +543,7 @@ libellés `src/app/i18n/messages*.ts` ; raccourcis de types `src/plugins/questio
 - Questionnaire vide ou graphe introuvable : rien.
 
 **Références** : `src/app/commands/image-commands.ts:1-38`, `src/app/commands/image-file.ts:1-44`,
-`src/ui/diagram/ImageDialog.tsx:10-51`, `src/ui/diagram/useImageExport.ts:8-127`, `src/ui/diagram/Diagram.tsx:141-143`,
+`src/ui/diagram/ImageDialog.tsx:10-51`, `src/ui/diagram/useImageExport.ts:9-128`, `src/ui/diagram/Diagram.tsx:141-143`,
 `src/app/store/image-state.ts`.
 
 ---
@@ -624,7 +656,7 @@ libellés `src/app/i18n/messages*.ts` ; raccourcis de types `src/plugins/questio
 - Pas de nœud fin dans un fragment (cmd désactivée), pas de sortie nommée dans un questionnaire (cmd désactivée).
 - `connect` ne refuse pas une arête d'un nœud vers lui-même (aucun contrôle dans le store).
 
-**Références** : `src/app/commands/graph-commands.ts:35-61` (`createAfter`), `:94-98`, `:138-160` ; `src/app/commands/library-item-commands.ts:192` (`node.newExit`) ; `src/app/commands/edit-commands.ts:52` (`edge.create`) ; `src/app/store/graph.ts:40-67` (`insertNode`, `connect`).
+**Références** : `src/app/commands/graph-commands.ts:36-62` (`createAfter`), `:95-99`, `:139-161` ; `src/app/commands/library-item-commands.ts:185` (`node.newExit`) ; `src/app/commands/edit-commands.ts:52` (`edge.create`) ; `src/app/store/graph.ts:40-67` (`insertNode`, `connect`).
 
 ---
 
@@ -657,7 +689,7 @@ libellés `src/app/i18n/messages*.ts` ; raccourcis de types `src/plugins/questio
 - Lien rompu au double-clic sur « bib. » : message « objet introuvable », aucune navigation.
 - Poignées invisibles `comment-left` / `comment-right` (non reliables) placées après la poignée par défaut, pour que les arêtes sans poignée partent toujours de la poignée basse.
 
-**Références** : `src/ui/diagram/NodeView.tsx:17-171` ; `src/app/store/question-edits.ts:10-29` (`setQuestionLabel`) ; `src/app/commands/graph-commands.ts:125` ; `src/app/commands/library-item-commands.ts:36-42` (`openRef`) ; `src/plugins/node-kinds/fragment/index.tsx:31-50` (titre, alias, nombre de questions, « Déplier »).
+**Références** : `src/ui/diagram/NodeView.tsx:17-171` ; `src/app/store/question-edits.ts:10-29` (`setQuestionLabel`) ; `src/app/commands/graph-commands.ts:126` ; `src/app/commands/library-item-commands.ts:37-42` (`openRef`) ; `src/plugins/node-kinds/fragment/index.tsx:31-50` (titre, alias, nombre de questions, « Déplier »).
 
 ---
 
@@ -691,7 +723,7 @@ libellés `src/app/i18n/messages*.ts` ; raccourcis de types `src/plugins/questio
 **Cas limites gérés**
 - Les nœuds commentaires ne sont pas supprimables par cette cmd (pas sélectionnables).
 
-**Références** : `src/app/commands/graph-commands.ts:171-182`, `src/app/store/graph.ts:69-89`.
+**Références** : `src/app/commands/graph-commands.ts:172-183`, `src/app/store/graph.ts:69-89`.
 
 ---
 
@@ -720,7 +752,7 @@ libellés `src/app/i18n/messages*.ts` ; raccourcis de types `src/plugins/questio
 - Arête dont la sortie n'existe plus (renommée, supprimée) : rattachée à la poignée par défaut, reste visible et corrigeable.
 - Le libellé n'a aucun effet sur la navigation (non parcouru par `mapGraph`).
 
-**Références** : `src/ui/diagram/EdgeView.tsx:14-50`, `src/ui/diagram/edgeLabel.ts`, `src/ui/properties/EdgeProperties.tsx:12-69`, `src/ui/properties/useGraphEdit.ts:11-19`, `src/app/commands/edit-commands.ts:43-50`, `src/app/commands/graph-commands.ts:129-137`, `src/app/store/graph.ts:92-104` (`moveEdge`).
+**Références** : `src/ui/diagram/EdgeView.tsx:14-50`, `src/ui/diagram/edgeLabel.ts`, `src/ui/properties/EdgeProperties.tsx:12-69`, `src/ui/properties/useGraphEdit.ts:11-19`, `src/app/commands/edit-commands.ts:43-50`, `src/app/commands/graph-commands.ts:130-138`, `src/app/store/graph.ts:92-104` (`moveEdge`).
 
 ---
 
@@ -763,7 +795,7 @@ libellés `src/app/i18n/messages*.ts` ; raccourcis de types `src/plugins/questio
 - Noms de sorties nommées collées dans un fragment non rendus uniques.
 - Noms relatifs des entrées dynamiques et clés masquées par un champ homonyme de leur structure : non réécrits.
 
-**Références** : `src/app/store/clipboard.ts:25-94`, `src/core/references/rename-local.ts:10-31`, `src/app/commands/clipboard-commands.ts:15-19` (`setPastePoint`), `:38-47` (`report`), `:77-96`, `src/app/commands/graph-commands.ts:162-169`, `src/app/i18n/messages-clipboard.ts:5-10`.
+**Références** : `src/app/store/clipboard.ts:25-94`, `src/core/references/rename-local.ts:10-31`, `src/app/commands/clipboard-commands.ts:15-19` (`setPastePoint`), `:38-46` (`report`), `:76-95`, `src/app/commands/graph-commands.ts:163-170`, `src/app/i18n/messages-clipboard.ts:5-10`.
 
 ---
 
@@ -779,7 +811,7 @@ libellés `src/app/i18n/messages*.ts` ; raccourcis de types `src/plugins/questio
 - La copie n'a aucun appelant. Ni statut de validation, ni `validatedAt`, ni `libraryVersions` repris (EVO-015, EVO-022) ; version conservée.
 - Commentaires de révision non repris.
 
-**Références** : `src/app/store/duplicate.ts:10-78`, `src/app/commands/clipboard-commands.ts:24-27` (`copyName`), `:98-117`, `src/ui/shell/Tabs.tsx:43-44`, `src/ui/library/Library.tsx:64-69`.
+**Références** : `src/app/store/duplicate.ts:10-78`, `src/app/commands/clipboard-commands.ts:24-27` (`copyName`), `:97-116`, `src/ui/shell/Tabs.tsx:43-44`, `src/ui/library/Library.tsx:64-69`.
 
 ---
 
@@ -816,7 +848,7 @@ libellés `src/app/i18n/messages*.ts` ; raccourcis de types `src/plugins/questio
 - Élément introuvable : aucune insertion.
 - `library.insert` indisponible si la bibliothèque n'a ni question ni fragment.
 
-**Références** : `src/ui/library/LibraryPanel.tsx:15-56`, `src/ui/diagram/Diagram.tsx:161-174`, `src/app/commands/library-item-commands.ts:45-65` (`insertItem`), `:123-133`, `src/app/store/library-edits.ts:41-58`, `src/ui/shell/Palette.tsx:10-18,35`.
+**Références** : `src/ui/library/LibraryPanel.tsx:15-56`, `src/ui/diagram/Diagram.tsx:161-174`, `src/app/commands/library-item-commands.ts:45-64` (`insertItem`), `:121-131`, `src/app/store/library-edits.ts:41-58`, `src/ui/shell/Palette.tsx:10-18,35`.
 
 ---
 
@@ -829,13 +861,13 @@ libellés `src/app/i18n/messages*.ts` ; raccourcis de types `src/plugins/questio
 - « Aucun problème » si la liste est vide.
 
 **Règles de gestion et validations**
-- Liste = `checkWorkspace(ws)` filtrée sur le propriétaire du graphe affiché (`owner.kind` et `owner.id`), recalculée à chaque modification du projet.
+- Liste = `useIssues({ owner: { kind, id } })` (`app/issues`) : `checkWorkspace(ws)`, calculé une fois par état du projet, filtré sur le propriétaire du graphe affiché (`owner.kind` et `owner.id`), recalculé à chaque modification du projet.
 - Les problèmes portés par une question de bibliothèque (propriétaire `libraryQuestion`) ou par le dictionnaire système (`system`) n'apparaissent pas dans ce panneau.
 
 **Cas limites gérés**
 - Problème sans nœud ni arête (ex. `missingStart`, `fragmentEntry`, traduction d'un titre) : le clic vide la sélection.
 
-**Références** : `src/ui/diagram/ProblemsPanel.tsx:8-37`, `src/ui/shell/QuestionnaireView.tsx:28`, `src/ui/library/FragmentView.tsx:32`, `src/core/validation/issue.ts:17-29`.
+**Références** : `src/ui/diagram/ProblemsPanel.tsx:8-37`, `src/ui/shell/QuestionnaireView.tsx:27`, `src/ui/library/FragmentView.tsx:32`, `src/app/issues/issues.ts:20-41`, `src/core/validation/issue.ts:17-29`.
 
 ---
 
@@ -925,7 +957,7 @@ Gravité : `error` pour les codes de l'ensemble `ERRORS` (`issue.ts:17-18`), `wa
 **Cas limites gérés**
 - Clé d'une question de bibliothèque : seule l'unicité dans la bibliothèque est contrôlée à la saisie ; un conflit avec une clé d'un graphe utilisateur est signalé par `duplicateKey`.
 
-**Références** : `src/ui/properties/QuestionProperties.tsx:27-113`, `KeyInput.tsx:6-27`, `DefaultValueInput.tsx:6-36`, `src/ui/library/LibraryQuestionView.tsx:22-34`, `src/app/commands/graph-commands.ts:84-123`.
+**Références** : `src/ui/properties/QuestionProperties.tsx:27-113`, `KeyInput.tsx:6-27`, `DefaultValueInput.tsx:6-36`, `src/ui/library/LibraryQuestionView.tsx:22-34`, `src/app/commands/graph-commands.ts:85-124`.
 
 ---
 
@@ -947,7 +979,7 @@ Gravité : `error` pour les codes de l'ensemble `ERRORS` (`issue.ts:17-18`), `wa
 - Valeur héritée « obligatoire si » affichée comme telle.
 - Champ de bibliothèque renommé : suivi dans `hiddenFields` des instances ; champ masqué disparu ou plus aucun champ affiché : masquage ignoré (`instanceQuestion`).
 
-**Références** : `src/ui/properties/ReferenceProperties.tsx:20-42`, `RequiredOverride.tsx:35-72`, `HiddenFields.tsx:12-50`, `src/app/store/required-edits.ts:9-39`, `src/app/store/library-edits.ts:127-175`, `src/core/model/instance.ts:9-18`.
+**Références** : `src/ui/properties/ReferenceProperties.tsx:20-42`, `RequiredOverride.tsx:35-72`, `HiddenFields.tsx:13-51`, `src/app/store/required-edits.ts:9-39`, `src/app/store/library-edits.ts:127-175`, `src/core/model/instance.ts:9-18`.
 
 ---
 
@@ -979,7 +1011,7 @@ Gravité : `error` pour les codes de l'ensemble `ERRORS` (`issue.ts:17-18`), `wa
 **Règles de gestion et validations**
 - `entry` retirée si son nœud est supprimé. Entrée implicite = `entry` valide, sinon premier nœud sans arête entrante, sinon premier nœud.
 
-**Références** : `src/ui/properties/PropertiesPanel.tsx:63-97`, `src/app/commands/library-item-commands.ts:178-191`, `src/app/store/library-edits.ts:194-204`, `src/core/model/fragment.ts:6-30`.
+**Références** : `src/ui/properties/PropertiesPanel.tsx:63-97`, `src/app/commands/library-item-commands.ts:171-184`, `src/app/store/library-edits.ts:194-204`, `src/core/model/fragment.ts:6-30`.
 
 ---
 
@@ -990,7 +1022,7 @@ Gravité : `error` pour les codes de l'ensemble `ERRORS` (`issue.ts:17-18`), `wa
 - Une modification qui touche d'autres portées (renommage propagé, extraction en fragment) devient une transaction : l'annuler depuis une portée l'annule dans toutes celles où ce point est en tête.
 - Modification d'un questionnaire validé (EVO-015) : état d'avant remis (projet, historique, onglets, sélection) et message « formulaire validé » (sauf écriture silencieuse de position).
 
-**Références** : `src/app/store/store.ts:149-240`, `src/app/store/history.ts:26`, `src/app/store/travel.ts`.
+**Références** : `src/app/store/store.ts:149-239`, `src/app/store/history.ts:26`, `src/app/store/travel.ts`.
 
 ---
 
@@ -1037,7 +1069,7 @@ Gravité : `error` pour les codes de l'ensemble `ERRORS` (`issue.ts:17-18`), `wa
 - Suppression d'un élément (cmd `library.delete`) : sans confirmation sauf commentaires ; les références restantes deviennent `libraryMissing` ; l'onglet du fragment est fermé.
 - Clé d'un jeu de libellés : écrite telle quelle à la frappe ; invalide ou en double → bordure rouge et message, sans blocage de l'écriture.
 
-**Références** : `src/ui/library/Library.tsx:12-72`, `LibraryQuestionView.tsx:14-56`, `LabelSets.tsx:16-55`, `items.ts:7-37`, `src/app/commands/library-item-commands.ts:26-29,93-122`, `src/app/commands/library-commands.ts:17-40`, `src/app/store/library-edits.ts:17-38`.
+**Références** : `src/ui/library/Library.tsx:12-72`, `LibraryQuestionView.tsx:14-56`, `LabelSets.tsx:16-55`, `items.ts:7-37`, `src/app/commands/library-item-commands.ts:27-30,91-120`, `src/app/commands/library-commands.ts:17-40`, `src/app/store/library-edits.ts:17-38`.
 
 ---
 
@@ -1066,7 +1098,7 @@ Gravité : `error` pour les codes de l'ensemble `ERRORS` (`issue.ts:17-18`), `wa
 - Toute la définition locale (sauf `kind`) est copiée dans la bibliothèque avec un nouvel id `lq…` ; le nœud ne garde que `{ kind, id, ref }`.
 - Refus (sans effet) si la clé cible est invalide, prise dans la bibliothèque, ou prise dans le graphe (si différente de la clé actuelle).
 
-**Références** : `src/app/commands/library-item-commands.ts:71-87,161-165`, `src/app/store/library-edits.ts:61-113`, `src/ui/shell/CopyDialog.tsx:8-38`.
+**Références** : `src/app/commands/library-item-commands.ts:70-85,154-158`, `src/app/store/library-edits.ts:61-113`, `src/ui/shell/CopyDialog.tsx:8-38`.
 
 ---
 
@@ -1084,7 +1116,7 @@ Gravité : `error` pour les codes de l'ensemble `ERRORS` (`issue.ts:17-18`), `wa
 - Mise en page : positions reprises dans le fragment, sorties en ligne en dessous ; le nœud fragment prend la place de l'entrée ; commentaires déplacés.
 - Une seule opération annulable depuis le questionnaire ou la bibliothèque (transaction).
 
-**Références** : `src/app/store/group.ts:11-94`, `src/app/commands/library-item-commands.ts:134-158`, `src/core/references/rename.ts:147-151`.
+**Références** : `src/app/store/group.ts:11-94`, `src/app/commands/library-item-commands.ts:132-151`, `src/core/references/rename.ts:147-151`.
 
 ---
 
@@ -1139,8 +1171,14 @@ Gravité : `error` pour les codes de l'ensemble `ERRORS` (`issue.ts:17-18`), `wa
   langue par défaut, puis première langue ; pas d'interpolation) (helpers.ts:18-22).
 - `dontKnowLabel(q)` : libellé de « Ne sais pas », par défaut `{fr: 'Ne sais pas', en: 'Don’t know'}` (helpers.ts:25 ;
   core/model/question.ts:227).
+- Erreurs « à la sortie du champ » (EVO-025, mail, téléphone, adresse) : `useBlurErrors(env, errors)` garde les messages
+  calculés à la sortie (`onBlur(formatErrors(…))`, traduits par `env.label`), les efface à la saisie (`reset()`) et expose
+  `shown`, vide si les contrôles sont désactivés (`env.checks === false`) ou si la question a déjà une erreur de validation
+  (`errors['']`) (blur-errors.ts:11-34). `FieldErrors` (ui-kit) affiche un `<p class="text-sm text-rose-600" role="alert">`
+  par message (FieldErrors.tsx:2-4).
 
-**Références** : `src/plugin-api/contract.ts`, `src/plugin-api/helpers.ts`, `src/registry/index.ts`.
+**Références** : `src/plugin-api/contract.ts`, `src/plugin-api/helpers.ts`, `src/plugin-api/blur-errors.ts`,
+`src/ui-kit/FieldErrors.tsx`, `src/registry/index.ts`.
 
 #### Raccourcis (commandes `app/commands/graph-commands.ts`)
 
@@ -1151,15 +1189,15 @@ Gravité : `error` pour les codes de l'ensemble `ERRORS` (`issue.ts:17-18`), `wa
 | Nouvelle page d'information | `Alt+I` | logigramme affiché |
 | Nouvelle synthèse | `Alt+S` | logigramme affiché |
 | Nouvelle fin | `Alt+F` | logigramme d'un **questionnaire** seulement |
-| Nouvelle sortie nommée | aucun (palette) | logigramme d'un **fragment** seulement (library-item-commands.ts:192-196) |
+| Nouvelle sortie nommée | aucun (palette) | logigramme d'un **fragment** seulement (library-item-commands.ts:185-189) |
 | « Type : X » (change le type de la question sélectionnée) | `t` texte, `d` date, `r` nombre, `u` choix unique, `m` choix multiple, `b` booléen, `s` structure, `Shift+E` mail, `Shift+T` téléphone, `Shift+A` adresse, `Shift+C` civilité | question **locale** sélectionnée (pas une référence de bibliothèque) |
 | Obligatoire oui/non | `o` | question locale |
 | « Autre (préciser) » oui/non | `a` | question locale de type choix unique, choix multiple ou booléen (`OTHER_TYPES`) |
 | « Ne sais pas » oui/non | aucun (palette) | question locale, sauf structure |
 
 Les raccourcis de type ne **créent** pas une question : ils changent le type de la question sélectionnée
-(graph-commands.ts:81-88). Une question se crée toujours en type texte (`n`), puis on change son type.
-Une création chaînée s'insère entre le nœud sélectionné et son successeur unique non conditionnel (graph-commands.ts:41-46).
+(graph-commands.ts:82-89). Une question se crée toujours en type texte (`n`), puis on change son type.
+Une création chaînée s'insère entre le nœud sélectionné et son successeur unique non conditionnel (graph-commands.ts:42-47).
 
 #### Champs communs d'une question (panneau de propriétés)
 
@@ -1177,7 +1215,7 @@ Rendus par `ui/properties/QuestionProperties.tsx` (hors zone, mais c'est le cadr
 - Description (`description`) : texte interne, non affiché en prévisualisation.
 - Puis la section propre au type (`plugin.Properties`).
 
-Page de prévisualisation d'une question (Preview.tsx:162-174) : intitulé interpolé, astérisque rouge si obligatoire
+Page de prévisualisation d'une question (Preview.tsx:160-172) : intitulé interpolé, astérisque rouge si obligatoire
 (`requiredAt`), aide, champ du plugin, puis messages d'erreur de la page (affichés après une tentative de « Suivant », si les
 contrôles sont actifs).
 
@@ -1415,7 +1453,7 @@ une répétable → liste vide.
 **Cas limites gérés** : `"jean dupont"@exemple.fr`, `jean@[192.0.2.1]`, `jean@[IPv6:2001:db8::1]` acceptés ; point en
 début/fin/doublé, `@@`, domaine accentué refusés.
 
-**Références** : `src/plugins/question-types/email/index.tsx`, `src/core/contact/email.ts`.
+**Références** : `src/plugins/question-types/email/index.tsx:23, 41` (`useBlurErrors`, `FieldErrors`), `src/core/contact/email.ts`.
 
 #### Téléphone (`type: "phone"`, EVO-007)
 
@@ -1440,7 +1478,7 @@ début/fin/doublé, `@@`, domaine accentué refusés.
 **Cas limites gérés** : pays du numéro non autorisé → le sélecteur ne bouge pas, contrôle `phone` en échec ; numéro invalide →
 pays du numéro s'il est reconnu, sinon le pays choisi.
 
-**Références** : `src/plugins/question-types/phone/index.tsx`, `phone-field.tsx`, `src/core/contact/phone.ts`,
+**Références** : `src/plugins/question-types/phone/index.tsx`, `phone-field.tsx` (`:25, 63` : `useBlurErrors`, `FieldErrors`), `src/core/contact/phone.ts`,
 `countries.ts`.
 
 #### Adresse (`type: "address"`, EVO-007)
@@ -1463,7 +1501,7 @@ pays du numéro s'il est reconnu, sinon le pays choisi.
 
 **Cas limites gérés** : alphabets non latins acceptés (`東京都千代田区1-1`) ; `12345` refusé (pas de lettre).
 
-**Références** : `src/plugins/question-types/address/index.tsx`, `src/core/contact/address.ts`.
+**Références** : `src/plugins/question-types/address/index.tsx:39, 69` (`useBlurErrors`, `FieldErrors`), `src/core/contact/address.ts`.
 
 #### Civilité (`type: "civility"`, EVO-007)
 
@@ -1487,6 +1525,7 @@ proposé (`NP` sans `undisclosed` compris). Pas d'« Autre », pas d'options ajo
 
 - `contactErrors(q, valeur, pays?)` : point d'entrée des quatre contrôles ; valeur passée en chaîne sans espaces de bord.
 - `formatErrors` (core/validation) : contrôles de format seuls, pour la sortie du champ ; réponse vide → aucune erreur.
+  Affichage commun aux trois champs par `useBlurErrors` et `FieldErrors` (voir Socle commun).
 - `displayFormatters(ws, graph)` : mise en forme de l'interpolation par clé (civilité → libellé, téléphone → international) ;
   clé cherchée dans le graphe courant puis la bibliothèque ; la première question trouvée l'emporte même sans mise en forme.
 - Pays : liste de `libphonenumber-js` ; nom via `Intl.DisplayNames` (repli : le code) ; drapeau calculé.
@@ -1529,7 +1568,7 @@ proposé (`NP` sans `undisclosed` compris). Pas d'« Autre », pas d'options ajo
   nom unique dérivé de `sortie`. Forme grise « SORTIE » + nom en mono. Propriétés : nom (snake_case validé ; espaces retirés à
   la frappe ; appliqué à la sortie du champ ou sur Entrée ; Échap annule ; cadre rouge si invalide), libellé multilingue
   facultatif (retiré si toutes les langues sont vides). Pas de `Page`.
-- **Références** : `src/plugins/node-kinds/exit/index.tsx`, `src/app/commands/library-item-commands.ts:192-196`.
+- **Références** : `src/plugins/node-kinds/exit/index.tsx`, `src/app/commands/library-item-commands.ts:185-189`.
 
 #### Appel de fragment (`kind: "fragment"`, EVO-008)
 
@@ -1551,17 +1590,17 @@ proposé (`NP` sans `undisclosed` compris). Pas d'« Autre », pas d'options ajo
 - Mise en page : le wizard au centre, l'outline à droite (`w-[28rem]`, au plus 45 % de la largeur), puis une colonne latérale (`w-80`) qui contient l'état du système et/ou le débogage. Le panneau de débogage ne s'affiche que si l'historique n'est pas vide.
 
 **Règles de gestion et validations**
-- Valeurs par défaut des panneaux : système affiché, débogage et outline masqués ; contrôles activés (`store.ts:173-174`). Ces réglages sont dans l'état de l'application (hors `initialState(ws)`) : ils survivent au chargement d'un autre projet et ne sont pas enregistrés dans le projet.
+- Valeurs par défaut des panneaux : système affiché, débogage et outline masqués ; contrôles activés (`store.ts:172-173`). Ces réglages sont dans l'état de l'application (hors `initialState(ws)`) : ils survivent au chargement d'un autre projet et ne sont pas enregistrés dans le projet.
 - `preview.toggleChecks` inverse `previewChecks` et remet `attempted = false` dans toutes les prévisualisations, donc efface les erreurs affichées (`system-commands.ts:103-107`).
 - `preview.lang` : sans argument, passe à la langue suivante ; avec un argument, l'applique seulement s'il fait partie des langues du projet. La commande n'est active qu'avec plus d'une langue (`settings-commands.ts:43-51`).
 - « Recommencer » : nouvelle session `start(input)` ; `attempted`, `returnTo` et `unchecked` sont remis à zéro et `visited` vidé (`Preview.tsx:42`). Ce bouton n'est pas une commande du catalogue.
-- Compteur de traductions manquantes : problèmes `missingTranslation` dont le propriétaire est le questionnaire ou un élément de bibliothèque qu'il référence directement (nœuds `ref`), pour la langue affichée (`Preview.tsx:84-98`).
+- Compteur de traductions manquantes : problèmes `missingTranslation` dont le propriétaire est le questionnaire ou un élément de bibliothèque qu'il référence directement (nœuds `ref`), pour la langue affichée (`Preview.tsx:84-96`).
 
 **Cas limites gérés**
 - Session enregistrée dont une page n'existe plus (graphe modifié) : le parcours recommence automatiquement (`usePreview.ts:26-30`).
-- Questionnaire sans départ atteignable : message `preview.empty` (`Preview.tsx:116`).
+- Questionnaire sans départ atteignable : message `preview.empty` (`Preview.tsx:114`).
 
-**Références** : `src/ui/preview/Preview.tsx:20-98`, `src/ui/preview/usePreview.ts`, `src/app/commands/system-commands.ts:77-108`, `src/app/commands/settings-commands.ts:43-51`, `src/app/store/store.ts:29-43`.
+**Références** : `src/ui/preview/Preview.tsx:20-96`, `src/ui/preview/usePreview.ts`, `src/app/commands/system-commands.ts:77-108`, `src/app/commands/settings-commands.ts:43-51`, `src/app/store/store.ts:29-43`.
 
 ---
 
@@ -1572,23 +1611,23 @@ proposé (`NP` sans `undisclosed` compris). Pas d'« Autre », pas d'options ajo
 - Barre de progression en haut de la page.
 - Boutons « Précédent » (désactivé quand l'historique compte moins de 2 pages), « Suivant » (absent sur une fin) et « Revenir à la synthèse » (voir plus bas).
 - Message « Aucune arête ne s'applique : parcours bloqué. » quand `session.blocked`.
-- Un clic dans la page sélectionne le nœud dans le logigramme. Sur une page de fragment, c'est le nœud fragment le plus externe du questionnaire qui est sélectionné (`Preview.tsx:138, 154`).
+- Un clic dans la page sélectionne le nœud dans le logigramme. Sur une page de fragment, c'est le nœud fragment le plus externe du questionnaire qui est sélectionné (`Preview.tsx:136, 152`).
 - Erreurs : celles d'un champ sont passées au plugin (`errors` indexé par chemin) ; celles de la question (chemin `''`) s'affichent sous le champ (`role="alert"`).
 
 **Règles de gestion et validations**
-- « Suivant » (`advance`) : avec les contrôles activés, la réponse de la page courante est validée d'abord (`answerErrors`). S'il y a des erreurs, la page ne change pas et `attempted = true` les fait afficher (`Preview.tsx:143`). Le moteur exécute ensuite `next`, puis la garde de fin `guardEnd`.
-- Les erreurs ne s'affichent qu'après une tentative (`attempted`) et seulement si les contrôles sont activés (`Preview.tsx:133`).
+- « Suivant » (`advance`) : avec les contrôles activés, la réponse de la page courante est validée d'abord (`answerErrors`). S'il y a des erreurs, la page ne change pas et `attempted = true` les fait afficher (`Preview.tsx:141`). Le moteur exécute ensuite `next`, puis la garde de fin `guardEnd`.
+- Les erreurs ne s'affichent qu'après une tentative (`attempted`) et seulement si les contrôles sont activés (`Preview.tsx:131`).
 - « Précédent » (`back`) ne valide rien et remet `attempted = false`.
-- Saisie : `setAnswer(input, session, v, other, group, undefined, country)`. La précision « Autre » n'est conservée que si la valeur est ou contient `other` (`Preview.tsx:171`). Toute saisie efface le marqueur « Ne sais pas ».
-- Case « Ne sais pas » : cochée, elle enregistre `dontKnowAnswer(q)` (`null`, ou `[]` pour un choix multiple, avec le groupe `NSP` pour un choix) et le marqueur `_nsp: true` ; décochée, la réponse est effacée (`undefined`) (`Preview.tsx:127-131`).
+- Saisie : `setAnswer(input, session, v, other, group, undefined, country)`. La précision « Autre » n'est conservée que si la valeur est ou contient `other` (`Preview.tsx:169`). Toute saisie efface le marqueur « Ne sais pas ».
+- Case « Ne sais pas » : cochée, elle enregistre `dontKnowAnswer(q)` (`null`, ou `[]` pour un choix multiple, avec le groupe `NSP` pour un choix) et le marqueur `_nsp: true` ; décochée, la réponse est effacée (`undefined`) (`Preview.tsx:125-129`).
 - Progression : pages vues divisées par (pages vues + pages restantes en suivant `successor` avec les réponses actuelles). Elle vaut 1 sur une fin (`session.ts:170-182`).
 
 **Cas limites gérés**
-- Type de question sans plugin : l'intitulé s'affiche avec le nom du type (`Preview.tsx:175`).
+- Type de question sans plugin : l'intitulé s'affiche avec le nom du type (`Preview.tsx:173`).
 - Boucle dans le calcul de progression : arrêt au premier nœud déjà vu.
 - L'historique contient des doublons après un `goTo` (retour depuis la synthèse) ; la progression les compte.
 
-**Références** : `src/ui/preview/Preview.tsx:100-198`, `src/core/runtime/session.ts`.
+**Références** : `src/ui/preview/Preview.tsx:98-196`, `src/core/runtime/session.ts`.
 
 ---
 
@@ -1598,15 +1637,15 @@ proposé (`NP` sans `undisclosed` compris). Pas d'« Autre », pas d'options ajo
 - Contrôles désactivés : « Suivant », « Revenir à la synthèse » et la fin ne sont jamais bloqués, aucune erreur n'est affichée, les valeurs saisies sont conservées. Les plugins reçoivent `env.checks = false` pour taire leurs messages à la sortie du champ (mail, téléphone, adresse).
 
 **Règles de gestion et validations**
-- Un seul point de bascule, `checks` dans `Wizard`. Désactivés, il n'y a ni `check()` avant d'avancer, ni prédicat de `resume`, ni `guardEnd`, ni affichage d'erreurs (`Preview.tsx:111, 133, 143, 146, 188`).
-- Pages quittées contrôles désactivés : elles sont ajoutées à `PreviewState.unchecked` (y compris les pages traversées par `resume`) puis ignorées par `firstInvalidStep` / `guardEnd` (`Preview.tsx:150`, `path-check.ts:35`).
+- Un seul point de bascule, `checks` dans `Wizard`. Désactivés, il n'y a ni `check()` avant d'avancer, ni prédicat de `resume`, ni `guardEnd`, ni affichage d'erreurs (`Preview.tsx:109, 131, 141, 144, 186`).
+- Pages quittées contrôles désactivés : elles sont ajoutées à `PreviewState.unchecked` (y compris les pages traversées par `resume`) puis ignorées par `firstInvalidStep` / `guardEnd` (`Preview.tsx:148`, `path-check.ts:35`).
 - Les conditions (arêtes, `when`, options) sont évaluées normalement. Une erreur d'évaluation donne « faux » (`evaluateCondition`).
 
 **Cas limites gérés**
 - Réactivation : la page courante est contrôlée à la tentative suivante, sans contrôle rétroactif.
 - Une page de `unchecked` reste exclue de la garde de fin jusqu'à « Recommencer », même si on la revisite contrôles activés (seul « Recommencer » vide `unchecked`).
 
-**Références** : `src/ui/preview/Preview.tsx:107-153`, `src/ui/preview/path-check.ts:32-50`, `src/ui/preview/usePreview.ts:43-71`, `src/app/commands/system-commands.ts:101-108`.
+**Références** : `src/ui/preview/Preview.tsx:105-151`, `src/ui/preview/path-check.ts:32-50`, `src/ui/preview/usePreview.ts:43-71`, `src/app/commands/system-commands.ts:101-108`.
 
 ---
 
@@ -1618,14 +1657,14 @@ proposé (`NP` sans `undisclosed` compris). Pas d'« Autre », pas d'options ajo
 **Règles de gestion et validations**
 - `firstInvalidStep` parcourt `projectedSteps(input, answers)` dans l'ordre, ignore les pages `skip`, et retient la première étape qui a une réponse définie (y compris `null`) et des erreurs `answerErrors` (`path-check.ts:33-40`).
 - `guardEnd` n'agit que si la page courante est un nœud `end` (`path-check.ts:46-50`).
-- Au rendu, la garde est relancée par un `useEffect` qui dépend de l'étape cible ; elle n'agit qu'avec les contrôles activés (`Preview.tsx:111-115`).
+- Au rendu, la garde est relancée par un `useEffect` qui dépend de l'étape cible ; elle n'agit qu'avec les contrôles activés (`Preview.tsx:109-113`).
 - La réponse invalide n'est jamais effacée automatiquement.
 
 **Cas limites gérés**
 - Option dynamique disparue, réponse hors bornes après un changement de `sys`, « obligatoire si » devenu vrai sur une réponse `null` : tous ces cas donnent des erreurs `answerErrors` et ramènent à la question.
 - Sur une page de synthèse (qui n'est pas une fin), aucune garde ne s'applique.
 
-**Références** : `src/ui/preview/path-check.ts`, `src/ui/preview/Preview.tsx:110-115, 145-147`.
+**Références** : `src/ui/preview/path-check.ts`, `src/ui/preview/Preview.tsx:108-113, 143-145`.
 
 ---
 
@@ -1639,13 +1678,13 @@ proposé (`NP` sans `undisclosed` compris). Pas d'« Autre », pas d'options ajo
 **Règles de gestion et validations**
 - `summaryEntries` : on parcourt l'historique sans la page courante ; chaque étape n'apparaît qu'une fois (ordre de première visite) ; les étapes dont la réponse est `undefined` sont ignorées (une réponse `null` est listée) (`session.ts:150-167`).
 - « Revenir à la synthèse » = `advance(resume(…), revalidate = true)`. La page courante est d'abord validée, puis `resume` avance sur les pages déjà vues et répondues. Il s'arrête sur la synthèse cible, une fin, une page nouvelle, une question sans réponse, un blocage ou une page refusée par `accept` (revalidation par `answerErrors` si les contrôles sont activés). Il y a au plus 500 pas (`session.ts:72-85`).
-- Arrêt sur une page devenue invalide : `attempted = true`, donc les erreurs s'affichent (`Preview.tsx:152`). Quand on arrive sur la cible, `returnTo` est effacé.
+- Arrêt sur une page devenue invalide : `attempted = true`, donc les erreurs s'affichent (`Preview.tsx:150`). Quand on arrive sur la cible, `returnTo` est effacé.
 
 **Cas limites gérés**
 - Une page déjà vue avant la modification mais plus sur le chemin arrête le retour (« page nouvelle »).
 - Le libellé de la question d'une étape de fragment est résolu dans le contexte de cette étape (`makeRenderEnv` par entrée).
 
-**Références** : `src/ui/preview/Summary.tsx`, `src/core/runtime/session.ts:62-85, 138-167`, `src/ui/preview/Preview.tsx:139, 187-191`.
+**Références** : `src/ui/preview/Summary.tsx`, `src/core/runtime/session.ts:62-85, 138-167`, `src/ui/preview/Preview.tsx:137, 185-189`.
 
 ---
 
@@ -1867,11 +1906,11 @@ Version courante : **`FORMAT_VERSION = 14`** (`src/core/model/documents.ts:5`). 
 
 ### Fichiers produits
 
-Deux commandes d'export (`src/app/commands/project-commands.ts:37-50`), et une sauvegarde automatique.
+Deux commandes d'export (`src/app/commands/project-commands.ts:38-51`), et une sauvegarde automatique.
 
 | Export | Fonction | Fichier(s) | Contenu |
 | --- | --- | --- | --- |
-| Bundle (`project.export`, `Mod+S`) | `exportBundle` (`files.ts:64`) | `<slug(nom du projet)>.bundle.json` (`project-commands.ts:40`, slug = minuscules sans accents, non-alphanumériques → `_`, défaut `projet`) | `{ formatVersion, kind: "bundle", project, library, questionnaires[], layouts[] }` : image exacte de l'espace de travail en mémoire (`toBundle`, `workspace.ts:27`). Contient les mises en page et commentaires. |
+| Bundle (`project.export`, `Mod+S`) | `exportBundle` (`files.ts:64`) | `<slug(nom du projet)>.bundle.json` (`project-commands.ts:41`, slug = minuscules sans accents, non-alphanumériques → `_`, défaut `projet`) | `{ formatVersion, kind: "bundle", project, library, questionnaires[], layouts[] }` : image exacte de l'espace de travail en mémoire (`toBundle`, `workspace.ts:27`). Contient les mises en page et commentaires. |
 | Fichiers unitaires (`project.exportFiles`) | `exportFiles` (`files.ts:72-96`) | un téléchargement par fichier, espacés de 250 ms | voir ci-dessous |
 | Sauvegarde navigateur | `exportBundle` dans `src/app/persistence/index.ts:53`, relue par `importFiles` sous le nom `session.bundle.json` (l.27) | stockage local | même bundle, donc migré à la relecture |
 
@@ -2157,7 +2196,7 @@ Aucun schéma n'est fourni pour les fichiers `chemins/*.json`.
 ### 3. Types de questions et de nœuds
 
 - Aucun raccourci ne crée directement une question d'un type donné : `n` crée un texte, les raccourcis de type changent le type
-  de la question **locale** sélectionnée (graph-commands.ts:81-88).
+  de la question **locale** sélectionnée (graph-commands.ts:82-89).
 - Texte indicatif (`placeholder`) : éditable seulement pour texte et nombre (QuestionProperties.tsx:85), alors que les champs
   mail, téléphone et adresse l'affichent (email/index.tsx:39, phone-field.tsx:57, address/index.tsx:63). La date ne l'utilise pas.
 - Changement de type : `default` et `defaultExpr` ne sont pas conservés (hors de `QuestionBase`, contract.ts:47) ; les
@@ -2205,7 +2244,7 @@ Aucun schéma n'est fourni pour les fichiers `chemins/*.json`.
 
 ## 7. EVO réalisées par zone
 
-Toutes les fiches EVO-001 à EVO-023 sont au statut « fait ». Une EVO peut apparaître dans plusieurs zones.
+Les fiches EVO-001 à EVO-023 sont au statut « fait » ; EVO-025 est « en cours » (branche non fusionnée). Une EVO peut apparaître dans plusieurs zones.
 
 ### 1. Coque, commandes et transverse
 
@@ -2230,7 +2269,10 @@ Toutes les fiches EVO-001 à EVO-023 sont au statut « fait ». Une EVO peut app
   `ItemVersion.tsx`, version dans `QuestionnaireProperties`, `questionnaireFileName`, export `status`/`libraryVersions`,
   import d'un questionnaire provisoire, migration 13 → 14, exemple renommé (`declaration_sinistre - 1.0.5 - provisoire.json`, …).
 - **EVO-023** — Version et statut dans l'image : `imageFileName(projet, titre, { version, status }, date)`, `imageHeading`,
-  appel dans `useImageExport.ts:113-118`.
+  appel dans `useImageExport.ts:114-119`.
+- **EVO-025** — Refactoring de la gestion des erreurs (sans changement visible) : modules `app/feedback` (`refuse`, `inform`,
+  `fail`, `confirm`, `bindFeedback` branché par `store.ts:285`) et `app/issues` (`issuesOf`, `selectIssues`, `useIssues`) ;
+  commandes, `refused()` du store, `useImageExport`, `HiddenFields` et sept vues migrés ; `single-path.test.ts` ; `docs/ERREURS.md`.
 - (Format) **EVO-001, 003, 005, 006, 007, 016** : uniquement par leurs migrations dans `src/format/migrate.ts`.
 
 ### 2. Édition : logigramme, propriétés, commentaires, bibliothèque
@@ -2253,6 +2295,7 @@ Toutes les fiches EVO-001 à EVO-023 sont au statut « fait ». Une EVO peut app
 - **EVO-021 — Astérisque après surcharge** : `isRequired` dans `core/validation/field.ts` (côté prévisualisation) ; dans le logigramme, le badge `*` lit la question effective (`instanceQuestion` applique la surcharge d'une référence).
 - **EVO-022 — Versionning** : version et statut dans `QuestionnaireProperties`, `ItemVersion` (question et fragment), copies provisoires à la duplication.
 - **EVO-023 — Version et statut dans l'export d'image** : titre `imageHeading` et nom de fichier (`useImageExport.ts`).
+- **EVO-025 — Gestion des erreurs** : panneau des problèmes, `FragmentView`, `ComparePane` via `useIssues` ; confirmations de suppression et refus de la bibliothèque via `app/feedback` ; sans changement visible.
 
 ### 3. Types de questions et de nœuds
 
@@ -2269,22 +2312,24 @@ Toutes les fiches EVO-001 à EVO-023 sont au statut « fait ». Une EVO peut app
 | EVO-016 | Suggestions sur un champ texte | `suggestions`, `SuggestBox`, `suggestionList`, `referencedChoices` ; commits `cfac7f0`, `d635ca2`, `dc605f8`. |
 | EVO-017 | « Autre » séparée des groupes | `separatedOther` (selection.ts:56-60), conteneur `choice-other-apart` ; commit `7f45678`. |
 | EVO-018 | Suppression du tri-state | Plus de plugin ni de type `tristate` (registre, `QUESTION_TYPES`) ; jeux de libellés `kind: 'boolean'` seulement ; conversion dans `format/migrate.ts:93-110` ; commit `6c337ec`. |
+| EVO-025 | Refactoring de la gestion des erreurs | `useBlurErrors`, `blurMessages`, `shownBlurErrors` (plugin-api/blur-errors.ts) et `FieldErrors` (ui-kit) utilisés par mail, téléphone, adresse ; sans changement visible ; commit `a28d093`. |
 
 ### 4. Parcours : prévisualisation, moteur, validation, état du système, expressions
 
 - **EVO-001** — Options dynamiques placées librement : déploiement à leur position dans `choiceOptions` (`options.ts:43-73`) ; garde de fin `guardEnd` / `firstInvalidStep` (`path-check.ts`, commit `88ab4ff`).
 - **EVO-003** — Groupes d'options : `groupId`, couple (groupe, valeur) dans `choiceOptions` et `validateAnswer`, `groupPath`, réécriture `.groupe` (`group-ref.ts`), affichage « Groupe — Option » dans la synthèse.
 - **EVO-005** — Libellés d'arêtes et de variables : `caption` des variables et des champs de liste (`VariableCard.tsx:21-26, 50-52, 109-110`), libellé affiché dans `SystemValuesEditor` (`ValueInput.tsx:103`) ; l'arête n'intervient pas dans `chooseEdge`.
-- **EVO-006** — « Ne sais pas » : `dontKnowAnswer`, `dontKnowPath`, `SummaryEntry.dontKnow`, case dans le wizard (`Preview.tsx:126-131`), aucune erreur dans `validateAnswer` (`field.ts:46`), réécriture `.nsp`.
+- **EVO-006** — « Ne sais pas » : `dontKnowAnswer`, `dontKnowPath`, `SummaryEntry.dontKnow`, case dans le wizard (`Preview.tsx:124-129`), aucune erreur dans `validateAnswer` (`field.ts:46`), réécriture `.nsp`.
 - **EVO-007** — Mail, téléphone, adresse, civilité : `countryPath`, `contactErrors` et `formatErrors`, messages par défaut, réécriture `.pays`, `env.display` dans l'interpolation.
 - **EVO-008** — Fragments : identifiants d'étape imbriqués, `enter` / `leave`, contexte par alias, `edgeTrace` avec les arêtes de l'appelant, bandeau du débogage.
 - **EVO-009** — Champs masqués : `effectiveQuestion` → `instanceQuestion` (`steps.ts:38-46`).
 - **EVO-012** — Surcharge du caractère obligatoire : `withQuestion` → `resolveRequired` (`steps.ts:66-74`).
-- **EVO-014** — Contrôles de saisie activables : bascule, bandeau, `unchecked`, `env.checks` (`Preview.tsx:47, 52-54, 107-153`).
+- **EVO-014** — Contrôles de saisie activables : bascule, bandeau, `unchecked`, `env.checks` (`Preview.tsx:47, 52-54, 105-151`).
 - **EVO-016** — Suggestions d'un champ texte : `suggestions.ts` (`suggestionList`, `referencedChoices`, `filterSuggestions`).
 - **EVO-018** — Suppression du tri-state : visible seulement dans la migration et le modèle, hors de cette zone ; aucune trace spécifique dans le moteur.
 - **EVO-019** — Outline : `outline.ts`, `Outline.tsx`, `visited`, mode `outline` de `Diagram`.
-- **EVO-021** — Astérisque : `isRequired` partagé, `requiredAt` (`field.ts:25-27`, `path-check.ts:25-30`, `Preview.tsx:166`, commit `32dc34a`).
+- **EVO-021** — Astérisque : `isRequired` partagé, `requiredAt` (`field.ts:25-27`, `path-check.ts:25-30`, `Preview.tsx:164`, commit `32dc34a`).
+- **EVO-025** — Gestion des erreurs : `Outline` et compteur de traductions de `Preview` via `useIssues`, `TranslationsSection` et `SystemState` aussi ; sans changement visible.
 - **EVO-015** — Validation d'un formulaire : rien dans cette zone. La prévisualisation n'a aucun verrou : son état est dans `store.preview`, hors du projet, et `preview.saveScenario` modifie la portée `project`.
 
 ## 8. Écarts code ↔ fiches EVO
@@ -2293,7 +2338,7 @@ Toutes les fiches EVO-001 à EVO-023 sont au statut « fait ». Une EVO peut app
 
 ### 1. Coque, commandes et transverse
 
-Fiches lues : EVO-002, EVO-004, EVO-015 (commandes et coque), EVO-022, EVO-023.
+Fiches lues : EVO-002, EVO-004, EVO-015 (commandes et coque), EVO-022, EVO-023, EVO-025.
 
 - **EVO-022, « Le JSON contient `version` et `statut` (`final` | `provisoire`) »** : respecté différemment — le fichier porte
   `status` avec les valeurs `draft` / `validated` (pas de champ `statut`, pas de valeurs `final`/`provisoire`) ; seuls les
@@ -2308,12 +2353,19 @@ Fiches lues : EVO-002, EVO-004, EVO-015 (commandes et coque), EVO-022, EVO-023.
 - **EVO-004, « la fenêtre d'options s'ouvre avec mes derniers choix »** : le périmètre « sélection » mémorisé est ramené à
   « entier » s'il n'y a pas de sélection (choix de l'Analyse). Preuve : `src/ui/diagram/ImageDialog.tsx:16-19`.
 - **EVO-004, « Formats : SVG si … »** : PNG seul, conformément à la conclusion de l'Analyse. Aucun écart.
-- **EVO-023** : critères respectés dans le code (`image-file.ts:30-38`, `useImageExport.ts:113-118`) ; le test de fumée ne
+- **EVO-023** : critères respectés dans le code (`image-file.ts:30-38`, `useImageExport.ts:114-119`) ; le test de fumée ne
   vérifie que la présence d'un titre (déjà noté dans `docs/ECARTS.md`, 2026-10-14).
 - **EVO-002, anomalies relevées** (non des critères) toujours présentes dans le code : n° 1 (pas de suppression de
   questionnaire), 5 (500 étapes, pas de persistance), 6 (Ctrl+Tab), 7 (libellés partagés), 11 (Ctrl+Z selon l'onglet),
   12 (premier raccourci seul dans la palette), 14 (actions sans raccourci), 15 (libellés dynamiques). N° 3 (copier-coller)
   résolue par EVO-010.
+- **EVO-025, « Plus aucune écriture `s.notice =` hors de `app/feedback` (la fermeture de la boîte dans `ui/shell` exceptée) »** :
+  respecté différemment — une seconde remise à zéro reste dans `app/store` au chargement d'un projet (`store.ts:247`), admise
+  par le contrôle automatique (`single-path.test.ts:26-27`, décision notée dans DECISIONS.md). Autres critères vérifiés :
+  tests de caractérisation commités seuls (`036411a`) avant tout changement de `src/`, valeurs attendues inchangées ensuite
+  (seuls les appels internes remplacés) ; `window.confirm` et `checkWorkspace(` n'apparaissent hors tests que dans
+  `feedback.ts:60` et `issues.ts:22` ; tests par fonction (`feedback.test.ts`, `issues.test.ts`, `blur-errors.test.ts`) ;
+  tests de fumée (`tests/`) non modifiés.
 - **EVO-015** : aucun écart constaté dans la zone (boutons selon l'état `QuestionnaireView.tsx:69-81`, confirmation
   `edit-commands.ts:97-99`, marqueurs `Tabs.tsx:29-34`, `QuestionnaireView.tsx:96-101`).
 
@@ -2324,7 +2376,7 @@ Fiches lues : EVO-002, EVO-004, EVO-015 (commandes et coque), EVO-022, EVO-023.
 - **EVO-008** :
   - « alias en double » : pas de code dédié, signalé par le code générique `duplicateKey` (`src/core/validation/workspace-check.ts:10-14,21`) — respecté différemment.
 - **EVO-009** :
-  - Titre de la fenêtre d'avertissement assemblé en dur `« … : cle.champ »` (`src/ui/properties/HiddenFields.tsx:29`) — écart I18N déjà noté dans `docs/ECARTS.md`, toujours présent.
+  - Titre de la fenêtre d'avertissement assemblé en dur `« … : cle.champ »` (`src/ui/properties/HiddenFields.tsx:30`) — écart I18N déjà noté dans `docs/ECARTS.md`, toujours présent.
   - « une référence à un champ masqué est signalée » : non signalée lorsqu'elle provient de la définition d'une question de bibliothèque (champ frère, décision d'analyse) ; si elle provient d'une autre question de bibliothèque utilisée dans le même graphe, elle devient un `unknownReference` de propriétaire `libraryQuestion`, affiché dans aucun panneau (`src/core/validation/refs-check.ts:91-92`, voir limites).
 - **EVO-010** :
   - Critère « colle une sélection contenant un départ et une fin dans un fragment → ces deux nœuds sont écartés » : la fin est écartée, mais le nœud qui était le départ est **collé** comme nœud ordinaire (seul le rôle est écarté, message `paste.startFragment`) (`src/app/store/clipboard.ts:83-86`) — conforme à la décision de l'analyse EVO-010 (« Départ »), différent de la lettre du critère.
@@ -2334,7 +2386,7 @@ Fiches lues : EVO-002, EVO-004, EVO-015 (commandes et coque), EVO-022, EVO-023.
   - « Clic droit sur une question → menu propose Commenter » : si la question fait partie d'une sélection multiple, l'entrée est affichée mais grisée (`src/ui/diagram/useDiagramMenu.tsx:20,33`, `src/app/commands/comment-commands.ts:21`).
 - **EVO-012** : aucun constaté.
 - **EVO-013** :
-  - Badge d'un fragment : le fragment s'ouvre dans son propre onglet `f:<id>`, pas dans l'onglet Bibliothèque (`src/app/commands/library-item-commands.ts:26-29`) — décision d'analyse.
+  - Badge d'un fragment : le fragment s'ouvre dans son propre onglet `f:<id>`, pas dans l'onglet Bibliothèque (`src/app/commands/library-item-commands.ts:27-30`) — décision d'analyse.
   - « Panneau de propriétés : idem si le badge y est affiché » : le panneau n'affiche pas de badge « bib. » (texte « question de bibliothèque » et bouton « Ouvrir dans la bibliothèque » à la place, `src/ui/properties/ReferenceProperties.tsx:27,38`) — sans objet selon l'analyse.
 - **EVO-017** : aucun constaté (rendu de prévisualisation, hors de cette zone).
 - **EVO-021** : aucun constaté (« Logigramme / panneau : sans objet »).
@@ -2349,8 +2401,9 @@ Fiches lues : EVO-002, EVO-004, EVO-015 (commandes et coque), EVO-022, EVO-023.
 - **EVO-006** : critère « table de décision » sans objet (aucune table dans l'outil, noté dans la fiche). Autres critères :
   aucun écart constaté.
 - **EVO-007** : aucun constaté dans la zone. Rappel ECARTS.md (2026-10-13, EVO-014, TEST) : le silence des messages de format
-  mail / téléphone / adresse, contrôles désactivés, n'est pas testé (code : email/index.tsx:41, phone-field.tsx:63,
-  address/index.tsx:69).
+  mail / téléphone / adresse, contrôles désactivés, n'est pas testé en fumée (code : `plugin-api/blur-errors.ts:19-21`, appelé par
+  email/index.tsx:23, phone-field.tsx:25, address/index.tsx:39) ; la règle pure est testée en unitaire depuis EVO-025
+  (`blur-errors.test.ts:13`, `blur-errors-caracterisation.test.ts`).
 - **EVO-016** : aucun constaté dans la zone. Rappel ECARTS.md (TEST) : « valeur unique » et « doublons » couverts seulement en
   unitaire. Le critère « référence à une question située après le champ » relève des vérifications de `core/validation`
   (hors zone) ; `ExpressionInput` ne signale que les références absentes de la portée.
@@ -2362,11 +2415,11 @@ Fiches lues : EVO-002, EVO-004, EVO-015 (commandes et coque), EVO-022, EVO-023.
 
 ### 4. Parcours : prévisualisation, moteur, validation, état du système, expressions
 
-- **EVO-001** : aucun constaté dans cette zone. Une option dynamique disparue bloque la fin avec les contrôles activés. Avec les contrôles désactivés (EVO-014), ce blocage est volontairement levé (`Preview.tsx:111, 146`).
+- **EVO-001** : aucun constaté dans cette zone. Une option dynamique disparue bloque la fin avec les contrôles activés. Avec les contrôles désactivés (EVO-014), ce blocage est volontairement levé (`Preview.tsx:109, 144`).
 - **EVO-005** : aucun constaté dans cette zone. Le libellé d'arête n'a pas d'effet sur la navigation et n'apparaît pas dans le wizard. Le libellé de la variable s'affiche dans le dictionnaire et dans les scénarios. L'autocomplétion et le survol relèvent de `ui/expression-editor`, hors zone, non vérifiés ici.
 - **EVO-006** : aucun constaté. Obligatoire satisfait et contrôles levés (`field.ts:46`), `.nsp` toujours vrai ou faux (`dont-know-ref.ts`), `.groupe` = `NSP` pour un choix (`context.ts:63-64`). L'ordre d'affichage (après « Autre », hors groupes) relève du plugin `choice`, hors zone.
 - **EVO-012** : aucun constaté. La valeur effective s'applique à l'astérisque et au blocage (`steps.ts:70-72`), et seulement sur les questions présentées (validation par page, garde sur le chemin projeté). ECARTS.md note déjà l'absence de test direct pour « surchargée obligatoire mais non présentée ».
-- **EVO-014** : critères respectés. Un point est traité autrement que dans la fiche (déjà dans ECARTS.md comme SPEC) : une page quittée contrôles désactivés reste exclue de la garde de fin jusqu'à « Recommencer », même revisitée contrôles activés. Seul « Recommencer » vide `unchecked` (`Preview.tsx:42, 150`, `path-check.ts:35`). La référence de ECARTS.md, `Preview.tsx:375`, est périmée (le fichier compte 198 lignes) ; l'endroit réel est `Preview.tsx:150`, et `path-check.ts:33-38` pour l'exclusion.
+- **EVO-014** : critères respectés. Un point est traité autrement que dans la fiche (déjà dans ECARTS.md comme SPEC) : une page quittée contrôles désactivés reste exclue de la garde de fin jusqu'à « Recommencer », même revisitée contrôles activés. Seul « Recommencer » vide `unchecked` (`Preview.tsx:42, 148`, `path-check.ts:35`). La référence de ECARTS.md, `Preview.tsx:375`, est périmée (le fichier compte 196 lignes) ; l'endroit réel est `Preview.tsx:148`, et `path-check.ts:33-38` pour l'exclusion.
 - **EVO-015** : aucun constaté. La prévisualisation reste utilisable sur un formulaire validé, sans verrou dans `ui/preview`.
 - **EVO-016** : aucun constaté sur le moteur. Valeur unique, vide, conversion en texte, doublons et ordre suivent `suggestionList` ; le filtre « contient » ignore la casse ; le recalcul a lieu à chaque rendu de l'étape. Un détail diffère de l'analyse de la fiche, qui annonçait la conversion par `formatValue` : le code utilise `asText` (`String()`), avec le même résultat pour les nombres, booléens et dates ISO. `suggestionList` aplatit aussi d'un niveau les listes imbriquées (`suggestions.ts:20`), ce que la fiche ne dit pas.
 - **EVO-019** : critères respectés dans le code. Le recentrage suit `focusKey` (longueur de l'historique, étape, clics), l'outline est en lecture seule, les questions hors parcours sont grisées et inactives, les réponses sont conservées lors d'un saut. Une précision n'est pas dans la fiche : sur une page interne à un fragment, c'est le nœud fragment qui est mis en évidence, et il n'est pas cliquable (`Outline.tsx:20, 24`). Ce choix est noté dans l'analyse de la fiche.
@@ -2378,7 +2431,7 @@ Fiches lues : EVO-002, EVO-004, EVO-015 (commandes et coque), EVO-022, EVO-023.
 Contrôle automatique : les 95 noms de propriétés déclarés dans les schémas apparaissent tous dans `docs/FORMAT.md` ; l'exemple est valide pour les schémas en version 14 ; la table §16 de FORMAT.md (l.936-950) correspond aux étapes de `MIGRATIONS` ; `formatVersion` 14 partout (FORMAT.md l.1, 38, 934 ; `documents.ts:5` ; exemple). Écarts relevés :
 
 1. **Nom de fichier dans le schéma projet** : `project.schema.json:143` décrit `file` comme « `<clé>.json` », alors que l'export écrit `<clé> - <version> - <final|provisoire>.json` (`files.ts:26-29`, FORMAT.md l.132, l.174). Ce schéma est livré tel quel dans le kit.
-2. **`file` dans le bundle** : FORMAT.md l.132 annonce le nommage EVO-022 pour `questionnaires[].file`, mais seul `exportFiles` le réécrit (`files.ts:74`) ; en mémoire et donc dans le bundle, la valeur reste celle de la création (`<clé>.json`, `project-commands.ts:62`, `duplicate.ts:48` ; `questionnaire.json`, `store.ts:139`) ou du dernier import.
+2. **`file` dans le bundle** : FORMAT.md l.132 annonce le nommage EVO-022 pour `questionnaires[].file`, mais seul `exportFiles` le réécrit (`files.ts:74`) ; en mémoire et donc dans le bundle, la valeur reste celle de la création (`<clé>.json`, `project-commands.ts:63`, `duplicate.ts:48` ; `questionnaire.json`, `store.ts:139`) ou du dernier import.
 3. **Statut `"draft"` dans un bundle** : FORMAT.md l.180-181 (« `status` et `libraryVersions` n'y figurent que pour un questionnaire validé ») est vrai pour l'édition (`questionnaire-edits.ts:51-54` supprime les propriétés) mais un bundle importé contenant `status: "draft"` le conserve (`files.ts:131-134`, aucun `importedQuestionnaire` sur le bundle) et le réexporte.
 4. **Règles annoncées non portées par les schémas** (FORMAT.md les présente comme règles, le schéma ne les vérifie pas) : `validatedAt` « présente seulement si `status` vaut `validated` » (FORMAT.md l.165 ; `questionnaire.schema.json:46` sans dépendance) ; `defaultLanguage` « présente dans `languages` » (FORMAT.md l.129 ; `project.schema.json:93`, simple description) ; mots réservés interdits comme clé (FORMAT.md l.109-110 ; `key` = pattern seul, `common.schema.json:71`) ; `exit` « dans un fragment uniquement » (FORMAT.md l.238 le dit lui-même : « règle non vérifiée »). FORMAT.md l.825-826 précise que ces vérifications sont celles de l'éditeur, non bloquantes.
 5. **`formatVersion`** : FORMAT.md l.38 « entier, actuellement 14 » ; le schéma accepte tout entier ≥ 1 (`common.schema.json:525-528`) : un document validé seul (hors `importFiles`) n'est pas contraint à la version 14.

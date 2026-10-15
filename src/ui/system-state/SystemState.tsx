@@ -1,8 +1,8 @@
-import { useMemo } from 'react';
 import { Plus } from 'lucide-react';
-import { checkWorkspace, describeIssue } from '../../core/validation';
+import { describeIssue } from '../../core/validation';
 import { runCommand } from '../../app/commands';
 import { useStore, useT } from '../../app/store';
+import { useIssues } from '../../app/issues';
 import { Button } from '../../ui-kit';
 import { ScenarioCard } from './ScenarioCard';
 import { VariableCard } from './VariableCard';
@@ -11,11 +11,10 @@ import { VariableCard } from './VariableCard';
 export function SystemState() {
   const t = useT();
   const project = useStore((s) => s.ws.project);
-  const ws = useStore((s) => s.ws);
   const uiLang = useStore((s) => s.uiLang);
   const names = project.systemState.map((v) => v.name);
   // Problèmes du dictionnaire (noms invalides ou en double), affichés sur la variable concernée.
-  const issues = useMemo(() => checkWorkspace(ws).filter((i) => i.owner.kind === 'system'), [ws]);
+  const issues = useIssues({ owner: { kind: 'system' } });
   const problemsOf = (name: string) => issues.filter((i) => i.owner.id === name).map((i) => describeIssue(i, uiLang));
   return (
     <div className="h-full overflow-y-auto bg-slate-50" data-testid="system-state">

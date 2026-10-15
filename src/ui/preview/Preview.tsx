@@ -1,13 +1,13 @@
-import { useEffect, useMemo, type ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { Bug, ChevronLeft, Map as MapIcon, ChevronRight, Database, RotateCcw, ShieldCheck, Undo2 } from 'lucide-react';
 import { OTHER_VALUE } from '../../core/model';
 import {
   back, countryPath, currentStep, dontKnowAnswer, dontKnowPath, getAnswer, groupPath, next, otherPath, progress, resume, setAnswer, start, type RuntimeInput, type Session,
 } from '../../core/runtime';
-import { checkWorkspace } from '../../core/validation';
 import { nodeKind, questionType } from '../../registry';
 import { runCommand } from '../../app/commands';
 import { useStore, useT } from '../../app/store';
+import { useIssues } from '../../app/issues';
 import { Button, Select, cn } from '../../ui-kit';
 import { DebugPanel } from './DebugPanel';
 import { Outline } from './Outline';
@@ -84,11 +84,9 @@ export function Preview({ questionnaireId }: { questionnaireId: string }) {
 function MissingTranslations({ questionnaireId, lang }: { questionnaireId: string; lang: string }) {
   const t = useT();
   const ws = useStore((s) => s.ws);
-  const n = useMemo(() => {
-    const q = ws.questionnaires.find((x) => x.id === questionnaireId);
-    const used = new Set([questionnaireId, ...(q?.nodes ?? []).flatMap((x) => ('ref' in x && typeof x.ref === 'string' ? [x.ref] : []))]);
-    return checkWorkspace(ws).filter((i) => i.code === 'missingTranslation' && used.has(i.owner.id) && i.params.lang?.split(', ').includes(lang)).length;
-  }, [ws, questionnaireId, lang]);
+  const q = ws.questionnaires.find((x) => x.id === questionnaireId);
+  const used = [questionnaireId, ...(q?.nodes ?? []).flatMap((x) => ('ref' in x && typeof x.ref === 'string' ? [x.ref] : []))];
+  const n = useIssues({ code: 'missingTranslation', ownerIds: used, lang }).length;
   if (!n) return null;
   return (
     <span className="rounded bg-amber-50 px-2 py-0.5 text-xs text-amber-800" data-testid="preview-missing-translations">

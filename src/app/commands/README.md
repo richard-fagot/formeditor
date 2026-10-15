@@ -1,7 +1,8 @@
 # app/commands
 
 Catalogue unique des actions utilisateur (spec §4.4). Palette, menus et raccourcis s'appuient tous dessus :
-**toute action passe par une commande**.
+**toute action passe par une commande**. Les refus, informations (`notice`) et confirmations passent par `app/feedback`
+(`refuse`, `inform`, `confirm` ; voir `docs/ERREURS.md`).
 
 ## API
 - `commands()`, `command(id)`, `runCommand(id, arg?)` ; `Command` : `id`, `label`, `keys` (défauts tinykeys),
@@ -25,7 +26,7 @@ Catalogue unique des actions utilisateur (spec §4.4). Palette, menus et raccour
 - `edit-commands.ts` : `edge.moveUp` / `edge.moveDown` (Alt+↑ / Alt+↓, arête sélectionnée), `edge.create`
   (glisser sur le logigramme), `questionnaire.properties`, `questionnaire.setTitle` / `rename` / `setDescription`,
   `project.rename`, `questionnaire.validate` / `questionnaire.unvalidate` (EVO-015 : `arg` = id, sinon le questionnaire affiché ; chacune activée
-  selon l'état ; dévalider demande confirmation, `window.confirm` ; valider : `validateQuestionnaire` de `version-commands.ts`).
+  selon l'état ; dévalider demande confirmation, `confirm` d'`app/feedback` ; valider : `validateQuestionnaire` de `version-commands.ts`).
 - `version-commands.ts` (EVO-022) : `questionnaire.setVersion` (masquée, `arg` = texte ; frappes regroupées), `library.setVersion`
   (masquée, `{ kind, id, version }` ; élément validé → `notice`), `library.validate` / `library.unvalidate` (`arg` = `{ kind, id }`, sinon le fragment de
   l'onglet actif ou la question affichée dans l'onglet Bibliothèque ; valider sans version → `notice` « Validation impossible » ; dévalider sans confirmation).
@@ -58,7 +59,7 @@ Catalogue unique des actions utilisateur (spec §4.4). Palette, menus et raccour
 - `comment-commands.ts` (EVO-011) : `comment.add` (« Commenter » : `arg` `{ host, node }` ou question sélectionnée ; existant → affiché ; question de
   bibliothèque → vue de la question), `comment.toggle`, `comment.toggleAll` (graphe affiché : tout afficher si l'un est masqué, sinon tout masquer),
   `comment.reply`, `comment.deleteReply` (`{ host, node, index }`), `comment.delete`, `comment.open` (page → objet, commentaires affichés, `centerRequest`),
-  `tab.comments`. `node.delete` et `library.delete` (question) demandent confirmation (`window.confirm`) si un commentaire existe.
+  `tab.comments`. `node.delete` et `library.delete` (question) demandent confirmation (`confirm` d'`app/feedback`) si un commentaire existe.
 - `enabled(arg?)` reçoit le paramètre de `runCommand` (commande appelée depuis un menu sur un autre objet que la sélection).
 - `nav-commands.ts` : flèches, annuler/rétablir (portée `global` : actifs hors du logigramme, pas pendant une saisie ; onglet Bibliothèque → historique `library`), ajuster la vue, logigramme ↔ prévisualisation.
 - `example.ts` : exemple embarqué ; `files.ts` : téléchargement et sélection de fichiers.

@@ -2,7 +2,7 @@
 
 Contrat entre l'éditeur et les plugins : `QuestionTypePlugin` (un par type de question) et
 `NodeKindPlugin` (un par type de nœud), plus les environnements transmis (`EditorEnv`, `RenderEnv`).
-Types seulement, et deux utilitaires (`tr`, `commonQuestionFields`). Dépend de `core/model` et des types React.
+Types, quelques utilitaires (`tr`, `commonQuestionFields`, `previewText`, `dontKnowLabel`) et le hook `useBlurErrors`. Dépend de `core/model` et de React.
 
 - Un plugin exporte un objet qui respecte ce contrat ; `src/registry` les rassemble.
 - Les plugins ne s'importent pas entre eux : ce dont un plugin de nœud a besoin d'un plugin de type
@@ -22,3 +22,6 @@ Types seulement, et deux utilitaires (`tr`, `commonQuestionFields`). Dépend de 
 - « Ne sais pas » (EVO-006) : `FieldProps.dontKnow` (marqueur `<clé>_nsp`) et `onDontKnow(on)` (l'appelant range la réponse vide,
   le groupe `NSP` et le marqueur, ou efface la réponse) ; `dontKnowLabel(q)` (libellé, défaut « Ne sais pas ») ; `dontKnow` fait
   partie de `QuestionBase` (conservé au changement de type, retiré vers une structure).
+- Erreurs « à la sortie du champ » (EVO-025, `blur-errors.ts`, voir `docs/ERREURS.md`) : `useBlurErrors(env, errors)` → `{ shown, onBlur(formatErrors(…)), reset() }`
+  (`reset` à la saisie ; `shown` vide si `env.checks === false` ou si la question a une erreur de validation `errors['']`), affichés par
+  `FieldErrors` de `ui-kit`. Logique pure : `blurMessages`, `shownBlurErrors`. Utilisé par `email`, `phone`, `address`.

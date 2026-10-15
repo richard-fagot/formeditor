@@ -3,7 +3,7 @@ import {
   activeGraphRef, activeQuestionnaire, canRenameQuestionnaire, connect, getGraph, moveEdge, patchQuestionnaire, renameQuestionnaire,
   scopeOf, setValidation, useStore, type GraphRef,
 } from '../store';
-import { makeTranslate } from '../i18n';
+import { confirm } from '../feedback';
 import { validateQuestionnaire } from './version-commands';
 import type { Command } from './types';
 
@@ -94,7 +94,7 @@ export function editCommands(): Command[] {
         const q = target(arg);
         if (!q || !isValidated(q)) return;
         const name = q.title[st().contentLang] ?? q.title[st().ws.project.defaultLanguage] ?? q.key;
-        if (!window.confirm(makeTranslate(st().uiLang)('validation.confirmUnvalidate', { name }))) return;
+        if (!confirm({ key: 'validation.confirmUnvalidate', params: { name } })) return;
         st().edit(`q:${q.id}`, (ws) => setValidation(ws, q.id, undefined));
       },
     },

@@ -15,7 +15,7 @@ Dépend de `app/commands`, `app/store`, `core/model`, `core/references` (usages)
 - `VariableCard.tsx` : nom (renommage propagé : commande `system.renameVariable`), libellé `caption` (EVO-005, clé
   d'historique `sys:<nom>:caption` ; `sys:<nom>:field<i>:caption` pour un champ de liste), type (`setVariableType`),
   description, valeurs d'une énumération (une par ligne), schéma d'une liste (champs de types simples ; nom validé
-  par `KeyInput`, renommage propagé : `system.renameField`), problèmes du dictionnaire (`checkWorkspace`, propriétaire `system`),
+  par `KeyInput`, renommage propagé : `system.renameField`), problèmes du dictionnaire (`useIssues` d'`app/issues`, propriétaire `system`),
   valeur d'exemple, nombre d'usages (`findUsages`), suppression (`system.deleteVariable`).
 - `ScenarioCard.tsx` : nom, description, valeurs ; dupliquer (`scenario.add` avec l'id), supprimer (`scenario.delete`).
 

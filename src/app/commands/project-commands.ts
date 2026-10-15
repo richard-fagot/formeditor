@@ -2,20 +2,21 @@ import { FORMAT_VERSION, newId, uniqueKey } from '../../core/model';
 import { exportBundle, exportFiles, importFiles } from '../../format';
 import { blankWorkspace, useStore, type TabId } from '../store';
 import { makeTranslate } from '../i18n';
+import { confirm, refuse } from '../feedback';
 import { download, pickFiles, slug } from './files';
 import { exampleWorkspace } from './example';
 import type { Command } from './types';
 
 const st = () => useStore.getState();
 const t = () => makeTranslate(st().uiLang);
-const confirmLoss = () => !st().dirty || window.confirm(t()('project.confirmNew'));
+const confirmLoss = () => !st().dirty || confirm('project.confirmNew');
 
 async function importAction() {
   const files = await pickFiles();
   if (!files.length) return;
   const res = importFiles(files, st().ws);
   if (!res.workspace) {
-    st().set((s) => void (s.notice = { title: t()('project.importErrors'), lines: res.errors }));
+    refuse('project.importErrors', ...res.errors.map((raw) => ({ raw })));
     return;
   }
   const replaces = files.some((f) => /"kind":\s*"(project|bundle)"/.test(f.text));

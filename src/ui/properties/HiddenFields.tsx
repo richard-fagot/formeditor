@@ -1,6 +1,7 @@
 import type { LibraryQuestionNode } from '../../core/model';
 import { previewText } from '../../plugin-api';
 import { hiddenFieldUsages, hiddenUsageCaller, scopeOf, setFieldHidden, useStore, useT, type GraphRef } from '../../app/store';
+import { inform } from '../../app/feedback';
 import { Checkbox, Field } from '../../ui-kit';
 import { usePluginEnv } from './usePluginEnv';
 
@@ -24,9 +25,9 @@ export function HiddenFields({ graph, node }: { graph: GraphRef; node: LibraryQu
       const lines = usages.map((u) => {
         const caller = hiddenUsageCaller(st.ws, graph, u, env);
         const where = `${u.loc.nodeId ?? u.loc.edgeId ?? ''} · ${u.loc.property} : ${u.text}`;
-        return caller ? `${t('hidden.caller', { name: caller })} · ${where}` : where;
+        return { raw: caller ? `${t('hidden.caller', { name: caller })} · ${where}` : where };
       });
-      st.set((s) => void (s.notice = { title: `${t('hidden.warning')} : ${q.key}.${key}`, lines }));
+      inform({ raw: `${t('hidden.warning')} : ${q.key}.${key}` }, ...lines);
     }
   };
   return (

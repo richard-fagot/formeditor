@@ -430,6 +430,8 @@ L'architecture combine un **noyau métier pur**, sans interface et testé en TDD
 | `registry` | Enregistrement des plugins ; seul point de connaissance de la liste des types. | plugins |
 | `app/store` | État applicatif : projet, onglets, sélection, annuler/rétablir. | core |
 | `app/commands` | Catalogue unique des actions (id, libellé, gestionnaire). | store |
+| `app/feedback` | Refus, informations, échecs et confirmations destinés à l'utilisateur (EVO-025, `docs/ERREURS.md`). | i18n |
+| `app/issues` | Problèmes non bloquants du projet pour les vues : vérification mémorisée, filtres (EVO-025). | validation, store |
 | `app/shortcuts` | Liaisons clavier configurables vers les commandes. | commands |
 | `app/persistence` | Sauvegarde automatique IndexedDB. | format |
 | `app/i18n` | Langues des contenus et de l'interface. | model |

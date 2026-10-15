@@ -4,12 +4,12 @@ import {
   type CopyName, type LibraryItem, type PasteDrop,
 } from '../store';
 import { makeTranslate, UI_LANGUAGES } from '../i18n';
+import { inform, type Message } from '../feedback';
 import { inDiagram } from './graph-commands';
 import { showLibraryItem } from './library-item-commands';
 import type { Command } from './types';
 
 const st = () => useStore.getState();
-const t = () => makeTranslate(st().uiLang);
 const ref = () => activeGraphRef(st());
 
 /** Dernière position du pointeur sur le logigramme affiché (coordonnées du graphe) ; posée par `ui/diagram`. */
@@ -37,13 +37,12 @@ function nodeName(ws: Workspace, n: GraphNode): string {
 
 function report(dropped: PasteDrop[], inFragment: boolean) {
   const clip = st().clipboard!;
-  const tt = t();
-  const lines = dropped.map((d) => {
+  const lines = dropped.map((d): Message => {
     const n = clip.nodes.find((x) => x.id === d.nodeId)!;
     const key = d.reason === 'start' && inFragment ? 'paste.startFragment' : (`paste.${d.reason}` as const);
-    return tt(key, { name: nodeName(st().ws, n) });
+    return { key, params: { name: nodeName(st().ws, n) } };
   });
-  st().set((s) => void (s.notice = { title: tt('paste.title'), lines }));
+  inform('paste.title', ...lines);
 }
 
 /** Élément de bibliothèque visé : argument, sinon le fragment de l'onglet actif ou la question affichée dans l'onglet Bibliothèque. */
