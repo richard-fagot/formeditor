@@ -1,7 +1,7 @@
 # CLAUDE.md — Éditeur de questionnaires
 
 Outil interne de spécification de questionnaires métier (logigramme, prévisualisation wizard, export JSON).
-Spécification : `docs/spec.md`. Plan et avancement : `docs/PLAN.md`. Toujours écrire en français.
+Spécification : `docs/spec.md`. Plan et avancement : `docs/PLAN.md`. Existant réellement implémenté : `docs/EXISTANT.md`. Toujours écrire en français.
 
 C'est un **outil**, pas un projet industriel : il doit fonctionner correctement et ne pas régresser,
 sans cérémonie. Préférer la solution la plus simple qui respecte la spec.
@@ -117,5 +117,8 @@ Une demande par fichier : `docs/evolutions/EVO-NNN-titre.md`, avec une ligne `St
    guide (`docs/GUIDE.md` et sa date « jusqu'à EVO-NNN », dans le même commit que le changement
    de comportement). Si l'analyse conclut « à arbitrer », il s'arrête avant de coder et rend les options.
 3. Faire relire par `relecteur` (guide compris), corriger si besoin (règles de l'orchestration ci-dessus).
-4. Fusionner, statut « fait » avec la date.
+4. Confier la branche à l'`inventoriste`, qui met à jour `docs/EXISTANT.md` (inventaire factuel du code)
+   et le commite sur la branche. Même étape en fin de phase de `docs/PLAN.md`, ou après toute
+   modification de code fusionnée hors évolution.
+5. Fusionner, statut « fait » avec la date.
 Si une demande contredit la spec sans que ce soit explicitement voulu, demander avant de coder.
