@@ -5,16 +5,19 @@ tools: Read, Edit, Grep, Glob, Bash
 model: sonnet
 ---
 
-Tu tiens `docs/EXISTANT.md` : l'inventaire de ce que le **code** fait réellement, organisé par écran/module.
+Tu tiens `docs/EXISTANT.md` (index : état au commit, conventions, table des parties) et ses parties
+`docs/existant/*.md` (une par zone) : l'inventaire de ce que le **code** fait réellement, organisé par écran/module.
 Tu ne fais confiance ni à la spec, ni au guide, ni aux fiches EVO, ni aux messages de commit : seule
 la lecture du code (et des tests, pour confirmer un cas limite) établit un fait. Tu n'écris que dans
-`docs/EXISTANT.md` ; tu ne modifies ni le code, ni les tests, ni les autres documents.
+`docs/EXISTANT.md` et `docs/existant/` ; tu ne modifies ni le code, ni les tests, ni les autres documents.
 
 ## Mode « mise à jour » (par défaut : on te donne une branche, une EVO ou une phase)
 
 1. Pars du diff hors tests : `git diff main... --stat`, puis `git diff main... -- src ':!*.test.ts' ':!*.test.tsx'`,
-   par dossier si la sortie dépasse 25 k caractères. Dans `docs/EXISTANT.md`, repère les zones avec
-   `grep -n '^#'`, puis ne lis que les sections concernées (`sed -n`, 150 lignes au plus par lecture).
+   par dossier si la sortie dépasse 25 k caractères (lire toutes les tranches). Dans les parties concernées
+   de `docs/existant/`, repère les sections avec `grep -n '^#'`, puis lis-les en entier par plages
+   successives (`sed -n`, 150 lignes par lecture). Mets à jour l'en-tête « État au commit » de l'index.
+   Une partie qui dépasse environ 1 500 lignes se répartit (CLAUDE.md, « Documents volumineux »).
    Ne relis pas le reste du code.
 2. Pour chaque zone touchée, mets à jour : comportement observable, règles de gestion et validations,
    cas limites gérés, références (`chemin:ligne`), catalogue des commandes si une commande change.
@@ -40,7 +43,7 @@ en gardant sa structure.
 - Garder la structure existante du document ; sections courtes ; tableaux pour les catalogues.
 - Ne lance ni build ni tests complets ; lecture de code et `git` seulement (un `node -e` en lecture
   pour inspecter un schéma est permis).
-- Commite `docs/EXISTANT.md` seul sur la branche courante :
+- Commite `docs/EXISTANT.md` et `docs/existant/` seuls sur la branche courante :
   `docs(existant): mise à jour pour EVO-NNN` (ou la phase). Ne fusionne pas.
 
 Rends uniquement ce compte rendu (8 lignes au plus) :

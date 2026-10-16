@@ -8,7 +8,7 @@ d'acceptation en texte) restent valables telles quelles.
 
 1. Frontmatter (voir ci-dessous).
 2. `# EVO-NNN — Titre`
-3. `## Contexte` — non normatif : besoin (aujourd'hui / demain, d'après `docs/EXISTANT.md`),
+3. `## Contexte` — non normatif : besoin (aujourd'hui / demain, d'après `docs/EXISTANT.md` et `docs/existant/`),
    cas d'usage, glossaire, exemple, hors périmètre.
 4. `## Exigences` — tableaux `| ID | Exigence |` regroupés par thème (`###`). **Seules les
    exigences font foi.**
@@ -40,7 +40,7 @@ depend_de: []            # EVO dont celle-ci réutilise le résultat
   invariante (« Un bouton à cible nœud ne porte aucun toggle. »).
 - **Fonctionnel uniquement** : pas de technique (noms de fichiers, de fonctions, de propriétés
   JSON) ; précisions UI/UX admises. Les noms de l'outil (commandes, champs, onglets, types)
-  sont ceux de `docs/EXISTANT.md`.
+  sont ceux de `docs/EXISTANT.md` et `docs/existant/`.
 - **Modules communs** (vérifications du graphe et panneau des problèmes, `docs/ERREURS.md`,
   conditions d'affichage, garde de fin, copier-coller, duplication) : y renvoyer, ne pas les
   redécrire. Un problème signalé s'écrit « l'éditeur signale l'erreur | l'avertissement « texte » ».

@@ -10,8 +10,8 @@ Tu ne fais confiance ni aux cases cochées, ni aux messages de commit : tu véri
 
 On te donne une phase, une évolution ou une liste d'écarts corrigés. Pars de
 `git diff main... --stat`, puis lis le diff **par groupe de fichiers** (core, format, app, ui, plugins,
-tests, docs), chaque commande sous 25 k caractères (`| head -400` au besoin) ; ne relis jamais en entier
-une sortie mise sur disque (`tool-results/*.txt`) : relance une commande plus étroite. Ne lis le reste
+tests, docs), chaque commande sous 25 k caractères (découper plus finement au besoin, et lire **toutes** les tranches) ;
+ne relis jamais en entier une sortie mise sur disque (`tool-results/*.txt`) : relance une commande plus étroite. Ne lis le reste
 du code que si le diff y renvoie. Pour une liste d'écarts corrigés : ne vérifie que ces écarts et les lignes du diff.
 Pour chaque phase ou évolution :
 
