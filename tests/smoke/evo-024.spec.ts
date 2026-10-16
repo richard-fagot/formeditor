@@ -262,3 +262,57 @@ test('EVO-024-020, EVO-024-021 — bouton Terminer : libellé personnalisé mult
   await page.getByTestId('preview-finish').click();
   await expect(page.getByTestId('preview')).toContainText('Merci, c’est fini');
 });
+
+test('EVO-024-003 — le texte du nœud Renvoi est multi-lignes, comme celui du nœud information ; le titre est une ligne', async ({ page }) => {
+  const errors = await setup(page);
+  const props = page.getByTestId('properties');
+  const field = (name: string) => props.locator('label', { hasText: new RegExp(`^${name}$`) }).locator('xpath=..');
+  await page.getByTestId('rf__node-n_info').click();
+  await expect(field('Texte').locator('textarea')).toHaveCount(1);
+  await page.getByTestId('rf__node-n_r').click();
+  await expect(field('Titre').locator('textarea')).toHaveCount(0);
+  const text = field('Texte').locator('textarea');
+  await expect(text).toHaveCount(1);
+  await text.fill('Première ligne\nDeuxième ligne');
+  await page.getByTestId('rf__node-n_info').click();
+  await page.getByTestId('rf__node-n_r').click();
+  await expect(field('Texte').locator('textarea')).toHaveValue('Première ligne\nDeuxième ligne');
+  expect(errors).toEqual([]);
+});
+
+test('EVO-024-020 — le bouton Terminer n’a ni cible ni condition d’affichage : seul son libellé se saisit, il n’est exporté qu’avec son libellé', async ({ page }) => {
+  await setup(page, true, { fr: 'Abandonner', en: 'Give up' });
+  await page.getByTestId('rf__node-n_r').click();
+  const props = page.getByTestId('properties');
+  const finish = props.locator('label', { hasText: /^Libellé du bouton Terminer$/ }).locator('xpath=..');
+  await expect(finish).toBeVisible();
+  await expect(finish.locator('select')).toHaveCount(0);
+  await expect(finish).not.toContainText('Cible');
+  await expect(finish).not.toContainText('Condition');
+  // Une cible et une condition par bouton de renvoi, aucune de plus pour Terminer.
+  await expect(props.locator('label', { hasText: /^Cible$/ })).toHaveCount(6);
+  await expect(props.locator('label', { hasText: /^Condition d’affichage$/ })).toHaveCount(6);
+  const bundle = JSON.parse(await exportText(page));
+  const r = bundle.questionnaires[0].nodes.find((n: { id: string }) => n.id === 'n_r');
+  expect(Object.keys(r).filter((k) => /finish/i.test(k))).toEqual(['finishLabel']);
+});
+
+test('EVO-024-033, EVO-024-036 — cible hors cibles autorisées : « (non autorisée) » si le nœud existe, « (introuvable) » sinon', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  page.on('dialog', (d) => void d.accept());
+  await page.goto(appUrl);
+  await expect(page.getByTestId('app-title')).toBeAttached();
+  const bundle = JSON.parse(withRedirect(await exportText(page)));
+  const q = bundle.questionnaires[0];
+  // L'information n'est plus en amont du Renvoi ; le bouton 2 vise un nœud absent.
+  q.edges = q.edges.filter((e: { id: string }) => e.id !== 'e3');
+  q.nodes.find((n: { id: string }) => n.id === 'n_r').buttons[1].target = { node: 'n_absent' };
+  await importText(page, JSON.stringify(bundle));
+  await page.getByTestId('rf__node-n_r').click();
+  const props = page.getByTestId('properties');
+  const selected = (i: number) => props.getByTestId(`redirect-target-${i}`).locator('option:checked');
+  await expect(selected(2)).toHaveText('Information (non autorisée)');
+  await expect(selected(1)).toHaveText('n_absent (introuvable)');
+  expect(errors).toEqual([]);
+});

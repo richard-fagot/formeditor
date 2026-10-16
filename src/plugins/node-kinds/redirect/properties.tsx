@@ -1,5 +1,5 @@
 import { ArrowDown, ArrowUp, Plus, Trash2 } from 'lucide-react';
-import { redirectTargets, targetFromValue, targetName, targetValue, type RedirectButton, type RedirectNode } from '../../../core/model';
+import { redirectTargets, targetFromValue, targetMissing, targetName, targetValue, type RedirectButton, type RedirectNode } from '../../../core/model';
 import { tr, type EditorEnv, type NodePropertiesProps } from '../../../plugin-api';
 import { Button, Checkbox, Field, Select } from '../../../ui-kit';
 import { ExpressionInput, LabelEditor } from '../../../ui/expression-editor';
@@ -17,12 +17,16 @@ interface ButtonProps {
   remove(): void;
 }
 
-/** Cible : liste fermée des cibles autorisées (EVO-024-029, 030) ; une cible devenue invalide reste affichée. */
+/**
+ * Cible : liste fermée des cibles autorisées (EVO-024-029, 030) ; une cible devenue invalide reste affichée,
+ * marquée « introuvable » si elle n'existe plus, « non autorisée » si elle existe (hors amont, Renvoi lui-même).
+ */
 function TargetSelect({ b, i, env, graphId, nodeId, set }: Pick<ButtonProps, 'b' | 'i' | 'env' | 'graphId' | 'nodeId' | 'set'>) {
   const choices = graphId ? redirectTargets(env.ws, graphId, nodeId, env.contentLang) : [];
   const value = targetValue(b.target);
+  const missing = !graphId || !b.target || targetMissing(env.ws, graphId, b.target);
   const current = value && !choices.some((c) => c.value === value)
-    ? `${(graphId && b.target && targetName(env.ws, graphId, b.target, env.contentLang)) || value.slice(2)} ${tr(T.unknown, env.uiLang)}` : undefined;
+    ? `${(graphId && b.target && targetName(env.ws, graphId, b.target, env.contentLang)) || value.slice(2)} ${tr(missing ? T.unknown : T.notAllowed, env.uiLang)}` : undefined;
   const group = (kind: 'questionnaire' | 'node', label: string) => {
     const list = choices.filter((c) => c.kind === kind);
     return list.length ? <optgroup label={label}>{list.map((c) => <option key={c.value} value={c.value}>{c.name}</option>)}</optgroup> : null;

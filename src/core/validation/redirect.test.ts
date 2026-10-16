@@ -47,6 +47,11 @@ describe('nœud Renvoi : problèmes signalés (EVO-024)', () => {
     expect(texts(ws)).toEqual(['error:buttons[0]:Le bouton n\'a pas de libellé.', 'error:buttons[1]:Le bouton n\'a pas de cible.']);
   });
 
+  it('EVO-024-007, EVO-024-033 — cible questionnaire égale au questionnaire en cours : erreur « introuvable »', () => {
+    const ws = workspace([ok('Moi-même', { target: { questionnaire: 'q1', prefill: false, replace: true } })]);
+    expect(texts(ws)).toEqual(['error:buttons[0]:La cible du bouton « Moi-même » est introuvable.']);
+  });
+
   it('EVO-024-033, EVO-024-034 — cible supprimée : le bouton est conservé, erreur « introuvable »', () => {
     const ws = workspace([ok('Déclarer', toQ2()), ok('Rectifier', { target: { node: 'n1' } })]);
     ws.questionnaires.splice(1, 1);

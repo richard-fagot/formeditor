@@ -257,8 +257,11 @@ ancien id → nouvel id. Après copie, le premier segment du chemin d'une cible 
   manquante (063). Bouton en erreur (047, 064) : 031, 032 ou 033 (calculés par `redirectButtonError`, partagé par
   les vérifications et la prévisualisation).
 - Messages de la prévisualisation (043, 046, 067) : `inform` d'`app/feedback` (boîte de message), la page reste affichée.
-- Une cible questionnaire égale au questionnaire en cours (après un collage) n'est pas proposée au choix et n'est pas
-  signalée.
+- Une cible questionnaire égale au questionnaire en cours (après un collage) n'est pas proposée au choix ; exclue par 007,
+  elle est signalée comme une cible introuvable (033). Dans le panneau, une cible hors choix reste affichée « (introuvable) »
+  si elle n'existe plus, « (non autorisée) » si elle existe (nœud plus en amont, Renvoi lui-même).
+- Suppression d'un questionnaire (034) : aucune commande ne supprime un questionnaire (GUIDE) ; couvert par l'ouverture d'un
+  projet qui ne le contient plus.
 
 ### 5. Matrice de couverture
 
@@ -268,11 +271,11 @@ Chaque test cite dans son titre les ID qu'il couvre (`tests/smoke/evo-024.spec.t
 | --- | --- |
 | EVO-024-001 | `src/app/commands/redirect-commands.test.ts`, `tests/smoke/evo-024.spec.ts` |
 | EVO-024-002 | `src/app/commands/redirect-commands.test.ts` |
-| EVO-024-003 | `tests/smoke/evo-024.spec.ts` |
+| EVO-024-003 | `tests/smoke/evo-024.spec.ts` (dont « texte multi-lignes ») |
 | EVO-024-004 | `src/format/redirect.test.ts` |
 | EVO-024-005 | `src/core/validation/redirect.test.ts` |
 | EVO-024-006 | `src/core/validation/redirect.test.ts` |
-| EVO-024-007 | `src/core/model/redirect.test.ts` |
+| EVO-024-007 | `src/core/model/redirect.test.ts`, `src/core/validation/redirect.test.ts`, `src/app/commands/redirect-commands.test.ts` |
 | EVO-024-008 | `src/core/model/redirect.test.ts` |
 | EVO-024-009 | `src/core/model/redirect.test.ts` |
 | EVO-024-010 | `src/core/model/redirect.test.ts` |
@@ -298,8 +301,8 @@ Chaque test cite dans son titre les ID qu'il couvre (`tests/smoke/evo-024.spec.t
 | EVO-024-030 | `tests/smoke/evo-024.spec.ts` |
 | EVO-024-031 | `src/core/model/redirect.test.ts`, `src/core/validation/redirect.test.ts` |
 | EVO-024-032 | `src/core/model/redirect.test.ts`, `src/core/validation/redirect.test.ts` |
-| EVO-024-033 | `src/core/model/redirect.test.ts`, `src/core/validation/redirect.test.ts` |
-| EVO-024-034 | `src/core/validation/redirect.test.ts` |
+| EVO-024-033 | `src/core/model/redirect.test.ts`, `src/core/validation/redirect.test.ts`, `src/app/commands/redirect-commands.test.ts`, `tests/smoke/evo-024.spec.ts` |
+| EVO-024-034 | `src/core/validation/redirect.test.ts`, `src/app/commands/redirect-commands.test.ts` |
 | EVO-024-035 | `src/core/validation/redirect.test.ts` |
 | EVO-024-036 | `src/core/model/redirect.test.ts`, `src/core/validation/redirect.test.ts` |
 | EVO-024-037 | `src/app/commands/redirect-commands.test.ts`, `tests/smoke/evo-024.spec.ts` |

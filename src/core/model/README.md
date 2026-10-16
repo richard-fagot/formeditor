@@ -43,8 +43,8 @@ utilitaires purs. Aucun import externe : c'est la base de tous les autres module
   `RedirectTarget` (`{ questionnaire, prefill, replace }` | `{ node }` : chemin d'ids d'étape, `n_appel/n_question`) dans `node.ts` ; `FINISH_LABEL`,
   `redirectTargets(ws, questionnaire, renvoi, langue)` (cibles autorisées : autres questionnaires, puis questions / infos / synthèses en amont, puis questions
   des fragments appelés en amont ; `value` = `q:<id>` | `n:<chemin>`), `targetValue` / `targetFromValue` (toggles à `false`), `targetName`, `nodeAtPath`,
-  `upstreamNodes`, `isJustBeforeEnd`, `alwaysBefore` (dominance : cible traversée sur tous les chemins), `redirectButtonError` (`noLabel` | `noTarget` |
-  `targetMissing`), `buttonLabel`, `retargetButtons(nœud, table des ids)` (collage, duplication).
+  `upstreamNodes`, `isJustBeforeEnd`, `alwaysBefore` (dominance : cible traversée sur tous les chemins), `targetMissing` (cible absente, ou questionnaire en cours),
+  `redirectButtonError` (`noLabel` | `noTarget` | `targetMissing`), `buttonLabel`, `retargetButtons(nœud, table des ids)` (collage, duplication).
 - `keys.ts` : `deriveKey` (« Date du sinistre » → `date_sinistre`), `uniqueKey`, `isValidKey`, `newId`, `RESERVED_KEYS` (dont `groupe`, `nsp`).
 
 ## Invariants

@@ -12,6 +12,7 @@ export const T = {
   questionnaires: { fr: 'Questionnaires (déclaration)', en: 'Forms (declaration)' },
   nodes: { fr: 'Nœuds en amont (corriger)', en: 'Upstream nodes (correct)' },
   unknown: { fr: '(introuvable)', en: '(not found)' },
+  notAllowed: { fr: '(non autorisée)', en: '(not allowed)' },
   prefill: { fr: 'Pré-remplissage de la cible', en: 'Prefill the target' },
   replace: { fr: 'Annule et remplace', en: 'Cancel and replace' },
   when: { fr: 'Condition d’affichage', en: 'Display condition' },

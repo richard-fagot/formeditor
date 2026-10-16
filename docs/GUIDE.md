@@ -807,8 +807,10 @@ ou palette « Problèmes ») ; un clic sur un problème sélectionne le nœud ou
 - **Nœud de départ introuvable** — « Définir comme départ » sur un nœud (§3).
 - **Le nœud Renvoi n'a aucun bouton.** — « Ajouter un bouton » dans son panneau (§3).
 - **Le bouton n'a pas de libellé.** / **Le bouton n'a pas de cible.** — Saisir le libellé, choisir la « Cible » du bouton.
-- **La cible du bouton « … » est introuvable.** — Le questionnaire ou le nœud visé a été supprimé → choisir une autre cible
-  (l'ancienne reste affichée « (introuvable) »), ou supprimer le bouton.
+- **La cible du bouton « … » est introuvable.** — Le questionnaire ou le nœud visé a été supprimé, ou le bouton vise le
+  questionnaire en cours (Renvoi collé dans le questionnaire qu'il cible) → choisir une autre cible (l'ancienne reste affichée
+  « (introuvable) »), ou supprimer le bouton. Une cible nœud qui existe mais n'est plus autorisée (plus en amont, ou le Renvoi
+  lui-même) reste affichée « (non autorisée) ».
 - **Plusieurs boutons de ce nœud visent la cible « … ».** — Avertissement : changer la cible d'un des boutons, ou le supprimer.
 - **Une déclaration liée doit précéder une fin : activez annule et remplace ou déplacez le nœud.** — Bouton vers un
   questionnaire, « Annule et remplace » décoché, sur un Renvoi dont les sorties ne mènent pas toutes directement à une fin.
