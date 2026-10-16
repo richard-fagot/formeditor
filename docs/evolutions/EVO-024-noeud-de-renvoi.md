@@ -1,0 +1,204 @@
+---
+id: EVO-024
+titre: Nœud de renvoi
+statut: à faire
+version: 1.0
+qualificatif: final
+derniere_exigence: EVO-024-074
+depend_de: []
+---
+
+# EVO-024 — Nœud de renvoi
+
+## Contexte
+
+*Section non normative : elle explique, les exigences font foi.*
+
+Un nouveau type de nœud dans le logigramme d'un questionnaire est nécessaire, le nœud Renvoi, affiche un texte et des boutons de renvoi. Il sert à spécifier deux situations demandées par les métiers :
+
+1. **Mauvais questionnaire** : les réponses données par le déclarant montrent qu'il s'est trompé de questionnaire. Il est orienté vers le bon, qui remplace celui en cours (annule et remplace), ou il revient corriger sa réponse.
+2. **Déclarations liées** : à la fin d'un questionnaire, on l'invite à en déclarer d'autres. Il en choisit une ou décline avec « Terminer » ; dans les deux cas, le questionnaire en cours passe par la fin.
+
+Le spécifieur reste responsable de ses choix : l'éditeur signale les incohérences, sans les interdire.
+
+### Glossaire
+
+| Terme | Définition |
+| --- | --- |
+| Nœud Renvoi | Nouveau type de nœud portant un titre, un texte et des boutons de renvoi. |
+| Bouton de renvoi | Bouton d'un nœud Renvoi, défini par un libellé, une cible et une condition d'affichage facultative ; il n'a pas de type, son effet découle de sa cible. |
+| Cible questionnaire | Cible désignant un questionnaire du projet ouvert, autre que le questionnaire en cours : le bouton spécifie une déclaration. |
+| Cible nœud | Cible désignant un nœud du questionnaire en cours : le bouton spécifie un retour pour corriger. |
+| En amont | Se dit d'un nœud depuis lequel au moins un chemin mène au nœud Renvoi. |
+| Juste avant une fin | Se dit d'un nœud qui a au moins une arête sortante et dont toutes les arêtes sortantes mènent directement à un nœud fin. |
+| Toggle | Propriété documentaire activable d'un bouton à cible questionnaire : « Pré-remplissage de la cible », « Annule et remplace » ; appelée « option » dans les messages de prévisualisation. |
+| Documentaire | Propriété saisie dans l'éditeur et présente dans le JSON exporté, dont la prévisualisation n'implémente pas le comportement. |
+| Bouton Terminer | Bouton fixe de navigation, affiché à la place de « Suivant » sur un nœud Renvoi juste avant une fin. |
+| Bouton en erreur | Bouton faisant l'objet d'une erreur (EVO-024-031 à 033) ; un avertissement ne met pas le bouton en erreur. |
+
+### Exemple (cas 1)
+
+Déclaration RC dont le bien endommagé appartient à l'assuré :
+
+```
+Nœud Renvoi — texte : Le bien vous appartient : cette déclaration ne convient pas.
+
+Bouton 1
+  Libellé                     : Déclarer plutôt un dommage à votre bien
+  Cible                       : questionnaire dommage-au-bien
+  Pré-remplissage de la cible : activé
+  Annule et remplace          : activé
+Bouton 2
+  Libellé                     : Rectifier ma déclaration
+  Cible                       : question proprietaireDuBien
+```
+
+### Hors périmètre
+
+- L'annulation par le déclarant (suppression du questionnaire en cours, retour à la liste des formulaires) : elle relève de l'application cible.
+- La correspondance des réponses pré-remplies entre questionnaires.
+- L'exécution de la confirmation, de la sauvegarde, de la suppression et du pré-remplissage en prévisualisation.
+
+## Exigences
+
+Formulation : « Quand \<situation>, l'éditeur \<résultat observable> », ou une règle invariante. Une exigence = un comportement = au moins un test.
+
+### Modèle
+
+| ID | Exigence |
+| --- | --- |
+| EVO-024-001 | L'éditeur propose un type de nœud « Renvoi », qui peut être créé dans un questionnaire par les mêmes moyens que les autres types de nœuds. |
+| EVO-024-002 | L'éditeur ne propose pas la création d'un nœud Renvoi dans un fragment. |
+| EVO-024-003 | Un nœud Renvoi porte un titre facultatif et un texte multi-lignes, saisis comme ceux du nœud information. |
+| EVO-024-004 | Un nœud Renvoi porte une liste ordonnée de boutons de renvoi. |
+| EVO-024-005 | Un bouton de renvoi porte un libellé obligatoire, multilingue comme le texte du nœud. |
+| EVO-024-006 | Un bouton de renvoi porte une cible obligatoire. |
+| EVO-024-007 | Une cible est soit un questionnaire du projet ouvert autre que le questionnaire en cours, soit un nœud du questionnaire en cours. |
+| EVO-024-008 | Une cible nœud est une question, un nœud information ou une synthèse situé en amont du nœud Renvoi. |
+| EVO-024-009 | Une cible nœud n'est jamais le nœud Renvoi lui-même. |
+| EVO-024-010 | Une cible nœud peut être une question d'un fragment appelé en amont du nœud Renvoi. |
+| EVO-024-011 | Quand je renomme la cible d'un bouton, l'éditeur conserve la même cible sur le bouton. |
+| EVO-024-012 | Quand je choisis une cible questionnaire pour un bouton, l'éditeur lui donne le toggle « Pré-remplissage de la cible », désactivé. |
+| EVO-024-013 | Quand je choisis une cible questionnaire pour un bouton, l'éditeur lui donne le toggle « Annule et remplace », désactivé. |
+| EVO-024-014 | Un bouton à cible nœud ne porte aucun toggle. |
+| EVO-024-015 | Quand je remplace une cible questionnaire par une cible nœud, l'éditeur désactive les deux toggles. |
+| EVO-024-016 | Les toggles « Pré-remplissage de la cible » et « Annule et remplace » sont documentaires. |
+| EVO-024-018 | Quand j'atteins un nœud Renvoi en prévisualisation, l'éditeur n'affiche que les boutons sans condition d'affichage ou dont la condition est vraie. |
+| EVO-024-019 | L'éditeur ne propose aucun bouton de renvoi comme référence dans une expression. |
+| EVO-024-020 | Le bouton Terminer n'a ni cible ni condition d'affichage propre. |
+| EVO-024-021 | Le libellé du bouton Terminer est personnalisable pour chaque nœud Renvoi et multilingue, comme celui des boutons de renvoi ; non renseigné, il vaut « Terminer ». |
+| EVO-024-070 | Un bouton de renvoi porte une condition d'affichage facultative, exprimée comme les autres conditions de l'éditeur. |
+
+### Paramétrage
+
+| ID | Exigence |
+| --- | --- |
+| EVO-024-022 | Quand je sélectionne un nœud Renvoi, le panneau de propriétés affiche le titre, le texte, puis la liste des boutons. |
+| EVO-024-023 | Quand je sélectionne un nœud d'un autre type, le panneau de propriétés ne propose aucun bouton de renvoi. |
+| EVO-024-024 | Le panneau de propriétés permet d'ajouter un bouton à un nœud Renvoi. |
+| EVO-024-025 | Le panneau de propriétés permet de réordonner les boutons d'un nœud Renvoi. |
+| EVO-024-026 | Le panneau de propriétés permet de supprimer un bouton d'un nœud Renvoi. |
+| EVO-024-027 | Pour chaque bouton, le panneau de propriétés affiche son libellé et sa cible. |
+| EVO-024-028 | Pour un bouton à cible questionnaire, le panneau de propriétés affiche aussi les deux toggles. |
+| EVO-024-029 | Quand je choisis une cible, l'éditeur ne propose que les cibles autorisées par EVO-024-007 à EVO-024-010. |
+| EVO-024-030 | Quand je choisis une cible, aucune saisie libre n'est possible. |
+| EVO-024-065 | Le panneau de propriétés ne propose aucun choix de type de bouton. |
+| EVO-024-071 | Pour chaque bouton, le panneau de propriétés permet de saisir sa condition d'affichage avec l'éditeur d'expression existant. |
+| EVO-024-074 | Quand je sélectionne un nœud Renvoi, le panneau de propriétés permet de saisir le libellé du bouton Terminer. |
+
+### Problèmes signalés
+
+Signalés par les vérifications du graphe existantes (panneau des problèmes, badge du nœud).
+
+| ID | Exigence |
+| --- | --- |
+| EVO-024-068 | Quand un nœud Renvoi n'a aucun bouton, l'éditeur signale l'erreur « Le nœud Renvoi n'a aucun bouton. » |
+| EVO-024-031 | Quand le libellé d'un bouton est vide, l'éditeur signale l'erreur « Le bouton n'a pas de libellé. » |
+| EVO-024-032 | Quand la cible d'un bouton est vide, l'éditeur signale l'erreur « Le bouton n'a pas de cible. » |
+| EVO-024-033 | Quand la cible d'un bouton est introuvable (questionnaire absent du projet, ou nœud absent du questionnaire qui contient le bouton), l'éditeur signale l'erreur « La cible du bouton « {libellé} » est introuvable. » |
+| EVO-024-034 | Quand je supprime le questionnaire ou le nœud ciblé par un bouton, l'éditeur conserve le bouton. |
+| EVO-024-017 | Quand deux boutons d'un même nœud Renvoi visent la même cible, l'éditeur signale l'avertissement « Plusieurs boutons de ce nœud visent la cible « {cible} ». » |
+| EVO-024-035 | L'éditeur signale l'avertissement « Une déclaration liée doit précéder une fin : activez annule et remplace ou déplacez le nœud. » sur un bouton si et seulement si sa cible est un questionnaire, son toggle « Annule et remplace » est désactivé et son nœud Renvoi n'est pas juste avant une fin. |
+| EVO-024-036 | Quand une cible nœud n'est pas parcourue sur tous les chemins menant au nœud Renvoi, l'éditeur signale l'avertissement « La cible du bouton « {libellé} » n'est pas toujours parcourue avant ce nœud. » |
+| EVO-024-072 | Les vérifications existantes des expressions s'appliquent à la condition d'affichage d'un bouton. |
+
+### Logigramme
+
+| ID | Exigence |
+| --- | --- |
+| EVO-024-037 | Le nœud Renvoi a une forme propre, distincte de celle du nœud information. |
+| EVO-024-038 | L'aperçu d'un nœud Renvoi liste, dans l'ordre, le libellé et le nom de la cible de chaque bouton. |
+| EVO-024-039 | Quand un toggle d'un bouton est activé, l'aperçu affiche sur ce bouton une icône propre à ce toggle. |
+| EVO-024-040 | Le logigramme ne trace aucun lien d'un nœud Renvoi vers les cibles de ses boutons. |
+| EVO-024-073 | Quand un bouton a une condition d'affichage, l'aperçu du nœud Renvoi l'indique sur ce bouton. |
+
+### Prévisualisation
+
+| ID | Exigence |
+| --- | --- |
+| EVO-024-041 | Quand j'atteins un nœud Renvoi, l'éditeur affiche le titre, le texte, puis les boutons dans l'ordre. |
+| EVO-024-042 | Sur la page d'un nœud Renvoi, l'éditeur affiche sur chaque bouton les mêmes icônes de toggle que dans le logigramme. |
+| EVO-024-043 | Quand je clique sur un bouton à cible questionnaire dont au moins un toggle est activé, l'éditeur affiche un message indiquant la cible et les options activées. |
+| EVO-024-067 | Quand je clique sur un bouton à cible questionnaire sans toggle activé, l'éditeur affiche un message indiquant la cible et qu'aucune option n'est activée. |
+| EVO-024-044 | Quand je clique sur un bouton à cible questionnaire, l'éditeur reste sur la page et conserve les réponses. |
+| EVO-024-045 | Quand je clique sur un bouton dont la cible nœud a été parcourue dans la session, l'éditeur affiche ce nœud en conservant les réponses, comme pour un clic sur une réponse de la synthèse. |
+| EVO-024-046 | Quand je clique sur un bouton dont la cible nœud n'a pas été parcourue dans la session, l'éditeur affiche un message l'indiquant et reste sur la page. |
+| EVO-024-064 | Quand un bouton est en erreur, l'éditeur l'affiche quand même sur la page. |
+| EVO-024-047 | Quand je clique sur un bouton en erreur, l'éditeur ne fait rien. |
+| EVO-024-048 | Quand le nœud Renvoi est juste avant une fin, l'éditeur affiche « Terminer » à la place de « Suivant ». |
+| EVO-024-049 | Quand le nœud Renvoi n'est pas juste avant une fin, l'éditeur affiche « Suivant » et n'affiche pas « Terminer ». |
+| EVO-024-050 | Quand je clique sur « Terminer », l'éditeur affiche la fin, sous réserve de la garde de fin existante. |
+| EVO-024-051 | Quand je clique sur « Précédent » sur un nœud Renvoi, l'éditeur revient à la page précédente comme aujourd'hui. |
+
+### Copier-coller et duplication
+
+| ID | Exigence |
+| --- | --- |
+| EVO-024-052 | Quand je copie-colle un nœud Renvoi, l'éditeur copie ses boutons avec lui. |
+| EVO-024-053 | Quand je copie-colle une sélection contenant un nœud Renvoi et la cible nœud de l'un de ses boutons, l'éditeur fait viser à ce bouton collé la copie de cette cible. |
+| EVO-024-054 | Quand la sélection copiée ne contient pas la cible nœud d'un bouton, l'éditeur conserve sur le bouton collé la cible d'origine. |
+| EVO-024-066 | Quand je duplique un questionnaire, l'éditeur copie ses nœuds Renvoi avec leurs boutons. |
+| EVO-024-055 | Quand je duplique un questionnaire, l'éditeur fait viser aux cibles nœud de ses boutons les nœuds de la copie. |
+
+### Format et compatibilité
+
+| ID | Exigence |
+| --- | --- |
+| EVO-024-056 | Quand j'exporte puis réimporte un projet, l'éditeur restitue à l'identique ses nœuds Renvoi (titre, texte, libellé du bouton Terminer) et leurs boutons (libellé, cible, toggles, condition d'affichage, ordre). |
+| EVO-024-057 | Quand j'ouvre un projet antérieur, l'éditeur le charge sans erreur. |
+| EVO-024-058 | Le comportement du nœud information est inchangé. |
+| EVO-024-059 | Quand un questionnaire ne contient aucun nœud Renvoi, son comportement est identique à aujourd'hui. |
+| EVO-024-061 | Quand j'annule ou rétablis une modification d'un nœud Renvoi ou de ses boutons, l'éditeur se comporte comme pour les autres types de nœuds. |
+| EVO-024-062 | Quand un questionnaire est validé, l'éditeur interdit la modification de ses nœuds Renvoi et de leurs boutons, comme pour les autres nœuds. |
+| EVO-024-063 | Quand une traduction manque pour le titre ou le texte d'un nœud Renvoi, ou pour le libellé d'un bouton ou du bouton Terminer, l'éditeur la signale comme les autres traductions manquantes. |
+| EVO-024-060 | Le guide utilisateur décrit le nœud Renvoi, ses boutons, les deux toggles, le bouton Terminer et ce que la prévisualisation ne simule pas. |
+
+## Impacts attendus
+
+- **Format JSON** : nouveau type de nœud ; nouvelle `formatVersion` et migration (ajout seul) ; JSON Schema ; `docs/FORMAT.md` (nœud Renvoi, boutons, référence à un questionnaire par identifiant) ; exemple mis à jour avec une cible questionnaire et une cible nœud.
+- **Règles existantes touchées** : vérifications du graphe (`checkWorkspace`, nouveaux codes), page du wizard, copier-coller et duplication, garde de fin.
+- **Spec** : § types de nœuds, § vérifications du graphe, § logigramme, § prévisualisation, § copier-coller et duplication.
+- **Guide** : section « Nœud Renvoi ».
+- **Tests** : chaque test cite l'ID de l'exigence qu'il couvre.
+
+## Analyse demandée avant de coder
+
+Ajouter une section « Analyse » en bas de ce fichier :
+
+1. Faisabilité et modules impactés (d'après `docs/MAP.md`) ; nom du type de nœud et raccourci de création, cohérents avec les types existants.
+2. EVO-024-036 : réutilisation du principe de `notGuaranteed` pour un nœud ; alternative attendue s'il ne s'applique pas.
+3. EVO-024-045 : réutilisation du retour depuis la synthèse, y compris vers une question de fragment (EVO-024-010) ; désignation de cette cible (alias du fragment et clé).
+4. EVO-024-053 à 055 : repointage des cibles avec les mécanismes existants de collage et de duplication.
+5. Matrice de couverture : pour chaque ID, le ou les tests qui le couvrent.
+
+Faisable sans ambiguïté bloquante → choix notés dans l'analyse et `docs/DECISIONS.md`, puis réalisation. Sinon → statut « à arbitrer », exigences concernées citées, options et conséquences, arrêt sans coder.
+
+## Exigences abrogées
+
+Aucune.
+
+## Historique
+
+| Version | Date | Ajoutées | Abrogées | Motif |
+| --- | --- | --- | --- | --- |
+| 1.0 | 2026-10-16 | 001 à 068, 070 à 074 | — | Création depuis la fiche littérale validée ; 069 non attribué |
