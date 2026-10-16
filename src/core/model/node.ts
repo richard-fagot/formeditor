@@ -1,4 +1,4 @@
-import type { Label, LocalizedText } from './text';
+import type { Expression, Label, LocalizedText } from './text';
 import type { Question } from './question';
 
 /** Question locale : la question est portée par le nœud (id du nœud = id de la question). */
@@ -61,6 +61,31 @@ export interface EndNode {
   description?: string;
 }
 
+/**
+ * Cible d'un bouton de renvoi (EVO-024) : un autre questionnaire du projet (toggles documentaires « Pré-remplissage
+ * de la cible » et « Annule et remplace »), ou un nœud du questionnaire en cours désigné par son chemin d'identifiants
+ * (`n_type`, `n_appel/n_question` pour une question de fragment, comme un id d'étape du moteur).
+ */
+export type RedirectTarget = { questionnaire: string; prefill: boolean; replace: boolean } | { node: string };
+
+/** Bouton d'un nœud Renvoi : libellé, cible (absente = à choisir), condition d'affichage facultative. */
+export interface RedirectButton {
+  label: Label;
+  target?: RedirectTarget;
+  when?: Expression;
+}
+
+/** Nœud Renvoi (EVO-024) : titre, texte, boutons de renvoi ; `finishLabel` = libellé du bouton Terminer. */
+export interface RedirectNode {
+  kind: 'redirect';
+  id: string;
+  title?: Label;
+  text: Label;
+  buttons: RedirectButton[];
+  finishLabel?: Label;
+  description?: string;
+}
+
 /** Sortie nommée d'un fragment (facultative, uniquement dans un fragment). */
 export interface ExitNode {
   kind: 'exit';
@@ -70,7 +95,7 @@ export interface ExitNode {
   description?: string;
 }
 
-export type GraphNode = QuestionNode | FragmentNode | InfoNode | SummaryNode | EndNode | ExitNode;
+export type GraphNode = QuestionNode | FragmentNode | InfoNode | SummaryNode | EndNode | ExitNode | RedirectNode;
 export type NodeKind = GraphNode['kind'];
 
 export function isLibraryQuestion(node: GraphNode): node is LibraryQuestionNode {

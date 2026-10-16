@@ -11,6 +11,7 @@ Résolution des clés et espaces de noms, index des usages, renommage propagé. 
   `resolvePath(scope, path)` ; une variable système (et un champ de liste) porte `type`, `description`, `caption` (libellé, EVO-005) et `values` (énumération) pour l'autocomplétion ; `questionOfNode(ws, node)` (question effective, libellé surchargé, champs masqués retirés : absents de la portée, EVO-009) ;
   `hiddenFieldPaths(ws, graph)` : chemins des champs masqués visibles depuis un graphe (`cle.champ`, `alias.cle.champ`).
   Fragments imbriqués (EVO-008) : `alias.sous_alias.cle`, `RefInfo.alias` = chemin des alias (`ident.adr`) ; garde contre un cycle d'appels.
+- Nœud Renvoi (EVO-024) : titre, texte, `finishLabel`, et pour chaque bouton `buttons[i].label` (texte) et `buttons[i].when` (expression) sont parcourus.
 - `findUsages(ws, path)`.
 - Suggestions d'un champ texte (EVO-016) : `suggestions` (non vide) parcourue comme expression (propriété `suggestions`) : vérifications, usages, renommage.
 - Groupes d'options (EVO-003) : la portée contient `<chemin>.groupe` (genre `group`) pour chaque question ou champ à choix

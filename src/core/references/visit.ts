@@ -132,6 +132,19 @@ function mapNode(n: GraphNode, f: ExprMapper, owner: Owner): GraphNode {
       return n.title ? { ...n, title: mapLabel(n.title, f, loc('title')) } : n;
     case 'end':
       return { ...n, title: mapLabel(n.title, f, loc('title')), message: mapLabel(n.message, f, loc('message')) };
+    case 'redirect':
+      // Nœud Renvoi (EVO-024) : titre, texte, libellé de Terminer, libellé et condition d'affichage de chaque bouton.
+      return {
+        ...n,
+        title: mapLabel(n.title, f, loc('title')),
+        text: mapLabel(n.text, f, loc('text')),
+        buttons: n.buttons.map((b, i) => ({
+          ...b,
+          label: mapLabel(b.label, f, loc(`buttons[${i}].label`)),
+          ...(b.when ? { when: f(b.when, 'expr', loc(`buttons[${i}].when`)) } : {}),
+        })),
+        finishLabel: mapLabel(n.finishLabel, f, loc('finishLabel')),
+      };
     default:
       return n;
   }

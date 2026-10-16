@@ -25,6 +25,11 @@ Dépend de `core`, `registry`, `app/store`, `app/commands`, `ui-kit`, `ui/system
   Un clic sur la page sélectionne le nœud dans le logigramme.
 - `Summary.tsx` : récapitulatif (`summaryEntries` ; option d'un groupe affichée « Groupe — Option » par `formatAnswer` ; « Ne sais pas » : son libellé) ; un clic sur une réponse ramène à la question (`goTo`)
   et mémorise la synthèse (`returnTo`) ; « Revenir à la synthèse » appelle `resume` après validation, en revalidant chaque page repassée.
+- `Redirect.tsx` (EVO-024) : page d'un nœud Renvoi (`redirect-page`) : titre, texte, boutons visibles (`when` vraie ou absente, `redirect-page-button`)
+  avec icônes `toggle-prefill` / `toggle-replace` ; clic : bouton en erreur (`redirectButtonError`) sans effet ; cible questionnaire → `inform`
+  (cible, options activées ou « Aucune option activée. ») ; cible nœud présente dans l'historique → `goTo` + `returnTo` (comme la synthèse ; bouton
+  « Revenir au renvoi ») ; sinon `inform`. `Preview.tsx` : Renvoi juste avant une fin (`isJustBeforeEnd`) → bouton `preview-finish` (libellé `finishLabel`,
+  défaut `FINISH_LABEL`) à la place de `preview-next`, même action.
 - `SystemPanel.tsx` : scénario nommé, édition libre (`PreviewState.sys`, la session est conservée :
   réévaluation immédiate), rétablir les valeurs du scénario, enregistrer comme scénario (`preview.saveScenario`).
 - `path-check.ts` (testé) : `answerErrors` (validation d'une réponse dans le contexte de sa page, avec son groupe lu sous

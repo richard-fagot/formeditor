@@ -1,4 +1,4 @@
-import { isVariantLabel, newId, uniqueKey, type Edge, type Graph, type GraphNode, type Label, type LocalizedText, type Workspace } from '../../core/model';
+import { isVariantLabel, newId, retargetButtons, uniqueKey, type Edge, type Graph, type GraphNode, type Label, type LocalizedText, type Workspace } from '../../core/model';
 import type { LibraryItem } from './library-edits';
 
 /** Nom d'une copie dans une langue : `n` = 1 pour « Copie de X », 2 pour « Copie 2 de X »… */
@@ -19,7 +19,8 @@ const otherwise = (l: Label): LocalizedText => (isVariantLabel(l) ? l.otherwise 
 /** Copie des nœuds et arêtes d'un graphe avec de nouveaux ids ; mise en page reprise. Renvoie la table des ids. */
 function cloneGraph(ws: Workspace, g: Graph & { id: string }, newGraphId: string): { nodes: GraphNode[]; edges: Edge[]; ids: Map<string, string> } {
   const ids = new Map(g.nodes.map((n) => [n.id, newId('n')]));
-  const nodes = g.nodes.map((n) => ({ ...clone(n), id: ids.get(n.id)! }) as GraphNode);
+  // Boutons de renvoi (EVO-024-055) : les cibles nœud visent les nœuds de la copie.
+  const nodes = g.nodes.map((n) => retargetButtons({ ...clone(n), id: ids.get(n.id)! } as GraphNode, ids));
   const edges = g.edges.filter((e) => ids.has(e.from) && ids.has(e.to)).map((e) => ({ ...clone(e), id: newId('e'), from: ids.get(e.from)!, to: ids.get(e.to)! }));
   const layout = ws.layouts.find((l) => l.graph === g.id);
   if (layout) {

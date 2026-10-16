@@ -1,5 +1,5 @@
 # Guide utilisateur — Éditeur de questionnaires
-Mis à jour le 2026-10-14 — jusqu'à EVO-023
+Mis à jour le 2026-10-16 — jusqu'à EVO-024
 
 ## Mode d'emploi du guide
 
@@ -15,7 +15,9 @@ Mis à jour le 2026-10-14 — jusqu'à EVO-023
 - **Questionnaire** : un graphe de nœuds reliés par des arêtes ; un onglet par questionnaire.
 - **Formulaire validé** : questionnaire relu et approuvé par les métiers, livrable aux développeurs ; marqué « Validé » et en lecture seule jusqu'à sa dévalidation (section 17).
 - **Version** : texte libre saisi à la main sur un questionnaire ou un élément de bibliothèque (convention `X.Y.Z`), figé tant que l'objet est validé ; statut « Validé » (final) ou « Provisoire » (section 18).
-- **Nœud** : question, page d'information, page de synthèse, fin, nœud fragment (ou sortie nommée, dans un fragment).
+- **Nœud** : question, page d'information, page de synthèse, fin, nœud Renvoi, nœud fragment (ou sortie nommée, dans un fragment).
+- **Nœud Renvoi** : page de texte avec des **boutons de renvoi** : vers un autre questionnaire du projet (mauvais
+  questionnaire, déclaration liée) ou vers un nœud déjà passé du questionnaire (revenir corriger) ; section 3.
 - **Départ** : nœud par lequel commence le parcours d'un questionnaire (badge « Départ »). Le premier nœud créé l'est d'office ;
   ce peut être un nœud fragment.
 - **Arête** : liaison d'un nœud vers un autre, avec une condition facultative et un rang ; sans condition, c'est le « sinon ».
@@ -85,7 +87,8 @@ Mis à jour le 2026-10-14 — jusqu'à EVO-023
 - **Dupliquer un questionnaire** — Clic droit sur son onglet (ou sur son titre gris s'il est fermé), « Dupliquer », ou palette
   « Dupliquer le questionnaire » (questionnaire affiché). La copie, « Copie de <titre> » (puis « Copie 2 de… »), clé suffixée
   (`declaration_sinistre_2`), est placée juste après l'original et s'ouvre. Contenu complet, sans aucun lien : modifier l'un
-  ne modifie pas l'autre ; les questions et fragments de bibliothèque restent des références. Annulable. `[cmd: questionnaire.duplicate]`
+  ne modifie pas l'autre ; les questions et fragments de bibliothèque restent des références. Les boutons des nœuds Renvoi
+  copiés visent les nœuds de la copie. Annulable. `[cmd: questionnaire.duplicate]`
 - **Changer d'onglet** — Cliquer sur l'onglet, ou `Alt+→` / `Alt+←` (aussi `Ctrl+Tab` / `Ctrl+Shift+Tab`,
   souvent réservés par le navigateur). `[cmd: tab.show]`
   `[cmd: tab.next]` `[cmd: tab.prev]`
@@ -122,6 +125,24 @@ Mis à jour le 2026-10-14 — jusqu'à EVO-023
 - **Créer une page de synthèse à la suite** — `Alt+S` ou palette « Nouvelle page de synthèse » (titre « Récapitulatif »). `[cmd: node.newSummary]`
 - **Créer une fin à la suite** — `Alt+F` ou palette « Nouvelle fin » (message « Merci, votre réponse est enregistrée. »).
   Plusieurs fins sont possibles. Indisponible dans un fragment. `[cmd: node.newEnd]`
+- **Créer un nœud Renvoi à la suite** — `Alt+R` ou palette « Nouveau nœud Renvoi ». Même placement que `N` ; texte par
+  défaut « Texte de renvoi », aucun bouton (signalé tant qu'il n'en a pas). Indisponible dans un fragment. `[cmd: node.newRedirect]`
+- **Paramétrer un nœud Renvoi** — Le sélectionner ; panneau « Renvoi » : « Titre », « Texte », puis « Boutons » et
+  « Libellé du bouton Terminer ». « Ajouter un bouton » en crée un ; pour chacun : « Libellé » (multilingue, interpolable),
+  « Cible » (liste fermée : les **autres questionnaires** du projet, pour une déclaration, puis les **nœuds en amont** —
+  questions, pages d'information ou de synthèse depuis lesquelles un chemin mène au Renvoi, et questions des fragments
+  appelés en amont, écrites `alias.cle` — pour revenir corriger), « Condition d’affichage » (expression, vide = toujours
+  affiché), flèches « Monter » / « Descendre », corbeille « Supprimer le bouton ». Un bouton n'a pas de type : son effet
+  découle de sa cible. Une cible questionnaire ajoute deux cases, décochées au choix de la cible :
+  « Pré-remplissage de la cible » et « Annule et remplace » ; elles sont **documentaires** (écrites dans le JSON pour l'équipe de dev, non simulées).
+  Choisir une cible nœud les retire. La cible est gardée si on renomme la question ou le questionnaire visé, et le bouton est
+  gardé si on supprime la cible (signalé, section 15). Sur le logigramme, le nœud (bordure rose épaisse à gauche) liste ses
+  boutons dans l'ordre, chacun avec sa cible (`→ proprio`, `→ Dommage au bien`), les icônes des cases cochées
+  (presse-papiers : pré-remplissage ; flèches : annule et remplace) et un entonnoir s'il a une condition ; aucun lien n'est
+  tracé vers les cibles. Le Renvoi garde ses arêtes sortantes : « Suivant » (ou « Terminer ») les suit.
+- **Choisir le libellé du bouton Terminer** — Quand toutes les arêtes sortantes du Renvoi mènent directement à une fin, la
+  prévisualisation affiche « Terminer » à la place de « Suivant » ; « Libellé du bouton Terminer » le remplace (multilingue,
+  vide = « Terminer »). Il n'a ni cible ni condition : il suit les arêtes du nœud.
 - **Modifier l'intitulé d'une question sur le logigramme** — Double-clic sur la question, ou la sélectionner puis `Entrée`
   (palette « Éditer l’intitulé »). `Entrée` valide, `Shift+Entrée` va à la ligne, `Échap` annule. Si la clé suivait
   l'intitulé, elle est redérivée et renommée partout. Sans effet sur les autres types de nœuds. `[cmd: node.editLabel]`
@@ -173,8 +194,9 @@ Mis à jour le 2026-10-14 — jusqu'à EVO-023
   instance de fragment ou de question de bibliothèque reste une référence au même élément. Le rôle de départ n'est pas
   collé : la cible garde son départ (un questionnaire vide prend le nœud qui était le départ dans la copie, à défaut le premier nœud collé). Dans un **fragment**, les fins ne
   sont pas collées (ni leurs arêtes) et une instance qui créerait un cycle d'appels (le fragment lui-même…) est refusée ;
-  dans un questionnaire, les sorties nommées ne sont pas collées. Une fenêtre « Collage : éléments écartés » liste ce qui
-  a été écarté ; le reste est collé. `[cmd: node.paste]`
+  dans un questionnaire, les sorties nommées ne sont pas collées. Un nœud Renvoi n'est pas collé dans un fragment. Collé avec
+  la cible nœud d'un de ses boutons, ce bouton vise la copie de la cible ; sinon il garde sa cible d'origine. Une fenêtre
+  « Collage : éléments écartés » liste ce qui a été écarté ; le reste est collé. `[cmd: node.paste]`
 - **Supprimer des nœuds** — Sélectionner puis `Suppr` (Delete) ou `Retour arrière` (Backspace) (logigramme), ou palette « Supprimer la sélection ».
   Leurs arêtes disparaissent aussi ; si le départ est supprimé, le premier nœud restant le devient (dans un fragment, une
   entrée réglée supprimée redevient implicite). Une question commentée demande confirmation : son commentaire de
@@ -596,7 +618,7 @@ Concerne le choix unique et le choix multiple. Le booléen n'a pas d'options (§
 - **Extraire une sélection en fragment** — Sélectionner des nœuds d'un questionnaire puis `Ctrl+G` (logigramme) ou palette
   « Extraire la sélection en fragment ». Crée un fragment « Nouveau fragment » et remplace la sélection par un nœud fragment
   (une sortie nommée par destination extérieure ; références de l'appelant préfixées par l'alias). Refusé si la sélection a
-  plusieurs entrées, ou contient une fin ou une sortie (« Extraction en fragment impossible »). Annulable. `[cmd: node.group]`
+  plusieurs entrées, ou contient une fin, une sortie ou un nœud Renvoi (« Extraction en fragment impossible »). Annulable. `[cmd: node.group]`
 - **Appeler un fragment au milieu du parcours** — L'insérer après le nœud voulu (`I`), puis continuer à la suite du nœud
   fragment (`N`, ou une liaison depuis sa poignée). Dans la prévisualisation, les questions du fragment s'enchaînent entre
   les deux comme si elles étaient saisies dans le questionnaire.
@@ -662,6 +684,14 @@ Concerne le choix unique et le choix multiple. Le booléen n'a pas d'options (§
 - **Modifier une réponse depuis la synthèse** — Sur une page de synthèse, cliquer la réponse (crayon) : retour à la question ;
   après correction, « Revenir à la synthèse ». Les réponses sorties du chemin sont effacées.
   Une option d'un groupe s'y affiche « Groupe — Option » (ex. « Victime directe — Conjoint ») ; « Ne sais pas », par son libellé.
+- **Tester un nœud Renvoi** — La page affiche le titre, le texte, puis les boutons dans l'ordre (seulement ceux sans
+  condition ou dont la condition est vraie), avec les icônes des cases cochées. Un bouton en erreur (sans libellé, sans cible
+  ou cible introuvable) est affiché mais ne fait rien. Bouton vers un **questionnaire** : fenêtre « Prévisualisation :
+  renvoi » qui nomme la cible et les options activées (« Aucune option activée. » sinon) ; la page et les réponses restent.
+  Bouton vers un **nœud** déjà passé dans ce parcours : retour à ce nœud, réponses conservées, comme depuis une synthèse,
+  puis « Revenir au renvoi » ; nœud non passé : message, la page reste. Si toutes les sorties du Renvoi mènent à une fin,
+  « Terminer » (ou son libellé) remplace « Suivant » et affiche la fin (sous réserve d'une réponse invalide sur le chemin) ;
+  « Précédent » fonctionne comme ailleurs.
 - **Comprendre un retour forcé avant la fin** — Une réponse devenue invalide (option disparue après un changement d'état du
   système…) empêche d'atteindre la fin : le wizard ramène à la question avec son message jusqu'à correction.
 - **Naviguer sans saisir de valeurs** — Bouton « Contrôles de saisie » de la barre de prévisualisation (activé par défaut),
@@ -775,6 +805,16 @@ ou palette « Problèmes ») ; un clic sur un problème sélectionne le nœud ou
 - **Groupe d’options sans option « … »** — Ajouter des options sous la ligne `#` du groupe, ou supprimer le groupe.
 - **Élément de bibliothèque introuvable « … »** — Référence vers un élément supprimé → supprimer le nœud ou réinsérer un élément.
 - **Nœud de départ introuvable** — « Définir comme départ » sur un nœud (§3).
+- **Le nœud Renvoi n'a aucun bouton.** — « Ajouter un bouton » dans son panneau (§3).
+- **Le bouton n'a pas de libellé.** / **Le bouton n'a pas de cible.** — Saisir le libellé, choisir la « Cible » du bouton.
+- **La cible du bouton « … » est introuvable.** — Le questionnaire ou le nœud visé a été supprimé → choisir une autre cible
+  (l'ancienne reste affichée « (introuvable) »), ou supprimer le bouton.
+- **Plusieurs boutons de ce nœud visent la cible « … ».** — Avertissement : changer la cible d'un des boutons, ou le supprimer.
+- **Une déclaration liée doit précéder une fin : activez annule et remplace ou déplacez le nœud.** — Bouton vers un
+  questionnaire, « Annule et remplace » décoché, sur un Renvoi dont les sorties ne mènent pas toutes directement à une fin.
+- **La cible du bouton « … » n'est pas toujours parcourue avant ce nœud.** — Un chemin mène au Renvoi sans passer par la
+  cible nœud (ou la cible est en aval) → choisir une cible commune à tous les chemins, ou revoir le graphe. La condition
+  d'affichage d'un bouton est vérifiée comme toute expression (syntaxe, références, « n’est pas posée sur tous les chemins »).
 - **Problèmes du dictionnaire** — Nom de variable ou de champ invalide ou en double : signalé en rouge sur la carte de la
   variable (onglet « État du système ») → la renommer.
 
@@ -907,6 +947,10 @@ Sans version, tout fonctionne comme avant, sauf la validation (refusée) et le s
   converti (`= "unknown"`) ne sont pas réécrites.
 - **Commentaires** : ni auteur, ni date, ni statut « résolu », ni mention, ni notification ; pas de réponse à une réponse.
 - **Extraire en fragment une sélection d'un fragment**, ou qui contient une fin : l'extraction part d'un questionnaire.
+- **Simuler un renvoi vers un autre questionnaire** : la prévisualisation reste sur la page et affiche un message ; elle
+  n'ouvre pas la cible et ne simule ni la confirmation, ni la sauvegarde, ni la suppression du questionnaire en cours
+  (« Annule et remplace »), ni le pré-remplissage ; la correspondance des réponses pré-remplies n'est pas spécifiée.
+  L'annulation par le déclarant relève de l'application cible. Pas de nœud Renvoi dans un fragment.
 
 ## Index des raccourcis
 
@@ -935,6 +979,7 @@ Sans version, tout fonctionne comme avant, sauf la validation (refusée) et le s
 | Nouvelle page d’information | `Alt+I` | `node.newInfo` |
 | Nouvelle page de synthèse | `Alt+S` | `node.newSummary` |
 | Nouvelle fin | `Alt+F` | `node.newEnd` |
+| Nouveau nœud Renvoi | `Alt+R` | `node.newRedirect` |
 | Type : Texte | `T` | `node.type.text` |
 | Type : Date | `D` | `node.type.date` |
 | Type : Nombre | `R` | `node.type.number` |

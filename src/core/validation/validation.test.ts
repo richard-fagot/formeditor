@@ -137,7 +137,8 @@ describe('checkWorkspace', () => {
   });
   it('boucle sans sortie possible', () => {
     const w = mutate((x) => {
-      decl(x).edges = decl(x).edges.filter((e) => e.id !== 'e_confirmation_fin');
+      // Le renvoi de l'exemple (EVO-024) mène à une fin : il est retiré de la boucle.
+      decl(x).edges = decl(x).edges.filter((e) => e.id !== 'e_confirmation_fin' && e.id !== 'e_type_renvoi');
       decl(x).edges.find((e) => e.id === 'e_confirmation_retour')!.when = undefined;
     });
     expect(codes(w)).toContain('loopWithoutExit@n_type');

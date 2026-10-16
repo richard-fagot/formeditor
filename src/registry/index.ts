@@ -17,6 +17,7 @@ import { summaryKind } from '../plugins/node-kinds/summary';
 import { endKind } from '../plugins/node-kinds/end';
 import { fragmentKind } from '../plugins/node-kinds/fragment';
 import { exitKind } from '../plugins/node-kinds/exit';
+import { redirectKind } from '../plugins/node-kinds/redirect';
 
 /** Types de questions disponibles, dans l'ordre d'affichage. */
 export const QUESTION_TYPE_PLUGINS = [
@@ -24,7 +25,7 @@ export const QUESTION_TYPE_PLUGINS = [
   emailType, phoneType, addressType, civilityType,
 ] as unknown as QuestionTypePlugin<Question>[];
 
-export const NODE_KIND_PLUGINS = [questionKind, infoKind, summaryKind, endKind, fragmentKind, exitKind] as unknown as NodeKindPlugin<GraphNode>[];
+export const NODE_KIND_PLUGINS = [questionKind, infoKind, summaryKind, endKind, fragmentKind, exitKind, redirectKind] as unknown as NodeKindPlugin<GraphNode>[];
 
 export function questionType(type: QuestionType): QuestionTypePlugin<Question> | undefined {
   return QUESTION_TYPE_PLUGINS.find((p) => p.type === type);

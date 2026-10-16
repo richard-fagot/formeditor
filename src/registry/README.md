@@ -9,4 +9,6 @@ une entrée dans `QUESTION_TYPE_PLUGINS` ou `NODE_KIND_PLUGINS`.
 Types : texte, date, nombre, choix unique, choix multiple, booléen, structure, mail, téléphone, adresse,
 civilité (raccourcis T, D, R, U, M, B, S, Shift+E, Shift+T, Shift+A, Shift+C ; `registry.test.ts`). Le tri-state est supprimé (EVO-018).
 
+Types de nœuds : question, information, synthèse, fin, fragment, sortie, Renvoi (EVO-024).
+
 Les commandes « Type : … » et les raccourcis associés sont générés à partir de cette liste (`app/commands`).

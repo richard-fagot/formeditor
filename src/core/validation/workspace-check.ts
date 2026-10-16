@@ -3,6 +3,7 @@ import { collectExpressions, questionOfNode, type Owner } from '../references';
 import { checkGraph } from './graph';
 import { checkReferences } from './refs-check';
 import { checkGroups } from './groups-check';
+import { checkRedirects } from './redirect-check';
 import { issue, type Issue } from './issue';
 
 function checkKeys(ws: Workspace, g: Graph, owner: Owner, out: Issue[]) {
@@ -86,6 +87,7 @@ export function checkWorkspace(ws: Workspace): Issue[] {
     const owner: Owner = { kind: 'questionnaire', id: q.id };
     checkKeys(ws, q, owner, out);
     out.push(...checkGraph(ws, q, owner));
+    checkRedirects(ws, q, owner, out);
   }
   for (const f of ws.library.fragments) {
     const owner: Owner = { kind: 'fragment', id: f.id };

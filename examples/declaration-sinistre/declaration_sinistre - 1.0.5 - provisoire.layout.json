@@ -1,5 +1,5 @@
 {
-  "formatVersion": 14,
+  "formatVersion": 15,
   "kind": "layout",
   "graph": "q_declaration",
   "nodes": {
@@ -14,6 +14,14 @@
     "n_type": {
       "x": 0,
       "y": 160
+    },
+    "n_renvoi": {
+      "x": -320,
+      "y": 160
+    },
+    "n_fin_renvoi": {
+      "x": -320,
+      "y": 320
     },
     "n_date": {
       "x": 0,

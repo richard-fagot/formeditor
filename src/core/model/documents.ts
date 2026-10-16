@@ -2,7 +2,7 @@ import type { Graph } from './graph';
 import type { LangCode, LocalizedText } from './text';
 import type { Question } from './question';
 
-export const FORMAT_VERSION = 14;
+export const FORMAT_VERSION = 15;
 
 /** Statut d'un questionnaire ou d'un élément de bibliothèque (EVO-022) : absent = `draft` (provisoire) ; `validated` = final. */
 export type ItemStatus = 'draft' | 'validated';

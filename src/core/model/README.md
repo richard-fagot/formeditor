@@ -18,7 +18,7 @@ utilitaires purs. Aucun import externe : c'est la base de tous les autres module
   `AddressQuestion` (`defaultCountry?`, `countries?`, `minLength?`, `maxLength?`, `verify?`), `CivilityQuestion` (`labels?`, `short?`,
   `undisclosed?`) ; `COUNTRY_SUFFIX` / `COUNTRY_REF` (`pays` : `<clé>_pays`, `cle.pays`), `DEFAULT_COUNTRY` (`FR`), `hasCountry`,
   `CIVILITY_CODES`, `CIVILITY_LABELS` (longs / courts, fr / en), `civilityCodes(q)`, `civilityLabel(q, code)`.
-- `node.ts` : `GraphNode` (union par `kind` : question locale ou de bibliothèque, fragment (`FragmentNode` : `ref`, `alias`), info, summary, end, exit),
+- `node.ts` : `GraphNode` (union par `kind` : question locale ou de bibliothèque, fragment (`FragmentNode` : `ref`, `alias`), info, summary, end, exit, redirect),
   `isLocalQuestion`, `isLibraryQuestion`. `LibraryQuestionNode.hiddenFields?` : clés des champs masqués d'une instance de structure (EVO-009).
 - `instance.ts` (EVO-009) : `instanceQuestion(q, node)` (question effective d'une instance : intitulé et `required` (EVO-012) surchargés, champs masqués retirés dans l'ordre
   de la bibliothèque ; clé inconnue ignorée ; tous masqués → masquage ignoré), `visibleFieldKeys`.
@@ -29,7 +29,7 @@ utilitaires purs. Aucun import externe : c'est la base de tous les autres module
   (surcharges non orphelines d'un appel).
 - `graph.ts` : `Edge` (dont `caption?`, libellé de lecture, EVO-005), `Graph`.
 - `documents.ts` : `Questionnaire` (porte `start`), `Library` (`fragments`), `Fragment` (`entry?`, pas de `start`), `LabelSet` (`kind: 'boolean'`, `yes`, `no`), `Project`, `SystemVariable` (dont `caption?`), `Scenario`,
-  `Layout` (dont `comments?` : `ReviewComment` `{ node, x?, y?, text, replies }`, commentaires de révision, EVO-011), `Workspace` (projet complet en mémoire), `Bundle`, `FORMAT_VERSION` (14). `Questionnaire.status?` (`draft` | `validated`) et `validatedAt?` (EVO-015).
+  `Layout` (dont `comments?` : `ReviewComment` `{ node, x?, y?, text, replies }`, commentaires de révision, EVO-011), `Workspace` (projet complet en mémoire), `Bundle`, `FORMAT_VERSION` (15). `Questionnaire.status?` (`draft` | `validated`) et `validatedAt?` (EVO-015).
 - `graph.ts` : `Graph` = `nodes` + `edges` (sans départ).
 - `validation.ts` (EVO-015) : `QuestionnaireStatus`, `isValidated(q)`, `lockedChanges(avant, après)` → ids des questionnaires validés avant
   dont le contenu verrouillé a changé ou qui ont disparu (questionnaire hors `status` / `validatedAt`, mise en page hors `comments` — sans position, elle équivaut à son absence —, entrée du projet).
@@ -39,6 +39,12 @@ utilitaires purs. Aucun import externe : c'est la base de tous les autres module
   références = vide), `provisionalItems`, `itemUsers(ws, item)`. `Questionnaire.version?`, `Questionnaire.libraryVersions?` (hors verrou de `lockedChanges`).
 - `fragment.ts` (EVO-008) : `fragmentRoots` (nœuds sans arête entrante), `fragmentEntry` (`entry`, sinon premier candidat, sinon premier nœud),
   `fragmentExits` (nœuds sans arête sortante), `graphStart` (départ ou entrée), `calledFragments`, `createsCycle`, `fragmentCallers`.
+- `redirect.ts` (EVO-024) : nœud Renvoi — `RedirectNode` (`title?`, `text`, `buttons`, `finishLabel?`), `RedirectButton` (`label`, `target?`, `when?`),
+  `RedirectTarget` (`{ questionnaire, prefill, replace }` | `{ node }` : chemin d'ids d'étape, `n_appel/n_question`) dans `node.ts` ; `FINISH_LABEL`,
+  `redirectTargets(ws, questionnaire, renvoi, langue)` (cibles autorisées : autres questionnaires, puis questions / infos / synthèses en amont, puis questions
+  des fragments appelés en amont ; `value` = `q:<id>` | `n:<chemin>`), `targetValue` / `targetFromValue` (toggles à `false`), `targetName`, `nodeAtPath`,
+  `upstreamNodes`, `isJustBeforeEnd`, `alwaysBefore` (dominance : cible traversée sur tous les chemins), `redirectButtonError` (`noLabel` | `noTarget` |
+  `targetMissing`), `buttonLabel`, `retargetButtons(nœud, table des ids)` (collage, duplication).
 - `keys.ts` : `deriveKey` (« Date du sinistre » → `date_sinistre`), `uniqueKey`, `isValidKey`, `newId`, `RESERVED_KEYS` (dont `groupe`, `nsp`).
 
 ## Invariants
@@ -51,4 +57,4 @@ utilitaires purs. Aucun import externe : c'est la base de tous les autres module
 - `StructureField` exclut le type `structure` (pas de structure imbriquée).
 
 ## Tests
-`keys.test.ts`, `fragment.test.ts`, `instance.test.ts`, `required.test.ts`, `validation.test.ts`, `versioning.test.ts`.
+`keys.test.ts`, `redirect.test.ts`, `fragment.test.ts`, `instance.test.ts`, `required.test.ts`, `validation.test.ts`, `versioning.test.ts`.

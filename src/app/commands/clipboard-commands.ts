@@ -32,6 +32,7 @@ function nodeName(ws: Workspace, n: GraphNode): string {
   if (n.kind === 'exit') return n.name;
   if (n.kind === 'question') return 'ref' in n ? (ws.library.questions.find((q) => q.id === n.ref)?.key ?? n.ref) : n.key;
   if (n.kind === 'end') return (isVariantLabel(n.message) ? n.message.otherwise : n.message)[lang] ?? n.id;
+  if (n.kind === 'redirect') { const l = n.title ?? n.text; return (isVariantLabel(l) ? l.otherwise : l)[lang] ?? n.id; }
   return n.id;
 }
 
