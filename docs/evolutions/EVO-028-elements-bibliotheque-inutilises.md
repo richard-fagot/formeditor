@@ -1,7 +1,7 @@
 ---
 id: EVO-028
 titre: Signaler les éléments de bibliothèque inutilisés
-statut: en cours
+statut: fait 2026-10-16
 version: 1.0
 qualificatif: final
 derniere_exigence: EVO-028-014
