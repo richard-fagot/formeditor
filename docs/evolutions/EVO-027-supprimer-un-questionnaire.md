@@ -1,7 +1,7 @@
 ---
 id: EVO-027
 titre: Supprimer un questionnaire
-statut: à faire
+statut: en cours
 version: 1.0
 qualificatif: final
 derniere_exigence: EVO-027-022
