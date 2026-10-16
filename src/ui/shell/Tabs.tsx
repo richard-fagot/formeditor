@@ -4,6 +4,7 @@ import { isValidated, type Questionnaire } from '../../core/model';
 import { runCommand } from '../../app/commands';
 import { useStore, useT, type TabId } from '../../app/store';
 import { cn, ContextMenu } from '../../ui-kit';
+import { UnusedTotal } from '../library';
 
 /** Onglets : questionnaires et fragments ouverts, bibliothèque, état du système. */
 export function Tabs() {
@@ -55,6 +56,7 @@ export function Tabs() {
           {tab === 'comments' && <MessageSquare className="size-3.5" />}
           {tab.startsWith('f:') && <Boxes className="size-3.5 text-amber-600" />}
           <span className="max-w-48 truncate">{label(tab)}</span>
+          {tab === 'library' && <UnusedTotal />}
           {tab.startsWith('q:') && badge(ws.questionnaires.find((x) => `q:${x.id}` === tab))}
           <button type="button" aria-label={t('questionnaire.close')} className="rounded p-0.5 opacity-0 hover:bg-slate-200 group-hover:opacity-100"
             onClick={(e) => { e.stopPropagation(); runCommand('tab.close', tab); }}>
@@ -73,7 +75,7 @@ export function Tabs() {
         </button>
       ))}
       <div className="ml-auto flex gap-1 pb-1">
-        {!tabs.includes('library') && <button type="button" className="rounded px-2 py-0.5 text-xs text-slate-500 hover:bg-slate-200" onClick={() => runCommand('tab.library')}>{t('tab.library')}</button>}
+        {!tabs.includes('library') && <button type="button" className="flex items-center gap-1 rounded px-2 py-0.5 text-xs text-slate-500 hover:bg-slate-200" onClick={() => runCommand('tab.library')}>{t('tab.library')}<UnusedTotal /></button>}
         {!tabs.includes('system') && <button type="button" className="rounded px-2 py-0.5 text-xs text-slate-500 hover:bg-slate-200" onClick={() => runCommand('tab.system')}>{t('tab.system')}</button>}
         {!tabs.includes('comments') && <button type="button" data-testid="open-comments" className="rounded px-2 py-0.5 text-xs text-slate-500 hover:bg-slate-200" onClick={() => runCommand('tab.comments')}>{t('tab.comments')}</button>}
       </div>

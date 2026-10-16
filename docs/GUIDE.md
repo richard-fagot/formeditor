@@ -1,5 +1,5 @@
 # Guide utilisateur — Éditeur de questionnaires
-Mis à jour le 2026-10-16 — jusqu'à EVO-027
+Mis à jour le 2026-10-16 — jusqu'à EVO-028
 
 ## Mode d'emploi du guide
 
@@ -600,6 +600,14 @@ Concerne le choix unique et le choix multiple. Le booléen n'a pas d'options (§
 - **Afficher un élément de la bibliothèque** — Onglet « Bibliothèque », cliquer l'élément dans la liste de gauche (« Jeux de
   libellés », « Questions », « Fragments »). Une question s'affiche à droite (« Utilisé dans : … » liste les questionnaires
   et fragments qui l'emploient) ; un fragment s'ouvre dans son onglet. `[cmd: library.show]`
+- **Repérer les éléments inutilisés de la bibliothèque** — Onglet « Bibliothèque » : un triangle ambre suit chaque question ou
+  fragment que rien ne référence, et chaque jeu de libellés qu'aucune question booléenne n'utilise (sur sa carte, rubrique
+  « Jeux de libellés ») ; son info-bulle l'explique (« Inutilisée : aucun questionnaire ni fragment ne l'utilise. »…). Le titre de
+  chaque rubrique indique le nombre d'éléments inutilisés (« (1 inutilisée) ») et l'onglet « Bibliothèque » (ou le bouton
+  « Bibliothèque » de la barre d'onglets s'il est fermé) leur total, dans une pastille ambre. Seul l'usage direct compte : une
+  question utilisée par un fragment lui-même inutilisé n'est pas signalée ; le statut (validé, provisoire) n'intervient pas.
+  Mis à jour aussitôt (insertion, suppression, collage, annuler, rétablir, ouverture d'un projet) ; rien n'est affiché quand
+  tout est utilisé. Sert à faire le ménage : supprimer ce qui ne sert plus (« Supprimer un élément de la bibliothèque »).
 - **Supprimer un élément de la bibliothèque** — L'afficher (question) ou ouvrir son onglet (fragment), bouton « Supprimer ».
   Sans confirmation (sauf élément commenté) : ses références deviennent « Élément de bibliothèque introuvable ». `Ctrl+Z` dans l'onglet
   Bibliothèque l'annule. `[cmd: library.delete]`

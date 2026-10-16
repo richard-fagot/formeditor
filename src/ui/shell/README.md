@@ -9,7 +9,7 @@ Cadre de l'application. Dépend de `app/*`, `ui/*`, `ui-kit`.
   langue de l'interface, indicateur « modifications non exportées », bouton de palette.
 - `Tabs` : questionnaires ouverts (fermer, rouvrir), fragments ouverts (`f:<id>`, icône ambre ; contenu : `FragmentView` de `ui/library`, EVO-008), nouveau questionnaire, bibliothèque (`ui/library`), état du système (`ui/system-state`),
   paramètres (`ui/settings`, ouverts par le bouton engrenage de la barre), commentaires (`comments` : `CommentsPage` de `ui/comments`, lien « Commentaires » à droite, EVO-011). Clic droit sur un onglet de questionnaire (ou un questionnaire fermé)
-  ou de fragment : « Dupliquer » (`questionnaire.duplicate`, `library.duplicate`, EVO-010) ; questionnaire seulement : « Supprimer » (`questionnaire.delete`, EVO-027). Marqueur « Validé » (`validated-badge`, date au survol) sur l'onglet
+  ou de fragment : « Dupliquer » (`questionnaire.duplicate`, `library.duplicate`, EVO-010) ; questionnaire seulement : « Supprimer » (`questionnaire.delete`, EVO-027). Pastille du nombre d'éléments de bibliothèque inutilisés (`UnusedTotal` de `ui/library`, EVO-028) sur l'onglet ou le lien « Bibliothèque ». Marqueur « Validé » (`validated-badge`, date au survol) sur l'onglet
   ou le bouton de réouverture d'un questionnaire validé (EVO-015).
 - `QuestionnaireView` : sous-onglets Logigramme / Prévisualisation ; boutons mise en page automatique (`view.layout`), image du logigramme
   (`view.exportImage`, grisé sur un questionnaire vide ou pendant l'export : « Export en cours… ») vue
