@@ -55,7 +55,10 @@ Catalogue unique des actions utilisateur (spec §4.4). Palette, menus et raccour
 - `clipboard-commands.ts` (EVO-010) : `node.copy` (Ctrl+C, logigramme ; inactif si du texte est sélectionné dans la page), `node.paste` (Ctrl+V ; `arg` = `{ position }`,
   sinon pointeur posé par `setPastePoint` de `ui/diagram` ; indisponible si le presse-papiers vient d'un autre projet ; éléments écartés listés dans `notice`),
   `questionnaire.duplicate` (`arg` = id, sinon le questionnaire affiché ; ouvre la copie), `library.duplicate` (`arg` = `{ kind, id }`, sinon le fragment de l'onglet
-  actif ou la question affichée ; ouvre la copie).
+  actif ou la question affichée ; ouvre la copie). Exporte `questionnaireTarget(arg)`.
+- `delete-commands.ts` (EVO-027) : `questionnaire.delete` (« Supprimer le questionnaire » : `arg` = id, sinon le questionnaire affiché ; confirmation
+  `deletionQuestion(id)` : titre, puis « Il est validé. », commentaires, boutons de renvoi d'autres questionnaires, lignes nulles omises ; puis `deleteQuestionnaire`
+  du store). Annuler / rétablir juste après : `edit.undo` / `edit.redo` inchangés, le store les redirige.
 - `comment-commands.ts` (EVO-011) : `comment.add` (« Commenter » : `arg` `{ host, node }` ou question sélectionnée ; existant → affiché ; question de
   bibliothèque → vue de la question), `comment.toggle`, `comment.toggleAll` (graphe affiché : tout afficher si l'un est masqué, sinon tout masquer),
   `comment.reply`, `comment.deleteReply` (`{ host, node, index }`), `comment.delete`, `comment.open` (page → objet, commentaires affichés, `centerRequest`),
@@ -70,6 +73,7 @@ Catalogue unique des actions utilisateur (spec §4.4). Palette, menus et raccour
 `settings-commands.test.ts` (langues, langue de la prévisualisation, raccourcis, vue côte à côte, mise en page) ;
 `image-file.test.ts` (nom du fichier image, commandes d'export, entrée du guide) ;
 `clipboard-commands.test.ts` (EVO-010 : copier-coller, renommage, fragment, annulation, duplication, export / réimport, guide) ;
+`delete-commands.test.ts` (EVO-027 : un test par exigence hors interface) ;
 `comment-commands.test.ts` (EVO-011 : un test par critère d'acceptation testable sans navigateur, entrée du guide) ;
 `validation-commands.test.ts` (EVO-015 : validation, verrou par tous les moyens, dévalidation, autres formulaires, annuler / rétablir, export, guide) ;
 `library-commands.test.ts` (insertion, dépôt, regroupement et annulation, fragment : onglet, entrée, cycle refusé, ouverture, sortie nommée ; question vers la bibliothèque ; entrée du guide EVO-008).

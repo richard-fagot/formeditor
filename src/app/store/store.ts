@@ -7,6 +7,7 @@ import type { Session } from '../../core/runtime';
 import { newWorkspace } from '../../format';
 import { record, takeSnapshot, type Scope, type ScopeHistory } from './history';
 import { changedScopes, travel, type TabId } from './travel';
+import { closeDeleted, deletionPlace, removeQuestionnaire, reopenDeleted, type Deletion } from './delete-questionnaire';
 
 export type { TabId } from './travel';
 import type { GraphRef } from './graph';
@@ -79,6 +80,8 @@ export interface AppState extends ImageState {
   libraryItem?: LibraryItem;
   /** Panneau latéral de la bibliothèque à côté du logigramme (glisser-déposer). */
   libraryPanel: boolean;
+  /** Dernière suppression de questionnaire (EVO-027) : annulable et rétablissable depuis tout onglet juste après. */
+  lastDeletion?: Deletion;
   /** Panneaux repliables de la prévisualisation : état du système, débogage, outline du logigramme (EVO-019). */
   previewPanels: { system: boolean; debug: boolean; outline: boolean };
   /** Contrôles de saisie de la prévisualisation (EVO-014) : état de l'éditeur, non enregistré dans le projet. */
@@ -96,8 +99,12 @@ export interface AppActions {
    * modifiée, liés ; annuler ou rétablir dans l'une le fait dans toutes celles où ce point est en tête.
    */
   transact(scopes: Scope[], recipe: (ws: Workspace) => Workspace | void): void;
+  /** Annule le dernier point de `scope` ; juste après une suppression de questionnaire, annule celle-ci quel que soit `scope` (EVO-027-020). */
   undo(scope: Scope): void;
+  /** Rétablit le dernier point de `scope` ; juste après l'annulation d'une suppression, rétablit celle-ci quel que soit `scope`. */
   redo(scope: Scope): void;
+  /** Supprime un questionnaire du projet (EVO-027), validé compris : un point lié dans `project` et `q:<id>`. */
+  deleteQuestionnaire(id: string): void;
   /** Point d'historique sans modification (avant un glisser de nœuds). */
   checkpoint(scope: Scope): void;
   /** Modification sans historique (positions pendant un glisser). */
@@ -189,6 +196,7 @@ export const useStore = create<Store>()(
       const spill = changed.filter((sc) => sc !== scope);
       const tx = spill.length ? ++txCounter : undefined;
       set((s) => {
+        s.lastDeletion = undefined;
         s.history[scope] = record(s.history[scope] ?? { past: [], future: [] }, tx ? { ...before, tx } : before, tx ? undefined : key);
         for (const sc of spill) s.history[sc] = record(s.history[sc] ?? { past: [], future: [] }, { ...takeSnapshot(ws, sc), tx });
         s.dirty = true;
@@ -204,6 +212,7 @@ export const useStore = create<Store>()(
       if (refused(prev)) return;
       const tx = ++txCounter;
       set((s) => {
+        s.lastDeletion = undefined;
         before.forEach((snap, i) => {
           const sc = scopes[i]!;
           if (JSON.stringify(snap) === JSON.stringify(takeSnapshot(s.ws as Workspace, sc))) return;
@@ -214,17 +223,63 @@ export const useStore = create<Store>()(
     },
     undo(scope) {
       const prev = get();
-      set((s) => void travel(s as AppState, scope, 'past'));
+      const d = prev.lastDeletion;
+      // Suppression juste avant (EVO-027-020) : annulée depuis tout onglet, son onglet remis en place.
+      if (d?.done && prev.history.project?.past.at(-1)?.tx === d.tx) {
+        set((s) => {
+          travel(s as AppState, 'project', 'past');
+          reopenDeleted(s as AppState, d);
+          s.lastDeletion = { ...d, done: false };
+        });
+        return;
+      }
+      set((s) => {
+        travel(s as AppState, scope, 'past');
+        s.lastDeletion = undefined;
+      });
       refused(prev);
     },
     redo(scope) {
       const prev = get();
-      set((s) => void travel(s as AppState, scope, 'future'));
+      const d = prev.lastDeletion;
+      // Rétablir juste après l'annulation d'une suppression : la refait depuis tout onglet, sans verrou de validation.
+      if (d && !d.done && prev.history.project?.future.at(-1)?.tx === d.tx) {
+        set((s) => {
+          travel(s as AppState, 'project', 'future');
+          closeDeleted(s as AppState, d.id);
+          s.lastDeletion = { ...d, done: true };
+        });
+        return;
+      }
+      set((s) => {
+        travel(s as AppState, scope, 'future');
+        s.lastDeletion = undefined;
+      });
       refused(prev);
+    },
+    deleteQuestionnaire(id) {
+      const ws = get().ws;
+      if (!ws.questionnaires.some((q) => q.id === id)) return;
+      const tx = ++txCounter;
+      const scopes: Scope[] = ['project', `q:${id}`];
+      const before = scopes.map((sc) => takeSnapshot(ws, sc));
+      // Pas de verrou (EVO-027-015) : supprimer un formulaire validé ne modifie pas son contenu.
+      set((s) => {
+        const place = deletionPlace(s as AppState, id);
+        removeQuestionnaire(s.ws as Workspace, id);
+        before.forEach((snap, i) => {
+          const sc = scopes[i]!;
+          s.history[sc] = record(s.history[sc] ?? { past: [], future: [] }, { ...snap, tx });
+        });
+        closeDeleted(s as AppState, id);
+        s.lastDeletion = { tx, id, ...place, done: true };
+        s.dirty = true;
+      });
     },
     checkpoint(scope) {
       const before = takeSnapshot(get().ws, scope);
       set((s) => {
+        s.lastDeletion = undefined;
         s.history[scope] = record(s.history[scope] ?? { past: [], future: [] }, before);
       });
     },
@@ -232,6 +287,7 @@ export const useStore = create<Store>()(
       const prev = get();
       set((s) => {
         recipe(s.ws as Workspace);
+        s.lastDeletion = undefined;
         s.dirty = true;
       });
       refused(prev, false);
@@ -244,6 +300,7 @@ export const useStore = create<Store>()(
     loadWorkspace(ws) {
       set((s) => {
         Object.assign(s, initialState(ws));
+        s.lastDeletion = undefined;
         s.notice = undefined;
         s.copyRequest = undefined;
       });

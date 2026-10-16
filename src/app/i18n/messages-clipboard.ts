@@ -1,4 +1,4 @@
-/** Textes du copier-coller de nœuds et de la duplication (EVO-010). */
+/** Textes du copier-coller de nœuds, de la duplication (EVO-010) et de la suppression d'un questionnaire (EVO-027). */
 export const CLIPBOARD_MESSAGES = {
   'node.copy': { fr: 'Copier', en: 'Copy' },
   'node.paste': { fr: 'Coller', en: 'Paste' },
@@ -10,6 +10,12 @@ export const CLIPBOARD_MESSAGES = {
   'paste.start': { fr: '« {name} » est collé comme nœud ordinaire : la cible garde son départ.', en: '"{name}" is pasted as an ordinary node: the target keeps its start.' },
   'paste.startFragment': { fr: '« {name} » est collé comme nœud ordinaire : un fragment n’a pas de départ.', en: '"{name}" is pasted as an ordinary node: a fragment has no start.' },
   'questionnaire.duplicate': { fr: 'Dupliquer le questionnaire', en: 'Duplicate questionnaire' },
+  'questionnaire.confirmDelete': { fr: 'Supprimer le questionnaire « {name} » ?', en: 'Delete questionnaire "{name}"?' },
+  'questionnaire.deleteValidated': { fr: 'Il est validé.', en: 'It is validated.' },
+  'questionnaire.deleteComment': { fr: '1 commentaire sera supprimé.', en: '1 comment will be deleted.' },
+  'questionnaire.deleteComments': { fr: '{n} commentaires seront supprimés.', en: '{n} comments will be deleted.' },
+  'questionnaire.deleteRedirect': { fr: '1 bouton de renvoi le cible.', en: '1 redirect button targets it.' },
+  'questionnaire.deleteRedirects': { fr: '{n} boutons de renvoi le ciblent.', en: '{n} redirect buttons target it.' },
   'library.duplicate': { fr: 'Dupliquer l’élément de bibliothèque', en: 'Duplicate library item' },
   'copy.name': { fr: 'Copie de {name}', en: 'Copy of {name}' },
   'copy.nameN': { fr: 'Copie {n} de {name}', en: 'Copy {n} of {name}' },

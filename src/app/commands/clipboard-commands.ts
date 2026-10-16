@@ -56,7 +56,7 @@ function libraryTarget(arg: unknown): LibraryItem | undefined {
 }
 
 /** Questionnaire visé : argument, sinon celui de l'onglet actif ; `undefined` s'il n'existe pas. */
-function questionnaireTarget(arg: unknown): string | undefined {
+export function questionnaireTarget(arg: unknown): string | undefined {
   const tab = st().activeTab;
   const id = typeof arg === 'string' ? arg : tab.startsWith('q:') ? tab.slice(2) : undefined;
   return st().ws.questionnaires.some((x) => x.id === id) ? id : undefined;
