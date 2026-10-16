@@ -3,8 +3,9 @@ import type { GraphNode, Questionnaire, RedirectNode, Workspace } from '../../co
 import { infoKind } from '../../plugins/node-kinds/info';
 import { NODE_KIND_PLUGINS, nodeKind } from '../../registry';
 import { newWorkspace } from '../../format';
+import { checkWorkspace, describeIssue } from '../../core/validation';
 import { getGraph, useStore } from '../store';
-import { command, runCommand } from './index';
+import { command, commands, runCommand } from './index';
 
 const st = () => useStore.getState();
 const q = (id: string, key: string): GraphNode => ({ kind: 'question', id, key, label: { fr: key }, type: 'text' }) as GraphNode;
@@ -135,5 +136,38 @@ describe('nœud Renvoi : création, copie, historique (EVO-024)', () => {
     runCommand('node.group');
     expect(st().ws.library.fragments).toHaveLength(1);
     expect(st().notice?.lines.join(' ')).toContain('nœud Renvoi');
+  });
+
+  it('EVO-024-034, EVO-024-033 — supprimer le nœud ciblé par la commande « Supprimer » : le bouton est conservé, cible introuvable', () => {
+    runCommand('tab.show', 'q:qa');
+    st().select({ graph: A, nodes: ['n1'] });
+    expect(runCommand('node.delete')).toBe(true);
+    expect(qOf('qa').nodes.some((n) => n.id === 'n1')).toBe(false);
+    expect(redirectsOf(qOf('qa'))[0]!.buttons).toEqual(redirect().buttons);
+    const issues = checkWorkspace(st().ws).filter((i) => i.nodeId === 'n2' && i.code === 'buttonTargetMissing');
+    expect(issues.map((i) => describeIssue(i, 'fr'))).toEqual(['La cible du bouton « Corriger » est introuvable.']);
+  });
+
+  it('EVO-024-034, EVO-024-033 — questionnaire ciblé absent : aucune commande ne supprime un questionnaire ; projet ouvert sans lui, le bouton est conservé, cible introuvable', () => {
+    expect(commands().filter((c) => /^questionnaire\.(delete|remove)/.test(c.id))).toEqual([]);
+    const ws = workspace();
+    ws.questionnaires = ws.questionnaires.filter((x) => x.id !== 'qb');
+    ws.project.questionnaires = ws.project.questionnaires.filter((x) => x.id !== 'qb');
+    st().loadWorkspace(ws);
+    expect(redirectsOf(qOf('qa'))[0]!.buttons).toEqual(redirect().buttons);
+    const issues = checkWorkspace(st().ws).filter((i) => i.nodeId === 'n2' && i.code === 'buttonTargetMissing');
+    expect(issues.map((i) => describeIssue(i, 'fr'))).toEqual(['La cible du bouton « Déclarer » est introuvable.']);
+  });
+
+  it('EVO-024-007, EVO-024-033 — Renvoi collé dans le questionnaire qu’il cible : cible questionnaire égale au questionnaire en cours, signalée introuvable', () => {
+    runCommand('tab.show', 'q:qa');
+    st().select({ graph: A, nodes: ['n2'] });
+    runCommand('node.copy');
+    runCommand('tab.show', 'q:qb');
+    runCommand('node.paste');
+    const pasted = redirectsOf(qOf('qb'))[0]!;
+    expect(pasted.buttons[2]!.target).toEqual({ questionnaire: 'qb', prefill: true, replace: false });
+    const issues = checkWorkspace(st().ws).filter((i) => i.nodeId === pasted.id && i.code === 'buttonTargetMissing');
+    expect(issues.map((i) => describeIssue(i, 'fr'))).toContain('La cible du bouton « Déclarer » est introuvable.');
   });
 });
