@@ -92,13 +92,16 @@ Mis à jour le 2026-10-16 — jusqu'à EVO-028
   (rien sélectionné). Une confirmation cite son titre et, s'il y a lieu, « Il est validé. », le nombre de commentaires de
   révision supprimés avec lui et le nombre de boutons de renvoi d'autres questionnaires qui le ciblent ; « Annuler » ne change
   rien. Un formulaire validé se supprime sans le dévalider. Confirmé, il disparaît des onglets, des titres gris, de la palette
-  et des exports ; la bibliothèque ne change pas (« utilisée dans » ne le cite plus) ; l'onglet précédent s'affiche
-  (« Bibliothèque » s'il n'en reste aucun) ; la vue côte à côte qui l'affichait se ferme ; la pastille passe à
+  et des exports ; la bibliothèque ne change pas (« utilisée dans » ne le cite plus) ; s'il était affiché, l'onglet
+  précédent s'affiche (le suivant s'il était le premier, « Bibliothèque » s'il n'en reste aucun), sinon « Bibliothèque » s'il
+  ne reste aucun questionnaire ; la vue côte à côte qui l'affichait se ferme ; la pastille passe à
   « Modifications non exportées ». Les boutons de renvoi qui le visaient restent, en erreur « cible introuvable » ; un fragment
-  qu'il était seul à appeler est signalé « Fragment inutilisé ». **Juste après** (aucune autre modification entre-temps),
+  qu'il était seul à appeler est signalé « Fragment inutilisé ». **Juste après** (aucune autre modification entre-temps ; un
+  `Ctrl+Z` ou `Ctrl+Shift+Z` qui n'a rien fait ne compte pas),
   `Ctrl+Z` le restaure depuis n'importe quel onglet, avec ses commentaires, son historique et son onglet ; `Ctrl+Shift+Z`
-  refait alors la suppression. Ensuite, la suppression s'annule avec l'historique du projet (onglet « État du système »,
-  par exemple). `[cmd: questionnaire.delete]`
+  refait alors la suppression. Ensuite, la suppression s'annule et se rétablit avec l'historique du projet (onglet « État du
+  système », par exemple), même pour un formulaire validé ; le questionnaire revient à sa place dans la liste.
+  `[cmd: questionnaire.delete]`
 - **Changer d'onglet** — Cliquer sur l'onglet, ou `Alt+→` / `Alt+←` (aussi `Ctrl+Tab` / `Ctrl+Shift+Tab`,
   souvent réservés par le navigateur). `[cmd: tab.show]`
   `[cmd: tab.next]` `[cmd: tab.prev]`

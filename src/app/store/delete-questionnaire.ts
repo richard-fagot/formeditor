@@ -56,16 +56,17 @@ interface TabState {
   compare?: string;
 }
 
-/** Après la suppression : onglet retiré, onglet précédent actif (Bibliothèque sans onglet ou sans questionnaire), vue côte à côte fermée. */
+/**
+ * Après la suppression : onglet retiré ; s'il était actif, l'onglet précédent (le suivant s'il était le premier), Bibliothèque
+ * s'il ne reste aucun onglet (EVO-027-012) ; sinon, Bibliothèque s'il ne reste aucun questionnaire (EVO-027-016) ; vue côte à côte fermée.
+ */
 export function closeDeleted(s: TabState, id: string): void {
   const tab: TabId = `q:${id}`;
   const i = s.tabs.indexOf(tab);
   s.tabs = s.tabs.filter((t) => t !== tab);
   if (s.activeTab === tab) s.activeTab = s.tabs[Math.max(0, i - 1)] ?? 'library';
-  if (!s.tabs.length || !s.ws.questionnaires.length) {
-    if (!s.tabs.includes('library')) s.tabs.push('library');
-    s.activeTab = 'library';
-  }
+  else if (!s.ws.questionnaires.length) s.activeTab = 'library';
+  if (s.activeTab === 'library' && !s.tabs.includes('library')) s.tabs.push('library');
   if (s.compare === id) s.compare = undefined;
   if (s.selection.graph?.kind === 'questionnaire' && s.selection.graph.id === id) s.selection = { nodes: [] };
 }
