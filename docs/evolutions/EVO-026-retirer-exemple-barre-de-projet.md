@@ -1,7 +1,7 @@
 ---
 id: EVO-026
 titre: Retirer l'exemple « déclaration de sinistre » de la barre de projet
-statut: à faire
+statut: en cours
 version: 1.0
 qualificatif: final
 derniere_exigence: EVO-026-006
