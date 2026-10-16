@@ -146,15 +146,16 @@ Faisable sans ambiguïté bloquante, sans changement de format (formatVersion 15
 
 - La suppression est un point lié (même transaction) des historiques `project` et `q:<id>`.
 - « Juste après » : aucune autre modification du projet (édition, transaction, point d'historique, déplacement silencieux),
-  annulation ni rétablissement depuis la suppression. Dans ce cas, Annuler, quel que soit l'onglet affiché (Bibliothèque,
+  annulation ni rétablissement effectifs depuis la suppression (un Annuler / Rétablir sans effet ne la referme pas). Dans ce cas, Annuler, quel que soit l'onglet affiché (Bibliothèque,
   autre questionnaire, État du système…), annule la suppression.
 - Restauration : questionnaire, mise en page (commentaires) et entrée du projet à leur rang (projet identique à
   l'avant-suppression) ; l'onglet reprend sa place (un questionnaire fermé reste fermé), actif s'il l'était.
 - Historique propre du questionnaire : conservé pendant la suppression et retrouvé à la restauration (ses modifications
   antérieures s'annulent ensuite depuis son onglet).
 - Rétablir : juste après l'annulation d'une suppression, Rétablir la refait depuis tout onglet. Passé ce moment, la
-  suppression reste un point de l'historique du projet (annulable depuis un onglet qui vise cet historique, comme
-  État du système) ou du questionnaire restauré.
+  suppression reste un point de l'historique du projet (annulable et rétablissable depuis un onglet qui vise cet historique,
+  comme État du système, même pour un formulaire validé) ou du questionnaire restauré ; un questionnaire qui réapparaît
+  par annuler / rétablir reprend son rang.
 
 ### 3. EVO-027-006 à 008 — lignes à compte nul
 
@@ -176,14 +177,14 @@ s'écrit au singulier. Seuls les boutons de renvoi des autres questionnaires son
 | EVO-027-009 | `delete-commands.test.ts` « EVO-027-009 — confirmation refusée » ; `evo-027.spec.ts` (bouton de réouverture) |
 | EVO-027-010 | `delete-commands.test.ts` « EVO-027-010 — retiré du projet » ; `evo-027.spec.ts` (onglet) |
 | EVO-027-011 | `delete-commands.test.ts` « EVO-027-011 — commentaires de révision supprimés » |
-| EVO-027-012 | `delete-commands.test.ts` « EVO-027-012 — onglet actif supprimé » ; `evo-027.spec.ts` (Propriétés) |
+| EVO-027-012 | `delete-commands.test.ts` « EVO-027-012 — onglet actif supprimé », « EVO-027-012 — premier onglet supprimé… » ; `evo-027.spec.ts` (Propriétés) |
 | EVO-027-013 | `delete-commands.test.ts` « EVO-027-013 — vue côte à côte » |
 | EVO-027-014 | `delete-commands.test.ts` « EVO-027-014 » ; `evo-027.spec.ts` (onglet, pastille) |
-| EVO-027-015 | `delete-commands.test.ts` « EVO-027-015 — validé sans dévalidation » ; `evo-027.spec.ts` (onglet, formulaire validé) |
+| EVO-027-015 | `delete-commands.test.ts` « EVO-027-015 — validé sans dévalidation », « EVO-027-015 — fenêtre passée… » ; `evo-027.spec.ts` (onglet, formulaire validé) |
 | EVO-027-016 | `delete-commands.test.ts` « EVO-027-016 — seul questionnaire » ; `evo-027.spec.ts` (Propriétés et palette) |
 | EVO-027-017 | `delete-commands.test.ts` « EVO-027-017 — bibliothèque inchangée » |
 | EVO-027-018 | `delete-commands.test.ts` « EVO-027-018 — cible introuvable » ; `redirect-commands.test.ts` « EVO-024-034, EVO-024-033 — questionnaire ciblé supprimé » |
 | EVO-027-019 | `delete-commands.test.ts` « EVO-027-019 — Fragment inutilisé » |
-| EVO-027-020 | `delete-commands.test.ts` « EVO-027-020 — Annuler juste après… », « … — validé : annuler et rétablir… », « … — après une autre modification… » ; `evo-027.spec.ts` (onglet) |
+| EVO-027-020 | `delete-commands.test.ts` « EVO-027-020 — Annuler juste après… », « … — validé : annuler et rétablir… », « … — après une autre modification… », « … — un Annuler ou Rétablir sans effet… », « EVO-027-020 (voisin) — … reprend son rang » ; `evo-027.spec.ts` (onglet) |
 | EVO-027-021 | `delete-commands.test.ts` « EVO-027-021 — Fermer l’onglet ne supprime pas » ; `evo-027.spec.ts` (bouton de réouverture) |
 | EVO-027-022 | `delete-commands.test.ts` « EVO-027-022 — Nouveau questionnaire et Dupliquer inchangés » |

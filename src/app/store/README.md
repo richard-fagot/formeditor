@@ -8,11 +8,12 @@ Dépend de `core`, `format`, `app/i18n`, `app/feedback`, `plugin-api` (utilitair
 - `useStore` ; actions : `edit(scope, recipe, key?)` (sans effet : aucun point ; si la modification touche d'autres portées — renommage propagé,
   regroupement — elle devient une transaction sur toutes les portées modifiées, `changedScopes`), `transact(scopes, recipe)` (points liés dans chaque portée modifiée :
   annuler / rétablir dans l'une le fait dans toutes celles où ce point est en tête), `undo(scope)` / `redo(scope)` (onglets synchronisés :
-  questionnaire disparu → onglet fermé, réapparu → rouvert ; onglet `f:<id>` d'un fragment disparu fermé, sélection et `libraryItem` d'un fragment disparu vidées), `checkpoint(scope)`,
+  questionnaire disparu → onglet fermé, réapparu → rouvert et remis au rang de son entrée dans le projet ; onglet `f:<id>` d'un fragment disparu fermé, sélection et `libraryItem` d'un fragment disparu vidées), `checkpoint(scope)`,
   `silent(recipe)` (sans historique), `set(recipe)` (état d'interface), `loadWorkspace`, `openTab`, `closeTab`,
-  `deleteQuestionnaire(id)` (EVO-027, `delete-questionnaire.ts` : point lié `project` + `q:<id>` hors verrou de validation ; onglet précédent actif,
-  Bibliothèque sans onglet ni questionnaire, vue côte à côte fermée ; `lastDeletion` : juste après — aucune autre modification, annulation ni
-  rétablissement — `undo` / `redo` de toute portée annulent / refont la suppression, questionnaire, mise en page et onglet remis à leur rang),
+  `deleteQuestionnaire(id)` (EVO-027, `delete-questionnaire.ts` : point lié `project` + `q:<id>` hors verrou de validation ; onglet actif supprimé → précédent (suivant s'il était
+  le premier), Bibliothèque sans onglet ; onglet non actif et plus aucun questionnaire → Bibliothèque ; vue côte à côte fermée ; `lastDeletion` : juste après — aucune autre modification, annulation ni
+  rétablissement effectifs (un `undo` / `redo` sans effet ou refusé ne la referme pas) — `undo` / `redo` de toute portée annulent / refont la suppression, questionnaire, mise en page et onglet remis à leur rang),
+  `undo` / `redo` faisant disparaître un formulaire validé : non refusés par le verrou (EVO-027-015),
   `select`, `requestFocus('label' | 'condition' | 'variable', id)`, `markExported`.
 - Annuler / rétablir et transactions (`travel.ts` : `travel`, `changedScopes`, synchronisation des onglets).
 - Portées d'historique (`history.ts`) : `q:<id>` (questionnaire, sa mise en page et son entrée dans le projet), `library`, `project` ;

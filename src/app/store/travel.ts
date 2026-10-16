@@ -50,8 +50,21 @@ export function travel(s: TravelState, scope: Scope, from: 'past' | 'future'): v
     const to = from === 'past' ? 'future' : 'past';
     s.history[sc] = { ...h, [from]: h[from].slice(0, -1), [to]: [...h[to], current], lastKey: undefined } as ScopeHistory;
   }
+  placeReappeared(s.ws, ids);
   syncTabs(s, ids);
   s.dirty = true;
+}
+
+/** Questionnaire qui réapparaît (restauré en fin de tableau) : remis à son rang, celui de son entrée dans le projet. */
+function placeReappeared(ws: Workspace, before: Set<string>): void {
+  const rank = new Map(ws.project.questionnaires.map((e, i) => [e.id, i]));
+  for (const id of ws.questionnaires.map((q) => q.id).filter((x) => !before.has(x))) {
+    const r = rank.get(id);
+    if (r === undefined) continue;
+    const [q] = ws.questionnaires.splice(ws.questionnaires.findIndex((x) => x.id === id), 1);
+    const at = ws.questionnaires.findIndex((x) => (rank.get(x.id) ?? Infinity) > r);
+    ws.questionnaires.splice(at < 0 ? ws.questionnaires.length : at, 0, q!);
+  }
 }
 
 /**

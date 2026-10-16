@@ -153,11 +153,12 @@ export const useStore = create<Store>()(
    * Verrou des formulaires validés (EVO-015) : si la dernière modification a changé un questionnaire validé dans `prev`,
    * remet le projet (et l'historique, les onglets, la sélection) dans l'état de `prev` ; message si `notify`. Vrai si refusée.
    */
-  function refused(prev: Store, notify = true): boolean {
-    const locked = lockedChanges(prev.ws, get().ws);
+  function refused(prev: Store, notify = true, allowGone = false): boolean {
+    // Annuler / rétablir (EVO-027-015) : la disparition d'un formulaire validé, comme sa suppression, n'est pas refusée.
+    const locked = lockedChanges(prev.ws, get().ws).filter((id) => !allowGone || get().ws.questionnaires.some((q) => q.id === id));
     if (!locked.length) return false;
     set((s) => {
-      Object.assign(s, { ws: prev.ws, history: prev.history, tabs: prev.tabs, activeTab: prev.activeTab, selection: prev.selection, libraryItem: prev.libraryItem, compare: prev.compare, dirty: prev.dirty });
+      Object.assign(s, { ws: prev.ws, history: prev.history, tabs: prev.tabs, activeTab: prev.activeTab, selection: prev.selection, libraryItem: prev.libraryItem, compare: prev.compare, dirty: prev.dirty, lastDeletion: prev.lastDeletion });
     });
     if (!notify) return true;
     const name = (id: string) => {
@@ -233,11 +234,13 @@ export const useStore = create<Store>()(
         });
         return;
       }
+      // Sans effet (rien à annuler) : la fenêtre « juste après » une suppression reste ouverte (EVO-027-020).
+      if (!prev.history[scope]?.past.length) return;
       set((s) => {
         travel(s as AppState, scope, 'past');
         s.lastDeletion = undefined;
       });
-      refused(prev);
+      refused(prev, true, true);
     },
     redo(scope) {
       const prev = get();
@@ -251,11 +254,13 @@ export const useStore = create<Store>()(
         });
         return;
       }
+      // Sans effet (rien à rétablir) : la fenêtre « juste après » une suppression reste ouverte (EVO-027-020).
+      if (!prev.history[scope]?.future.length) return;
       set((s) => {
         travel(s as AppState, scope, 'future');
         s.lastDeletion = undefined;
       });
-      refused(prev);
+      refused(prev, true, true);
     },
     deleteQuestionnaire(id) {
       const ws = get().ws;

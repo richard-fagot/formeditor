@@ -29,6 +29,29 @@ const libraryLink = (page: Page) => page.getByRole('tablist').getByRole('button'
 const heading = (page: Page, name: string) => page.getByTestId('library-heading').filter({ hasText: name });
 const entry = (page: Page, text: string) => page.getByTestId('library-entry').filter({ hasText: text });
 
+/**
+ * EVO-028-012 : ouvre l'onglet Bibliothèque, vérifie compteur de rubrique, indicateurs et total (la question
+ * « souscripteur » inutilisée ou non ; EVO-028-011 : rien à zéro), puis revient au questionnaire.
+ */
+async function counters(page: Page, unused: boolean) {
+  const tab = page.getByRole('tab', { name: /Bibliothèque/ });
+  await ((await tab.count()) ? tab : libraryLink(page)).click();
+  const marks = page.getByTestId('library').getByTestId('unused-mark');
+  const count = heading(page, 'Questions').getByTestId('unused-count');
+  if (unused) {
+    await expect(count).toHaveText('(1 inutilisée)');
+    await expect(marks).toHaveCount(1);
+    await expect(entry(page, 'souscripteur').getByTestId('unused-mark')).toHaveCount(1);
+    await expect(total(page)).toHaveText('1');
+  } else {
+    await expect(page.getByTestId('library').getByTestId('unused-count')).toHaveCount(0);
+    await expect(marks).toHaveCount(0);
+    await expect(total(page)).toHaveCount(0);
+  }
+  await page.getByRole('tab', { name: /Déclaration/ }).click();
+  await expect(page.getByTestId('diagram')).toBeVisible();
+}
+
 // Exemple : seule la structure « souscripteur » n'est référencée par rien.
 test('EVO-028-001, EVO-028-006, EVO-028-008, EVO-028-009, EVO-028-010, EVO-028-013 — question inutilisée : indicateur, message, compteurs ; « utilisée dans » inchangé', async ({ page }) => {
   const errors = await open(page);
@@ -83,35 +106,30 @@ test('EVO-028-002, EVO-028-003, EVO-028-006, EVO-028-007, EVO-028-008, EVO-028-0
 
 test('EVO-028-012, EVO-028-011 — insertion, annuler, rétablir, suppression, collage : compteurs à jour, absents à zéro', async ({ page }) => {
   const errors = await open(page);
-  await expect(total(page)).toHaveText('1');
+  await counters(page, true);
   // Insertion de la question inutilisée : plus aucun élément inutilisé, ni compteur.
   const panel = page.getByTestId('library-panel');
   await panel.getByLabel('Filtrer la bibliothèque…').fill('souscripteur');
   await panel.getByTestId('library-item').first().dragTo(page.getByTestId('diagram'), { targetPosition: { x: 80, y: 80 } });
   const node = page.locator('.react-flow__node').filter({ hasText: 'souscripteur' });
   await expect(node).toHaveCount(1);
-  await expect(total(page)).toHaveCount(0);
+  await counters(page, false);
   await page.keyboard.press('Control+z');
   await expect(node).toHaveCount(0);
-  await expect(total(page)).toHaveText('1');
+  await counters(page, true);
   await page.keyboard.press('Control+y');
   await expect(node).toHaveCount(1);
-  await expect(total(page)).toHaveCount(0);
+  await counters(page, false);
   // Suppression puis collage du nœud copié.
   await node.click();
   await page.keyboard.press('Control+c');
   await page.keyboard.press('Delete');
   await expect(node).toHaveCount(0);
-  await expect(total(page)).toHaveText('1');
+  await counters(page, true);
   const box = (await page.getByTestId('diagram').boundingBox())!;
   await page.mouse.move(box.x + 60, box.y + 60);
   await page.keyboard.press('Control+v');
   await expect(node).toHaveCount(1);
-  await expect(total(page)).toHaveCount(0);
-  // Onglet Bibliothèque : aucun compteur de rubrique ni indicateur.
-  await libraryLink(page).click();
-  await expect(page.getByTestId('library').getByTestId('unused-count')).toHaveCount(0);
-  await expect(page.getByTestId('library').getByTestId('unused-mark')).toHaveCount(0);
-  await expect(total(page)).toHaveCount(0);
+  await counters(page, false);
   expect(errors).toEqual([]);
 });

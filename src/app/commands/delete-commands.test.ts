@@ -126,6 +126,22 @@ describe('supprimer un questionnaire (EVO-027)', () => {
     expect(st().activeTab).toBe('library');
   });
 
+  it('EVO-027-012 — premier onglet supprimé : le suivant ; onglet précédent hors questionnaire conservé, même sans questionnaire restant', () => {
+    runCommand('tab.show', 'q:qa');
+    del('qa');
+    expect(st().activeTab).toBe('q:qb');
+    const ws = workspace();
+    ws.questionnaires = ws.questionnaires.filter((x) => x.id === 'qb');
+    ws.project.questionnaires = ws.project.questionnaires.filter((x) => x.id === 'qb');
+    st().loadWorkspace(ws);
+    runCommand('tab.close', 'q:qb');
+    runCommand('tab.show', 'system');
+    runCommand('tab.show', 'q:qb');
+    del();
+    expect(st().tabs).toEqual(['system']);
+    expect(st().activeTab).toBe('system');
+  });
+
   it('EVO-027-013 — questionnaire affiché dans la vue côte à côte : la vue se ferme', () => {
     runCommand('tab.show', 'q:qa');
     st().set((s) => void (s.compare = 'qb'));
@@ -228,7 +244,42 @@ describe('supprimer un questionnaire (EVO-027)', () => {
     // L'historique du projet garde la suppression : annulable depuis un onglet sans historique propre.
     runCommand('tab.show', 'system');
     runCommand('edit.undo');
-    expect(ids().sort()).toEqual(['qa', 'qb', 'qc']);
+    expect(ids()).toEqual(['qa', 'qb', 'qc']);
+  });
+
+  it('EVO-027-020 — un Annuler ou Rétablir sans effet ne referme pas la fenêtre « juste après »', () => {
+    del();
+    runCommand('tab.show', 'library');
+    st().redo('library'); // rien à rétablir
+    runCommand('edit.undo');
+    expect(ids()).toEqual(['qa', 'qb', 'qc']);
+    st().undo('library'); // rien à annuler
+    runCommand('edit.redo');
+    expect(ids()).toEqual(['qa', 'qc']);
+    runCommand('edit.undo');
+    expect(ids()).toEqual(['qa', 'qb', 'qc']);
+  });
+
+  it('EVO-027-015 — fenêtre passée : annuler puis rétablir la suppression d’un validé par l’historique du projet, au même rang', () => {
+    runCommand('questionnaire.validate', 'qb');
+    del();
+    st().edit('q:qa', (ws) => void (ws.questionnaires[0]!.description = 'x'));
+    st().set((s) => void (s.notice = undefined));
+    runCommand('tab.show', 'system');
+    runCommand('edit.undo');
+    expect(ids()).toEqual(['qa', 'qb', 'qc']);
+    runCommand('edit.redo');
+    expect(ids()).toEqual(['qa', 'qc']);
+    expect(st().notice).toBeUndefined();
+  });
+
+  it('EVO-027-020 (voisin) — un questionnaire qui réapparaît par annuler / rétablir ordinaire reprend son rang (duplication rétablie)', () => {
+    runCommand('questionnaire.duplicate', 'qa');
+    const copy = st().ws.questionnaires[1]!.id;
+    st().undo('project');
+    expect(ids()).toEqual(['qa', 'qb', 'qc']);
+    st().redo('project');
+    expect(ids()).toEqual(['qa', copy, 'qb', 'qc']);
   });
 
   it('EVO-027-021 — Fermer l’onglet ne supprime pas : questionnaire présenté parmi les fermés', () => {
