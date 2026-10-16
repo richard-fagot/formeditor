@@ -5,7 +5,7 @@ Cadre de l'application. Dépend de `app/*`, `ui/*`, `ui-kit`.
 ## Composants
 - `App` : restauration de la session et sauvegarde automatique (`app/persistence`), liaison des raccourcis
   (`app/shortcuts`, relancée si `keymap` change), barre, onglets, contenu, palette, fenêtre d'erreurs d'import.
-- `TopBar` : nom du projet, nouveau / ouvrir / exemple / exporter (bundle, fichiers), langue du contenu,
+- `TopBar` : nom du projet, nouveau / ouvrir / exporter (bundle, fichiers), langue du contenu,
   langue de l'interface, indicateur « modifications non exportées », bouton de palette.
 - `Tabs` : questionnaires ouverts (fermer, rouvrir), fragments ouverts (`f:<id>`, icône ambre ; contenu : `FragmentView` de `ui/library`, EVO-008), nouveau questionnaire, bibliothèque (`ui/library`), état du système (`ui/system-state`),
   paramètres (`ui/settings`, ouverts par le bouton engrenage de la barre), commentaires (`comments` : `CommentsPage` de `ui/comments`, lien « Commentaires » à droite, EVO-011). Clic droit sur un onglet de questionnaire (ou un questionnaire fermé)

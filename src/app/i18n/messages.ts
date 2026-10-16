@@ -18,7 +18,6 @@ export const MESSAGES = {
   'project.open': { fr: 'Ouvrir / importer…', en: 'Open / import…' },
   'project.export': { fr: 'Exporter (bundle)', en: 'Export (bundle)' },
   'project.exportFiles': { fr: 'Exporter les fichiers unitaires', en: 'Export separate files' },
-  'project.example': { fr: 'Ouvrir l’exemple « déclaration de sinistre »', en: 'Open the “claim declaration” example' },
   'project.unsaved': { fr: 'Modifications non exportées', en: 'Unexported changes' },
   'project.saved': { fr: 'Tout est exporté', en: 'Everything exported' },
   'project.importErrors': { fr: 'Import impossible', en: 'Import failed' },

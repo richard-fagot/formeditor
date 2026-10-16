@@ -12,7 +12,7 @@ La section « Modules » est générée par `npm run map` ; le reste est rédig�
 - `src/registry` : seule liste des plugins.
 - `src/app/*` : état, commandes, raccourcis, persistance, i18n de l'outil.
 - `src/ui-kit`, `src/ui/*` : interface React.
-- `tests/reference` : tests de référence sur l'exemple ; `tests/smoke` : Playwright sur `dist/index.html`.
+- `tests/reference` : tests de référence sur l'exemple ; `tests/smoke` : Playwright sur `dist/index.html` (exemple ouvert par « Ouvrir / importer… » : `tests/smoke/support/example.ts`).
 - `examples/` : projet d'exemple « déclaration de sinistre » et chemins attendus.
 - `docs/GUIDE.md` : guide utilisateur (une entrée par action, balise `[cmd: id]` par commande du catalogue). `scripts/guide/` :
   `npm run guide` régénère son index des raccourcis depuis `app/commands` ; `npm run guide:check` (dans `npm run check`) et
@@ -27,7 +27,7 @@ La section « Modules » est générée par `npm run map` ; le reste est rédig�
 
 | Module | Responsabilité | API publique (`index.ts`) | Dépendances | Fichiers |
 | --- | --- | --- | --- | --- |
-| `app/commands` | Catalogue unique des actions utilisateur (spec §4.4). Palette, menus et raccourcis s'appuient tous dessus : | type Command, labelOf, download, imageFileName, imageHeading, imageTitle, type ImageVersion, setPastePoint, commands, command, runCommand | app/feedback, app/i18n, app/store, core/expressions, core/model, format, plugin-api, registry | 31 |
+| `app/commands` | Catalogue unique des actions utilisateur (spec §4.4). Palette, menus et raccourcis s'appuient tous dessus : | type Command, labelOf, download, imageFileName, imageHeading, imageTitle, type ImageVersion, setPastePoint, commands, command, runCommand | app/feedback, app/i18n, app/store, core/expressions, core/model, format, plugin-api, registry | 30 |
 | `app/feedback` | Refus, informations, échecs et confirmations destinés à l'utilisateur (EVO-025). Règle d'usage : `docs/ERREURS.md`. | refuse, inform, fail, confirm, bindFeedback, type Message, type Notice, type FeedbackTarget | app/i18n | 4 |
 | `app/i18n` | Textes de l'interface de l'outil (dictionnaire simple, `fr` par défaut, `en`). Les textes destinés à | MESSAGES, type MessageKey, UI_LANGUAGES, Translate, makeTranslate | — | 8 |
 | `app/issues` | Problèmes non bloquants du projet (spec §4.6), pour les vues (EVO-025). Règle d'usage : `docs/ERREURS.md`. | issuesOf, selectIssues, useIssues, type IssueFilter | app/store, core/model, core/validation, react | 3 |

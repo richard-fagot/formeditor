@@ -230,7 +230,7 @@ describe('EVO-025 — confirmations (window.confirm simulé)', () => {
         st().loadWorkspace(workspace());
         runCommand('project.rename', 'autre');
         expect(st().dirty).toBe(true);
-        runCommand('project.example');
+        runCommand('project.new');
         expect(asked).toEqual([QUESTIONS.newProject[lang]]);
         expect(st().ws.project.name).toBe('autre');
         asked = stubConfirm(true);

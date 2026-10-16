@@ -4,7 +4,6 @@ import { blankWorkspace, useStore, type TabId } from '../store';
 import { makeTranslate } from '../i18n';
 import { confirm, refuse } from '../feedback';
 import { download, pickFiles, slug } from './files';
-import { exampleWorkspace } from './example';
 import type { Command } from './types';
 
 const st = () => useStore.getState();
@@ -34,7 +33,6 @@ export function projectCommands(): Command[] {
   return [
     { id: 'project.new', label: 'project.new', keys: [], scope: 'global', run: () => confirmLoss() && st().loadWorkspace(blankWorkspace()) },
     { id: 'project.open', label: 'project.open', keys: ['$mod+o'], scope: 'global', allowInInput: true, run: () => void importAction() },
-    { id: 'project.example', label: 'project.example', keys: [], scope: 'global', run: () => confirmLoss() && st().loadWorkspace(exampleWorkspace()) },
     {
       id: 'project.export', label: 'project.export', keys: ['$mod+s'], scope: 'global', allowInInput: true,
       run: () => {

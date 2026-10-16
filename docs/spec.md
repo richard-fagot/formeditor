@@ -195,7 +195,7 @@ Objectif : pas de clicodrome. Chaque action courante doit se faire au clavier ou
 
 ### 4.1 Structure de l'écran
 
-- **Barre de projet** : nouveau projet, ouvrir, importer (projet, questionnaire, bibliothèque), exporter, langue, paramètres.
+- **Barre de projet** : nouveau projet, ouvrir, importer (projet, questionnaire, bibliothèque), exporter, langue, paramètres. Elle ne propose pas d'ouvrir l'exemple, et aucune commande ne le fait (EVO-026) : on l'ouvre comme tout autre projet avec « Ouvrir / importer… ».
 - **Onglets de questionnaires** : plusieurs questionnaires ouverts en même temps ; l'onglet d'un formulaire validé porte le marqueur « Validé » (§3.10). On passe de l'un à l'autre par onglet ou par raccourci. La bibliothèque et le dictionnaire de l'état du système ont aussi leur onglet.
 - **Vue côte à côte** (souhaitable) : deux questionnaires affichés en parallèle pour comparer.
 - Dans un onglet de questionnaire, deux sous-onglets : **Logigramme** et **Prévisualisation**.
@@ -272,7 +272,7 @@ Tous les raccourcis sont **paramétrables** dans un écran dédié. Chaque actio
 | Onglet suivant / précédent | Ctrl+Tab / Ctrl+Shift+Tab |
 | Exporter | Ctrl+S |
 
-Les raccourcis à une lettre ne sont actifs que lorsque le focus est sur le graphe, jamais pendant une saisie.
+Les raccourcis à une lettre ne sont actifs que lorsque le focus est sur le graphe, jamais pendant une saisie. Un raccourci personnalisé d'une commande disparue (ex. l'ouverture de l'exemple, EVO-026), restauré avec la session, est ignoré sans message.
 
 ### 4.5 Dictionnaire de l'état du système
 

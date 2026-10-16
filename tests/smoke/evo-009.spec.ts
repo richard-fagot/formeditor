@@ -1,6 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
+import { importExample } from './support/example';
 
 const appUrl = pathToFileURL(resolve('dist/index.html')).href;
 
@@ -31,7 +32,7 @@ async function dropLibraryQuestion(page: Page, filter: string) {
 
 test('EVO-009 : copier une question locale dans la bibliothèque (même place, conditions inchangées, bouton absent ensuite)', async ({ page }) => {
   const errors = await open(page);
-  await palette(page, 'exemple');
+  await importExample(page);
   const warnings = await page.locator('.react-flow__node').filter({ hasText: '⚠' }).count();
   const node = page.getByTestId('rf__node-n_type');
   await node.click();
@@ -50,7 +51,7 @@ test('EVO-009 : copier une question locale dans la bibliothèque (même place, c
 
 test('EVO-009 : clé déjà prise dans la bibliothèque — copie bloquée tant qu’une autre clé n’est pas choisie', async ({ page }) => {
   const errors = await open(page);
-  await palette(page, 'exemple');
+  await importExample(page);
   await palette(page, 'Nouveau questionnaire');
   await page.getByTestId('diagram').click({ position: { x: 30, y: 30 } });
   await page.keyboard.press('n');
@@ -80,7 +81,7 @@ test('EVO-009 : clé déjà prise dans la bibliothèque — copie bloquée tant 
 
 test('EVO-009 : masquer des champs d’une instance « identite » — B réduite à nom, prénom, mail ; A garde ses 7 champs', async ({ page }) => {
   const errors = await open(page);
-  await palette(page, 'exemple');
+  await importExample(page);
   await palette(page, 'Nouveau questionnaire');
   await dropLibraryQuestion(page, 'identite');
   await palette(page, 'Nouveau questionnaire');
@@ -112,7 +113,7 @@ test('EVO-009 : masquer des champs d’une instance « identite » — B réduit
 
 test('EVO-009 : masquer un champ référencé — avertissement listant les expressions, erreur de validation', async ({ page }) => {
   const errors = await open(page);
-  await palette(page, 'exemple');
+  await importExample(page);
   await page.getByRole('tab', { name: /Demande de remboursement/ }).click();
   // « Demande de remboursement » est validé dans l'exemple (EVO-015) : le dévalider pour le modifier.
   page.once('dialog', (d) => void d.accept());

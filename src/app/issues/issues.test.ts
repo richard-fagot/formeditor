@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Issue } from '../../core/validation';
-import { exampleWorkspace } from '../commands/example';
+import { exampleWorkspace } from '../../../tests/reference/example';
 import { issuesOf, selectIssues } from './index';
 
 const issue = (kind: Issue['owner']['kind'], id: string, code: Issue['code'], lang?: string): Issue =>

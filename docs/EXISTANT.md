@@ -1,6 +1,6 @@
 # Existant — fonctionnalités réellement implémentées
 
-État au commit `50420d1` (2026-10-16), jusqu'à EVO-025 et EVO-024 (écarts mineurs corrigés, branche `evo-024-ecarts`). Format JSON : version 15.
+État au commit `d31319c` (2026-10-16), jusqu'à EVO-026. Format JSON : version 15.
 
 Inventaire **factuel**, établi par lecture du code source (et non de la spec, du guide ou des fiches EVO).
 Il décrit ce que fait le code, y compris quand cela diffère de la spec ; les différences avec les fiches
@@ -86,14 +86,14 @@ d'annulation (`q:<id>` pour un questionnaire, `library` pour la bibliothèque et
 **Comportement observable**
 - Logo « Q » ; champ du nom du projet (modifiable en place) ; indicateur « Modifications non exportées » (ambre) /
   « Tout est exporté » (vert).
-- Boutons : Nouveau projet, Ouvrir / importer…, icône « Ouvrir l'exemple », Exporter (bundle), icône « Exporter les fichiers
-  unitaires ».
+- Boutons, dans cet ordre : Nouveau projet, Ouvrir / importer…, Exporter (bundle), icône « Exporter les fichiers
+  unitaires ». Aucune icône d'ouverture de l'exemple (retirée par EVO-026).
 - À droite : sélecteur de la langue du contenu (langues du projet), sélecteur de la langue de l'interface (`fr`, `en`),
   bouton engrenage (Paramètres), bouton « Palette de commandes » avec `Ctrl+K` affiché en dur.
 
 **Règles de gestion et validations**
 - Chaque bouton/sélecteur appelle une commande (`runCommand`) : `project.rename`, `project.new`, `project.open`,
-  `project.example`, `project.export`, `project.exportFiles`, `lang.content`, `lang.ui`, `tab.settings`, `palette.open`.
+  `project.export`, `project.exportFiles`, `lang.content`, `lang.ui`, `tab.settings`, `palette.open`.
 - Le renommage du projet est un point d'historique de la portée `project`, frappes regroupées (clé `name`, fenêtre 1,5 s).
 - `dirty` passe à vrai à toute modification avec historique (`edit`, `transact`, `silent`, annuler/rétablir) ; repasse à
   faux à l'export (bundle ou fichiers).
@@ -102,7 +102,7 @@ d'annulation (`q:<id>` pour un questionnaire, `library` pour la bibliothèque et
 - Nom de projet vide accepté (le nom de fichier exporté devient `projet.bundle.json` via `slug`).
 - Le libellé `Ctrl+K` du bouton n'est pas mis à jour si le raccourci est personnalisé (texte en dur).
 
-**Références** : `src/ui/shell/TopBar.tsx:7-52`, `src/app/commands/edit-commands.ts:101-104`, `src/app/commands/files.ts:30-31`,
+**Références** : `src/ui/shell/TopBar.tsx:8-52` (boutons l.29-32), `src/app/commands/edit-commands.ts:101-104`, `src/app/commands/files.ts:30-31`,
 `src/app/store/history.ts:26` (`COALESCE_MS = 1500`).
 
 ---
@@ -126,7 +126,7 @@ d'annulation (`q:<id>` pour un questionnaire, `library` pour la bibliothèque et
 - `closeTab` active l'onglet précédent (ou `library` s'il n'en reste aucun).
 - `tab.next` / `tab.prev` parcourent circulairement la liste des onglets ouverts.
 - Les onglets Paramètres et Commentaires ne s'ouvrent que par commande (engrenage, lien), jamais à l'ouverture d'un projet.
-- `loadWorkspace` (nouveau projet, exemple, ouverture d'un projet/bundle) : un onglet par questionnaire, premier actif,
+- `loadWorkspace` (nouveau projet, ouverture d'un projet/bundle, restauration de session) : un onglet par questionnaire, premier actif,
   vues, sélection, historiques, prévisualisations, vue côte à côte, commentaires affichés réinitialisés.
 - Annuler/rétablir resynchronise les onglets (questionnaire disparu → onglet fermé, réapparu → rouvert ; fragment disparu → fermé).
 
@@ -232,7 +232,6 @@ système, paramètres, image, presse-papiers, commentaires, versions, navigation
 | --- | --- | --- | --- | --- |
 | `project.new` | Nouveau projet | — | toujours | Si modifications non exportées : confirmation (`window.confirm`) ; charge un projet vierge (1 questionnaire vide). |
 | `project.open` | Ouvrir / importer… | Ctrl+O (aussi en saisie) | toujours | Sélecteur de fichiers `.json` multiples ; import (voir § Import). |
-| `project.example` | Ouvrir l'exemple « déclaration de sinistre » | — | toujours | Confirmation si non exporté ; charge l'exemple embarqué (2 questionnaires, bibliothèque, mises en page). |
 | `project.export` | Exporter (bundle) | Ctrl+S (aussi en saisie) | toujours | Télécharge `<slug du nom>.bundle.json` ; `dirty` = faux. |
 | `project.exportFiles` | Exporter les fichiers unitaires | — | toujours | Télécharge chaque fichier unitaire (un toutes les 250 ms) ; `dirty` = faux. |
 | `questionnaire.new` | Nouveau questionnaire | — | toujours | Crée « Questionnaire sans titre » (langue du contenu), clé unique `questionnaire[_n]`, ouvre son onglet (historique `project`). |
@@ -353,7 +352,7 @@ libellés `src/app/i18n/messages*.ts` ; raccourcis de types `src/plugins/questio
 - Modification sans changement réel : aucun point d'historique.
 
 **Cas limites gérés**
-- Nouveau projet, exemple, ouverture d'un projet ou d'un bundle : historiques vidés (non annulable).
+- Nouveau projet, ouverture d'un projet ou d'un bundle : historiques vidés (non annulable).
 - Historique non sauvegardé : perdu au rechargement.
 
 **Références** : `src/app/store/store.ts:149-238`, `src/app/store/history.ts:26-27,80`, `src/app/store/travel.ts`.
@@ -376,6 +375,10 @@ libellés `src/app/i18n/messages*.ts` ; raccourcis de types `src/plugins/questio
 - Erreurs d'IndexedDB ignorées (écriture) ; lecture en erreur ou bundle invalide → démarrage sur projet vierge, sans message.
 - Onglets de questionnaires / fragments disparus écartés ; onglet actif repris seulement s'il est encore ouvert.
 - `imageOptions` normalisées (`scope` ∈ {all, selection}, `title` booléen).
+- `keymap` repris tel quel, sans contrôle ni message (`persistence/index.ts:34`) : une entrée d'une commande absente du
+  catalogue (ex. `project.example`, retirée par EVO-026) n'est liée à aucune touche (`bind.ts:48` ne parcourt que
+  `commands()`), n'apparaît pas dans l'écran des raccourcis (`ShortcutsSection.tsx:9`), reste dans la session et active
+  « Rétablir tous les raccourcis par défaut » (`ShortcutsSection.tsx:43`), qui l'efface.
 - Non sauvegardés (reviennent à leur valeur initiale) : langue du contenu (→ langue par défaut), sous-vue des
   questionnaires, prévisualisations (session, scénario, langue), vue côte à côte, panneau Bibliothèque, panneaux de
   prévisualisation, contrôles de saisie, panneau Problèmes, commentaires affichés, presse-papiers, historiques.
@@ -2237,14 +2240,14 @@ Aucun schéma n'est fourni pour les fichiers `chemins/*.json`.
   seule la fermeture d'onglet existe (`src/app/i18n/messages.ts:29`).
 - **Annuler / rétablir** limité à 500 entrées par portée (`history.ts:27`), non persistant, et dépendant de l'onglet
   affiché : une modification de portée `project` (nom, langues, variables) ne s'annule pas depuis un onglet de questionnaire
-  (`nav-commands.ts:30`). Remplacement de projet (nouveau, exemple, ouverture projet/bundle) non annulable.
+  (`nav-commands.ts:30`). Remplacement de projet (nouveau, ouverture projet/bundle) non annulable.
 - **Ctrl+Tab / Ctrl+Shift+Tab** déclarés par défaut mais généralement interceptés par le navigateur (doublés par Alt+→/←).
 - La **palette** n'affiche que le premier raccourci d'une commande (`Palette.tsx:54`).
 - Libellés dynamiques « (actuelle : fr) » de `lang.content` / `lang.ui` ; libellés partagés entre commandes (`tab.open`/`tab.show`,
   `node.connect`/`node.connectTo`/`edge.create`, `tab.library`/`library.show`, `library.setVersion`/`questionnaire.setVersion`).
 - Pas de raccourci par défaut pour : définir le départ, copier dans la bibliothèque, nouvelle sortie, vue côte à côte,
   valider/dévalider, onglets Paramètres/Commentaires.
-- Le bouton de la barre de projet affiche « Ctrl+K » en dur, même si le raccourci est personnalisé (`TopBar.tsx:48`).
+- Le bouton de la barre de projet affiche « Ctrl+K » en dur, même si le raccourci est personnalisé (`TopBar.tsx:47`).
 - **Langue du contenu** non sauvegardée en session (revient à la langue par défaut au rechargement), ni les sous-vues,
   panneaux, vue côte à côte, langue/scénario de prévisualisation.
 - **Import** : pas d'import d'un élément isolé de bibliothèque (`bibliotheque.json` remplace tout) ; pas de contrôle de
@@ -2333,7 +2336,7 @@ Aucun schéma n'est fourni pour les fichiers `chemins/*.json`.
 
 ## 7. EVO réalisées par zone
 
-Les fiches EVO-001 à EVO-025 sont au statut « fait ». Une EVO peut apparaître dans plusieurs zones.
+Les fiches EVO-001 à EVO-026 sont au statut « fait ». Une EVO peut apparaître dans plusieurs zones.
 
 ### 1. Coque, commandes et transverse
 
@@ -2365,6 +2368,10 @@ Les fiches EVO-001 à EVO-025 sont au statut « fait ». Une EVO peut apparaîtr
 - **EVO-024** — Nœud de renvoi : commande `node.newRedirect` (Alt+R, questionnaire seulement), messages `node.newRedirect`,
   `group.redirect`, `paste.redirect`, `redirect.*`, `preview.backToRedirect` ; migration 14 → 15. Correction des écarts mineurs
   (commits `32bf773`, `50420d1`) : `targetMissing` (cible questionnaire en cours = introuvable), libellé « (non autorisée) » du panneau.
+- **EVO-026** (fait) — Retrait de l'exemple de la barre de projet : commande `project.example`, libellé i18n
+  `project.example`, icône étincelles de `TopBar` et `app/commands/example.ts` (exemple embarqué dans le build) supprimés ;
+  l'exemple s'ouvre par `project.open` avec les fichiers de `examples/declaration-sinistre/` ; tests unitaires lisant
+  l'exemple via `tests/reference/example.ts`, tests de fumée via `tests/smoke/support/example.ts`.
 - (Format) **EVO-001, 003, 005, 006, 007, 016** : uniquement par leurs migrations dans `src/format/migrate.ts`.
 
 ### 2. Édition : logigramme, propriétés, commentaires, bibliothèque
@@ -2433,7 +2440,7 @@ Les fiches EVO-001 à EVO-025 sont au statut « fait ». Une EVO peut apparaîtr
 
 ### 1. Coque, commandes et transverse
 
-Fiches lues : EVO-002, EVO-004, EVO-015 (commandes et coque), EVO-022, EVO-023, EVO-024, EVO-025.
+Fiches lues : EVO-002, EVO-004, EVO-015 (commandes et coque), EVO-022, EVO-023, EVO-024, EVO-025, EVO-026.
 
 - **EVO-022, « Le JSON contient `version` et `statut` (`final` | `provisoire`) »** : respecté différemment — le fichier porte
   `status` avec les valeurs `draft` / `validated` (pas de champ `statut`, pas de valeurs `final`/`provisoire`) ; seuls les
@@ -2463,6 +2470,9 @@ Fiches lues : EVO-002, EVO-004, EVO-015 (commandes et coque), EVO-022, EVO-023, 
   tests de fumée (`tests/`) non modifiés.
 - **EVO-024** : aucun écart constaté dans la zone (commande `node.newRedirect` Alt+R, indisponible dans un fragment,
   `graph-commands.ts:101` ; refus d'extraction `library-item-commands.ts:138-142`).
+- **EVO-026** : aucun écart constaté (barre `TopBar.tsx:29-32` ; aucune commande `project.example` dans
+  `project-commands.ts:32-36` ni libellé dans `messages.ts` ; EVO-026-005 couvert par le comportement existant de
+  `persistence/index.ts:34` et `bind.ts:48`, sans code ajouté ; EVO-026-006 par l'import ordinaire).
 - **EVO-015** : aucun écart constaté dans la zone (boutons selon l'état `QuestionnaireView.tsx:69-81`, confirmation
   `edit-commands.ts:97-99`, marqueurs `Tabs.tsx:29-34`, `QuestionnaireView.tsx:96-101`).
 

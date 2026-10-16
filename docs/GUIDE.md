@@ -1,5 +1,5 @@
 # Guide utilisateur — Éditeur de questionnaires
-Mis à jour le 2026-10-16 — jusqu'à EVO-024
+Mis à jour le 2026-10-16 — jusqu'à EVO-026
 
 ## Mode d'emploi du guide
 
@@ -56,8 +56,6 @@ Mis à jour le 2026-10-16 — jusqu'à EVO-024
 - **Importer un questionnaire dans le projet ouvert** — « Ouvrir / importer… » avec seulement son fichier (et son
   `.layout.json`) : il est ajouté et s'ouvre dans un onglet, ou remplace celui de même identifiant (sans ouvrir d'onglet). `[cmd: project.open]`
 - **Remplacer la bibliothèque** — Importer seul un `bibliotheque.json` : il remplace toute la bibliothèque du projet.
-- **Ouvrir l'exemple « déclaration de sinistre »** — Icône étincelles de la barre de projet (info-bulle « Ouvrir l’exemple
-  « déclaration de sinistre » ») ou palette. Remplace le projet ouvert (confirmation si non exporté). `[cmd: project.example]`
 - **Exporter le projet** — `Ctrl+S` (actif même pendant une saisie), bouton « Exporter (bundle) » ou palette. Télécharge
   `<nom_du_projet>.bundle.json`, qui contient tout (questionnaires, bibliothèque, mises en page et commentaires de révision). `[cmd: project.export]`
 - **Exporter les fichiers unitaires** — Icône fichier JSON de la barre de projet (info-bulle « Exporter les fichiers unitaires »)
@@ -939,7 +937,7 @@ Sans version, tout fonctionne comme avant, sauf la validation (refusée) et le s
 - **Exporter le logigramme en SVG** : un SVG produit par capture de l'écran n'est qu'un bloc HTML enveloppé (`foreignObject`),
   que Word, PowerPoint et la plupart des éditeurs vectoriels n'affichent pas ; seul le PNG est proposé.
 - **Travailler à plusieurs** ou sur un serveur : la sauvegarde automatique reste dans le navigateur ; partager par l'export.
-- **Annuler après un rechargement** de la page, ou annuler « Nouveau projet », « Ouvrir l’exemple… », l'import d'un projet.
+- **Annuler après un rechargement** de la page, ou annuler « Nouveau projet », l'import d'un projet.
 - **Piloter le wizard au clavier** par des raccourcis dédiés (« Suivant », « Précédent », « Recommencer » sont à la souris).
 - **Vérifier qu'une adresse ou un mail existe** (boîte, voie) : seuls les formats sont contrôlés ; « Adresse à vérifier »
   est un indicateur pour l'équipe de dev, aucun service n'est appelé.
@@ -961,7 +959,6 @@ Sans version, tout fonctionne comme avant, sauf la validation (refusée) et le s
 | --- | --- | --- |
 | Nouveau projet | — | `project.new` |
 | Ouvrir / importer… | `Ctrl+O` | `project.open` |
-| Ouvrir l’exemple « déclaration de sinistre » | — | `project.example` |
 | Exporter (bundle) | `Ctrl+S` | `project.export` |
 | Exporter les fichiers unitaires | — | `project.exportFiles` |
 | Nouveau questionnaire | — | `questionnaire.new` |

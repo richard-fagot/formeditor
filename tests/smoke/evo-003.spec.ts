@@ -1,6 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
+import { importExample } from './support/example';
 
 const appUrl = pathToFileURL(resolve('dist/index.html')).href;
 const EXAMPLE = '# Victime directe\n* Conjoint\n* Enfant\n\n# Ayant droit\n* Conjoint\n* Ascendant';
@@ -11,9 +12,7 @@ async function openQualite(page: Page) {
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto(appUrl);
   await expect(page.getByTestId('app-title')).toBeAttached();
-  await page.keyboard.press('Control+k');
-  await page.keyboard.type('exemple');
-  await page.keyboard.press('Enter');
+  await importExample(page);
   const node = page.getByTestId('rf__node-n_qualite');
   await node.click();
   return { errors, node };

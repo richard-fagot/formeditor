@@ -1,6 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
+import { importExample } from './support/example';
 
 const appUrl = pathToFileURL(resolve('dist/index.html')).href;
 
@@ -24,7 +25,7 @@ async function palette(page: Page, text: string) {
 
 test('EVO-007 : structure « souscripteur » — ordre des contrôles, normalisation, pays, messages des contrôles intégrés', async ({ page }) => {
   const errors = await open(page);
-  await palette(page, 'exemple');
+  await importExample(page);
   await palette(page, 'Nouveau questionnaire');
   const panel = page.getByTestId('library-panel');
   await panel.getByLabel('Filtrer la bibliothèque…').fill('souscripteur');
