@@ -2,3 +2,4 @@
 export { Library } from './Library';
 export { LibraryPanel } from './LibraryPanel';
 export { FragmentView } from './FragmentView';
+export { UnusedTotal } from './Unused';

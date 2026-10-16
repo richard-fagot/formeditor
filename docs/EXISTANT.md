@@ -1,6 +1,6 @@
 # Existant — fonctionnalités réellement implémentées
 
-État au commit `ab37fc8` (2026-10-16), jusqu'à EVO-027. Format JSON : version 15.
+État au commit `4f5eaa7` (2026-10-16), jusqu'à EVO-028. Format JSON : version 15.
 
 Inventaire **factuel**, établi par lecture du code source (et non de la spec, du guide ou des fiches EVO).
 Il décrit ce que fait le code, y compris quand cela diffère de la spec ; les différences avec les fiches
@@ -120,6 +120,9 @@ d'annulation (`q:<id>` pour un questionnaire, `library` pour la bibliothèque et
 - À droite : liens « Bibliothèque », « État du système », « Commentaires » tant que l'onglet correspondant n'est pas ouvert.
 - Marqueur « Validé » (icône + texte, date de validation en infobulle) sur l'onglet ou le bouton de réouverture d'un
   questionnaire validé (EVO-015).
+- Pastille ambre du nombre total d'éléments de bibliothèque inutilisés (`UnusedTotal`, EVO-028) sur l'onglet « Bibliothèque »,
+  ou sur le lien « Bibliothèque » tant que l'onglet n'est pas ouvert ; infobulle « n éléments de bibliothèque inutilisés »
+  (« 1 élément… inutilisé » au singulier) ; masquée aux technologies d'assistance (`aria-hidden`) ; absente quand le total est nul.
 - Clic droit sur un onglet de questionnaire, un questionnaire fermé ou un onglet de fragment : menu « Dupliquer »
   (`questionnaire.duplicate` / `library.duplicate`) ; pour un questionnaire (ouvert ou fermé), aussi « Supprimer »
   (`questionnaire.delete`, EVO-027), qui s'applique aussi à un questionnaire validé.
@@ -144,7 +147,7 @@ d'annulation (`q:<id>` pour un questionnaire, `library` pour la bibliothèque et
 - Un fragment fermé n'a pas de bouton de réouverture dans la barre (réouverture depuis la bibliothèque ou un nœud fragment).
 - Un onglet dont l'objet n'existe plus affiche son identifiant brut (`q:…`).
 
-**Références** : `src/ui/shell/Tabs.tsx:10-86` (menu `:80-83`), `src/app/commands/shell-commands.ts:16-37`, `src/app/commands/project-commands.ts:68-81`,
+**Références** : `src/ui/shell/Tabs.tsx:10-88` (menu `:80-83`, pastille `:59,78`), `src/app/commands/shell-commands.ts:16-37`, `src/app/commands/project-commands.ts:68-81`,
 `src/app/store/store.ts:300-321`, `src/app/store/travel.ts:55-…` (`syncTabs`), `src/app/store/delete-questionnaire.ts:60-102`.
 
 ---
@@ -1128,14 +1131,28 @@ Les sept codes du nœud Renvoi ne sont calculés que pour les questionnaires (`c
 - Clic droit sur un élément : « Dupliquer » ; pour une question, aussi « Commenter ».
 - Vue d'une question : aide, « utilisée dans » (clés des questionnaires et fragments qui la référencent) ou « inutilisée », bouton Supprimer, commentaire, version / statut (EVO-022), éditeur de question complet.
 - Jeux de libellés (booléens) : création (cmd `labelSet.addBoolean`, clé `oui_non` unique, libellés Oui / Non dans les langues du projet), clé, libellés vrai / faux multilingues, suppression (cmd `labelSet.delete`).
+- Éléments inutilisés (EVO-028) : triangle ambre (`unused-mark`, infobulle native et `aria-label`) après l'intitulé d'une question
+  ou d'un fragment inutilisé dans la liste de gauche, et sur la carte d'un jeu de libellés inutilisé (vue de droite, après le
+  badge du type ; l'entrée unique « Jeux de libellés » de la liste de gauche n'en porte pas). Textes : « Inutilisée : aucun
+  questionnaire ni fragment ne l'utilise. » (question), « Inutilisé : aucun questionnaire ni fragment ne l'appelle. » (fragment),
+  « Inutilisé : aucune question booléenne ne l'utilise. » (jeu). Après le titre de chaque rubrique (Jeux de libellés, Questions,
+  Fragments) : « (n inutilisée(s)) » pour les questions, « (n inutilisé(s)) » sinon (`unused-count`), absent si n = 0.
 
 **Règles de gestion et validations**
 - Nouvelle question de bibliothèque : type texte, intitulé « Nouvelle question », clé dérivée unique dans la bibliothèque. Nouveau fragment : vide, titre par défaut, clé dérivée unique.
 - Portée des expressions d'une question de bibliothèque = réunion des portées des graphes qui l'utilisent (au minimum l'état du système).
 - Suppression d'un élément (cmd `library.delete`) : sans confirmation sauf commentaires ; les références restantes deviennent `libraryMissing` ; l'onglet du fragment est fermé.
 - Clé d'un jeu de libellés : écrite telle quelle à la frappe ; invalide ou en double → bordure rouge et message, sans blocage de l'écriture.
+- Définition d'un élément inutilisé (`unusedLibraryItems`, EVO-028) : question de bibliothèque qu'aucun nœud à référence (`ref`)
+  d'un questionnaire ou d'un fragment ne désigne (même critère que « utilisée dans », `itemUsages`) ; fragment sans appelant
+  (`fragmentCallers`, même critère que `unusedFragment` et le bandeau ; un fragment qui s'appelle lui-même a un appelant) ;
+  jeu de libellés qu'aucune question booléenne ne désigne, qu'elle soit locale (nœud sans `ref` d'un questionnaire ou fragment),
+  de bibliothèque, ou champ booléen d'une structure locale ou de bibliothèque. Usage direct seulement (un élément référencé par
+  un fragment inutilisé est utilisé) ; statut validé / provisoire ignoré. Ordre de la bibliothèque.
+- Recalcul (`useUnused`) mémorisé sur le projet `ws` : toute modification, annulation, rétablissement ou ouverture de projet
+  met à jour indicateurs, compteurs et pastille. Affichage seul, aucune commande.
 
-**Références** : `src/ui/library/Library.tsx:12-72`, `LibraryQuestionView.tsx:14-56`, `LabelSets.tsx:16-55`, `items.ts:7-37`, `src/app/commands/library-item-commands.ts:27-30,91-120`, `src/app/commands/library-commands.ts:17-40`, `src/app/store/library-edits.ts:17-38`.
+**Références** : `src/ui/library/Library.tsx:13-78` (indicateurs `:38,57,60`, compteurs `:53-58`), `Unused.tsx:7-39`, `src/core/model/usage.ts:28-46`, `LibraryQuestionView.tsx:14-56`, `LabelSets.tsx:17-59` (indicateur `:44`), `items.ts:7-37`, `src/app/commands/library-item-commands.ts:27-30,91-120`, `src/app/commands/library-commands.ts:17-40`, `src/app/store/library-edits.ts:17-38`.
 
 ---
 
@@ -2332,6 +2349,8 @@ Aucun schéma n'est fourni pour les fichiers `chemins/*.json`.
 - Clé d'un jeu de libellés : invalide ou en double écrite quand même (seulement signalée en rouge dans la liste, aucune vérification `checkWorkspace`).
 - Commentaires : uniquement sur des questions ; non copiés au collage / à la duplication ; pas d'auteur, de date ni de statut.
 - Suppression d'un élément de bibliothèque utilisé : aucune confirmation (sauf commentaires).
+- Éléments inutilisés (EVO-028) : indicateurs et compteurs seulement ; pas de panneau des problèmes dans l'onglet Bibliothèque,
+  pas de suppression groupée ; l'indicateur d'un jeu de libellés n'est visible que dans la liste des jeux (vue de droite).
 - Mise en page automatique : sorties nommées (poignées) et libellés d'arêtes ignorés par ELK.
 - Recentrage de la sélection calculé sur une taille fixe de 240 × 100.
 - Typage des expressions limité à la syntaxe et à l'existence des références.
@@ -2391,7 +2410,7 @@ Aucun schéma n'est fourni pour les fichiers `chemins/*.json`.
 
 ## 7. EVO réalisées par zone
 
-Les fiches EVO-001 à EVO-027 sont au statut « fait ». Une EVO peut apparaître dans plusieurs zones.
+Les fiches EVO-001 à EVO-028 sont au statut « fait ». Une EVO peut apparaître dans plusieurs zones.
 
 ### 1. Coque, commandes et transverse
 
@@ -2456,6 +2475,10 @@ Les fiches EVO-001 à EVO-027 sont au statut « fait ». Une EVO peut apparaîtr
 - **EVO-025 — Gestion des erreurs** : panneau des problèmes, `FragmentView`, `ComparePane` via `useIssues` ; confirmations de suppression et refus de la bibliothèque via `app/feedback` ; sans changement visible.
 - **EVO-027 — Supprimer un questionnaire** : bouton « Supprimer » de `PropertiesPanel` hors du `fieldset` verrouillé ;
   vérifications `buttonTargetMissing` et `unusedFragment` inchangées, déclenchées par la suppression.
+- **EVO-028** (fait) — Signaler les éléments de bibliothèque inutilisés : `core/model/usage.ts` (`unusedLibraryItems`, `unusedCount`),
+  `ui/library/Unused.tsx` (`useUnused`, `UnusedMark`, `UnusedCount`, `UnusedTotal`), indicateurs dans `Library` et `LabelSets`,
+  pastille sur l'onglet / le lien « Bibliothèque » (`ui/shell/Tabs.tsx`), textes `app/i18n/messages-unused.ts`. « Utilisée dans »,
+  `unusedFragment` et le bandeau « aucun appelant » inchangés.
 - **EVO-024 — Nœud de renvoi** : `graphId` transmis à la forme et aux propriétés (`NodeView`, `PropertiesPanel`) ; collage (Renvoi écarté dans un fragment, `retargetButtons`), duplication de questionnaire, refus d'extraction ; vérifications `redirect-check.ts` (sept codes) ; parcours du nœud dans `core/references/visit.ts`.
 
 ### 3. Types de questions et de nœuds
@@ -2570,6 +2593,11 @@ Fiches lues : EVO-002, EVO-004, EVO-015 (commandes et coque), EVO-022, EVO-023, 
 - **EVO-024** :
   - EVO-024-008 / 009 : la restriction aux nœuds en amont ne vaut qu'au choix de la cible ; une cible nœud devenue hors amont (arêtes modifiées) ou visant le Renvoi lui-même (import) n'est pas une erreur, seulement l'avertissement `buttonTargetNotGuaranteed` (`src/core/validation/redirect-check.ts:26-28`, `src/core/model/redirect.ts:86-88`) — respecté différemment.
   - Autres exigences : aucun écart constaté (création, toggles, aperçu, copier-coller, duplication, verrou, traductions).
+- **EVO-028** :
+  - EVO-028-007 : respecté différemment — l'indicateur d'un jeu de libellés est sur sa carte dans la vue des jeux
+    (`src/ui/library/LabelSets.tsx:44`) ; l'entrée unique « Jeux de libellés » de la liste de gauche n'a pas d'indicateur
+    (`src/ui/library/Library.tsx:54`) — choix de l'analyse.
+  - Autres exigences : aucun écart constaté (`src/core/model/usage.ts:28-46`, `src/ui/library/Unused.tsx:7-39`, `src/ui/shell/Tabs.tsx:59,78`).
 
 ### 3. Types de questions et de nœuds
 

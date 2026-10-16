@@ -4,6 +4,7 @@ import { COMMENT_MESSAGES } from './messages-comments';
 import { REQUIRED_MESSAGES } from './messages-required';
 import { VALIDATION_MESSAGES } from './messages-validation';
 import { VERSION_MESSAGES } from './messages-version';
+import { UNUSED_MESSAGES } from './messages-unused';
 
 /** Dictionnaire de l'interface de l'outil (français par défaut). `{x}` : paramètre. */
 export const MESSAGES = {
@@ -13,6 +14,7 @@ export const MESSAGES = {
   ...REQUIRED_MESSAGES,
   ...VALIDATION_MESSAGES,
   ...VERSION_MESSAGES,
+  ...UNUSED_MESSAGES,
   'app.title': { fr: 'Éditeur de questionnaires', en: 'Questionnaire editor' },
   'project.new': { fr: 'Nouveau projet', en: 'New project' },
   'project.open': { fr: 'Ouvrir / importer…', en: 'Open / import…' },

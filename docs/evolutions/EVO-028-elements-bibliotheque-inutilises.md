@@ -1,7 +1,7 @@
 ---
 id: EVO-028
 titre: Signaler les éléments de bibliothèque inutilisés
-statut: à faire
+statut: fait 2026-10-16
 version: 1.0
 qualificatif: final
 derniere_exigence: EVO-028-014
@@ -107,3 +107,63 @@ Aucune.
 | Version | Date | Ajoutées | Abrogées | Motif |
 | --- | --- | --- | --- | --- |
 | 1.0 | 2026-10-16 | 001 à 014 | — | Création depuis la fiche littérale validée |
+
+## Analyse
+
+### 1. Faisabilité et modules impactés
+
+Faisable sans ambiguïté bloquante, sans changement de format (formatVersion 15). Modules (d'après `docs/MAP.md`) :
+- `core/model` : nouvelle définition unique `usage.ts` (`unusedLibraryItems`, `unusedCount`), pure, testée avant le code.
+- `app/i18n` : `messages-unused.ts` (infobulles par type, compteurs de rubrique, total).
+- `ui/library` : `Unused.tsx` (hook et indicateurs), `Library` (indicateur des questions et fragments, compteurs de rubrique),
+  `LabelSets` (indicateur sur la carte d'un jeu de libellés).
+- `ui/shell` : `Tabs` (pastille du total sur l'onglet « Bibliothèque » ou sur son lien quand il est fermé).
+- Mise à jour (EVO-028-012) : le calcul dépend seulement du projet (`ws`) ; toute modification, annulation, rétablissement ou
+  ouverture remplace `ws` et recalcule indicateurs et compteurs. Aucune commande nouvelle (affichage seul).
+- Inchangés : « Utilisé dans » / « Utilisé nulle part. » (`itemUsages`), `unusedFragment` et le bandeau « aucun appelant »
+  (`fragmentCallers`).
+
+### 2. EVO-028-001 et 002 — coïncidence avec « utilisée dans » et `unusedFragment`
+
+- Fragment : la définition réutilise `fragmentCallers`, comme `unusedFragment` et le bandeau ; un fragment qui s'appelle
+  lui-même a donc un appelant (lui-même, un fragment) : il n'est pas inutilisé, ni par l'indicateur ni par l'avertissement.
+  Les deux signalements coïncident toujours.
+- Question : un nœud question à référence (`ref`) dans un questionnaire ou un fragment, exactement comme « Utilisé dans ».
+  Une question de bibliothèque ne peut pas en référencer une autre (les champs d'une structure sont portés par la structure,
+  pas par référence) : le cas « utilisée seulement par elle-même via une autre question de bibliothèque » n'existe pas dans le
+  modèle. La liste « Utilisé dans » est vide exactement quand la question est inutilisée.
+
+### 3. EVO-028-003 — champs booléens d'une structure de bibliothèque
+
+Un jeu de libellés est utilisé dès qu'une question booléenne le désigne, qu'elle soit locale (questionnaire ou fragment), de
+bibliothèque, ou champ booléen d'une structure (locale ou de bibliothèque). Usage direct (004) : la structure de bibliothèque
+« souscripteur » de l'exemple, elle-même inutilisée, rend utilisé le jeu « oui_non_nsp » de son champ booléen.
+
+### 4. Choix (aussi dans `docs/DECISIONS.md`)
+
+- Indicateur : triangle ambre (couleur des avertissements du panneau Problèmes), infobulle native, texte propre au type :
+  « Inutilisée : aucun questionnaire ni fragment ne l'utilise. » (question), « Inutilisé : aucun questionnaire ni fragment ne
+  l'appelle. » (fragment), « Inutilisé : aucune question booléenne ne l'utilise. » (jeu de libellés).
+- Jeux de libellés : la liste de gauche n'a qu'une entrée « Jeux de libellés » ; l'indicateur est sur chaque carte de la liste
+  des jeux (vue de droite), le compteur après le titre de la rubrique de gauche.
+- Compteur de rubrique « (n inutilisée(s)) » / « (n inutilisé(s)) » ; total en pastille ambre (infobulle « n éléments de
+  bibliothèque inutilisés »), masquée aux technologies d'assistance pour garder le nom du lien « Bibliothèque ».
+
+### 5. Matrice de couverture
+
+| ID | Test(s) |
+| --- | --- |
+| EVO-028-001 | `src/core/model/usage.test.ts` « EVO-028-001 — question inutilisée… » ; `tests/smoke/evo-028.spec.ts` « EVO-028-001, … — question inutilisée » |
+| EVO-028-002 | `usage.test.ts` « EVO-028-002 — fragment inutilisé… (un appel de lui-même compte) » ; `evo-028.spec.ts` « EVO-028-002, … — fragment et jeu de libellés inutilisés » |
+| EVO-028-003 | `usage.test.ts` « EVO-028-003 — jeu de libellés inutilisé… » ; `evo-028.spec.ts` « EVO-028-002, EVO-028-003, … » |
+| EVO-028-004 | `usage.test.ts` « EVO-028-004 — seul l'usage direct compte… » |
+| EVO-028-005 | `usage.test.ts` « EVO-028-005 — le statut validé ou provisoire n'entre pas dans la définition » |
+| EVO-028-006 | `evo-028.spec.ts` « EVO-028-001, EVO-028-006, … » (question), « EVO-028-002, …, EVO-028-006, … » (fragment) |
+| EVO-028-007 | `evo-028.spec.ts` « EVO-028-002, …, EVO-028-007, … » |
+| EVO-028-008 | `evo-028.spec.ts` « EVO-028-001, …, EVO-028-008, … » (question), « EVO-028-002, …, EVO-028-008, … » (fragment, jeu de libellés) |
+| EVO-028-009 | `evo-028.spec.ts` « EVO-028-001, …, EVO-028-009, … » (Questions), « EVO-028-002, …, EVO-028-009, … » (Fragments, Jeux de libellés) |
+| EVO-028-010 | `evo-028.spec.ts` « EVO-028-001, …, EVO-028-010, … » (lien puis onglet), « EVO-028-002, …, EVO-028-010, … » (total 3) |
+| EVO-028-011 | `usage.test.ts` « EVO-028-011 — compte total ; nul quand tout est utilisé » ; `evo-028.spec.ts` « EVO-028-012, EVO-028-011 — … » |
+| EVO-028-012 | `evo-028.spec.ts` « EVO-028-012, EVO-028-011 — insertion, annuler, rétablir, suppression, collage… » ; ouverture : chaque test (exemple ouvert, total 1) |
+| EVO-028-013 | `evo-028.spec.ts` « EVO-028-001, …, EVO-028-013 — … « utilisée dans » inchangé » |
+| EVO-028-014 | `evo-028.spec.ts` « EVO-028-002, …, EVO-028-014 — … » ; `src/core/validation/fragments.test.ts` (`unusedFragment`, existant) |

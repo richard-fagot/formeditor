@@ -11,3 +11,4 @@ export * from './required';
 export * from './validation';
 export * from './versioning';
 export * from './redirect';
+export * from './usage';

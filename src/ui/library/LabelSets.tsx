@@ -3,6 +3,7 @@ import { isValidKey, type LabelSet, type LocalizedText } from '../../core/model'
 import { runCommand } from '../../app/commands';
 import { useEditorEnv, useStore, useT } from '../../app/store';
 import { Badge, Button, Field, Input, LocalizedTextInput } from '../../ui-kit';
+import { UnusedMark, useUnused } from './Unused';
 
 /** Modifie un jeu de libellés dans l'historique de la bibliothèque (frappes regroupées par champ). */
 function patch(id: string, field: string, p: Partial<LabelSet>) {
@@ -17,6 +18,7 @@ export function LabelSets() {
   const t = useT();
   const env = useEditorEnv();
   const sets = env.ws.library.labelSets;
+  const unused = useUnused();
   const text = (v: LocalizedText | undefined, set: (v: LocalizedText) => void) => (
     <LocalizedTextInput languages={env.languages} activeLang={env.contentLang} value={v} onChange={set} />
   );
@@ -31,13 +33,15 @@ export function LabelSets() {
       {sets.map((l) => {
         const keyOk = isValidKey(l.key) && sets.filter((x) => x.key === l.key).length === 1;
         return (
-          <div key={l.id} className="space-y-3 rounded-lg border border-slate-200 bg-white p-4 shadow-xs">
+          <div key={l.id} data-testid="label-set" className="space-y-3 rounded-lg border border-slate-200 bg-white p-4 shadow-xs">
             <div className="flex items-end gap-2">
               <Field label={t('props.key')} className="w-64">
                 <Input className={keyOk ? 'font-mono' : 'border-rose-400 font-mono'} value={l.key}
                   onChange={(e) => patch(l.id, 'key', { key: e.target.value.trim() })} />
               </Field>
               <Badge tone="indigo">{t('library.kind.boolean')}</Badge>
+              {/* Jeu inutilisé (EVO-028-007). */}
+              {unused.labelSets.includes(l.id) && <span className="self-center"><UnusedMark title={t('unused.labelSet')} /></span>}
               <Button size="sm" variant="danger" className="ml-auto" onClick={() => runCommand('labelSet.delete', l.id)}>
                 <Trash2 className="size-3" />{t('props.delete')}
               </Button>
