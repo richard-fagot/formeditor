@@ -1,7 +1,7 @@
 ---
 id: EVO-024
 titre: Nœud de renvoi
-statut: en cours
+statut: fait 2026-10-16
 version: 1.0
 qualificatif: final
 derniere_exigence: EVO-024-074

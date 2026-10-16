@@ -35,3 +35,4 @@ Catégories :
 | 2026-10-16 | EVO-024 | mineur | TEST | EVO-024-003 : le test vérifie la présence de « Titre » et « Texte », pas le caractère multi-lignes du texte. | `tests/smoke/evo-024.spec.ts` |
 | 2026-10-16 | EVO-024 | mineur | TEST | EVO-024-020 : l'absence de cible et de condition du bouton Terminer n'est vérifiée qu'indirectement (nombre de sélecteurs de cible). | `tests/smoke/evo-024.spec.ts` |
 | 2026-10-16 | EVO-024 | mineur | SPEC | Une cible questionnaire désignant le questionnaire en cours (possible après un collage) n'est pas signalée. | `src/core/validation/` |
+| 2026-10-16 | EVO-024 (inventaire) | mineur | UI | Le panneau affiche « (introuvable) » pour une cible nœud qui existe mais n'est plus en amont ; une cible hors amont ou visant le Renvoi lui-même ne lève qu'un avertissement. | `src/core/model/redirect.ts`, `src/ui/properties/` |

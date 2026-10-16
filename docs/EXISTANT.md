@@ -2331,7 +2331,7 @@ Aucun schéma n'est fourni pour les fichiers `chemins/*.json`.
 
 ## 7. EVO réalisées par zone
 
-Les fiches EVO-001 à EVO-023 et EVO-025 sont au statut « fait » ; EVO-024 est « en cours » (branche `evo-024` non fusionnée). Une EVO peut apparaître dans plusieurs zones.
+Les fiches EVO-001 à EVO-025 sont au statut « fait ». Une EVO peut apparaître dans plusieurs zones.
 
 ### 1. Coque, commandes et transverse
 
