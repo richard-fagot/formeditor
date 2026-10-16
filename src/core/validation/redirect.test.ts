@@ -1,4 +1,8 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { EXAMPLE_DIR } from '../../../tests/reference/example';
+import { currentStep, next, setAnswer, start, type RuntimeInput } from '../runtime';
 import { exampleWorkspace } from '../../../tests/reference/example';
 import type { GraphNode, Questionnaire, RedirectNode, Workspace } from '../model';
 import { questionnaireScope, renameKey } from '../references';
@@ -113,5 +117,26 @@ describe('nœud Renvoi : problèmes signalés (EVO-024)', () => {
     const ws = exampleWorkspace();
     expect(ws.questionnaires.flatMap((x) => x.nodes).some((n) => n.kind === 'redirect')).toBe(true);
     expect(checkWorkspace(ws)).toEqual([]);
+  });
+
+  it('EVO-024-059 — questionnaire sans nœud Renvoi (q_remboursement) : aucun problème, chemins attendus inchangés', () => {
+    const ws = exampleWorkspace();
+    const qr = ws.questionnaires.find((x) => x.id === 'q_remboursement')!;
+    expect(qr.nodes.some((n) => n.kind === 'redirect')).toBe(false);
+    expect(checkWorkspace(ws).filter((i) => i.owner.kind === 'questionnaire' && i.owner.id === 'q_remboursement')).toEqual([]);
+    for (const file of ['remboursement_majeur.json', 'remboursement_mineur.json']) {
+      const c = JSON.parse(readFileSync(join(EXAMPLE_DIR, 'chemins', file), 'utf8')) as { scenario: string; today: string; answers: { step: string; value: unknown }[]; path: string[]; outcome: string };
+      const sys = ws.project.scenarios.find((x) => x.id === c.scenario)!.values;
+      const input: RuntimeInput = { ws, questionnaireId: 'q_remboursement', sys, env: { today: c.today, defaultLang: ws.project.defaultLanguage } };
+      const queue = [...c.answers];
+      let s = start(input);
+      for (let guard = 0; guard < 100 && currentStep(input, s).node.kind !== 'end'; guard++) {
+        if (queue[0]?.step === currentStep(input, s).id) s = setAnswer(input, s, queue.shift()!.value);
+        s = next(input, s);
+      }
+      const end = currentStep(input, s).node;
+      expect(s.history, file).toEqual(c.path);
+      expect(end.kind === 'end' && end.outcome, file).toBe(c.outcome);
+    }
   });
 });

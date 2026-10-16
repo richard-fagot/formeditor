@@ -324,7 +324,7 @@ Chaque test cite dans son titre les ID qu'il couvre (`tests/smoke/evo-024.spec.t
 | EVO-024-056 | `src/format/redirect.test.ts` |
 | EVO-024-057 | `src/format/redirect.test.ts` |
 | EVO-024-058 | `src/app/commands/redirect-commands.test.ts`, `tests/smoke/evo-024.spec.ts` |
-| EVO-024-059 | `src/core/validation/redirect.test.ts` |
+| EVO-024-059 | `src/core/validation/redirect.test.ts` (exemple avec Renvoi sans problème ; questionnaire sans Renvoi `q_remboursement` : aucun problème, chemins attendus `remboursement_majeur`/`remboursement_mineur` inchangés) |
 | EVO-024-060 | `scripts/guide/evo-024.test.ts` |
 | EVO-024-061 | `src/app/commands/redirect-commands.test.ts` |
 | EVO-024-062 | `src/app/commands/redirect-commands.test.ts` |
