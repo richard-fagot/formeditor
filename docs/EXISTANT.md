@@ -1,6 +1,6 @@
 # Existant — fonctionnalités réellement implémentées
 
-État au commit `5b799ab` (2026-10-16), jusqu'à EVO-025 et EVO-024 (branche `evo-024`). Format JSON : version 15.
+État au commit `50420d1` (2026-10-16), jusqu'à EVO-025 et EVO-024 (écarts mineurs corrigés, branche `evo-024-ecarts`). Format JSON : version 15.
 
 Inventaire **factuel**, établi par lecture du code source (et non de la spec, du guide ou des fiches EVO).
 Il décrit ce que fait le code, y compris quand cela diffère de la spec ; les différences avec les fiches
@@ -798,7 +798,7 @@ libellés `src/app/i18n/messages*.ts` ; raccourcis de types `src/plugins/questio
 - Noms de sorties nommées collées dans un fragment non rendus uniques.
 - Noms relatifs des entrées dynamiques et clés masquées par un champ homonyme de leur structure : non réécrits.
 
-**Références** : `src/app/store/clipboard.ts:25-98` (`:56` Renvoi écarté, `:84-85` repointage), `src/core/model/redirect.ts:179-189` (`retargetButtons`), `src/core/references/rename-local.ts:10-31`, `src/app/commands/clipboard-commands.ts:15-19` (`setPastePoint`), `:35` (nom d'un Renvoi dans le message), `:39-47` (`report`), `:77-96`, `src/app/commands/graph-commands.ts:165-172`, `src/app/i18n/messages-clipboard.ts:5-11`.
+**Références** : `src/app/store/clipboard.ts:25-98` (`:56` Renvoi écarté, `:84-85` repointage), `src/core/model/redirect.ts:187-197` (`retargetButtons`), `src/core/references/rename-local.ts:10-31`, `src/app/commands/clipboard-commands.ts:15-19` (`setPastePoint`), `:35` (nom d'un Renvoi dans le message), `:39-47` (`report`), `:77-96`, `src/app/commands/graph-commands.ts:165-172`, `src/app/i18n/messages-clipboard.ts:5-11`.
 
 ---
 
@@ -910,14 +910,14 @@ Gravité : `error` pour les codes de l'ensemble `ERRORS` (`issue.ts:17-18`), `wa
 | `redirectNoButton` | Nœud Renvoi d'un questionnaire sans aucun bouton (EVO-024). | erreur ; nœud |
 | `buttonNoLabel` | Bouton de renvoi dont le libellé n'a de texte non vide dans **aucune** langue (une langue manquante seule = `missingTranslation`). | erreur ; nœud, `property` = `buttons[i]` |
 | `buttonNoTarget` | Bouton de renvoi sans `target`. | erreur ; nœud, `buttons[i]` |
-| `buttonTargetMissing` | Cible questionnaire absente du projet, ou chemin `node` qui ne désigne aucun nœud (`nodeAtPath`, à travers les appels de fragments) dans le questionnaire du bouton. `{label}` = libellé dans la langue par défaut (repli : première langue renseignée). | erreur ; nœud, `buttons[i]` |
+| `buttonTargetMissing` | Cible questionnaire absente du projet ou égale au questionnaire du nœud (`targetMissing`, `redirect.ts:173-177`), ou chemin `node` qui ne désigne aucun nœud (`nodeAtPath`, à travers les appels de fragments) dans le questionnaire du bouton. `{label}` = libellé dans la langue par défaut (repli : première langue renseignée). | erreur ; nœud, `buttons[i]` |
 | `duplicateButtonTarget` | Bouton dont la cible (`q:<id>` ou `n:<chemin>`, toggles ignorés) est déjà visée par un bouton précédent du même nœud ; signalé sur chaque bouton suivant. | avertissement ; nœud, `buttons[i]` |
 | `linkedNotBeforeEnd` | Bouton à cible questionnaire avec `replace: false` sur un Renvoi qui n'est pas « juste avant une fin » (`isJustBeforeEnd` : au moins une arête sortante, toutes vers un nœud `end`, conditions ignorées). | avertissement ; nœud, `buttons[i]` |
 | `buttonTargetNotGuaranteed` | Cible nœud (non introuvable) non traversée sur tous les chemins du départ au Renvoi (`alwaysBefore`, par dominance : retirer la cible rend le Renvoi inatteignable ; question de fragment `appel/question` : l'appel domine le Renvoi et la question domine, dans le fragment, toutes ses sorties depuis l'entrée) ; une cible qui n'est pas en amont est toujours signalée. | avertissement ; nœud, `buttons[i]` |
 
 Les sept codes du nœud Renvoi ne sont calculés que pour les questionnaires (`checkRedirects`, `workspace-check.ts:90`) : un nœud Renvoi présent dans un fragment (import) n'est pas vérifié. La condition d'affichage d'un bouton (`buttons[i].when`) passe par les vérifications d'expressions communes (`invalidExpression`, `unknownReference`, `notGuaranteed`, propriété `buttons[i].when`). Un Renvoi sans arête sortante reçoit `deadEnd` comme toute page.
 
-**Références** : `src/core/validation/graph.ts:8-124`, `workspace-check.ts:8-104`, `redirect-check.ts:10-35`, `refs-check.ts:21-186`, `groups-check.ts:19-30`, `guarantee.ts`, `expected.ts`, `messages.ts:51-104`, `src/core/model/redirect.ts:41-104, 170-177`.
+**Références** : `src/core/validation/graph.ts:8-124`, `workspace-check.ts:8-104`, `redirect-check.ts:10-35`, `refs-check.ts:21-186`, `groups-check.ts:19-30`, `guarantee.ts`, `expected.ts`, `messages.ts:51-104`, `src/core/model/redirect.ts:41-104, 173-184`.
 
 ---
 
@@ -1618,11 +1618,13 @@ proposé (`NP` sans `undisclosed` compris). Pas d'« Autre », pas d'options ajo
     nœud : clé (`alias.clé` dans un fragment), sinon titre de la page, sinon texte d'une information, sinon id.
   - Choisir une cible questionnaire crée `{ questionnaire, prefill: false, replace: false }` ; une cible nœud `{ node }`
     (sans toggle) ; « — choisir une cible — » retire `target`. Changer de cible recrée la cible (toggles remis à `false`).
-  - Une cible courante absente de la liste proposée reste affichée comme option « nom (introuvable) » (ou id), y compris
-    quand le nœud existe mais n'est plus en amont.
+  - Une cible courante absente de la liste proposée reste affichée comme option « nom (introuvable) » (ou id) si
+    `targetMissing` (questionnaire absent ou égal au questionnaire en cours, nœud absent), sinon « nom (non autorisée) »
+    (nœud existant mais hors amont, ou le Renvoi lui-même) (`properties.tsx:24-29`).
   - Les toggles sont documentaires : seule la prévisualisation les mentionne dans son message.
-- **Cas limites gérés** : liste de cibles vide sans `graphId` ; une cible questionnaire égale au questionnaire du nœud
-  (possible après un collage) n'est pas proposée mais reste acceptée et non signalée.
+- **Cas limites gérés** : liste de cibles vide sans `graphId` (cible courante alors libellée « (introuvable) ») ; une cible
+  questionnaire égale au questionnaire du nœud (possible après un collage) n'est pas proposée, reste conservée, et est
+  signalée `buttonTargetMissing` (« introuvable »).
 - **Références** : `src/plugins/node-kinds/redirect/index.tsx`, `properties.tsx`, `texts.ts` ; `src/core/model/redirect.ts`,
   `src/core/model/node.ts:64-87` (`RedirectTarget`, `RedirectButton`, `RedirectNode`).
 
@@ -2275,7 +2277,7 @@ Aucun schéma n'est fourni pour les fichiers `chemins/*.json`.
 - Mise en page automatique : sorties nommées (poignées) et libellés d'arêtes ignorés par ELK.
 - Recentrage de la sélection calculé sur une taille fixe de 240 × 100.
 - Typage des expressions limité à la syntaxe et à l'existence des références.
-- Nœud Renvoi (EVO-024) : boutons réordonnés par Monter / Descendre seulement ; une cible questionnaire égale au questionnaire du nœud, ou une cible nœud qui n'est plus en amont (aval, fin, le Renvoi lui-même, après une modification des arêtes ou un collage), n'est pas une erreur (seul `buttonTargetNotGuaranteed` signale la seconde) ; un nœud Renvoi d'un fragment importé n'est ni vérifié ni écarté.
+- Nœud Renvoi (EVO-024) : boutons réordonnés par Monter / Descendre seulement ; une cible nœud qui n'est plus en amont (aval, fin, le Renvoi lui-même, après une modification des arêtes ou un collage) n'est pas une erreur (seul `buttonTargetNotGuaranteed` la signale) ; un nœud Renvoi d'un fragment importé n'est ni vérifié ni écarté.
 - Commentaires de code encore en « bloc » (`src/ui/diagram/Diagram.tsx:141`, `src/app/commands/edit-commands.ts:51`), déjà notés dans `docs/ECARTS.md`.
 
 ### 3. Types de questions et de nœuds
@@ -2361,7 +2363,8 @@ Les fiches EVO-001 à EVO-025 sont au statut « fait ». Une EVO peut apparaîtr
   `fail`, `confirm`, `bindFeedback` branché par `store.ts:285`) et `app/issues` (`issuesOf`, `selectIssues`, `useIssues`) ;
   commandes, `refused()` du store, `useImageExport`, `HiddenFields` et sept vues migrés ; `single-path.test.ts` ; `docs/ERREURS.md`.
 - **EVO-024** — Nœud de renvoi : commande `node.newRedirect` (Alt+R, questionnaire seulement), messages `node.newRedirect`,
-  `group.redirect`, `paste.redirect`, `redirect.*`, `preview.backToRedirect` ; migration 14 → 15.
+  `group.redirect`, `paste.redirect`, `redirect.*`, `preview.backToRedirect` ; migration 14 → 15. Correction des écarts mineurs
+  (commits `32bf773`, `50420d1`) : `targetMissing` (cible questionnaire en cours = introuvable), libellé « (non autorisée) » du panneau.
 - (Format) **EVO-001, 003, 005, 006, 007, 016** : uniquement par leurs migrations dans `src/format/migrate.ts`.
 
 ### 2. Édition : logigramme, propriétés, commentaires, bibliothèque
@@ -2485,9 +2488,7 @@ Fiches lues : EVO-002, EVO-004, EVO-015 (commandes et coque), EVO-022, EVO-023, 
 - **EVO-017** : aucun constaté (rendu de prévisualisation, hors de cette zone).
 - **EVO-021** : aucun constaté (« Logigramme / panneau : sans objet »).
 - **EVO-024** :
-  - EVO-024-007 (« autre que le questionnaire en cours ») : une cible questionnaire égale au questionnaire du nœud (après un collage) est conservée et n'est pas signalée (`src/core/model/redirect.ts:173`) — déjà noté dans `docs/ECARTS.md` (SPEC).
   - EVO-024-008 / 009 : la restriction aux nœuds en amont ne vaut qu'au choix de la cible ; une cible nœud devenue hors amont (arêtes modifiées) ou visant le Renvoi lui-même (import) n'est pas une erreur, seulement l'avertissement `buttonTargetNotGuaranteed` (`src/core/validation/redirect-check.ts:26-28`, `src/core/model/redirect.ts:86-88`) — respecté différemment.
-  - EVO-024-033 : le panneau affiche « nom (introuvable) » pour toute cible absente de la liste proposée, y compris un nœud existant mais plus en amont, que les vérifications ne signalent pas comme introuvable (`src/plugins/node-kinds/redirect/properties.tsx:24-25` contre `src/core/model/redirect.ts:170-177`).
   - Autres exigences : aucun écart constaté (création, toggles, aperçu, copier-coller, duplication, verrou, traductions).
 
 ### 3. Types de questions et de nœuds
