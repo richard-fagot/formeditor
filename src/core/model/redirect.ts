@@ -166,13 +166,21 @@ export function redirectTargets(ws: Workspace, questionnaireId: string, redirect
   return [...others, ...nodes.map((path): TargetChoice => ({ value: `n:${path}`, kind: 'node', name: nodeName(ws, q, path, lang) ?? path }))];
 }
 
-/** Erreur d'un bouton : libellé vide, cible vide, cible introuvable (questionnaire du projet, nœud du questionnaire). */
+/**
+ * Cible introuvable (EVO-024-033) : questionnaire absent du projet, nœud absent du questionnaire. Une cible
+ * questionnaire égale au questionnaire en cours (possible après un collage) est exclue (EVO-024-007) : introuvable.
+ */
+export function targetMissing(ws: Workspace, questionnaireId: string, t: RedirectTarget): boolean {
+  if ('questionnaire' in t) return t.questionnaire === questionnaireId || !ws.questionnaires.some((x) => x.id === t.questionnaire);
+  const q = ws.questionnaires.find((x) => x.id === questionnaireId);
+  return !q || !nodeAtPath(ws, q, t.node);
+}
+
+/** Erreur d'un bouton : libellé vide, cible vide, cible introuvable. */
 export function redirectButtonError(ws: Workspace, questionnaireId: string, b: RedirectButton): ButtonError | undefined {
   if (!textOf(b.label, '')) return 'noLabel';
   if (!b.target) return 'noTarget';
-  if ('questionnaire' in b.target) return ws.questionnaires.some((x) => x.id === (b.target as { questionnaire: string }).questionnaire) ? undefined : 'targetMissing';
-  const q = ws.questionnaires.find((x) => x.id === questionnaireId);
-  return q && nodeAtPath(ws, q, b.target.node) ? undefined : 'targetMissing';
+  return targetMissing(ws, questionnaireId, b.target) ? 'targetMissing' : undefined;
 }
 
 /** Repointe les cibles nœud des boutons d'un nœud copié dont le premier nœud du chemin a été copié (EVO-024-053, 055). */
