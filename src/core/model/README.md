@@ -39,6 +39,9 @@ utilitaires purs. Aucun import externe : c'est la base de tous les autres module
   références = vide), `provisionalItems`, `itemUsers(ws, item)`. `Questionnaire.version?`, `Questionnaire.libraryVersions?` (hors verrou de `lockedChanges`).
 - `fragment.ts` (EVO-008) : `fragmentRoots` (nœuds sans arête entrante), `fragmentEntry` (`entry`, sinon premier candidat, sinon premier nœud),
   `fragmentExits` (nœuds sans arête sortante), `graphStart` (départ ou entrée), `calledFragments`, `createsCycle`, `fragmentCallers`.
+- `usage.ts` (EVO-028) : `UnusedItems`, `unusedLibraryItems(ws)` (ids des questions sans nœud qui les référence, des fragments sans appelant
+  — `fragmentCallers`, comme `unusedFragment` —, des jeux de libellés qu'aucune question booléenne locale, de bibliothèque ou champ de structure
+  n'utilise ; usage direct, statut ignoré), `unusedCount`.
 - `redirect.ts` (EVO-024) : nœud Renvoi — `RedirectNode` (`title?`, `text`, `buttons`, `finishLabel?`), `RedirectButton` (`label`, `target?`, `when?`),
   `RedirectTarget` (`{ questionnaire, prefill, replace }` | `{ node }` : chemin d'ids d'étape, `n_appel/n_question`) dans `node.ts` ; `FINISH_LABEL`,
   `redirectTargets(ws, questionnaire, renvoi, langue)` (cibles autorisées : autres questionnaires, puis questions / infos / synthèses en amont, puis questions
@@ -57,4 +60,4 @@ utilitaires purs. Aucun import externe : c'est la base de tous les autres module
 - `StructureField` exclut le type `structure` (pas de structure imbriquée).
 
 ## Tests
-`keys.test.ts`, `redirect.test.ts`, `fragment.test.ts`, `instance.test.ts`, `required.test.ts`, `validation.test.ts`, `versioning.test.ts`.
+`keys.test.ts`, `redirect.test.ts`, `fragment.test.ts`, `instance.test.ts`, `required.test.ts`, `validation.test.ts`, `versioning.test.ts`, `usage.test.ts`.
