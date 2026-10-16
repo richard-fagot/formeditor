@@ -39,7 +39,12 @@ sans cérémonie. Préférer la solution la plus simple qui respecte la spec.
   (Firefox et Chromium, `dist/index.html` ouvert en `file://`). Il doit être vert à la fin de chaque phase.
 - Pendant le travail, ne lancer que les tests ciblés : `npx vitest run <fichiers touchés>`,
   `npx playwright test <spec> --project=chromium`. `npm run check` complet **une seule fois**,
-  à la fin, par le `realisateur` ; il indique le commit sur lequel il est vert.
+  à la fin, par le `realisateur`, **au premier plan** et redirigé :
+  `npm run check > "$LOG" 2>&1; echo exit=$?; grep -E "passed|failed|error" "$LOG" | tail -20`
+  (`$LOG` dans le scratchpad). Jamais en arrière-plan avec une attente : le cache expire.
+  Il indique le commit sur lequel il est vert.
+- Aucune commande ne doit produire plus de 25 k caractères : découper (par dossier, `--stat`, `head`)
+  plutôt que relire une sortie mise sur disque.
 - Test instable préexistant : au-delà de 3 relances, le signaler dans le compte rendu
   et dans `docs/ECARTS.md`, sans l'investiguer davantage.
 - Pas de répétitions ni de tests sous charge (`--repeat-each`, workers multipliés…) : l'outil tourne seul
@@ -54,7 +59,8 @@ sans cérémonie. Préférer la solution la plus simple qui respecte la spec.
 
 ## Environnement
 
-- État du conteneur : `bash .devcontainer/verifier.sh`.
+- État du conteneur : `bash .devcontainer/verifier.sh`. L'orchestrateur le lance (et installe ce qui manque)
+  avant le premier sous-agent ; un sous-agent ne réinstalle rien.
 - Si `docs/spec.md` est absent, s'arrêter et le signaler : c'est la seule source fonctionnelle.
 
 ## Invariants
@@ -104,6 +110,10 @@ La session principale orchestre et ne code pas elle-même. Pour chaque phase de 
    paraphraser, et ne demandent ni refactorisation ni amélioration annexe. Elles ne demandent jamais
    de répétitions ni de tests sous charge (voir Harnais). Une petite correction se limite à :
    corriger la cause, un test ciblé qui la couvre, `npm run check` une fois, compte rendu bref.
+8. L'orchestrateur ne lit ni les fiches, ni la spec, ni le code : seulement le frontmatter (`head -12`)
+   pour le statut, les comptes rendus des sous-agents et `git status` / `git log`.
+9. Consommation de tokens : mesures et réglages dans `docs/analyse-tokens/` ; pour refaire l'analyse,
+   suivre `docs/analyse-tokens/METHODE.md` (un seul sous-agent, procédure bornée).
 
 Les points d'arrêt des démos restent valables.
 
@@ -120,8 +130,9 @@ Statut (à faire | à arbitrer | en cours | fait AAAA-MM-JJ | abandonné) : cham
    guide (`docs/GUIDE.md` et sa date « jusqu'à EVO-NNN », dans le même commit que le changement
    de comportement). Si l'analyse conclut « à arbitrer », il s'arrête avant de coder et rend les options.
 3. Faire relire par `relecteur` (guide compris), corriger si besoin (règles de l'orchestration ci-dessus).
-4. Confier la branche à l'`inventoriste`, qui met à jour `docs/EXISTANT.md` (inventaire factuel du code)
-   et le commite sur la branche. Même étape en fin de phase de `docs/PLAN.md`, ou après toute
+4. Confier la branche à l'`inventoriste`, avec le tableau d'écarts du relecteur ; il met à jour
+   `docs/EXISTANT.md` (inventaire factuel du code) et le commite sur la branche. Étape sautée si le diff
+   ne touche ni `src/` ni le format. Même étape en fin de phase de `docs/PLAN.md`, ou après toute
    modification de code fusionnée hors évolution.
 5. Fusionner, statut « fait » avec la date.
 Si une demande contredit la spec sans que ce soit explicitement voulu, demander avant de coder.

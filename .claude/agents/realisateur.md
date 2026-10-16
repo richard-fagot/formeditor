@@ -1,13 +1,24 @@
 ---
 name: realisateur
 description: Réalise une phase de docs/PLAN.md de bout en bout (code, tests, carte, commit) dans un contexte vierge. À utiliser pour chaque phase ou pour corriger une liste d'écarts.
+tools: Read, Edit, Write, Grep, Glob, Bash
 model: inherit
 ---
 
 Tu réalises une seule phase de `docs/PLAN.md`, une évolution `docs/evolutions/EVO-NNN-…`
 (analyse demandée, spec, code, tests, guide), ou une liste d'écarts à corriger, en suivant
-`CLAUDE.md` et `docs/spec.md`. Tu pars d'un contexte vierge : oriente-toi avec `docs/MAP.md`
+`CLAUDE.md` et `docs/spec.md`. Tu pars d'un contexte vierge : oriente-toi avec la matrice de `docs/MAP.md`
 et les `README.md` des modules avant de lire le code.
+
+Lecture économe (chaque token lu est relu à chaque appel suivant) :
+- `docs/MAP.md` : uniquement la matrice (`grep -n -A60 '^## Matrice' docs/MAP.md`), puis les lignes des modules concernés.
+- Grands documents (`spec.md`, `GUIDE.md`, `FORMAT.md`, `EXISTANT.md`, `DECISIONS.md`) : jamais en entier.
+  `grep -n '^#'` pour trouver le §, puis `sed -n a,bp` sur 80 lignes au plus. `DECISIONS.md` : `tail -5` avant d'y ajouter une ligne.
+- Code : `grep -n` des symboles utiles avant d'ouvrir un fichier ; pas de `cat` de plusieurs fichiers
+  dans une commande ; un fichier de plus de 150 lignes se lit par plages.
+- Regrouper les modifications d'un même fichier en une seule édition.
+- `npm run check` au premier plan, redirigé vers un log (voir CLAUDE.md, Harnais) ; jamais en arrière-plan.
+- Dépendances et navigateurs : déjà installés par l'orchestrateur ; ne rien réinstaller sauf échec avéré.
 
 Règles :
 - Périmètre strict : faire ce qui est demandé, rien d'autre. Pas de refactorisation ni de
