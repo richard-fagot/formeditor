@@ -1,6 +1,6 @@
 # Existant — fonctionnalités réellement implémentées
 
-État au commit `d31319c` (2026-10-16), jusqu'à EVO-026. Format JSON : version 15.
+État au commit `ab37fc8` (2026-10-16), jusqu'à EVO-027. Format JSON : version 15.
 
 Inventaire **factuel**, établi par lecture du code source (et non de la spec, du guide ou des fiches EVO).
 Il décrit ce que fait le code, y compris quand cela diffère de la spec ; les différences avec les fiches
@@ -58,16 +58,18 @@ d'annulation (`q:<id>` pour un questionnaire, `library` pour la bibliothèque et
 **Règles de gestion**
 - `app/feedback` : `refuse(titre, ...lignes)` et `inform(titre, ...lignes)` écrivent `notice` de la même façon (seule
   l'intention diffère) ; `fail(titre, erreur)` affiche une ligne : `erreur.message` si c'est une `Error`, sinon `String(erreur)` ;
-  `confirm(question)` renvoie la réponse de `window.confirm`, seul appel du code.
+  `confirm(question, ...lignes)` renvoie la réponse de `window.confirm`, seul appel du code ; question et lignes de précision
+  traduites puis jointes par saut de ligne (EVO-027).
 - Message : clé `MessageKey`, `{ key, params }`, ou `{ raw }` (texte non traduit : erreurs d'import, nom d'un élément,
   références réécrites, titre de l'avertissement des champs masqués). Traduction dans la langue de l'interface au moment de l'appel.
 - Branchement : `app/store` appelle `bindFeedback` (langue = `uiLang`, écriture dans l'état) ; sans branchement, langue `fr`
   et rien n'est écrit.
 - Appelants : commandes de projet (import, confirmation de perte), version et validation, bibliothèque (lien rompu, cycle,
   extraction refusée, références réécrites, confirmation de suppression), collage, suppression de nœuds commentés,
+  suppression d'un questionnaire (confirmation multiligne, EVO-027),
   dévalidation, verrou du store (`refused`), export d'image (`inform` image réduite, `fail`), champs masqués.
 - `notice` n'est remis à `undefined` qu'à la fermeture de la fenêtre (`App.tsx:50, 54`) et au chargement d'un projet
-  (`store.ts:247`).
+  (`store.ts:304`).
 - `app/issues` : `issuesOf(ws)` = `checkWorkspace(ws)` mémorisé par référence de `ws` (même `ws` → même tableau) ;
   `selectIssues(issues, filtre)` cumule les critères `owner { kind, id? }`, `ownerIds`, `code`, `lang` (langue contenue dans
   `params.lang`, liste « fr, en ») et conserve l'ordre ; `useIssues(filtre)` lit `ws` dans le store, filtre comparé par valeur.
@@ -76,7 +78,7 @@ d'annulation (`q:<id>` pour un questionnaire, `library` pour la bibliothèque et
 - Contrôle automatique (Vitest) : hors tests, pas de `window.confirm` ni d'écriture `.notice =` hors d'`app/feedback`
   (remises à zéro ci-dessus exceptées), pas d'appel à `checkWorkspace(` hors d'`app/issues` et de `core`.
 
-**Références** : `src/app/feedback/feedback.ts:3-61`, `src/app/store/store.ts:149-162` (`refused`), `:285` (`bindFeedback`),
+**Références** : `src/app/feedback/feedback.ts:3-61`, `src/app/store/store.ts:156-170` (`refused`), `:342` (`bindFeedback`),
 `src/app/issues/issues.ts:6-41`, `src/app/feedback/single-path.test.ts:20-33`, `docs/ERREURS.md`.
 
 ---
@@ -119,7 +121,8 @@ d'annulation (`q:<id>` pour un questionnaire, `library` pour la bibliothèque et
 - Marqueur « Validé » (icône + texte, date de validation en infobulle) sur l'onglet ou le bouton de réouverture d'un
   questionnaire validé (EVO-015).
 - Clic droit sur un onglet de questionnaire, un questionnaire fermé ou un onglet de fragment : menu « Dupliquer »
-  (`questionnaire.duplicate` / `library.duplicate`).
+  (`questionnaire.duplicate` / `library.duplicate`) ; pour un questionnaire (ouvert ou fermé), aussi « Supprimer »
+  (`questionnaire.delete`, EVO-027), qui s'applique aussi à un questionnaire validé.
 
 **Règles de gestion et validations**
 - `openTab` ajoute l'onglet s'il n'y est pas, le rend actif et vide la sélection.
@@ -129,13 +132,20 @@ d'annulation (`q:<id>` pour un questionnaire, `library` pour la bibliothèque et
 - `loadWorkspace` (nouveau projet, ouverture d'un projet/bundle, restauration de session) : un onglet par questionnaire, premier actif,
   vues, sélection, historiques, prévisualisations, vue côte à côte, commentaires affichés réinitialisés.
 - Annuler/rétablir resynchronise les onglets (questionnaire disparu → onglet fermé, réapparu → rouvert ; fragment disparu → fermé).
+- Suppression d'un questionnaire (EVO-027, `closeDeleted`) : son onglet est retiré ; s'il était actif, l'onglet précédent
+  devient actif (le suivant s'il était le premier) ; s'il ne reste aucun onglet ou aucun questionnaire, l'onglet Bibliothèque
+  est ouvert (ajouté en fin s'il ne l'était pas) et actif, même si d'autres onglets (État du système…) restent ouverts ;
+  vue côte à côte fermée si elle affichait ce questionnaire ; sélection vidée si elle visait ce questionnaire. Le bouton de
+  réouverture disparaît avec le questionnaire.
+- Annulation de la suppression juste après (`reopenDeleted`) : l'onglet reprend sa place (un questionnaire fermé reste fermé),
+  actif s'il l'était.
 
 **Cas limites gérés**
 - Un fragment fermé n'a pas de bouton de réouverture dans la barre (réouverture depuis la bibliothèque ou un nœud fragment).
 - Un onglet dont l'objet n'existe plus affiche son identifiant brut (`q:…`).
 
-**Références** : `src/ui/shell/Tabs.tsx:10-82`, `src/app/commands/shell-commands.ts:16-37`, `src/app/commands/project-commands.ts:68-81`,
-`src/app/store/store.ts:244-264`, `src/app/store/travel.ts:55-…` (`syncTabs`).
+**Références** : `src/ui/shell/Tabs.tsx:10-86` (menu `:80-83`), `src/app/commands/shell-commands.ts:16-37`, `src/app/commands/project-commands.ts:68-81`,
+`src/app/store/store.ts:300-321`, `src/app/store/travel.ts:55-…` (`syncTabs`), `src/app/store/delete-questionnaire.ts:60-102`.
 
 ---
 
@@ -315,6 +325,7 @@ système, paramètres, image, presse-papiers, commentaires, versions, navigation
 | `node.copy` | Copier | Ctrl+C | logigramme affiché, nœuds sélectionnés, aucun texte sélectionné dans la page | Copie dans le presse-papiers interne (lié au projet). |
 | `node.paste` | Coller | Ctrl+V | logigramme affiché et presse-papiers du même projet | Colle au pointeur (ou position arg) ; éléments écartés listés (notice) ; cibles nœud des boutons de renvoi repointées (EVO-024). |
 | `questionnaire.duplicate` | Dupliquer le questionnaire | — | questionnaire visé (arg id, sinon actif) existant | Copie « Copie de … », ouvre son onglet. |
+| `questionnaire.delete` | Supprimer le questionnaire | — | questionnaire visé (arg id, sinon actif) existant | Confirmation (titre ; « Il est validé. », nombre de commentaires de révision, nombre de boutons de renvoi d'autres questionnaires qui le ciblent, chaque ligne omise si nulle, singulier pour 1) ; refus = rien ; accord = `deleteQuestionnaire` (EVO-027). |
 | `library.duplicate` | Dupliquer l'élément de bibliothèque | — | élément visé (arg, sinon fragment de l'onglet / question affichée) existant | Copie et l'affiche. |
 | `comment.add` | Commenter | — | arg `{ host, node }` ou question seule sélectionnée sur le logigramme | Crée le commentaire s'il n'existe pas, l'affiche, met le texte en saisie. |
 | `comment.toggle` | Afficher / masquer le commentaire | — | commentaire existant sur la cible | Bascule son affichage. |
@@ -330,12 +341,12 @@ système, paramètres, image, presse-papiers, commentaires, versions, navigation
 | `library.unvalidate` | Dévalider l'élément de bibliothèque | — | élément visé validé | Retire `status`, sans confirmation. |
 | `nav.down` / `nav.up` (masquées) | Aller au nœud suivant / précédent | ↓ / ↑ | toujours (portée graph) | Successeur / prédécesseur (1re arête) ; sans sélection : sélectionne le départ ou le 1er nœud. |
 | `nav.right` / `nav.left` (masquées) | Aller au nœud voisin suivant / précédent | → / ← | toujours (portée graph) | Voisins de même parent (circulaire). |
-| `edit.undo` | Annuler | Ctrl+Z | toujours (pas en saisie) | Annule dans l'historique de l'onglet : Bibliothèque → `library` ; questionnaire → `q:<id>` ; fragment → `library` ; autre onglet → `project`. |
-| `edit.redo` | Rétablir | Ctrl+Shift+Z, Ctrl+Y | toujours (pas en saisie) | Rétablit dans le même historique. |
+| `edit.undo` | Annuler | Ctrl+Z | toujours (pas en saisie) | Annule dans l'historique de l'onglet : Bibliothèque → `library` ; questionnaire → `q:<id>` ; fragment → `library` ; autre onglet → `project`. Juste après une suppression de questionnaire : annule celle-ci depuis tout onglet (EVO-027). |
+| `edit.redo` | Rétablir | Ctrl+Shift+Z, Ctrl+Y | toujours (pas en saisie) | Rétablit dans le même historique ; juste après l'annulation d'une suppression de questionnaire : la refait depuis tout onglet. |
 | `view.fit` | Ajuster la vue | F | portée graph | Incrémente `fitRequest`. |
 | `view.toggle` | Basculer logigramme ↔ prévisualisation | P | onglet de questionnaire | Bascule la sous-vue. |
 
-**Références** : `src/app/commands/index.ts:21-38`, `types.ts:3-22`, fichiers `*-commands.ts` du dossier ;
+**Références** : `src/app/commands/index.ts:21-39`, `types.ts:3-22`, fichiers `*-commands.ts` du dossier (`delete-commands.ts:9-36`) ;
 libellés `src/app/i18n/messages*.ts` ; raccourcis de types `src/plugins/question-types/*/index.tsx` (`shortcut`).
 
 ---
@@ -350,12 +361,25 @@ libellés `src/app/i18n/messages*.ts` ; raccourcis de types `src/plugins/questio
 - Toute modification (y compris annuler/rétablir) qui changerait le contenu verrouillé d'un questionnaire validé est
   annulée en bloc et signalée (« validation.locked »).
 - Modification sans changement réel : aucun point d'historique.
+- Suppression d'un questionnaire (EVO-027, `deleteQuestionnaire`) : un point lié dans `project` et `q:<id>`, hors verrou des
+  formulaires validés (pas de `refused`) ; l'historique `q:<id>` est conservé. `lastDeletion` mémorise la suppression
+  (transaction, rangs du questionnaire, de sa mise en page et de son onglet, onglet actif ou non).
+- « Juste après » : tant que `lastDeletion` existe et que le dernier point de `project` est cette transaction, `undo(scope)`
+  quelle que soit la portée annule la suppression (`travel('project')`), remet questionnaire et mise en page à leur rang et
+  l'onglet à sa place ; ensuite `redo(scope)` quelle que soit la portée la refait. Ni l'un ni l'autre ne passe par le verrou.
+- `lastDeletion` est effacé par `edit`, `transact`, `checkpoint`, `silent`, `loadWorkspace`, et par tout `undo` / `redo`
+  ordinaire, même sans effet (ex. Rétablir sans rien à rétablir juste après la suppression : un Annuler ensuite depuis la
+  Bibliothèque ne restaure plus le questionnaire). Les changements d'onglet (`set`, `openTab`, `closeTab`) ne l'effacent pas.
 
 **Cas limites gérés**
 - Nouveau projet, ouverture d'un projet ou d'un bundle : historiques vidés (non annulable).
 - Historique non sauvegardé : perdu au rechargement.
+- Passé « juste après », la suppression reste un point lié de `project` et `q:<id>`, annulable par l'historique de l'onglet
+  (ex. État du système) ; le questionnaire revient alors en fin de liste (`history.ts:65`) ; rétablir la suppression d'un
+  questionnaire validé par ce chemin est refusé par le verrou.
 
-**Références** : `src/app/store/store.ts:149-238`, `src/app/store/history.ts:26-27,80`, `src/app/store/travel.ts`.
+**Références** : `src/app/store/store.ts:156-298`, `src/app/store/history.ts:26-27,65,80`, `src/app/store/travel.ts`,
+`src/app/store/delete-questionnaire.ts:36-102`.
 
 ---
 
@@ -821,6 +845,29 @@ libellés `src/app/i18n/messages*.ts` ; raccourcis de types `src/plugins/questio
 
 ---
 
+### Suppression d'un questionnaire (EVO-027)
+
+**Comportement observable**
+- Cmd `questionnaire.delete` : menu contextuel de l'onglet ou du bouton de réouverture (« Supprimer »), palette (« Supprimer le
+  questionnaire », questionnaire actif), bouton « Supprimer » des propriétés du questionnaire. Aucun raccourci.
+- Confirmation `window.confirm` : « Supprimer le questionnaire « titre » ? » (titre dans la langue du contenu, sinon langue
+  par défaut, sinon clé), puis « Il est validé. », « n commentaires seront supprimés. », « n boutons de renvoi le ciblent. »,
+  chaque ligne omise si nulle, singulier pour 1. Refus : projet inchangé.
+- Accord : « Modifications non exportées » (`dirty`), onglets mis à jour (§ Onglets).
+
+**Règles de gestion et validations**
+- `deletionImpact` : validé = `status === 'validated'` ; commentaires = `layout.comments` du questionnaire ; boutons = boutons
+  des nœuds Renvoi des **autres** questionnaires dont la cible est `{ questionnaire: id }`.
+- `removeQuestionnaire` : retire le questionnaire, sa mise en page (commentaires compris) et son entrée de `projet.json` ;
+  bibliothèque inchangée. Les exports, « utilisée dans », la page des commentaires et les vérifications lisent le projet
+  sans lui : boutons de renvoi qui le ciblaient signalés `buttonTargetMissing`, fragment sans autre appelant `unusedFragment`.
+- Questionnaire validé : supprimé sans dévalidation ; projet réduit à un questionnaire : suppression permise, Bibliothèque affichée.
+
+**Références** : `src/app/commands/delete-commands.ts:9-36`, `src/app/store/delete-questionnaire.ts:14-33`,
+`src/app/store/store.ts:260-277`, `src/app/i18n/messages-clipboard.ts:13-18`, `src/app/feedback/feedback.ts:59-61`.
+
+---
+
 ### Menu contextuel du logigramme
 
 **Comportement observable**
@@ -930,12 +977,14 @@ Les sept codes du nœud Renvoi ne sont calculés que pour les questionnaires (`c
 - Contenu selon la sélection : un seul nœud → propriétés du nœud ; sinon une arête → propriétés de l'arête ; sinon, dans un questionnaire → propriétés du questionnaire ; sinon texte « rien de sélectionné ».
 - Le panneau fournit à l'éditeur d'expression la portée du graphe (`questionnaireScope` ou `fragmentScope`) pour l'autocomplétion et le contrôle.
 - Questionnaire validé (EVO-015) : tout le contenu est dans un `fieldset` désactivé (`properties-locked`), éditeurs CodeMirror en lecture seule.
+- Sans nœud ni arête sélectionnés, dans un questionnaire : section « Supprimer le questionnaire » avec bouton « Supprimer »
+  (`questionnaire-delete`, cmd `questionnaire.delete`, EVO-027), hors du `fieldset` : actif même si le questionnaire est validé.
 - Nœud : question locale → éditeur de question + section « Bibliothèque » (« Copier dans la bibliothèque ») ; référence → §16 ; nœud fragment → §17 ; autres types → propriétés du plugin, qui reçoivent `graphId` (cibles d'un nœud Renvoi, EVO-024, `PropertiesPanel.tsx:63`) ; questionnaire : bouton « Définir comme départ » si le nœud ne l'est pas ; fragment : section Entrée (§19).
 
 **Règles de gestion et validations**
 - Saisies d'un nœud ou d'une arête : `store.edit` avec clé de regroupement `<id>:<champ>` ; une propriété mise à `undefined` est retirée du JSON.
 
-**Références** : `src/ui/properties/PropertiesPanel.tsx:17-98`, `src/ui/properties/useGraphEdit.ts`.
+**Références** : `src/ui/properties/PropertiesPanel.tsx:17-104` (bouton `:41-46`), `src/ui/properties/useGraphEdit.ts`.
 
 ---
 
@@ -944,6 +993,7 @@ Les sept codes du nœud Renvoi ne sont calculés que pour les questionnaires (`c
 **Comportement observable**
 - Version (EVO-022, `questionnaire.setVersion`) et statut « Validé » / « Provisoire » ; infobulle « verrouillé » si validé.
 - Titre multilingue (`questionnaire.setTitle`), clé (`questionnaire.rename`, aide : nom du fichier exporté), description (`questionnaire.setDescription`).
+- Sous ces champs, bouton « Supprimer » du questionnaire (EVO-027, voir § Panneau de propriétés : cadre).
 
 **Règles de gestion et validations**
 - Clé validée à la sortie du champ ou sur Entrée : refusée (bordure rouge, message) si invalide ou déjà prise par un autre questionnaire ; Échap rétablit la valeur. Renommer change aussi le fichier `<clé>.json` du projet en mémoire.
@@ -1036,8 +1086,9 @@ Les sept codes du nœud Renvoi ne sont calculés que pour les questionnaires (`c
 - Annuler / rétablir par portée (`q:<id>`, `library`, `project`) ; frappes d'un même champ en moins de 1,5 s = une étape.
 - Une modification qui touche d'autres portées (renommage propagé, extraction en fragment) devient une transaction : l'annuler depuis une portée l'annule dans toutes celles où ce point est en tête.
 - Modification d'un questionnaire validé (EVO-015) : état d'avant remis (projet, historique, onglets, sélection) et message « formulaire validé » (sauf écriture silencieuse de position).
+- Suppression d'un questionnaire (EVO-027) : échappe au verrou, de même que son annulation et son rétablissement juste après (voir § Historique annuler / rétablir).
 
-**Références** : `src/app/store/store.ts:149-239`, `src/app/store/history.ts:26`, `src/app/store/travel.ts`.
+**Références** : `src/app/store/store.ts:156-298`, `src/app/store/history.ts:26`, `src/app/store/travel.ts`.
 
 ---
 
@@ -2236,11 +2287,15 @@ Aucun schéma n'est fourni pour les fichiers `chemins/*.json`.
 
 ### 1. Coque, commandes et transverse
 
-- Aucune commande pour **supprimer un questionnaire** (la clé i18n `questionnaire.delete` existe mais n'est reliée à rien) ;
-  seule la fermeture d'onglet existe (`src/app/i18n/messages.ts:29`).
+- **Suppression d'un questionnaire** (EVO-027) : un seul à la fois ; aucune suppression en cascade dans la bibliothèque ;
+  annulable depuis tout onglet seulement « juste après » (fenêtre refermée aussi par un Annuler / Rétablir sans effet,
+  `store.ts:224-258`) ; au-delà, annulée par l'historique `project` elle remet le questionnaire en fin de liste
+  (`history.ts:65`) et son rétablissement est refusé par le verrou si le questionnaire était validé.
 - **Annuler / rétablir** limité à 500 entrées par portée (`history.ts:27`), non persistant, et dépendant de l'onglet
   affiché : une modification de portée `project` (nom, langues, variables) ne s'annule pas depuis un onglet de questionnaire
-  (`nav-commands.ts:30`). Remplacement de projet (nouveau, ouverture projet/bundle) non annulable.
+  (`nav-commands.ts:30`), sauf la suppression d'un questionnaire juste après (EVO-027). Remplacement de projet (nouveau,
+  ouverture projet/bundle) non annulable. Un questionnaire qui réapparaît par un annuler / rétablir ordinaire (ex. rétablir
+  une duplication) revient en fin de liste (`history.ts:65`).
 - **Ctrl+Tab / Ctrl+Shift+Tab** déclarés par défaut mais généralement interceptés par le navigateur (doublés par Alt+→/←).
 - La **palette** n'affiche que le premier raccourci d'une commande (`Palette.tsx:54`).
 - Libellés dynamiques « (actuelle : fr) » de `lang.content` / `lang.ui` ; libellés partagés entre commandes (`tab.open`/`tab.show`,
@@ -2336,7 +2391,7 @@ Aucun schéma n'est fourni pour les fichiers `chemins/*.json`.
 
 ## 7. EVO réalisées par zone
 
-Les fiches EVO-001 à EVO-026 sont au statut « fait ». Une EVO peut apparaître dans plusieurs zones.
+Les fiches EVO-001 à EVO-027 sont au statut « fait ». Une EVO peut apparaître dans plusieurs zones.
 
 ### 1. Coque, commandes et transverse
 
@@ -2363,7 +2418,7 @@ Les fiches EVO-001 à EVO-026 sont au statut « fait ». Une EVO peut apparaîtr
 - **EVO-023** — Version et statut dans l'image : `imageFileName(projet, titre, { version, status }, date)`, `imageHeading`,
   appel dans `useImageExport.ts:114-119`.
 - **EVO-025** — Refactoring de la gestion des erreurs (sans changement visible) : modules `app/feedback` (`refuse`, `inform`,
-  `fail`, `confirm`, `bindFeedback` branché par `store.ts:285`) et `app/issues` (`issuesOf`, `selectIssues`, `useIssues`) ;
+  `fail`, `confirm`, `bindFeedback` branché par `store.ts:342`) et `app/issues` (`issuesOf`, `selectIssues`, `useIssues`) ;
   commandes, `refused()` du store, `useImageExport`, `HiddenFields` et sept vues migrés ; `single-path.test.ts` ; `docs/ERREURS.md`.
 - **EVO-024** — Nœud de renvoi : commande `node.newRedirect` (Alt+R, questionnaire seulement), messages `node.newRedirect`,
   `group.redirect`, `paste.redirect`, `redirect.*`, `preview.backToRedirect` ; migration 14 → 15. Correction des écarts mineurs
@@ -2372,6 +2427,10 @@ Les fiches EVO-001 à EVO-026 sont au statut « fait ». Une EVO peut apparaîtr
   `project.example`, icône étincelles de `TopBar` et `app/commands/example.ts` (exemple embarqué dans le build) supprimés ;
   l'exemple s'ouvre par `project.open` avec les fichiers de `examples/declaration-sinistre/` ; tests unitaires lisant
   l'exemple via `tests/reference/example.ts`, tests de fumée via `tests/smoke/support/example.ts`.
+- **EVO-027** (fait) — Supprimer un questionnaire : commande `questionnaire.delete` (`delete-commands.ts`, `deletionQuestion`),
+  `delete-questionnaire.ts` du store (`deletionImpact`, `removeQuestionnaire`, `closeDeleted`, `reopenDeleted`, `deletionPlace`),
+  action `deleteQuestionnaire` et état `lastDeletion` (`undo` / `redo` redirigés juste après), « Supprimer » du menu contextuel
+  des onglets, `confirm(question, ...lignes)` d'`app/feedback`, messages `questionnaire.confirmDelete` / `delete*`.
 - (Format) **EVO-001, 003, 005, 006, 007, 016** : uniquement par leurs migrations dans `src/format/migrate.ts`.
 
 ### 2. Édition : logigramme, propriétés, commentaires, bibliothèque
@@ -2395,6 +2454,8 @@ Les fiches EVO-001 à EVO-026 sont au statut « fait ». Une EVO peut apparaîtr
 - **EVO-022 — Versionning** : version et statut dans `QuestionnaireProperties`, `ItemVersion` (question et fragment), copies provisoires à la duplication.
 - **EVO-023 — Version et statut dans l'export d'image** : titre `imageHeading` et nom de fichier (`useImageExport.ts`).
 - **EVO-025 — Gestion des erreurs** : panneau des problèmes, `FragmentView`, `ComparePane` via `useIssues` ; confirmations de suppression et refus de la bibliothèque via `app/feedback` ; sans changement visible.
+- **EVO-027 — Supprimer un questionnaire** : bouton « Supprimer » de `PropertiesPanel` hors du `fieldset` verrouillé ;
+  vérifications `buttonTargetMissing` et `unusedFragment` inchangées, déclenchées par la suppression.
 - **EVO-024 — Nœud de renvoi** : `graphId` transmis à la forme et aux propriétés (`NodeView`, `PropertiesPanel`) ; collage (Renvoi écarté dans un fragment, `retargetButtons`), duplication de questionnaire, refus d'extraction ; vérifications `redirect-check.ts` (sept codes) ; parcours du nœud dans `core/references/visit.ts`.
 
 ### 3. Types de questions et de nœuds
@@ -2440,7 +2501,7 @@ Les fiches EVO-001 à EVO-026 sont au statut « fait ». Une EVO peut apparaîtr
 
 ### 1. Coque, commandes et transverse
 
-Fiches lues : EVO-002, EVO-004, EVO-015 (commandes et coque), EVO-022, EVO-023, EVO-024, EVO-025, EVO-026.
+Fiches lues : EVO-002, EVO-004, EVO-015 (commandes et coque), EVO-022, EVO-023, EVO-024, EVO-025, EVO-026, EVO-027.
 
 - **EVO-022, « Le JSON contient `version` et `statut` (`final` | `provisoire`) »** : respecté différemment — le fichier porte
   `status` avec les valeurs `draft` / `validated` (pas de champ `statut`, pas de valeurs `final`/`provisoire`) ; seuls les
@@ -2460,9 +2521,9 @@ Fiches lues : EVO-002, EVO-004, EVO-015 (commandes et coque), EVO-022, EVO-023, 
 - **EVO-002, anomalies relevées** (non des critères) toujours présentes dans le code : n° 1 (pas de suppression de
   questionnaire), 5 (500 étapes, pas de persistance), 6 (Ctrl+Tab), 7 (libellés partagés), 11 (Ctrl+Z selon l'onglet),
   12 (premier raccourci seul dans la palette), 14 (actions sans raccourci), 15 (libellés dynamiques). N° 3 (copier-coller)
-  résolue par EVO-010.
+  résolue par EVO-010 ; n° 1 résolue par EVO-027 (`delete-commands.ts:23-34`).
 - **EVO-025, « Plus aucune écriture `s.notice =` hors de `app/feedback` (la fermeture de la boîte dans `ui/shell` exceptée) »** :
-  respecté différemment — une seconde remise à zéro reste dans `app/store` au chargement d'un projet (`store.ts:247`), admise
+  respecté différemment — une seconde remise à zéro reste dans `app/store` au chargement d'un projet (`store.ts:304`), admise
   par le contrôle automatique (`single-path.test.ts:26-27`, décision notée dans DECISIONS.md). Autres critères vérifiés :
   tests de caractérisation commités seuls (`036411a`) avant tout changement de `src/`, valeurs attendues inchangées ensuite
   (seuls les appels internes remplacés) ; `window.confirm` et `checkWorkspace(` n'apparaissent hors tests que dans
@@ -2470,6 +2531,15 @@ Fiches lues : EVO-002, EVO-004, EVO-015 (commandes et coque), EVO-022, EVO-023, 
   tests de fumée (`tests/`) non modifiés.
 - **EVO-024** : aucun écart constaté dans la zone (commande `node.newRedirect` Alt+R, indisponible dans un fragment,
   `graph-commands.ts:101` ; refus d'extraction `library-item-commands.ts:138-142`).
+- **EVO-027-020** : la fenêtre « juste après » se referme aussi sur un Annuler ou Rétablir ordinaire sans effet (ex. Rétablir
+  sans rien à rétablir après la suppression), sans autre modification du projet ; un Annuler ensuite depuis la Bibliothèque
+  ne restaure plus le questionnaire. Preuve : `src/app/store/store.ts:242-257` (`lastDeletion` effacé hors des branches
+  redirigées). Déjà noté dans `docs/ECARTS.md`.
+- **EVO-027-012** : respecté différemment — onglet supprimé en première position : le suivant devient actif ; plus aucun
+  questionnaire : Bibliothèque activée même si d'autres onglets restent (choix DECISIONS.md, cohérent avec 016). Preuve :
+  `src/app/store/delete-questionnaire.ts:64-68`.
+- **EVO-027**, autres exigences : aucun écart constaté (menu `Tabs.tsx:80-83`, palette et confirmation `delete-commands.ts:9-34`,
+  bouton `PropertiesPanel.tsx:41-46`, retrait `delete-questionnaire.ts:29-33`, annulation `store.ts:224-258`).
 - **EVO-026** : aucun écart constaté (barre `TopBar.tsx:29-32` ; aucune commande `project.example` dans
   `project-commands.ts:32-36` ni libellé dans `messages.ts` ; EVO-026-005 couvert par le comportement existant de
   `persistence/index.ts:34` et `bind.ts:48`, sans code ajouté ; EVO-026-006 par l'import ordinaire).

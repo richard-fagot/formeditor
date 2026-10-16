@@ -8,7 +8,7 @@ ni abonnement. `core/*` reste pur : il renvoie des valeurs (`Issue[]`, `FieldErr
 | Action refusée (rien n'est fait) | `refuse(titre, ...lignes)` — `app/feedback` | Boîte de message (`notice`, `ui/shell`) | `refuse('group.refused', 'group.forbidden')` |
 | Information après une action faite | `inform(titre, ...lignes)` — `app/feedback` | Boîte de message | `inform('paste.title', { key: 'paste.end', params: { name } })` |
 | Échec inattendu (exception) | `fail(titre, erreur)` — `app/feedback` | Boîte de message, ligne = `erreur.message` | `fail('image.failed', e)` |
-| Confirmation avant une action | `confirm(question)` — `app/feedback` | `window.confirm` | `if (!confirm('comment.confirmDelete')) return;` |
+| Confirmation avant une action | `confirm(question, ...lignes)` — `app/feedback` | `window.confirm` | `if (!confirm('comment.confirmDelete')) return;` |
 | Problème non bloquant du projet (§4.6) | `useIssues(filtre)` (vues), `issuesOf(ws)` + `selectIssues` — `app/issues` | Panneau Problèmes, badges, listes | `const issues = useIssues({ owner: { kind: 'questionnaire', id } });` |
 | Saisie invalide à la sortie d'un champ (prévisualisation) | `useBlurErrors(env, errors)` — `plugin-api` ; `FieldErrors` — `ui-kit` | Sous le champ | `<FieldErrors messages={blurErrors.shown} />` |
 

@@ -55,7 +55,7 @@ export function fail(title: Message, error: unknown): void {
   show(title, [{ raw: error instanceof Error ? error.message : String(error) }]);
 }
 
-/** Demande de confirmation : seul appel à `window.confirm` (simulable en test par `vi.stubGlobal`). */
-export function confirm(question: Message): boolean {
-  return window.confirm(messageText(lang(), question));
+/** Demande de confirmation : seul appel à `window.confirm` (simulable en test par `vi.stubGlobal`) ; lignes de précision à la suite. */
+export function confirm(question: Message, ...lines: Message[]): boolean {
+  return window.confirm([question, ...lines].map((m) => messageText(lang(), m)).join('\n'));
 }

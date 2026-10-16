@@ -38,6 +38,12 @@ export function PropertiesPanel({ graph }: { graph: GraphRef }) {
           {!node && !edge && questionnaire && <QuestionnaireProperties questionnaire={questionnaire} />}
           {!node && !edge && !questionnaire && <p className="p-4 text-sm text-slate-400">{t('props.empty')}</p>}
         </fieldset>
+        {/* Hors du fieldset : un formulaire validé se supprime sans dévalidation (EVO-027-015). */}
+        {!node && !edge && questionnaire && (
+          <Section title={t('questionnaire.delete')}>
+            <Button size="sm" data-testid="questionnaire-delete" onClick={() => runCommand('questionnaire.delete', questionnaire.id)}>{t('props.delete')}</Button>
+          </Section>
+        )}
       </div>
     </ExpressionEnvProvider>
   );

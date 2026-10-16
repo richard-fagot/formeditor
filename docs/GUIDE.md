@@ -1,5 +1,5 @@
 # Guide utilisateur — Éditeur de questionnaires
-Mis à jour le 2026-10-16 — jusqu'à EVO-026
+Mis à jour le 2026-10-16 — jusqu'à EVO-027
 
 ## Mode d'emploi du guide
 
@@ -87,6 +87,18 @@ Mis à jour le 2026-10-16 — jusqu'à EVO-026
   (`declaration_sinistre_2`), est placée juste après l'original et s'ouvre. Contenu complet, sans aucun lien : modifier l'un
   ne modifie pas l'autre ; les questions et fragments de bibliothèque restent des références. Les boutons des nœuds Renvoi
   copiés visent les nœuds de la copie. Annulable. `[cmd: questionnaire.duplicate]`
+- **Supprimer un questionnaire** — Clic droit sur son onglet (ou sur son titre gris s'il est fermé), « Supprimer » ; palette
+  « Supprimer le questionnaire » (questionnaire affiché) ; ou bouton « Supprimer » en bas de Propriétés du questionnaire
+  (rien sélectionné). Une confirmation cite son titre et, s'il y a lieu, « Il est validé. », le nombre de commentaires de
+  révision supprimés avec lui et le nombre de boutons de renvoi d'autres questionnaires qui le ciblent ; « Annuler » ne change
+  rien. Un formulaire validé se supprime sans le dévalider. Confirmé, il disparaît des onglets, des titres gris, de la palette
+  et des exports ; la bibliothèque ne change pas (« utilisée dans » ne le cite plus) ; l'onglet précédent s'affiche
+  (« Bibliothèque » s'il n'en reste aucun) ; la vue côte à côte qui l'affichait se ferme ; la pastille passe à
+  « Modifications non exportées ». Les boutons de renvoi qui le visaient restent, en erreur « cible introuvable » ; un fragment
+  qu'il était seul à appeler est signalé « Fragment inutilisé ». **Juste après** (aucune autre modification entre-temps),
+  `Ctrl+Z` le restaure depuis n'importe quel onglet, avec ses commentaires, son historique et son onglet ; `Ctrl+Shift+Z`
+  refait alors la suppression. Ensuite, la suppression s'annule avec l'historique du projet (onglet « État du système »,
+  par exemple). `[cmd: questionnaire.delete]`
 - **Changer d'onglet** — Cliquer sur l'onglet, ou `Alt+→` / `Alt+←` (aussi `Ctrl+Tab` / `Ctrl+Shift+Tab`,
   souvent réservés par le navigateur). `[cmd: tab.show]`
   `[cmd: tab.next]` `[cmd: tab.prev]`
@@ -201,7 +213,8 @@ Mis à jour le 2026-10-16 — jusqu'à EVO-026
   révision est supprimé avec elle (§16). Annulable. `[cmd: node.delete]`
 - **Annuler** — `Ctrl+Z` ou palette « Annuler ». Un historique par questionnaire, un pour la bibliothèque (fragments compris), un pour le projet
   (état du système, scénarios, langues, nom) : `Ctrl+Z` agit sur celui de l'onglet affiché. Pendant une saisie, `Ctrl+Z`
-  annule seulement la frappe dans le champ. `[cmd: edit.undo]`
+  annule seulement la frappe dans le champ. Exception : juste après la suppression d'un questionnaire, `Ctrl+Z` l'annule
+  depuis n'importe quel onglet (section 2). `[cmd: edit.undo]`
 - **Rétablir** — `Ctrl+Shift+Z` ou `Ctrl+Y`, ou palette « Rétablir ». `[cmd: edit.redo]`
 - **Lire les badges d'un nœud** — « Départ » (« Entrée » dans un fragment) ; « * » obligatoire (« * ? » : obligatoire sous condition) ; « + autre » ;
   « bib. » élément de bibliothèque (double-clic : l'ouvrir dans la bibliothèque, voir §10) ; « 3 / 7 champs » instance de structure dont des champs sont masqués (§10) ; « trad. » traduction manquante ; « ⚠ n » problèmes (rouge si erreur) ; icône bulle : la question a un commentaire de révision (§16).
@@ -922,7 +935,7 @@ Sans version, tout fonctionne comme avant, sauf la validation (refusée) et le s
 
 ## Ce que l'outil ne fait pas
 
-- **Supprimer un questionnaire** : aucune action ; on peut seulement fermer son onglet.
+- **Supprimer plusieurs questionnaires en une fois** ; supprimer avec un questionnaire les éléments de bibliothèque qu'il utilise.
 - **Couper des nœuds** (`Ctrl+X`), **copier vers un autre projet**, garder un lien entre une copie et son original.
 - **Changer la cible ou l'origine d'une arête** : la supprimer et la retracer.
 - **Imbriquer** : pas de structure dans une structure ; une sortie nommée n'existe que dans un fragment ; un fragment ne
@@ -1053,6 +1066,7 @@ Sans version, tout fonctionne comme avant, sauf la validation (refusée) et le s
 | Coller | `Ctrl+V` | `node.paste` |
 | Dupliquer le questionnaire | — | `questionnaire.duplicate` |
 | Dupliquer l’élément de bibliothèque | — | `library.duplicate` |
+| Supprimer le questionnaire | — | `questionnaire.delete` |
 | Commenter | — | `comment.add` |
 | Afficher / masquer le commentaire | — | `comment.toggle` |
 | Afficher / masquer les commentaires | — | `comment.toggleAll` |

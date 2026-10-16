@@ -32,7 +32,7 @@ export function Tabs() {
       <BadgeCheck className="size-3" />{t('validation.badge')}
     </span>
   );
-  // Menu contextuel d'un questionnaire ou d'un fragment (EVO-010) : « Dupliquer ».
+  // Menu contextuel d'un questionnaire ou d'un fragment (EVO-010) : « Dupliquer » ; questionnaire : « Supprimer » (EVO-027).
   const [menu, setMenu] = useState<{ x: number; y: number; tab: TabId }>();
   const onMenu = (tab: TabId) => (e: React.MouseEvent) => {
     if (!tab.startsWith('q:') && !tab.startsWith('f:')) return;
@@ -77,7 +77,10 @@ export function Tabs() {
         {!tabs.includes('system') && <button type="button" className="rounded px-2 py-0.5 text-xs text-slate-500 hover:bg-slate-200" onClick={() => runCommand('tab.system')}>{t('tab.system')}</button>}
         {!tabs.includes('comments') && <button type="button" data-testid="open-comments" className="rounded px-2 py-0.5 text-xs text-slate-500 hover:bg-slate-200" onClick={() => runCommand('tab.comments')}>{t('tab.comments')}</button>}
       </div>
-      <ContextMenu at={menu} onClose={() => setMenu(undefined)} items={[{ label: t('node.duplicate'), onSelect: () => void duplicate(menu!.tab) }]} />
+      <ContextMenu at={menu} onClose={() => setMenu(undefined)} items={[
+        { label: t('node.duplicate'), onSelect: () => void duplicate(menu!.tab) },
+        ...(menu?.tab.startsWith('q:') ? [{ label: t('props.delete'), onSelect: () => void runCommand('questionnaire.delete', menu!.tab.slice(2)) }] : []),
+      ]} />
     </nav>
   );
 }

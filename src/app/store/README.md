@@ -10,6 +10,9 @@ Dépend de `core`, `format`, `app/i18n`, `app/feedback`, `plugin-api` (utilitair
   annuler / rétablir dans l'une le fait dans toutes celles où ce point est en tête), `undo(scope)` / `redo(scope)` (onglets synchronisés :
   questionnaire disparu → onglet fermé, réapparu → rouvert ; onglet `f:<id>` d'un fragment disparu fermé, sélection et `libraryItem` d'un fragment disparu vidées), `checkpoint(scope)`,
   `silent(recipe)` (sans historique), `set(recipe)` (état d'interface), `loadWorkspace`, `openTab`, `closeTab`,
+  `deleteQuestionnaire(id)` (EVO-027, `delete-questionnaire.ts` : point lié `project` + `q:<id>` hors verrou de validation ; onglet précédent actif,
+  Bibliothèque sans onglet ni questionnaire, vue côte à côte fermée ; `lastDeletion` : juste après — aucune autre modification, annulation ni
+  rétablissement — `undo` / `redo` de toute portée annulent / refont la suppression, questionnaire, mise en page et onglet remis à leur rang),
   `select`, `requestFocus('label' | 'condition' | 'variable', id)`, `markExported`.
 - Annuler / rétablir et transactions (`travel.ts` : `travel`, `changedScopes`, synchronisation des onglets).
 - Portées d'historique (`history.ts`) : `q:<id>` (questionnaire, sa mise en page et son entrée dans le projet), `library`, `project` ;
@@ -36,6 +39,7 @@ Dépend de `core`, `format`, `app/i18n`, `app/feedback`, `plugin-api` (utilitair
   (`renameKeysIn`), placés au point `at` (coin haut gauche) ou décalés de `PASTE_OFFSET` ; écartés (`PasteDrop`) : fin ou nœud Renvoi (EVO-024) dans un fragment, sortie dans un questionnaire,
   instance créant un cycle ; boutons de renvoi repointés vers la copie de leur cible nœud (`retargetButtons`, EVO-024) ; départ = rôle non collé (un questionnaire vide prend le départ collé ou le premier nœud). État `clipboard`.
   `duplicateNodes(ws, ref, ids)` (Ctrl+D) = `copyNodes` puis `pasteNodes` dans le même graphe.
+- Suppression d'un questionnaire (EVO-027, `delete-questionnaire.ts`) : `deletionImpact(ws, id)` (validé, commentaires, boutons de renvoi d'autres questionnaires), `removeQuestionnaire`, `closeDeleted`, `reopenDeleted`, `deletionPlace`.
 - Duplication (EVO-010, `duplicate.ts`) : `duplicateQuestionnaire(ws, id, copyName)` (juste après, clé et fichier uniques), `duplicateLibraryItem(ws, item, copyName)`
   (question ou fragment, juste après, clé unique) ; « Copie de » par langue (`CopyName`), nœuds et arêtes réidentifiés (cibles nœud des boutons de renvoi repointées, EVO-024), mise en page reprise, références conservées ; copie provisoire (sans `status` ni `libraryVersions`, EVO-022), version gardée.
 - Commentaires de révision (EVO-011, `comment-edits.ts`) : rangés dans `layout.comments` de l'objet (`CommentHost` : questionnaire, fragment,

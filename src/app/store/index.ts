@@ -18,6 +18,7 @@ export {
 export { setRequiredOverride, resetRequired, hasRequiredOverride } from './required-edits';
 export { copyNodes, pasteNodes, duplicateNodes, PASTE_OFFSET, type Clip, type PasteDrop } from './clipboard';
 export { duplicateQuestionnaire, duplicateLibraryItem, type CopyName } from './duplicate';
+export { deletionImpact, type DeletionImpact } from './delete-questionnaire';
 export { groupIntoFragment, groupEntries, canExtract } from './group';
 export { questionnaireKeys, canRenameQuestionnaire, renameQuestionnaire, patchQuestionnaire, setValidation } from './questionnaire-edits';
 export { setItemVersion, setItemValidation } from './version-edits';

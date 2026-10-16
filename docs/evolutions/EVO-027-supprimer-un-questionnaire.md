@@ -1,7 +1,7 @@
 ---
 id: EVO-027
 titre: Supprimer un questionnaire
-statut: à faire
+statut: fait 2026-10-16
 version: 1.0
 qualificatif: final
 derniere_exigence: EVO-027-022
@@ -125,3 +125,65 @@ Aucune.
 | Version | Date | Ajoutées | Abrogées | Motif |
 | --- | --- | --- | --- | --- |
 | 1.0 | 2026-10-16 | 001 à 022 | — | Création depuis la fiche littérale validée |
+
+## Analyse
+
+### 1. Faisabilité et modules impactés
+
+Faisable sans ambiguïté bloquante, sans changement de format (formatVersion 15). Modules (d'après `docs/MAP.md`) :
+- `app/store` : `delete-questionnaire.ts` (impact, retrait, onglets), action `deleteQuestionnaire` et état `lastDeletion` dans `store.ts`,
+  redirection d'`undo` / `redo` juste après une suppression ; `history.ts` et `travel.ts` inchangés.
+- `app/commands` : `delete-commands.ts` (`questionnaire.delete`, palette « Supprimer le questionnaire », clé i18n déjà présente).
+- `app/feedback` : `confirm(question, ...lignes)` pour la confirmation multiligne ; `app/i18n` : lignes de la confirmation.
+- `ui/shell` (`Tabs` : « Supprimer » dans le menu contextuel des onglets et boutons de réouverture de questionnaire),
+  `ui/properties` (`PropertiesPanel` : bouton « Supprimer » hors du `fieldset` verrouillé, EVO-027-015).
+- Vérifications `buttonTargetMissing` et `unusedFragment`, « utilisée dans » (`itemUsers`), page des commentaires, exports :
+  inchangés, ils lisent le projet sans le questionnaire.
+- Verrou des formulaires validés (EVO-015) : `lockedChanges` compte une disparition comme une modification ; la suppression
+  passe donc par une action dédiée du store, hors `refused`, ainsi que son annulation et son rétablissement juste après.
+
+### 2. EVO-027-020 — « juste après », historique propre, Rétablir
+
+- La suppression est un point lié (même transaction) des historiques `project` et `q:<id>`.
+- « Juste après » : aucune autre modification du projet (édition, transaction, point d'historique, déplacement silencieux),
+  annulation ni rétablissement depuis la suppression. Dans ce cas, Annuler, quel que soit l'onglet affiché (Bibliothèque,
+  autre questionnaire, État du système…), annule la suppression.
+- Restauration : questionnaire, mise en page (commentaires) et entrée du projet à leur rang (projet identique à
+  l'avant-suppression) ; l'onglet reprend sa place (un questionnaire fermé reste fermé), actif s'il l'était.
+- Historique propre du questionnaire : conservé pendant la suppression et retrouvé à la restauration (ses modifications
+  antérieures s'annulent ensuite depuis son onglet).
+- Rétablir : juste après l'annulation d'une suppression, Rétablir la refait depuis tout onglet. Passé ce moment, la
+  suppression reste un point de l'historique du projet (annulable depuis un onglet qui vise cet historique, comme
+  État du système) ou du questionnaire restauré.
+
+### 3. EVO-027-006 à 008 — lignes à compte nul
+
+Chaque ligne est absente quand son compte est nul (questionnaire non validé, aucun commentaire, aucun bouton) ; un compte de 1
+s'écrit au singulier. Seuls les boutons de renvoi des autres questionnaires sont comptés.
+
+### 4. Matrice de couverture
+
+| ID | Test(s) |
+| --- | --- |
+| EVO-027-001 | `tests/smoke/evo-027.spec.ts` « EVO-027-001, … — supprimer un formulaire validé depuis son onglet, puis annuler » |
+| EVO-027-002 | `tests/smoke/evo-027.spec.ts` « EVO-027-002, EVO-027-009, EVO-027-021 — bouton de réouverture » |
+| EVO-027-003 | `src/app/commands/delete-commands.test.ts` « EVO-027-003 — palette » ; `evo-027.spec.ts` « EVO-027-004, EVO-027-003, … » |
+| EVO-027-004 | `tests/smoke/evo-027.spec.ts` « EVO-027-004, EVO-027-003, EVO-027-012, EVO-027-016 — Propriétés du questionnaire et palette » |
+| EVO-027-005 | `delete-commands.test.ts` « EVO-027-005, EVO-027-006, EVO-027-007, EVO-027-008 — confirmation » ; `evo-027.spec.ts` (onglet) |
+| EVO-027-006 | `delete-commands.test.ts` « EVO-027-005… — confirmation », « EVO-027-006, EVO-027-007, EVO-027-008 — lignes absentes » ; `evo-027.spec.ts` |
+| EVO-027-007 | `delete-commands.test.ts` « EVO-027-005… — confirmation », « … — lignes absentes quand le compte est nul » |
+| EVO-027-008 | `delete-commands.test.ts` « EVO-027-005… — confirmation », « … — lignes absentes quand le compte est nul » |
+| EVO-027-009 | `delete-commands.test.ts` « EVO-027-009 — confirmation refusée » ; `evo-027.spec.ts` (bouton de réouverture) |
+| EVO-027-010 | `delete-commands.test.ts` « EVO-027-010 — retiré du projet » ; `evo-027.spec.ts` (onglet) |
+| EVO-027-011 | `delete-commands.test.ts` « EVO-027-011 — commentaires de révision supprimés » |
+| EVO-027-012 | `delete-commands.test.ts` « EVO-027-012 — onglet actif supprimé » ; `evo-027.spec.ts` (Propriétés) |
+| EVO-027-013 | `delete-commands.test.ts` « EVO-027-013 — vue côte à côte » |
+| EVO-027-014 | `delete-commands.test.ts` « EVO-027-014 » ; `evo-027.spec.ts` (onglet, pastille) |
+| EVO-027-015 | `delete-commands.test.ts` « EVO-027-015 — validé sans dévalidation » ; `evo-027.spec.ts` (onglet, formulaire validé) |
+| EVO-027-016 | `delete-commands.test.ts` « EVO-027-016 — seul questionnaire » ; `evo-027.spec.ts` (Propriétés et palette) |
+| EVO-027-017 | `delete-commands.test.ts` « EVO-027-017 — bibliothèque inchangée » |
+| EVO-027-018 | `delete-commands.test.ts` « EVO-027-018 — cible introuvable » ; `redirect-commands.test.ts` « EVO-024-034, EVO-024-033 — questionnaire ciblé supprimé » |
+| EVO-027-019 | `delete-commands.test.ts` « EVO-027-019 — Fragment inutilisé » |
+| EVO-027-020 | `delete-commands.test.ts` « EVO-027-020 — Annuler juste après… », « … — validé : annuler et rétablir… », « … — après une autre modification… » ; `evo-027.spec.ts` (onglet) |
+| EVO-027-021 | `delete-commands.test.ts` « EVO-027-021 — Fermer l’onglet ne supprime pas » ; `evo-027.spec.ts` (bouton de réouverture) |
+| EVO-027-022 | `delete-commands.test.ts` « EVO-027-022 — Nouveau questionnaire et Dupliquer inchangés » |

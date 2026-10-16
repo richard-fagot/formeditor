@@ -1,11 +1,11 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { GraphNode, Questionnaire, RedirectNode, Workspace } from '../../core/model';
 import { infoKind } from '../../plugins/node-kinds/info';
 import { NODE_KIND_PLUGINS, nodeKind } from '../../registry';
 import { newWorkspace } from '../../format';
 import { checkWorkspace, describeIssue } from '../../core/validation';
 import { getGraph, useStore } from '../store';
-import { command, commands, runCommand } from './index';
+import { command, runCommand } from './index';
 
 const st = () => useStore.getState();
 const q = (id: string, key: string): GraphNode => ({ kind: 'question', id, key, label: { fr: key }, type: 'text' }) as GraphNode;
@@ -148,12 +148,11 @@ describe('nœud Renvoi : création, copie, historique (EVO-024)', () => {
     expect(issues.map((i) => describeIssue(i, 'fr'))).toEqual(['La cible du bouton « Corriger » est introuvable.']);
   });
 
-  it('EVO-024-034, EVO-024-033 — questionnaire ciblé absent : aucune commande ne supprime un questionnaire ; projet ouvert sans lui, le bouton est conservé, cible introuvable', () => {
-    expect(commands().filter((c) => /^questionnaire\.(delete|remove)/.test(c.id))).toEqual([]);
-    const ws = workspace();
-    ws.questionnaires = ws.questionnaires.filter((x) => x.id !== 'qb');
-    ws.project.questionnaires = ws.project.questionnaires.filter((x) => x.id !== 'qb');
-    st().loadWorkspace(ws);
+  it('EVO-024-034, EVO-024-033 — questionnaire ciblé supprimé par « Supprimer le questionnaire » (EVO-027) : le bouton est conservé, cible introuvable', () => {
+    vi.stubGlobal('window', { confirm: () => true });
+    expect(runCommand('questionnaire.delete', 'qb')).toBe(true);
+    vi.unstubAllGlobals();
+    expect(st().ws.questionnaires.some((x) => x.id === 'qb')).toBe(false);
     expect(redirectsOf(qOf('qa'))[0]!.buttons).toEqual(redirect().buttons);
     const issues = checkWorkspace(st().ws).filter((i) => i.nodeId === 'n2' && i.code === 'buttonTargetMissing');
     expect(issues.map((i) => describeIssue(i, 'fr'))).toEqual(['La cible du bouton « Déclarer » est introuvable.']);
