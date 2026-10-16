@@ -11,7 +11,7 @@ async function openExample(page: Page) {
   await page.keyboard.press('Control+k');
   await page.keyboard.type('exemple');
   await page.keyboard.press('Enter');
-  await expect(page.locator('.react-flow__node')).toHaveCount(19);
+  await expect(page.locator('.react-flow__node')).toHaveCount(21);
   await expect(page.locator('.react-flow__node[style*="visibility: hidden"]')).toHaveCount(0);
 }
 

@@ -17,7 +17,7 @@ async function openExample(page: Page) {
   await page.keyboard.press('Control+k');
   await page.keyboard.type('exemple');
   await page.keyboard.press('Enter');
-  await expect(page.locator('.react-flow__node')).toHaveCount(19);
+  await expect(page.locator('.react-flow__node')).toHaveCount(21);
   return errors;
 }
 
@@ -63,17 +63,17 @@ test('EVO-005 : libellé d’arête affiché, condition au survol, effacement, a
   await undo(page);
   await expect(cond.locator('[data-edge-caption]')).toHaveText('Ayant droit');
 
-  // Arête seule sans condition (aucune pastille avant) : le libellé s'affiche.
-  await expect(pill(page, 'e_type_date')).toHaveCount(0);
-  await page.getByTestId('rf__node-n_date').click();
+  // Arête seule sans condition (aucune pastille avant) : le libellé s'affiche (n_type a désormais deux sorties, EVO-024).
+  await expect(pill(page, 'e_victimes_qualite')).toHaveCount(0);
+  await page.getByTestId('rf__node-n_qualite').click();
   await expect(caption).toHaveCount(0); // nœud sélectionné : plus de panneau d'arête
   await page.keyboard.press('c'); // sélectionne l'arête entrante
   // `C` donne (et redonne) le focus à la condition : l'attendre, sinon il peut arriver pendant la saisie du libellé.
   await expect(page.locator('.cm-editor.cm-focused')).toHaveCount(1);
   await page.waitForTimeout(AFTER_REFOCUS);
-  await page.locator('[data-testid="edge-caption"][data-edge-id="e_type_date"]').fill('Vers la date');
-  await expect(pill(page, 'e_type_date').locator('[data-edge-caption]')).toHaveText('Vers la date');
-  await expect(pill(page, 'e_type_date')).toHaveAttribute('title', 'Vers la date'); // arête seule : pas de « sinon »
+  await page.locator('[data-testid="edge-caption"][data-edge-id="e_victimes_qualite"]').fill('Vers la qualité');
+  await expect(pill(page, 'e_victimes_qualite').locator('[data-edge-caption]')).toHaveText('Vers la qualité');
+  await expect(pill(page, 'e_victimes_qualite')).toHaveAttribute('title', 'Vers la qualité'); // arête seule : pas de « sinon »
 
   // Arête issue d'une sortie de bloc.
   await pill(page, 'e_bloc_identifie').click();
@@ -83,13 +83,13 @@ test('EVO-005 : libellé d’arête affiché, condition au survol, effacement, a
 
   // Libellé trop long : tronqué avec « … », complet au survol.
   const long = 'Un libellé de lecture beaucoup trop long pour tenir dans la pastille de l’arête du logigramme';
-  await page.getByTestId('rf__node-n_date').click();
+  await page.getByTestId('rf__node-n_qualite').click();
   await expect(caption).toHaveCount(0); // nœud sélectionné : plus de panneau d'arête
   await page.keyboard.press('c');
   await expect(page.locator('.cm-editor.cm-focused')).toHaveCount(1);
   await page.waitForTimeout(AFTER_REFOCUS);
-  await page.locator('[data-testid="edge-caption"][data-edge-id="e_type_date"]').fill(long);
-  const box = pill(page, 'e_type_date');
+  await page.locator('[data-testid="edge-caption"][data-edge-id="e_victimes_qualite"]').fill(long);
+  const box = pill(page, 'e_victimes_qualite');
   await expect(box.locator('[data-edge-caption]')).toHaveText(long);
   const overflow = await box.evaluate((el) => ({ over: el.scrollWidth > el.clientWidth, ellipsis: getComputedStyle(el).textOverflow }));
   expect(overflow).toEqual({ over: true, ellipsis: 'ellipsis' });
