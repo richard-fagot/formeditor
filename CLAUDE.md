@@ -109,11 +109,14 @@ Les points d'arrêt des démos restent valables.
 
 ## Évolutions (après la livraison initiale)
 
-Une demande par fichier : `docs/evolutions/EVO-NNN-titre.md`, avec une ligne `Statut :`
-(à faire | en cours | fait AAAA-MM-JJ | abandonné). Pour chaque évolution « à faire », par numéro croissant :
+Une demande par fichier : `docs/evolutions/EVO-NNN-titre.md`. Format et règles : `docs/evolutions/README.md`.
+Statut (à faire | à arbitrer | en cours | fait AAAA-MM-JJ | abandonné) : champ `statut` du frontmatter
+(à partir d'EVO-024), ligne `Statut :` pour les fiches antérieures. Seule une fiche `qualificatif: final`
+(ou antérieure à EVO-024) se réalise. Pour chaque évolution « à faire », par numéro croissant :
 1. Branche `evo-NNN`, statut « en cours ».
 2. Confier l'évolution au `realisateur` en une seule passe : analyse (si l'EVO la demande),
-   mise à jour de `docs/spec.md` (le § concerné), code, tests (un test par critère d'acceptation),
+   mise à jour de `docs/spec.md` (le § concerné), code, tests (au moins un test par exigence, qui cite
+   son ID ; fiches antérieures : un test par critère d'acceptation), matrice de couverture dans l'analyse,
    guide (`docs/GUIDE.md` et sa date « jusqu'à EVO-NNN », dans le même commit que le changement
    de comportement). Si l'analyse conclut « à arbitrer », il s'arrête avant de coder et rend les options.
 3. Faire relire par `relecteur` (guide compris), corriger si besoin (règles de l'orchestration ci-dessus).

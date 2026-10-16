@@ -31,6 +31,11 @@ Pour chaque phase ou évolution :
       `app/store`, `app/commands`, `app/i18n`, `ui-kit`, la coque de l'application ;
    e. un test ciblé échoue, ou tu soupçonnes un effet hors des fichiers modifiés ;
    f. tu relis une **phase** de `docs/PLAN.md` (et non une évolution ou un correctif).
+   Évolution à exigences (`docs/evolutions/README.md`) : chaque exigence non abrogée est couverte.
+   Compare la liste des ID de la fiche à `grep -rhoE 'EVO-NNN-[0-9]{3}' src tests scripts | sort -u`
+   et à la matrice de couverture ; vérifie que chaque test cité vérifie bien le comportement de son
+   exigence, et que les exigences ne sont pas modifiées par la branche (`git diff main... -- docs/evolutions`).
+   Exigence non couverte ou non respectée = majeur ; dans le rapport, citer l'ID.
 5. Vérifie que `docs/MAP.md` et les `README.md` des modules touchés décrivent le code actuel.
 6. Vérifie les règles de `CLAUDE.md` (architecture, invariants, format JSON ↔ schéma ↔ FORMAT.md).
 7. Vérifie que `docs/GUIDE.md` décrit fidèlement les actions touchées, sur **l'ensemble des changements
@@ -47,7 +52,7 @@ Rends uniquement ce rapport :
 Verdict : CONFORME | ÉCARTS
 Harnais : ciblé | complet (condition a–f) — vert | rouge (détail)
 
-| # | Gravité (bloquant/majeur/mineur) | Case ou § de spec | Constat | Fichier(s) |
+| # | Gravité (bloquant/majeur/mineur) | Case, § de spec ou ID d'exigence | Constat | Fichier(s) |
 |---|---|---|---|---|
 ```
 
