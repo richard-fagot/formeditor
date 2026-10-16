@@ -1,7 +1,7 @@
 # CLAUDE.md — Éditeur de questionnaires
 
 Outil interne de spécification de questionnaires métier (logigramme, prévisualisation wizard, export JSON).
-Spécification : `docs/spec.md`. Plan et avancement : `docs/PLAN.md`. Existant réellement implémenté : `docs/EXISTANT.md`. Toujours écrire en français.
+Spécification : `docs/spec.md`. Plan et avancement : `docs/PLAN.md`. Existant réellement implémenté : `docs/EXISTANT.md` (index de `docs/existant/`). Toujours écrire en français.
 
 C'est un **outil**, pas un projet industriel : il doit fonctionner correctement et ne pas régresser,
 sans cérémonie. Préférer la solution la plus simple qui respecte la spec.
@@ -31,7 +31,7 @@ sans cérémonie. Préférer la solution la plus simple qui respecte la spec.
 - `src/plugins/question-types/<type>/`, `src/plugins/node-kinds/<kind>/` : un dossier autonome par type ;
   un plugin n'importe jamais un autre plugin. `src/registry` est le seul à connaître la liste des plugins.
 - Chaque module expose son API via `index.ts` ; pas d'import de fichiers internes d'un autre module.
-- Fichiers courts (≤ 200 lignes visés), noms explicites.
+- Fichiers courts (≤ 200 lignes visés, sans en faire une règle stricte), noms explicites.
 
 ## Harnais (spec §8.4) — ne jamais casser
 
@@ -43,8 +43,8 @@ sans cérémonie. Préférer la solution la plus simple qui respecte la spec.
   `npm run check > "$LOG" 2>&1; echo exit=$?; grep -E "passed|failed|error" "$LOG" | tail -20`
   (`$LOG` dans le scratchpad). Jamais en arrière-plan avec une attente : le cache expire.
   Il indique le commit sur lequel il est vert.
-- Aucune commande ne doit produire plus de 25 k caractères : découper (par dossier, `--stat`, `head`)
-  plutôt que relire une sortie mise sur disque.
+- Aucune commande ne doit produire plus de 25 k caractères : découper (par dossier, `--stat`, plages)
+  plutôt que relire une sortie mise sur disque. Voir « Documents volumineux » : découper n'est jamais tronquer.
 - Test instable préexistant : au-delà de 3 relances, le signaler dans le compte rendu
   et dans `docs/ECARTS.md`, sans l'investiguer davantage.
 - Pas de répétitions ni de tests sous charge (`--repeat-each`, workers multipliés…) : l'outil tourne seul
@@ -62,6 +62,19 @@ sans cérémonie. Préférer la solution la plus simple qui respecte la spec.
 - État du conteneur : `bash .devcontainer/verifier.sh`. L'orchestrateur le lance (et installe ce qui manque)
   avant le premier sous-agent ; un sous-agent ne réinstalle rien.
 - Si `docs/spec.md` est absent, s'arrêter et le signaler : c'est la seule source fonctionnelle.
+
+## Documents volumineux
+
+Les limites de taille (25 k caractères par sortie, plages de lecture) règlent **la façon de lire**,
+jamais la quantité d'information : aucune donnée n'est supprimée ni résumée pour tenir dans une limite.
+- Lecture : par plages successives jusqu'à couvrir **toute** la section utile ; `head`/`tail` servent
+  à s'orienter, pas à couper une donnée qu'il faut traiter (sortie coupée → lire la suite).
+- Écriture : un document n'a pas de taille maximale. Quand il dépasse environ 1 500 lignes ou 150 Ko,
+  il est réparti dans `docs/<nom>/` (un fichier par zone) et le fichier d'origine devient un index
+  (en-tête commun, table zone → fichier, règles de répartition). Répartition sans perte, vérifiée par
+  script ; les outils qui lisent le document (`npm run guide`, `guide:check`, `kit-dev`…) sont adaptés
+  dans le même commit. Une partie qui dépasse à son tour le seuil se répartit de la même façon.
+- Exemple : `docs/EXISTANT.md` (index) → `docs/existant/*.md`. Surveillés : `docs/GUIDE.md`, `docs/FORMAT.md`.
 
 ## Invariants
 
@@ -131,7 +144,7 @@ Statut (à faire | à arbitrer | en cours | fait AAAA-MM-JJ | abandonné) : cham
    de comportement). Si l'analyse conclut « à arbitrer », il s'arrête avant de coder et rend les options.
 3. Faire relire par `relecteur` (guide compris), corriger si besoin (règles de l'orchestration ci-dessus).
 4. Confier la branche à l'`inventoriste`, avec le tableau d'écarts du relecteur ; il met à jour
-   `docs/EXISTANT.md` (inventaire factuel du code) et le commite sur la branche. Étape sautée si le diff
+   `docs/EXISTANT.md` et `docs/existant/` (inventaire factuel du code) et le commite sur la branche. Étape sautée si le diff
    ne touche ni `src/` ni le format. Même étape en fin de phase de `docs/PLAN.md`, ou après toute
    modification de code fusionnée hors évolution.
 5. Fusionner, statut « fait » avec la date.

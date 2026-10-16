@@ -13,7 +13,7 @@ Orchestration (CLAUDE.md, « Orchestration par sous-agents » et « Évolutions 
 | orchestrateur | session principale | celui de la session | tous | crée la branche, délègue, fusionne, corrige les écarts de documentation |
 | `realisateur` | `.claude/agents/realisateur.md` | hérité | Read, Edit, Write, Grep, Glob, Bash | analyse, spec, code, tests, guide, `npm run check` une fois |
 | `relecteur` | `.claude/agents/relecteur.md` | hérité | Read, Grep, Glob, Bash | relit la branche, verdict CONFORME / ÉCARTS |
-| `inventoriste` | `.claude/agents/inventoriste.md` | sonnet | Read, Edit, Grep, Glob, Bash | met à jour `docs/EXISTANT.md` depuis le diff |
+| `inventoriste` | `.claude/agents/inventoriste.md` | sonnet | Read, Edit, Grep, Glob, Bash | met à jour `docs/EXISTANT.md` (index) et `docs/existant/` depuis le diff |
 
 Par évolution : realisateur → relecteur → (realisateur + relecteur si écart bloquant/majeur, 3 fois au plus)
 → inventoriste (sauf diff sans `src/` ni format) → fusion. Le tableau d'écarts du relecteur est
@@ -66,6 +66,7 @@ relu à chaque appel (cache), pas par les sorties de tests (< 1 %).
 - Ne pas lire de `.jsonl` avec `cat`, `Read` ou `head` sans filtre : uniquement via les scripts ou `jq` ciblé.
 - Une seule passe : pas de second sous-agent pour « approfondir ». Une question restée ouverte
   va dans le rapport, section limites.
-- Pistes déjà écartées ou différées (ne pas les re-proposer sans fait nouveau) : fusionner l'inventoriste
-  dans le réalisateur (déconseillé) ; découper EXISTANT.md par zone et passer le réalisateur sur Sonnet
-  (différés, voir le rapport du 2026-10-16, R7 et R9).
+- Pistes déjà traitées (ne pas les re-proposer sans fait nouveau) : fusionner l'inventoriste dans le
+  réalisateur (déconseillé) ; Sonnet pour le réalisateur (différé, R9) ; découpage d'EXISTANT.md (fait le
+  2026-10-16, règle générale « Documents volumineux » de CLAUDE.md).
+- Une recommandation ne doit jamais réduire l'information conservée : seulement la façon de la lire.

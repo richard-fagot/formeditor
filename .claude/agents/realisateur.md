@@ -12,8 +12,10 @@ et les `README.md` des modules avant de lire le code.
 
 Lecture économe (chaque token lu est relu à chaque appel suivant) :
 - `docs/MAP.md` : uniquement la matrice (`grep -n -A60 '^## Matrice' docs/MAP.md`), puis les lignes des modules concernés.
-- Grands documents (`spec.md`, `GUIDE.md`, `FORMAT.md`, `EXISTANT.md`, `DECISIONS.md`) : jamais en entier.
-  `grep -n '^#'` pour trouver le §, puis `sed -n a,bp` sur 80 lignes au plus. `DECISIONS.md` : `tail -5` avant d'y ajouter une ligne.
+- Grands documents (`spec.md`, `GUIDE.md`, `FORMAT.md`, `docs/existant/`, `DECISIONS.md`) : pas d'un bloc.
+  `grep -n '^#'` pour trouver le §, puis `sed -n a,bp` par plages de 80 lignes, enchaînées jusqu'à couvrir
+  tout le § utile (lire par plages, ne jamais s'arrêter à une plage tronquée). `DECISIONS.md` : `tail -5` avant d'y ajouter une ligne.
+- Écrire sans couper : aucune information n'est retirée pour raccourcir un document (CLAUDE.md, « Documents volumineux »).
 - Code : `grep -n` des symboles utiles avant d'ouvrir un fichier ; pas de `cat` de plusieurs fichiers
   dans une commande ; un fichier de plus de 150 lignes se lit par plages.
 - Regrouper les modifications d'un même fichier en une seule édition.
