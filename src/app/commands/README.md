@@ -17,7 +17,7 @@ Catalogue unique des actions utilisateur (spec §4.4). Palette, menus et raccour
   (`image-file.ts`, fonctions pures).
 
 ## Fichiers
-- `project-commands.ts` : projet (nouveau, ouvrir/importer, exemple, exporter), onglets, palette.
+- `project-commands.ts` : projet (nouveau, ouvrir/importer, exporter ; plus d’ouverture de l’exemple, EVO-026), onglets, palette.
 - `graph-commands.ts` : création chaînée (N, Shift+N, Alt+I/S/F, Alt+R : `node.newRedirect`, nœud Renvoi, EVO-024, questionnaire seulement), types (générés depuis `registry`),
   obligatoire, « Autre », « Ne sais pas » (`node.toggleDontKnow`, sans raccourci), intitulé, condition, relier (`node.connect`, `node.connectTo`), départ, dupliquer,
   supprimer (`node.delete` : nœuds sélectionnés, sinon l'arête sélectionnée).
@@ -62,7 +62,7 @@ Catalogue unique des actions utilisateur (spec §4.4). Palette, menus et raccour
   `tab.comments`. `node.delete` et `library.delete` (question) demandent confirmation (`confirm` d'`app/feedback`) si un commentaire existe.
 - `enabled(arg?)` reçoit le paramètre de `runCommand` (commande appelée depuis un menu sur un autre objet que la sélection).
 - `nav-commands.ts` : flèches, annuler/rétablir (portée `global` : actifs hors du logigramme, pas pendant une saisie ; onglet Bibliothèque → historique `library`), ajuster la vue, logigramme ↔ prévisualisation.
-- `example.ts` : exemple embarqué ; `files.ts` : téléchargement et sélection de fichiers.
+- `files.ts` : téléchargement et sélection de fichiers.
 
 ## Tests
 `commands.test.ts` (jeux de libellés, onglets, langues, rang et suppression d'arête, propriétés du questionnaire) ;

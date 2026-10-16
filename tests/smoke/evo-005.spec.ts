@@ -1,6 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
+import { importExample } from './support/example';
 
 // EVO-005 : libellés des arêtes et des variables de l'état du système (spec §3.1, §3.6, §4.2, §4.5).
 const appUrl = pathToFileURL(resolve('dist/index.html')).href;
@@ -14,9 +15,7 @@ async function openExample(page: Page) {
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto(appUrl);
   await expect(page.getByTestId('app-title')).toBeAttached();
-  await page.keyboard.press('Control+k');
-  await page.keyboard.type('exemple');
-  await page.keyboard.press('Enter');
+  await importExample(page);
   await expect(page.locator('.react-flow__node')).toHaveCount(21);
   return errors;
 }

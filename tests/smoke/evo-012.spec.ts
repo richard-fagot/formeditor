@@ -1,6 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
+import { importExample } from './support/example';
 
 const appUrl = pathToFileURL(resolve('dist/index.html')).href;
 
@@ -24,7 +25,7 @@ async function palette(page: Page, text: string) {
 
 test('EVO-012 : surcharger une référence de bibliothèque — indicateur, valeur effective, retour à la valeur héritée', async ({ page }) => {
   const errors = await open(page);
-  await palette(page, 'exemple');
+  await importExample(page);
   const node = page.getByTestId('rf__node-n_tel');
   await expect(node).toContainText('*');
   await expect(node).not.toContainText('surch.');
@@ -45,7 +46,7 @@ test('EVO-012 : surcharger une référence de bibliothèque — indicateur, vale
 
 test('EVO-012 : nœud fragment — questions listées, surcharge repérée, provenance « fragment »', async ({ page }) => {
   const errors = await open(page);
-  await palette(page, 'exemple');
+  await importExample(page);
   await page.getByRole('tab', { name: /Demande de remboursement/ }).click();
   // « Demande de remboursement » est validé dans l'exemple (EVO-015) : le dévalider pour le modifier.
   page.once('dialog', (d) => void d.accept());
@@ -67,7 +68,7 @@ test('EVO-012 : nœud fragment — questions listées, surcharge repérée, prov
 
 test('EVO-012 : prévisualisation — le wizard exige la question selon sa valeur effective', async ({ page }) => {
   const errors = await open(page);
-  await palette(page, 'exemple');
+  await importExample(page);
   await palette(page, 'Nouveau questionnaire');
   const panel = page.getByTestId('library-panel');
   await panel.getByLabel('Filtrer la bibliothèque…').fill('telephone');

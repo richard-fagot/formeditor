@@ -2,6 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 import { pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
 import { readFileSync } from 'node:fs';
+import { importExample } from './support/example';
 
 const appUrl = pathToFileURL(resolve('dist/index.html')).href;
 
@@ -12,16 +13,6 @@ async function open(page: Page) {
   await page.goto(appUrl);
   await expect(page.getByTestId('app-title')).toBeAttached();
   return errors;
-}
-
-/** Palette : exécute la commande dont le libellé contient `text`. */
-async function palette(page: Page, text: string) {
-  await page.keyboard.press('Control+k');
-  const input = page.getByRole('combobox');
-  await expect(input).toBeFocused();
-  await input.fill(text);
-  await expect(page.getByRole('option').first()).toContainText(text);
-  await page.keyboard.press('Enter');
 }
 
 async function exportText(page: Page): Promise<string> {
@@ -133,7 +124,7 @@ test('EVO-014 : contrôles de saisie désactivables en prévisualisation, condit
   expect(await exportText(page)).toBe(after);
 
   // Changement de projet sans fermer l'éditeur : état conservé.
-  await palette(page, 'exemple');
+  await importExample(page);
   await page.getByTestId('view-preview').click();
   await expect(page.getByTestId('preview.toggleChecks')).toHaveAttribute('aria-pressed', 'false');
   expect(errors).toEqual([]);

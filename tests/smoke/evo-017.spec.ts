@@ -1,6 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
+import { importExample } from './support/example';
 
 const appUrl = pathToFileURL(resolve('dist/index.html')).href;
 /** Exemple d'EVO-017 (« Autre (préciser) » est activée par `A`, pas saisie comme option). */
@@ -15,9 +16,7 @@ async function previewWith(page: Page, options: string, keys: string[]) {
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto(appUrl);
   await expect(page.getByTestId('app-title')).toBeAttached();
-  await page.keyboard.press('Control+k');
-  await page.keyboard.type('exemple');
-  await page.keyboard.press('Enter');
+  await importExample(page);
   await page.getByTestId('rf__node-n_qualite').click();
   const quick = page.getByTestId('options-quick');
   await quick.fill('');

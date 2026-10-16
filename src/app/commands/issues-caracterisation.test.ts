@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Workspace } from '../../core/model';
 import { checkWorkspace, type Issue } from '../../core/validation';
 import { issuesOf, selectIssues } from '../issues';
-import { exampleWorkspace } from './example';
+import { exampleWorkspace } from '../../../tests/reference/example';
 
 /**
  * EVO-025 — tests de caractérisation des filtres de problèmes des 7 vues, appliqués au projet d'exemple

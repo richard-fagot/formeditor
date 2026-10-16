@@ -1,6 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
+import { importExample } from './support/example';
 
 const appUrl = pathToFileURL(resolve('dist/index.html')).href;
 
@@ -24,7 +25,7 @@ async function palette(page: Page, text: string) {
 
 test('EVO-006 : « Ne sais pas » sur l’exemple (choix, groupes, nombre obligatoire, choix multiple, synthèse)', async ({ page }) => {
   const errors = await open(page);
-  await palette(page, 'exemple');
+  await importExample(page);
   // Choix unique avec « Autre » : activation par la palette.
   await page.getByTestId('rf__node-n_type').click();
   await palette(page, 'Activer « Ne sais pas »');

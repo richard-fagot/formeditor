@@ -79,3 +79,16 @@ describe('jeux de libellés (bibliothèque)', () => {
     expect(st().ws.library.labelSets).toHaveLength(2);
   });
 });
+
+describe('EVO-026 — plus d’ouverture de l’exemple', () => {
+  it('EVO-026-003, EVO-026-004 — aucune commande du catalogue n’ouvre l’exemple (palette, écran des raccourcis)', async () => {
+    const { commands, labelOf } = await import('./index');
+    const { makeTranslate } = await import('../i18n');
+    for (const lang of ['fr', 'en']) {
+      const t = makeTranslate(lang);
+      expect(commands().filter((c) => /exemple|example/i.test(`${c.id} ${labelOf(c, t)}`)).map((c) => c.id)).toEqual([]);
+    }
+    expect(command('project.example')).toBeUndefined();
+    expect(runCommand('project.example')).toBe(false);
+  });
+});

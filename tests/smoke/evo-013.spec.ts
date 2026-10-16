@@ -1,6 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
+import { importExample } from './support/example';
 
 const appUrl = pathToFileURL(resolve('dist/index.html')).href;
 
@@ -12,19 +13,9 @@ async function open(page: Page) {
   return errors;
 }
 
-/** Palette : exécute la commande dont le libellé contient `text`. */
-async function palette(page: Page, text: string) {
-  await page.keyboard.press('Control+k');
-  const input = page.getByRole('combobox');
-  await expect(input).toBeFocused();
-  await input.fill(text);
-  await expect(page.getByRole('option').first()).toContainText(text);
-  await page.keyboard.press('Enter');
-}
-
 test('EVO-013 : double-clic sur le badge « bib. » d’une question — bibliothèque ouverte, question sélectionnée, intitulé non édité', async ({ page }) => {
   const errors = await open(page);
-  await palette(page, 'exemple');
+  await importExample(page);
   const tab = page.getByRole('tab', { selected: true });
   const tabName = (await tab.textContent())!;
   const badge = page.getByTestId('rf__node-n_tel').getByTestId('library-badge');
@@ -44,7 +35,7 @@ test('EVO-013 : double-clic sur le badge « bib. » d’une question — bibliot
 
 test('EVO-013 : double-clic sur le badge « bib. » d’un nœud fragment — fragment ouvert', async ({ page }) => {
   const errors = await open(page);
-  await palette(page, 'exemple');
+  await importExample(page);
   await page.getByRole('tab', { name: /Demande de remboursement/ }).click();
   await page.getByTestId('rf__node-n_ident').getByTestId('library-badge').dblclick();
   await expect(page.getByTestId('fragment-view')).toBeVisible();
@@ -54,7 +45,7 @@ test('EVO-013 : double-clic sur le badge « bib. » d’un nœud fragment — fr
 
 test('EVO-013 : double-clic ailleurs que sur le badge — édition de l’intitulé comme avant', async ({ page }) => {
   const errors = await open(page);
-  await palette(page, 'exemple');
+  await importExample(page);
   const node = page.getByTestId('rf__node-n_tel');
   await node.locator('.font-semibold').first().dblclick();
   await expect(page.getByLabel('intitulé')).toBeFocused();
@@ -64,7 +55,7 @@ test('EVO-013 : double-clic ailleurs que sur le badge — édition de l’intitu
 
 test('EVO-013 : modifications non enregistrées conservées après ouverture de l’objet lié', async ({ page }) => {
   const errors = await open(page);
-  await palette(page, 'exemple');
+  await importExample(page);
   const tabName = (await page.getByRole('tab', { selected: true }).textContent())!;
   const node = page.getByTestId('rf__node-n_tel');
   await node.locator('.font-semibold').first().dblclick();
@@ -81,7 +72,7 @@ test('EVO-013 : modifications non enregistrées conservées après ouverture de 
 test('EVO-013 : lien rompu — message, on reste sur le questionnaire', async ({ page }) => {
   const errors = await open(page);
   page.on('dialog', (d) => d.accept());
-  await palette(page, 'exemple');
+  await importExample(page);
   const tab = page.getByRole('tab', { name: /Demande de remboursement/ });
   await tab.click();
   await page.getByTestId('rf__node-n_ident').getByTestId('fragment-open').click();

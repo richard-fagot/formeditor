@@ -2,6 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 import { pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
 import { readFileSync } from 'node:fs';
+import { importExample } from './support/example';
 
 const appUrl = pathToFileURL(resolve('dist/index.html')).href;
 
@@ -146,9 +147,7 @@ test('clic sur un problème : les raccourcis du logigramme agissent, Entrée act
 
 test('exemple : choix avec option conditionnée et entrée dynamique, date, structure répétable', async ({ page }) => {
   const errors = await open(page);
-  await page.keyboard.press('Control+k');
-  await page.keyboard.type('exemple');
-  await page.keyboard.press('Enter');
+  await importExample(page);
   await expect(page.locator('.react-flow__node').first()).toBeVisible();
   // Aperçus des nouveaux types dans le logigramme.
   await expect(page.locator('.react-flow__node').filter({ hasText: 'victimes' })).toContainText('× n');
@@ -250,9 +249,7 @@ test('types au clavier, saisie rapide des options, champs de structure, jeu de l
 
 test('bibliothèque : glisser une question, insérer un fragment (I), déplier, extraire (Ctrl+G), éditer le fragment', async ({ page }) => {
   const errors = await open(page);
-  await page.keyboard.press('Control+k');
-  await page.keyboard.type('exemple');
-  await page.keyboard.press('Enter');
+  await importExample(page);
   const nodes = page.locator('.react-flow__node');
   await expect(nodes.first()).toBeVisible();
   const count = await nodes.count();
@@ -319,9 +316,7 @@ test('bibliothèque : glisser une question, insérer un fragment (I), déplier, 
 
 test('dictionnaire de l’état du système, panneaux de la prévisualisation, retour depuis la synthèse', async ({ page }) => {
   const errors = await open(page);
-  await page.keyboard.press('Control+k');
-  await page.keyboard.type('exemple');
-  await page.keyboard.press('Enter');
+  await importExample(page);
   await expect(page.locator('.react-flow__node').first()).toBeVisible();
 
   // Dictionnaire : variables de l'exemple, nouvelle variable avec focus sur son nom.
@@ -376,9 +371,7 @@ test('dictionnaire de l’état du système, panneaux de la prévisualisation, r
 
 test('langues, traductions manquantes, raccourci personnalisé, mise en page auto, vue côte à côte', async ({ page }) => {
   const errors = await open(page);
-  await page.keyboard.press('Control+k');
-  await page.keyboard.type('exemple');
-  await page.keyboard.press('Enter');
+  await importExample(page);
   await expect(page.locator('.react-flow__node').first()).toBeVisible();
 
   // Changement de langue en prévisualisation.

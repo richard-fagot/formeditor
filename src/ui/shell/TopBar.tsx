@@ -1,4 +1,4 @@
-import { Command, Download, FileJson, FilePlus2, FolderOpen, Settings, Sparkles } from 'lucide-react';
+import { Command, Download, FileJson, FilePlus2, FolderOpen, Settings } from 'lucide-react';
 import { UI_LANGUAGES } from '../../app/i18n';
 import { runCommand } from '../../app/commands';
 import { useStore, useT } from '../../app/store';
@@ -28,7 +28,6 @@ export function TopBar() {
       <div className="ml-4 flex items-center gap-1">
         <Button size="sm" variant="ghost" onClick={() => runCommand('project.new')}><FilePlus2 className="size-3.5" />{t('project.new')}</Button>
         <Button size="sm" variant="ghost" onClick={() => runCommand('project.open')}><FolderOpen className="size-3.5" />{t('project.open')}</Button>
-        <Button size="sm" variant="ghost" onClick={() => runCommand('project.example')} title={t('project.example')}><Sparkles className="size-3.5" /></Button>
         <Button size="sm" variant="ghost" onClick={() => runCommand('project.export')} data-testid="export"><Download className="size-3.5" />{t('project.export')}</Button>
         <Button size="sm" variant="ghost" onClick={() => runCommand('project.exportFiles')} title={t('project.exportFiles')}><FileJson className="size-3.5" /></Button>
       </div>

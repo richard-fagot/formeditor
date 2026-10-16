@@ -1,6 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
+import { importExample } from './support/example';
 
 // Un changement de sélection ne doit jamais masquer les nœuds du logigramme (pas de `visibility: hidden`).
 const appUrl = pathToFileURL(resolve('dist/index.html')).href;
@@ -8,9 +9,7 @@ const appUrl = pathToFileURL(resolve('dist/index.html')).href;
 async function openExample(page: Page) {
   await page.goto(appUrl);
   await expect(page.getByTestId('app-title')).toBeAttached();
-  await page.keyboard.press('Control+k');
-  await page.keyboard.type('exemple');
-  await page.keyboard.press('Enter');
+  await importExample(page);
   await expect(page.locator('.react-flow__node')).toHaveCount(21);
   await expect(page.locator('.react-flow__node[style*="visibility: hidden"]')).toHaveCount(0);
 }

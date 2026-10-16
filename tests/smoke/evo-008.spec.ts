@@ -1,6 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
+import { importExample } from './support/example';
 
 const appUrl = pathToFileURL(resolve('dist/index.html')).href;
 
@@ -75,7 +76,7 @@ test('EVO-008 : créer un fragment — onglet, édition comme un questionnaire, 
 
 test('EVO-008 : insérer un fragment au milieu (I), alias en double refusé, prévisualisation enchaînée, débogage, retour arrière', async ({ page }) => {
   const errors = await open(page);
-  await palette(page, 'exemple');
+  await importExample(page);
   await page.getByRole('button', { name: 'Nouveau questionnaire', exact: true }).click();
   await page.keyboard.press('n');
   await expect(page.getByLabel('intitulé')).toBeFocused();
@@ -152,7 +153,7 @@ test('EVO-008 : insérer un fragment au milieu (I), alias en double refusé, pr�
 
 test('EVO-008 : départ sur un nœud fragment (exemple « Demande de remboursement »), propriétés, ouverture du fragment', async ({ page }) => {
   const errors = await open(page);
-  await palette(page, 'exemple');
+  await importExample(page);
   await page.getByRole('tab', { name: /Demande de remboursement/ }).click();
   const node = page.getByTestId('rf__node-n_ident');
   await expect(node).toContainText('Départ');
