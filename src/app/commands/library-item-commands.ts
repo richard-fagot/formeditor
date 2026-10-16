@@ -135,7 +135,11 @@ export function libraryItemCommands(): Command[] {
         const r = ref()!;
         const ids = st().selection.nodes;
         const entries = groupEntries(st().ws, r, ids);
-        if (!canExtract(st().ws, r, ids)) return refuse('group.refused', 'group.forbidden');
+        if (!canExtract(st().ws, r, ids)) {
+          // Nœud Renvoi (EVO-024) : message propre, la fin et la sortie gardent le leur.
+          const redirect = getGraph(st().ws, r)!.nodes.some((n) => ids.includes(n.id) && n.kind === 'redirect');
+          return refuse('group.refused', redirect ? 'group.redirect' : 'group.forbidden');
+        }
         if (entries.length > 1) {
           const g = getGraph(st().ws, r)!;
           const name = (id: string) => { const n = g.nodes.find((x) => x.id === id); return n && 'key' in n ? String(n.key) : id; };

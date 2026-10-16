@@ -4,6 +4,7 @@ export const CLIPBOARD_MESSAGES = {
   'node.paste': { fr: 'Coller', en: 'Paste' },
   'paste.title': { fr: 'Collage : éléments écartés', en: 'Paste: items left out' },
   'paste.end': { fr: 'La fin « {name} » n’est pas collée : un fragment n’a pas de fin.', en: 'End "{name}" is not pasted: a fragment has no end.' },
+  'paste.redirect': { fr: 'Le nœud Renvoi « {name} » n’est pas collé : un fragment n’en contient pas.', en: 'Redirect node "{name}" is not pasted: a fragment contains none.' },
   'paste.exit': { fr: 'La sortie « {name} » n’est pas collée : seul un fragment a des sorties nommées.', en: 'Exit "{name}" is not pasted: only a fragment has named exits.' },
   'paste.cycle': { fr: 'Le fragment « {name} » n’est pas collé : il créerait un cycle d’appels.', en: 'Fragment "{name}" is not pasted: it would create a call cycle.' },
   'paste.start': { fr: '« {name} » est collé comme nœud ordinaire : la cible garde son départ.', en: '"{name}" is pasted as an ordinary node: the target keeps its start.' },

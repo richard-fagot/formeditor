@@ -88,4 +88,17 @@ export const ISSUE_MESSAGES: Record<string, LocalizedText> = {
   reservedGroupCode: { fr: 'Code de groupe réservé « {group} » (« Autre (préciser) » ou « Ne sais pas »)', en: 'Reserved group code "{group}" ("Other (specify)" or "Don’t know")' },
   emptyGroup: { fr: 'Groupe d’options sans option « {group} »', en: 'Option group without options "{group}"' },
   missingStart: { fr: 'Nœud de départ introuvable', en: 'Start node not found' },
+  redirectNoButton: { fr: "Le nœud Renvoi n'a aucun bouton.", en: 'The redirect node has no button.' },
+  buttonNoLabel: { fr: "Le bouton n'a pas de libellé.", en: 'The button has no label.' },
+  buttonNoTarget: { fr: "Le bouton n'a pas de cible.", en: 'The button has no target.' },
+  buttonTargetMissing: { fr: 'La cible du bouton « {label} » est introuvable.', en: 'The target of button "{label}" cannot be found.' },
+  duplicateButtonTarget: { fr: 'Plusieurs boutons de ce nœud visent la cible « {target} ».', en: 'Several buttons of this node target "{target}".' },
+  linkedNotBeforeEnd: {
+    fr: 'Une déclaration liée doit précéder une fin : activez annule et remplace ou déplacez le nœud.',
+    en: 'A linked declaration must precede an end: enable cancel and replace or move the node.',
+  },
+  buttonTargetNotGuaranteed: {
+    fr: 'La cible du bouton « {label} » n\'est pas toujours parcourue avant ce nœud.',
+    en: 'The target of button "{label}" is not always visited before this node.',
+  },
 };

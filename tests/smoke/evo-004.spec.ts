@@ -18,7 +18,7 @@ async function openExample(page: Page) {
   await page.keyboard.press('Control+k');
   await page.keyboard.type('exemple');
   await page.keyboard.press('Enter');
-  await expect(page.locator('.react-flow__node')).toHaveCount(19);
+  await expect(page.locator('.react-flow__node')).toHaveCount(21);
   return errors;
 }
 
@@ -142,7 +142,7 @@ test('EVO-004 : logigramme entier zoomé, thème sombre, titre, 2×, nom du fich
     const r = e.getBoundingClientRect();
     return r.right > b.x && r.left < b.x + b.width && r.bottom > b.y && r.top < b.y + b.height;
   }).length, box);
-  expect(visible).toBeLessThan(19);
+  expect(visible).toBeLessThan(21);
 
   // Raccourci X sur le logigramme : dialogue avec les choix par défaut (logigramme entier, titre).
   await diagram.click({ position: { x: 5, y: 5 } });
@@ -158,15 +158,15 @@ test('EVO-004 : logigramme entier zoomé, thème sombre, titre, 2×, nom du fich
   expect(png.name).toBe(`Déclarations de sinistre - Déclaration de sinistre - 1.0.5 - provisoire - ${today()}.png`);
   // Tous les nœuds, à 2× la taille à 100 %, marges et en-tête de titre compris.
   const all = await flowGeometry(page, { probes: [{ sel: '[data-edge-label]' }, { sel: '[data-id="n_type"] span', text: '*' }] });
-  expect(all.count).toBe(19);
-  expect(all.probes).toHaveLength(21);
+  expect(all.count).toBe(21); // exemple : 19 nœuds + nœud Renvoi et sa fin (EVO-024)
+  expect(all.probes).toHaveLength(23);
   expect(png.width).toBeGreaterThanOrEqual(2 * (all.width + 2 * MARGIN) - 2);
   expect(png.height).toBeGreaterThanOrEqual(2 * (all.height + 2 * MARGIN + HEADER) - 2);
   const a = await analyse(page, png.buf, toImage(all.probes, all.origin, true));
   expect(a.corners).toBe(true); // fond blanc malgré le thème sombre
   expect(a.bottomWhite).toBe(true); // ni fond quadrillé, ni contrôles, ni mini-carte dans la marge
   expect(a.headerInk).toBeGreaterThan(100); // titre dessiné dans l'en-tête
-  expect(a.blank).toEqual([]); // encre au centre des 19 nœuds, sur un libellé d'arête et sur le badge « obligatoire »
+  expect(a.blank).toEqual([]); // encre au centre des 21 nœuds, sur un libellé d'arête et sur le badge « obligatoire »
   expect(errors).toEqual([]);
 });
 
@@ -252,7 +252,7 @@ test('EVO-004 : derniers choix retenus après rechargement de la page', async ({
     };
   }))).toBe(JSON.stringify({ scope: 'selection', title: false }));
   await page.reload();
-  await expect(page.locator('.react-flow__node')).toHaveCount(19);
+  await expect(page.locator('.react-flow__node')).toHaveCount(21);
   await page.getByTestId('rf__node-n_intro').click();
   await diagram.focus();
   await page.keyboard.press('x');

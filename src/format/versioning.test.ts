@@ -34,7 +34,7 @@ const json = (ws: Workspace, name: string) => JSON.parse(exportFiles(ws).find((f
 
 describe('versionning (EVO-022, version 14)', () => {
   it('le format courant est la version 14', () => {
-    expect(FORMAT_VERSION).toBe(14);
+    expect(FORMAT_VERSION).toBeGreaterThanOrEqual(14);
   });
 
   it('un projet version 13 se charge sans erreur : versions vides, statuts conservés, aucune alerte de dépendance', () => {

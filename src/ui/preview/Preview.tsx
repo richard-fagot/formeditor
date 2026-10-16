@@ -1,6 +1,6 @@
 import { useEffect, type ReactNode } from 'react';
 import { Bug, ChevronLeft, Map as MapIcon, ChevronRight, Database, RotateCcw, ShieldCheck, Undo2 } from 'lucide-react';
-import { OTHER_VALUE } from '../../core/model';
+import { FINISH_LABEL, isJustBeforeEnd, OTHER_VALUE } from '../../core/model';
 import {
   back, countryPath, currentStep, dontKnowAnswer, dontKnowPath, getAnswer, groupPath, next, otherPath, progress, resume, setAnswer, start, type RuntimeInput, type Session,
 } from '../../core/runtime';
@@ -11,6 +11,7 @@ import { useIssues } from '../../app/issues';
 import { Button, Select, cn } from '../../ui-kit';
 import { DebugPanel } from './DebugPanel';
 import { Outline } from './Outline';
+import { Redirect } from './Redirect';
 import { Summary } from './Summary';
 import { SystemPanel } from './SystemPanel';
 import { answerErrors, guardEnd, requiredAt } from './path-check';
@@ -135,6 +136,10 @@ function Wizard({ questionnaireId, preview }: { questionnaireId: string; preview
   // Page d'un fragment : le clic sélectionne le nœud fragment du questionnaire (appel le plus externe).
   const hostNodeId = step.instances[0]?.id ?? step.node.id;
   const returnTo = state?.returnTo && state.returnTo !== step.id && session.history.includes(state.returnTo) ? state.returnTo : undefined;
+  // Retour lancé depuis un nœud Renvoi (EVO-024-045) : même mécanisme que depuis une synthèse.
+  const fromRedirect = !!returnTo && input.ws.questionnaires.find((x) => x.id === questionnaireId)?.nodes.find((n) => n.id === returnTo)?.kind === 'redirect';
+  // Nœud Renvoi juste avant une fin (EVO-024-048) : « Terminer » (libellé du nœud) à la place de « Suivant ».
+  const finish = step.node.kind === 'redirect' && isJustBeforeEnd(step.graph, step.node.id) ? env.label(step.node.finishLabel ?? FINISH_LABEL) : undefined;
 
   /** Avance (validation d'abord) ; `move` calcule la nouvelle session. */
   const advance = (move: (s: Session) => Session, revalidate = false) => {
@@ -174,7 +179,8 @@ function Wizard({ questionnaireId, preview }: { questionnaireId: string; preview
           {step.node.kind === 'summary' && (
             <Summary node={step.node} stepId={step.id} input={input} session={session} env={env} lang={lang} uiLang={uiLang} update={update} />
           )}
-          {!q && step.node.kind !== 'summary' && Page && <Page node={step.node} env={env} />}
+          {step.node.kind === 'redirect' && <Redirect node={step.node} stepId={step.id} input={input} session={session} env={env} update={update} />}
+          {!q && step.node.kind !== 'summary' && step.node.kind !== 'redirect' && Page && <Page node={step.node} env={env} />}
           {session.blocked && <p className="mt-4 rounded-md bg-amber-50 p-2 text-sm text-amber-700">{t('preview.blocked')}</p>}
         </div>
         <div className="mx-auto mt-6 flex max-w-xl flex-wrap justify-between gap-2">
@@ -184,10 +190,11 @@ function Wizard({ questionnaireId, preview }: { questionnaireId: string; preview
           <div className="flex gap-2">
             {returnTo && !isEnd && (
               <Button data-testid="preview-back-to-summary" onClick={() => advance((s) => resume(input, s, returnTo, (x) => !checks || !errorsAt(input, x).length), true)}>
-                <Undo2 className="size-4" />{t('preview.backToSummary')}
+                <Undo2 className="size-4" />{t(fromRedirect ? 'preview.backToRedirect' : 'preview.backToSummary')}
               </Button>
             )}
-            {!isEnd && <Button variant="primary" onClick={() => advance((s) => next(input, s))} data-testid="preview-next">{t('preview.next')}<ChevronRight className="size-4" /></Button>}
+            {!isEnd && finish === undefined && <Button variant="primary" onClick={() => advance((s) => next(input, s))} data-testid="preview-next">{t('preview.next')}<ChevronRight className="size-4" /></Button>}
+            {!isEnd && finish !== undefined && <Button variant="primary" onClick={() => advance((s) => next(input, s))} data-testid="preview-finish">{finish}</Button>}
           </div>
         </div>
       </div>

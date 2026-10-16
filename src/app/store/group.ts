@@ -16,10 +16,10 @@ export function groupEntries(ws: Workspace, ref: GraphRef, ids: string[]): strin
   return [...new Set([...(inside.has(g.start) ? [g.start] : []), ...entries])];
 }
 
-/** Une sélection extractible en fragment ne contient ni fin ni sortie nommée (un fragment n'en a pas). */
+/** Une sélection extractible en fragment ne contient ni fin, ni sortie nommée, ni nœud Renvoi (EVO-024) : un fragment n'en a pas. */
 export function canExtract(ws: Workspace, ref: GraphRef, ids: string[]): boolean {
   const g = getGraph(ws, ref);
-  return !!g && !g.nodes.some((n) => ids.includes(n.id) && (n.kind === 'end' || n.kind === 'exit'));
+  return !!g && !g.nodes.some((n) => ids.includes(n.id) && (n.kind === 'end' || n.kind === 'exit' || n.kind === 'redirect'));
 }
 
 /**

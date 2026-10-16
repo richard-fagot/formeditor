@@ -106,12 +106,16 @@ export interface ShapeProps<N extends GraphNode = GraphNode> {
   typePlugin?: QuestionTypePlugin;
   /** Badges calculés par l'éditeur (obligatoire, bibliothèque, problème…). */
   badges: ReactNode;
+  /** Id du graphe affiché (questionnaire ou fragment) : nœud Renvoi, noms des cibles (EVO-024). */
+  graphId?: string;
 }
 
 export interface NodePropertiesProps<N extends GraphNode = GraphNode> {
   node: N;
   update(patch: Partial<N>): void;
   env: EditorEnv;
+  /** Id du graphe du nœud (questionnaire ou fragment) : cibles d'un nœud Renvoi (EVO-024). */
+  graphId?: string;
 }
 
 export interface PageProps<N extends GraphNode = GraphNode> {

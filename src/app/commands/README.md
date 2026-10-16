@@ -18,7 +18,7 @@ Catalogue unique des actions utilisateur (spec §4.4). Palette, menus et raccour
 
 ## Fichiers
 - `project-commands.ts` : projet (nouveau, ouvrir/importer, exemple, exporter), onglets, palette.
-- `graph-commands.ts` : création chaînée (N, Shift+N, Alt+I/S/F), types (générés depuis `registry`),
+- `graph-commands.ts` : création chaînée (N, Shift+N, Alt+I/S/F, Alt+R : `node.newRedirect`, nœud Renvoi, EVO-024, questionnaire seulement), types (générés depuis `registry`),
   obligatoire, « Autre », « Ne sais pas » (`node.toggleDontKnow`, sans raccourci), intitulé, condition, relier (`node.connect`, `node.connectTo`), départ, dupliquer,
   supprimer (`node.delete` : nœuds sélectionnés, sinon l'arête sélectionnée).
 - `shell-commands.ts` : `tab.open` (rouvrir un questionnaire fermé), `tab.show`, `tab.close`, `lang.content`, `lang.ui`
@@ -41,7 +41,7 @@ Catalogue unique des actions utilisateur (spec §4.4). Palette, menus et raccour
   `runCommand('node.toLibrary', { graph, nodeId, key })` ; références réécrites listées dans `notice`), `node.openInLibrary` (question de bibliothèque), `node.resetRequired` (« Revenir à la valeur héritée », EVO-012 : retire la surcharge du caractère obligatoire de la référence sélectionnée, ou toutes celles de l'appel sélectionné ; `resetRequired`), `node.openFragment` (nœud fragment), `node.setEntry` (fragment seulement :
   règle `entry`, ou la retire sur l'entrée réglée), `node.newExit` (fragment seulement). `library.insertItem` refuse un cycle d'appels (message `insert.cycle`).
 - Les commandes du graphe agissent sur le graphe actif (`activeGraphRef`) : questionnaire, ou fragment ouvert dans son onglet. Dans un
-  fragment, `node.setStart` et `node.newEnd` sont indisponibles.
+  fragment, `node.setStart`, `node.newEnd` et `node.newRedirect` sont indisponibles.
 - `system-commands.ts` : `system.addVariable` (ouvre l'onglet, focus sur le nom), `system.deleteVariable`, `system.renameVariable`, `system.renameField`
   (`{ name, next }` ; transaction `transact` : un seul Ctrl+Z annule tout le renommage), `scenario.add` (sans paramètre : valeurs d'exemple ; avec un id :
   copie), `scenario.delete`, `preview.saveScenario` (prévisualisation affichée ; `arg` = nom), `preview.toggleSystem`, `preview.toggleDebug`, `preview.toggleChecks` (contrôles de saisie, EVO-014 ; efface les erreurs affichées), `preview.toggleOutline` (outline du logigramme, EVO-019).

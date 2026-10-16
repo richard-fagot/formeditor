@@ -1,4 +1,4 @@
-import { newId, uniqueKey, type Edge, type GraphNode, type Workspace } from '../../core/model';
+import { newId, retargetButtons, uniqueKey, type Edge, type GraphNode, type Workspace } from '../../core/model';
 import { renameKeysIn } from '../../core/references';
 import { getGraph, layoutOf, usedKeys, type GraphRef } from './graph';
 import { insertionCycle } from './library-edits';
@@ -13,9 +13,12 @@ export interface Clip {
   start?: string;
 }
 
-/** Nœud écarté au collage (message) : fin dans un fragment, sortie dans un questionnaire, fragment qui créerait un cycle ; départ conservé dans la cible. */
+/**
+ * Nœud écarté au collage (message) : fin ou nœud Renvoi (EVO-024) dans un fragment, sortie dans un questionnaire,
+ * fragment qui créerait un cycle ; départ conservé dans la cible.
+ */
 export interface PasteDrop {
-  reason: 'end' | 'exit' | 'cycle' | 'start';
+  reason: 'end' | 'redirect' | 'exit' | 'cycle' | 'start';
   nodeId: string;
 }
 
@@ -50,6 +53,7 @@ export function pasteNodes(ws: Workspace, ref: GraphRef, clip: Clip, at?: { x: n
   const dropped: PasteDrop[] = [];
   const nodes = clip.nodes.filter((n) => {
     const reason = n.kind === 'end' && ref.kind === 'fragment' ? 'end'
+      : n.kind === 'redirect' && ref.kind === 'fragment' ? 'redirect'
       : n.kind === 'exit' && ref.kind === 'questionnaire' ? 'exit'
         : n.kind === 'fragment' && insertionCycle(ws, ref, { kind: 'fragment', id: n.ref }) ? 'cycle' : undefined;
     if (reason) dropped.push({ reason, nodeId: n.id });
@@ -77,7 +81,8 @@ export function pasteNodes(ws: Workspace, ref: GraphRef, clip: Clip, at?: { x: n
     const id = ids.get(n.id)!;
     const p = ps[i]!;
     layout[id] = { x: Math.round(p.x + shift.x), y: Math.round(p.y + shift.y) };
-    g.nodes.push({ ...n, id } as GraphNode);
+    // Boutons de renvoi (EVO-024-053, 054) : une cible nœud copiée avec eux vise sa copie, sinon la cible d'origine.
+    g.nodes.push(retargetButtons({ ...n, id } as GraphNode, ids));
   });
   for (const e of part.edges) g.edges.push({ ...e, id: newId('e'), from: ids.get(e.from)!, to: ids.get(e.to)! });
   const copiedStart = clip.start && ids.has(clip.start) ? clip.start : undefined;

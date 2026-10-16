@@ -1,7 +1,7 @@
 ---
 id: EVO-024
 titre: Nœud de renvoi
-statut: à faire
+statut: fait 2026-10-16
 version: 1.0
 qualificatif: final
 derniere_exigence: EVO-024-074
@@ -202,3 +202,140 @@ Aucune.
 | Version | Date | Ajoutées | Abrogées | Motif |
 | --- | --- | --- | --- | --- |
 | 1.0 | 2026-10-16 | 001 à 068, 070 à 074 | — | Création depuis la fiche littérale validée ; 069 non attribué |
+
+## Analyse
+
+**Conclusion : faisable sans ambiguïté bloquante.** Choix ci-dessous, reportés dans `docs/DECISIONS.md`.
+
+### 1. Faisabilité, modules, nom et raccourci
+
+- Type de nœud `kind: "redirect"` (noms techniques anglais comme `info`, `summary`, `end`), nom affiché « Renvoi » ;
+  commande `node.newRedirect` « Nouveau nœud Renvoi », raccourci **Alt+R** (libre ; même famille qu'Alt+I/S/F),
+  création chaînée comme les autres pages, indisponible dans un fragment (comme `node.newEnd`).
+- Modules (matrice « Ajouter un type de nœud » de `docs/MAP.md`) : `core/model` (`RedirectNode`, `RedirectButton`,
+  `redirect.ts` : cibles autorisées, amont, nœud juste avant une fin, cible parcourue sur tous les chemins, repointage),
+  `format` (schéma, version 15, migration sans transformation), `core/references` (`visit.ts` : titre, texte,
+  libellés et conditions des boutons parcourus : traductions manquantes, vérifications des expressions, renommage),
+  `core/validation` (nouveaux codes), `plugins/node-kinds/redirect` (forme, aperçu, propriétés), `plugin-api`
+  (`graphId` transmis à la forme et aux propriétés), `registry`, `app/commands`, `app/i18n`, `app/store`
+  (collage, duplication, extraction en fragment), `ui/diagram`, `ui/properties`, `ui/preview` (page Renvoi).
+- Modèle : `buttons[]` de `{ label, target?, when? }` ; `target` = `{ questionnaire, prefill, replace }` ou
+  `{ node }`. Les toggles n'existent que dans une cible questionnaire : 014 et 015 sont structurels (changer de cible
+  recrée la cible, toggles à `false`). `finishLabel?` : libellé du bouton Terminer (absent = « Terminer » / « Finish »).
+- Pas de lien du logigramme vers les cibles (040) : les boutons ne sont pas des arêtes ; la navigation du moteur
+  (Suivant / Terminer) suit les arêtes sortantes comme pour un nœud information.
+- Un nœud Renvoi collé dans un fragment est écarté (comme une fin), et l'extraction en fragment refuse une sélection
+  qui en contient un (002 : un fragment n'en contient pas).
+
+### 2. EVO-024-036 et `notGuaranteed`
+
+`notGuaranteed` raisonne sur des **clés** posées (`guaranteedBefore`, intersection sur les prédécesseurs) : il ne
+s'applique pas à un nœud information ou synthèse, sans clé. Alternative retenue : même principe « sur tous les chemins »,
+par dominance : la cible est parcourue sur tous les chemins si, en la retirant du graphe, le nœud Renvoi n'est plus
+atteignable depuis le départ. Question d'un fragment (`appel/nœud`) : le nœud fragment domine le Renvoi **et** la
+question domine, dans le fragment, toutes ses sorties depuis son entrée (récursivement pour un fragment imbriqué).
+Une cible non située en amont n'est jamais parcourue avant le Renvoi : elle est aussi signalée par 036.
+
+### 3. EVO-024-045 et le retour depuis la synthèse
+
+Réutilisation telle quelle : `goTo(session, cible)` puis `returnTo` = étape du Renvoi ; le bouton de retour
+(« Revenir au renvoi » sur une page atteinte depuis un Renvoi) appelle `resume` comme « Revenir à la synthèse ».
+La cible nœud est désignée par le **chemin d'identifiants** qui est déjà l'id d'étape du moteur : `n_type` dans le
+questionnaire, `n_appel/n_question` pour une question de fragment (`a/b/n` imbriqué) ; « parcourue dans la session » =
+présente dans l'historique de la session. Ce chemin est stable au renommage (011), contrairement à `alias.cle` qui
+sert seulement d'affichage (nom de la cible : clé, `alias.cle`, titre d'une page, titre d'un questionnaire).
+
+### 4. EVO-024-053 à 055 : repointage
+
+Le collage (`pasteNodes`) et la duplication de questionnaire (`cloneGraph`) construisent déjà une table
+ancien id → nouvel id. Après copie, le premier segment du chemin d'une cible nœud présent dans la table est remplacé
+(`retargetButtons`) ; sinon la cible est conservée (054). Ctrl+D passe par le même collage.
+
+### Choix complémentaires
+
+- Libellé vide (031) : aucun texte non vide dans aucune langue ; une langue manquante seule est une traduction
+  manquante (063). Bouton en erreur (047, 064) : 031, 032 ou 033 (calculés par `redirectButtonError`, partagé par
+  les vérifications et la prévisualisation).
+- Messages de la prévisualisation (043, 046, 067) : `inform` d'`app/feedback` (boîte de message), la page reste affichée.
+- Une cible questionnaire égale au questionnaire en cours (après un collage) n'est pas proposée au choix et n'est pas
+  signalée.
+
+### 5. Matrice de couverture
+
+Chaque test cite dans son titre les ID qu'il couvre (`tests/smoke/evo-024.spec.ts` : Playwright ; les autres : Vitest).
+
+| ID | Test(s) |
+| --- | --- |
+| EVO-024-001 | `src/app/commands/redirect-commands.test.ts`, `tests/smoke/evo-024.spec.ts` |
+| EVO-024-002 | `src/app/commands/redirect-commands.test.ts` |
+| EVO-024-003 | `tests/smoke/evo-024.spec.ts` |
+| EVO-024-004 | `src/format/redirect.test.ts` |
+| EVO-024-005 | `src/core/validation/redirect.test.ts` |
+| EVO-024-006 | `src/core/validation/redirect.test.ts` |
+| EVO-024-007 | `src/core/model/redirect.test.ts` |
+| EVO-024-008 | `src/core/model/redirect.test.ts` |
+| EVO-024-009 | `src/core/model/redirect.test.ts` |
+| EVO-024-010 | `src/core/model/redirect.test.ts` |
+| EVO-024-011 | `src/core/model/redirect.test.ts`, `src/core/validation/redirect.test.ts` |
+| EVO-024-012 | `src/core/model/redirect.test.ts` |
+| EVO-024-013 | `src/core/model/redirect.test.ts` |
+| EVO-024-014 | `src/core/model/redirect.test.ts` |
+| EVO-024-015 | `src/core/model/redirect.test.ts` |
+| EVO-024-016 | `tests/smoke/evo-024.spec.ts` |
+| EVO-024-017 | `src/core/validation/redirect.test.ts` |
+| EVO-024-018 | `tests/smoke/evo-024.spec.ts` |
+| EVO-024-019 | `src/core/validation/redirect.test.ts` |
+| EVO-024-020 | `tests/smoke/evo-024.spec.ts` |
+| EVO-024-021 | `src/core/validation/redirect.test.ts`, `tests/smoke/evo-024.spec.ts` |
+| EVO-024-022 | `tests/smoke/evo-024.spec.ts` |
+| EVO-024-023 | `tests/smoke/evo-024.spec.ts` |
+| EVO-024-024 | `tests/smoke/evo-024.spec.ts` |
+| EVO-024-025 | `tests/smoke/evo-024.spec.ts` |
+| EVO-024-026 | `tests/smoke/evo-024.spec.ts` |
+| EVO-024-027 | `tests/smoke/evo-024.spec.ts` |
+| EVO-024-028 | `tests/smoke/evo-024.spec.ts` |
+| EVO-024-029 | `tests/smoke/evo-024.spec.ts` |
+| EVO-024-030 | `tests/smoke/evo-024.spec.ts` |
+| EVO-024-031 | `src/core/model/redirect.test.ts`, `src/core/validation/redirect.test.ts` |
+| EVO-024-032 | `src/core/model/redirect.test.ts`, `src/core/validation/redirect.test.ts` |
+| EVO-024-033 | `src/core/model/redirect.test.ts`, `src/core/validation/redirect.test.ts` |
+| EVO-024-034 | `src/core/validation/redirect.test.ts` |
+| EVO-024-035 | `src/core/validation/redirect.test.ts` |
+| EVO-024-036 | `src/core/model/redirect.test.ts`, `src/core/validation/redirect.test.ts` |
+| EVO-024-037 | `src/app/commands/redirect-commands.test.ts`, `tests/smoke/evo-024.spec.ts` |
+| EVO-024-038 | `tests/smoke/evo-024.spec.ts` |
+| EVO-024-039 | `tests/smoke/evo-024.spec.ts` |
+| EVO-024-040 | `tests/smoke/evo-024.spec.ts` |
+| EVO-024-041 | `tests/smoke/evo-024.spec.ts` |
+| EVO-024-042 | `tests/smoke/evo-024.spec.ts` |
+| EVO-024-043 | `tests/smoke/evo-024.spec.ts` |
+| EVO-024-044 | `tests/smoke/evo-024.spec.ts` |
+| EVO-024-045 | `tests/smoke/evo-024.spec.ts` |
+| EVO-024-046 | `tests/smoke/evo-024.spec.ts` |
+| EVO-024-047 | `tests/smoke/evo-024.spec.ts` |
+| EVO-024-048 | `src/core/model/redirect.test.ts`, `tests/smoke/evo-024.spec.ts` |
+| EVO-024-049 | `src/core/model/redirect.test.ts`, `tests/smoke/evo-024.spec.ts` |
+| EVO-024-050 | `tests/smoke/evo-024.spec.ts` |
+| EVO-024-051 | `tests/smoke/evo-024.spec.ts` |
+| EVO-024-052 | `src/app/commands/redirect-commands.test.ts` |
+| EVO-024-053 | `src/app/commands/redirect-commands.test.ts`, `src/core/model/redirect.test.ts` |
+| EVO-024-054 | `src/app/commands/redirect-commands.test.ts`, `src/core/model/redirect.test.ts` |
+| EVO-024-055 | `src/app/commands/redirect-commands.test.ts` |
+| EVO-024-056 | `src/format/redirect.test.ts` |
+| EVO-024-057 | `src/format/redirect.test.ts` |
+| EVO-024-058 | `src/app/commands/redirect-commands.test.ts`, `tests/smoke/evo-024.spec.ts` |
+| EVO-024-059 | `src/core/validation/redirect.test.ts` (exemple avec Renvoi sans problème ; questionnaire sans Renvoi `q_remboursement` : aucun problème, chemins attendus `remboursement_majeur`/`remboursement_mineur` inchangés) |
+| EVO-024-060 | `scripts/guide/evo-024.test.ts` |
+| EVO-024-061 | `src/app/commands/redirect-commands.test.ts` |
+| EVO-024-062 | `src/app/commands/redirect-commands.test.ts` |
+| EVO-024-063 | `src/core/validation/redirect.test.ts` |
+| EVO-024-064 | `tests/smoke/evo-024.spec.ts` |
+| EVO-024-065 | `tests/smoke/evo-024.spec.ts` |
+| EVO-024-066 | `src/app/commands/redirect-commands.test.ts` |
+| EVO-024-067 | `tests/smoke/evo-024.spec.ts` |
+| EVO-024-068 | `src/core/validation/redirect.test.ts` |
+| EVO-024-070 | `src/core/validation/redirect.test.ts` |
+| EVO-024-071 | `tests/smoke/evo-024.spec.ts` |
+| EVO-024-072 | `src/core/validation/redirect.test.ts` |
+| EVO-024-073 | `tests/smoke/evo-024.spec.ts` |
+| EVO-024-074 | `tests/smoke/evo-024.spec.ts` |

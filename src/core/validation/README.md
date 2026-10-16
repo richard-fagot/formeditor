@@ -29,7 +29,9 @@ Dépend de `core/model`, `core/expressions`, `core/references`, `core/runtime` (
 `invalidExpression`, `unknownReference`, `unknownFilterReference` (clé de question nue dans un filtre : `$$.cle` suggéré), `duplicateKey`, `invalidKey`, `unreachable`, `deadEnd`,
 `exitNotConnected`, `unknownExit`, `loopWithoutExit`, `noElse`, `multipleElse`, `notGuaranteed`,
 `missingTranslation`, `libraryMissing`, `missingStart`, `duplicateGroup`, `reservedGroupCode`, `emptyGroup`,
-`implicitExitNotConnected`, `fragmentEntry`, `fragmentNoExit`, `fragmentCycle`, `unusedFragment`, `endInFragment`, `expectedKeyMissing`, `hiddenField`
+`implicitExitNotConnected`, `fragmentEntry`, `fragmentNoExit`, `fragmentCycle`, `unusedFragment`, `endInFragment`, `expectedKeyMissing`, `hiddenField`,
+nœud Renvoi (EVO-024, `redirect-check.ts`, `property` = `buttons[i]`) : erreurs `redirectNoButton`, `buttonNoLabel`, `buttonNoTarget`, `buttonTargetMissing`, avertissements
+`duplicateButtonTarget`, `linkedNotBeforeEnd`, `buttonTargetNotGuaranteed` (dominance `alwaysBefore` de `core/model` : `notGuaranteed` raisonne sur des clés)
 (groupes d'options, `groups-check.ts` ; identifiant statique = code, sinon libellé « sinon » dans la langue par défaut).
 
 ## Choix
@@ -54,4 +56,4 @@ Dépend de `core/model`, `core/expressions`, `core/references`, `core/runtime` (
 - Le typage des expressions se limite à la syntaxe et à l'existence des références.
 
 ## Tests
-`validation.test.ts` (l'exemple ne doit produire **aucun** problème), `groups.test.ts`, `dont-know.test.ts`, `contact.test.ts`, `fragments.test.ts`, `hidden-fields.test.ts`, `suggestions.test.ts` (expression des suggestions d'un texte, EVO-016).
+`validation.test.ts` (l'exemple ne doit produire **aucun** problème), `groups.test.ts`, `dont-know.test.ts`, `contact.test.ts`, `fragments.test.ts`, `hidden-fields.test.ts`, `suggestions.test.ts` (expression des suggestions d'un texte, EVO-016), `redirect.test.ts` (nœud Renvoi, EVO-024).

@@ -1,0 +1,27 @@
+/** Textes de l'interface du plugin Renvoi (EVO-024). */
+export const T = {
+  name: { fr: 'Renvoi', en: 'Redirect' },
+  title: { fr: 'Titre', en: 'Title' },
+  text: { fr: 'Texte', en: 'Text' },
+  newText: { fr: 'Texte de renvoi', en: 'Redirect text' },
+  buttons: { fr: 'Boutons', en: 'Buttons' },
+  button: { fr: 'Bouton', en: 'Button' },
+  label: { fr: 'Libellé', en: 'Label' },
+  target: { fr: 'Cible', en: 'Target' },
+  noTarget: { fr: '— choisir une cible —', en: '— choose a target —' },
+  questionnaires: { fr: 'Questionnaires (déclaration)', en: 'Forms (declaration)' },
+  nodes: { fr: 'Nœuds en amont (corriger)', en: 'Upstream nodes (correct)' },
+  unknown: { fr: '(introuvable)', en: '(not found)' },
+  prefill: { fr: 'Pré-remplissage de la cible', en: 'Prefill the target' },
+  replace: { fr: 'Annule et remplace', en: 'Cancel and replace' },
+  when: { fr: 'Condition d’affichage', en: 'Display condition' },
+  add: { fr: 'Ajouter un bouton', en: 'Add a button' },
+  up: { fr: 'Monter', en: 'Move up' },
+  down: { fr: 'Descendre', en: 'Move down' },
+  remove: { fr: 'Supprimer le bouton', en: 'Delete the button' },
+  finish: { fr: 'Libellé du bouton Terminer', en: 'Finish button label' },
+  finishHelp: {
+    fr: 'Affiché à la place de « Suivant » quand toutes les sorties du nœud mènent à une fin ; vide = « Terminer ».',
+    en: 'Shown instead of “Next” when every exit of the node leads to an end; empty = “Finish”.',
+  },
+};

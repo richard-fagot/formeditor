@@ -95,7 +95,7 @@ export const NodeView = memo(function NodeView({ data, selected }: NodeProps & {
       {editing && question ? (
         <InlineLabel node={node} label={question.label} lang={env.contentLang} />
       ) : (
-        <Shape node={node} env={env} question={question} typePlugin={question ? questionType(question.type) : undefined} badges={badges} />
+        <Shape node={node} env={env} question={question} typePlugin={question ? questionType(question.type) : undefined} badges={badges} graphId={graph.id} />
       )}
       {exits.length ? <ExitHandles exits={exits} /> : <Handle type="source" position={Position.Bottom} className="!size-2 !border-slate-400 !bg-white" />}
       {node.kind === 'question' && (

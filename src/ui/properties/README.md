@@ -30,7 +30,7 @@ vient des plugins (`registry`). Dépend de `app/store`, `registry`, `core`, `ui-
   de cet appelant ne la résout pas), « Ouvrir le fragment » (`node.openFragment`).
 - Départ (questionnaire : « Définir comme départ ») ; entrée d'un fragment (`EntrySection` : « Définir comme entrée du fragment »,
   « Revenir à l’entrée implicite », commande `node.setEntry`). Portée d'un fragment : `fragmentScope`.
-- Autres nœuds : `plugin.Properties` du type de nœud ; renommer une sortie passe par `renameExit` (arêtes des appels suivies).
+- Autres nœuds : `plugin.Properties` du type de nœud (avec `graphId` : cibles d'un nœud Renvoi, EVO-024) ; renommer une sortie passe par `renameExit` (arêtes des appels suivies).
 
 Questionnaire validé (EVO-015) : contenu dans un `fieldset disabled` (`properties-locked`), remonté au changement d'état, et `readOnly` transmis
 aux saisies CodeMirror (`ExpressionEnv`).

@@ -14,6 +14,7 @@ Types, quelques utilitaires (`tr`, `commonQuestionFields`, `previewText`, `dontK
   (occurrence d'une structure, clés sœurs sans préfixe).
 - `RenderEnv.graph` : graphe de la page affichée (questionnaire, ou fragment pour une page d'un fragment) ; sert à chercher une clé d'abord là (suggestions du texte).
 - `RenderEnv.checks` (EVO-014) : `false` quand les contrôles de saisie de la prévisualisation sont désactivés ; un champ n'affiche alors aucun message de contrôle.
+- `ShapeProps.graphId`, `NodePropertiesProps.graphId` (EVO-024) : id du graphe du nœud (cibles et noms des cibles d'un nœud Renvoi).
 - `QuestionPropertiesProps.renameField(fieldId, key)` : renommage propagé d'un champ de structure.
 - Groupe de la sélection d'un choix (EVO-003) : `FieldProps.group` (valeur de `<clé>_group`) et
   `onChange(value, other?, group?)` ; `formatAnswer(question, value, env, other?, group?)`.

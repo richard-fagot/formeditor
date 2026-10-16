@@ -1,4 +1,4 @@
-# Format des questionnaires — version 14
+# Format des questionnaires — version 15
 <!-- Kit développeurs (npm run kit-dev) : les lignes marquées du commentaire « outil » renvoient au code de l'outil et sont retirées du kit ; les chemins src/format/schemas/ et examples/declaration-sinistre/ y deviennent schemas/ et exemple/. --> <!-- outil -->
 
 Ce document décrit le format JSON produit par l'éditeur de questionnaires. Il s'adresse à l'équipe
@@ -35,7 +35,7 @@ libellés et interpolation — 6. Nœuds — 7. Questions — 8. Réponses — 9
 | `<nom du questionnaire>.layout.json`, `fragment_<clé>.layout.json`, `question_<clé>.layout.json` | `layout` | Positions des nœuds dans l'éditeur et commentaires de révision (version 9, §1.1). | **non** (à ignorer) |
 | `<projet>.bundle.json` | `bundle` | `project`, `library`, `questionnaires[]`, `layouts[]` dans un seul fichier. | oui (même contenu) |
 
-- Chaque fichier (et le bundle) porte `formatVersion` (entier, actuellement `14`) et `kind`.
+- Chaque fichier (et le bundle) porte `formatVersion` (entier, actuellement `15`) et `kind`.
 - L'outil migre automatiquement à l'ouverture un fichier d'une version antérieure ; il refuse un fichier
   d'une version plus récente. Un moteur cible peut refuser toute version qu'il ne connaît pas.
 - Tout élément (projet, questionnaire, nœud, arête, question, fragment, variable, scénario, jeu de libellés)
@@ -56,7 +56,7 @@ libellés et interpolation — 6. Nœuds — 7. Questions — 8. Réponses — 9
 
 ```json
 {
-  "formatVersion": 14,
+  "formatVersion": 15,
   "kind": "layout",
   "graph": "q_declaration",
   "nodes": { "n_date": { "x": 0, "y": 320 } },
@@ -85,7 +85,7 @@ Squelette d'un questionnaire :
 
 ```json
 {
-  "formatVersion": 14,
+  "formatVersion": 15,
   "kind": "questionnaire",
   "id": "q_declaration",
   "key": "declaration_sinistre",
@@ -235,6 +235,7 @@ le contexte de la page affichée (§10.2). Exemples : `Bonjour {sys.nom_assure}`
 | `info` | Texte sans saisie. | `title?`, `text`. | oui |
 | `summary` | Récapitulatif des réponses (§11.6). | `title?`. | oui |
 | `end` | Fin de parcours. | `title?`, `message`, `outcome?` (issue métier libre : `submitted`, `ineligible`…). | oui (dernière) |
+| `redirect` | Renvoi (version 15, §6.2) : texte et boutons de renvoi, **questionnaire uniquement**. | `title?`, `text`, `buttons` (liste ordonnée), `finishLabel?`. | oui |
 | `exit` | Sortie nommée (facultative) d'un fragment, **dans un fragment uniquement** (règle non vérifiée, §11.3). | `name` (clé, visée par `exit` des arêtes du nœud fragment), `label?` (texte pour le lecteur, sans effet). | non |
 
 Question locale (le nœud porte la question) et question de bibliothèque :
@@ -295,6 +296,43 @@ Une question non présentée (chemin non emprunté, champ masqué) n'est jamais 
 ```json
 { "kind": "question", "id": "bn_telephone", "ref": "lq_telephone", "required": false },
 { "kind": "fragment", "id": "n_ident", "ref": "frg_identification_assure", "alias": "ident", "requiredOverrides": { "fn_num_secu": false } }
+```
+
+### 6.2 Nœud Renvoi (version 15)
+
+Page de texte (`title?`, `text`, libellés interpolables) suivie de **boutons de renvoi**, dans l'ordre de `buttons`.
+Il sert à orienter le déclarant vers un autre questionnaire (mauvais questionnaire, déclarations liées) ou à le faire
+revenir corriger une réponse. Il n'existe que dans un questionnaire (jamais dans un fragment).
+
+Bouton : `{ "label": <libellé>, "target"?: <cible>, "when"?: <expression> }`.
+
+- `label` : libellé multilingue, obligatoire (vide : signalé, §13).
+- `when` : condition d'affichage ; absente = toujours affiché. Le bouton n'est pas une référence d'expression.
+- `target` (absente = à choisir, signalée) : le bouton n'a pas de type, son effet découle de sa cible.
+  - `{ "questionnaire": "<id>", "prefill": bool, "replace": bool }` : **déclaration** dans un autre questionnaire du
+    projet, désigné par son `id`. `prefill` (« Pré-remplissage de la cible ») et `replace` (« Annule et remplace » : le
+    questionnaire en cours est supprimé au profit de la cible) sont **documentaires** : leur exécution (confirmation,
+    sauvegarde, suppression, pré-remplissage, correspondance des réponses) relève de l'application cible et n'est pas
+    spécifiée ici.
+  - `{ "node": "<chemin>" }` : **retour pour corriger** vers un nœud du questionnaire, désigné par le chemin
+    d'identifiants de l'étape (§11.3) : `n_type`, ou `n_appel/n_question` pour une question d'un fragment appelé
+    (`a/b/n` imbriqué). La cible est une question, une page `info` ou `summary` en amont du Renvoi (un chemin en mène),
+    ou une question d'un fragment appelé en amont ; jamais le Renvoi lui-même.
+
+Comportement attendu (celui de la prévisualisation) : seuls les boutons sans `when` ou dont `when` est vraie sont
+affichés ; un clic sur un bouton à cible nœud **déjà parcourue** dans la session ramène à cette page, réponses
+conservées, comme le retour depuis une synthèse (§11.6) ; non parcourue, rien ne se passe (message). Un bouton à cible
+questionnaire est remis à l'application cible. Le Renvoi garde ses arêtes sortantes (§11.1) : « Suivant » les suit.
+Quand **toutes** ses arêtes sortantes (au moins une) mènent directement à un nœud `end`, le bouton « Suivant » est
+remplacé par « Terminer » (libellé `finishLabel`, absent = « Terminer ») : sans cible ni condition propres, il suit
+les arêtes comme « Suivant ».
+
+```json
+{ "kind": "redirect", "id": "n_renvoi", "text": { "fr": "Le bien vous appartient : cette déclaration ne convient pas." },
+  "buttons": [
+    { "label": { "fr": "Déclarer plutôt un dommage à votre bien" }, "target": { "questionnaire": "q_dommage", "prefill": true, "replace": true } },
+    { "label": { "fr": "Rectifier ma déclaration" }, "target": { "node": "n_proprietaire" } }
+  ] }
 ```
 
 ## 7. Questions
@@ -710,7 +748,7 @@ partir de la racine avec `$$` : `sys.sinistres[date <= $$.date_sinistre]`. Hors 
 
 ## 11. Navigation
 
-Le parcours est une suite de **pages** (nœuds `question`, `info`, `summary`, `end`). Les nœuds `fragment`
+Le parcours est une suite de **pages** (nœuds `question`, `info`, `summary`, `redirect`, `end`). Les nœuds `fragment`
 et `exit` ne sont jamais affichés : on les traverse.
 
 ### 11.1 Arêtes
@@ -816,7 +854,7 @@ lieu d'afficher la fin. La réponse n'est pas effacée : l'utilisateur la corrig
   élément validé reste modifiable ; seule sa version est figée. Placés après `key`.
 - `fragments[]` (version 7) : `{ id, key, version?, status?, title, description?, entry?, nodes, edges }` (§11.3) ; nœuds : questions
   (locales ou de bibliothèque), `info`, `summary`, `fragment` (appel d'un autre fragment), `exit` ; pas de `start`
-  ni de `end`. Les questionnaires et fragments y font **référence** (`ref`) : une modification s'applique à tous les appelants.
+  ni de `end`, ni de `redirect`. Les questionnaires et fragments y font **référence** (`ref`) : une modification s'applique à tous les appelants.
 - `labelSets[]` : `{ id, key, kind: "boolean", yes, no }` : libellés des valeurs `true` et `false` ; référencés
   par `labelSet` d'une question `boolean` (« Ne sais pas » a son propre libellé, §7.7).
 
@@ -840,6 +878,8 @@ en contenir : le moteur cible peut les vérifier à son tour.
 | `hiddenField` | Référence à un champ masqué (`hiddenFields`) d'une instance de structure du graphe (`identite.telephone`, `alias.identite.telephone` chez l'appelant d'un fragment) : il ne sera jamais renseigné. Les références internes à la définition (champ frère) ne sont pas signalées. |
 | `expectedKeyMissing` | Clé attendue par un fragment (référence hors de ses propres clés) absente chez un appelant : signalée dans cet appelant, sur le nœud fragment. |
 | `libraryMissing` | Question, fragment ou jeu de libellés de bibliothèque introuvable. |
+| `redirectNoButton`, `buttonNoLabel`, `buttonNoTarget`, `buttonTargetMissing` | Nœud Renvoi (§6.2) sans bouton ; bouton sans libellé, sans cible, ou dont la cible est introuvable (questionnaire absent du projet, nœud absent du questionnaire). Erreurs. |
+| `duplicateButtonTarget`, `linkedNotBeforeEnd`, `buttonTargetNotGuaranteed` | Avertissements d'un nœud Renvoi : deux boutons visent la même cible ; bouton vers un questionnaire sans `replace` sur un Renvoi qui n'est pas juste avant une fin ; cible nœud non traversée sur tous les chemins du départ au Renvoi. |
 | `missingTranslation` | Texte sans traduction dans une langue du projet (libellés de groupe et `dontKnow.label` compris). |
 | `duplicateGroup`, `reservedGroupCode`, `emptyGroup` | Groupes d'options d'une question : identifiant en double ; code `AUTRE` ou `NSP` (réservés) ; groupe sans option (§7.3). |
 
@@ -876,6 +916,7 @@ L'exemple fourni ne produit aucun problème.
 | Surcharge du caractère obligatoire (version 10, §6.1) : téléphone obligatoire en bibliothèque, rendu facultatif dans un fragment (laissé vide) ; question d'un fragment rendue facultative depuis un questionnaire | `blk_identite_tiers` : `bn_telephone` → `lq_telephone` (chemins `ud_tiers_inconnu.json`, `ud_vol_avec_boucle.json`) ; `q_remboursement` : `n_ident.requiredOverrides` |
 | Formulaire validé (version 11) : `status: "validated"`, `validatedAt` ; la déclaration de sinistre reste non validée | `demande_remboursement - 1.0.4 - final.json` |
 | Versions (version 14) : questionnaire validé `1.0.4` et ses versions de référence (fragment et structure validés) ; déclaration provisoire `1.0.5` avec les versions actuelles des éléments utilisés (tous validés) ; structure de bibliothèque provisoire `0.1.0` (`lq_souscripteur`, non utilisée) | `demande_remboursement - 1.0.4 - final.json`, `declaration_sinistre - 1.0.5 - provisoire.json` : `libraryVersions` ; `bibliotheque.json` : `version`, `status` |
+| Nœud Renvoi (version 15, §6.2) : bris de matériel associatif renvoyé vers la demande de remboursement (cible questionnaire, deux toggles) ou vers le type de sinistre à rectifier (cible nœud), bouton Terminer « Abandonner » | `n_renvoi`, `n_fin_renvoi`, arête `e_type_renvoi` (aucun chemin attendu ne l'emprunte) |
 | Suggestions d'un champ texte (version 12) : nom d'une victime, suggestion tirée du nom de l'assuré (`$substringAfter(sys.nom_assure, ' ')`, valeur unique) | `n_victimes` : champ `nom` |
 
 Après la date, on demande le lien avec un sinistre existant s'il y en a un d'antérieur, puis on va aux
@@ -931,7 +972,7 @@ doit égaler `path`, toutes les réponses doivent avoir été consommées et l'i
 
 Toute évolution incompatible incrémente `formatVersion` et s'accompagne d'une migration dans l'outil,
 des schémas, de ce document et de l'exemple. Les ajouts compatibles (nouvelle propriété facultative)
-sont documentés ici. Version actuelle : **14**.
+sont documentés ici. Version actuelle : **15**.
 
 | Version | Changement | Migration |
 | --- | --- | --- |
@@ -948,3 +989,4 @@ sont documentés ici. Version actuelle : **14**.
 | 12 | Suggestions d'un champ texte (EVO-016) : `suggestions?` (expression renvoyant une liste, §7.9). | Aucune transformation (propriété absente = pas de suggestions) ; seul `formatVersion` change. |
 | 13 | Suppression du type `tristate` et des jeux de libellés `kind: "tristate"` (EVO-018) : « oui / non / ne sait pas » = `boolean` avec `dontKnow` (§7.7). | Chaque question ou champ `tristate` devient `boolean` avec `dontKnow` (gardé s'il existait, sinon `{}`) ; `default: "unknown"` est retiré ; chaque jeu `tristate` devient `boolean` sans `unknown`. Les expressions ne sont **pas** réécrites : `cle = "unknown"` devient faux pour toute réponse, à remplacer par `cle.nsp`. |
 | 14 | Versionning (EVO-022) : `version?` (texte libre) et `libraryVersions?` (id → `{ version, status }`) d'un questionnaire ; `version?` et `status?` (`"draft"` \| `"validated"`) d'une question et d'un fragment de bibliothèque ; nom du fichier exporté `<clé> - <version> - <final\|provisoire>.json` (§4.1). | Aucune transformation (version vide, élément provisoire, référence vide : aucune alerte) ; seul `formatVersion` change. |
+| 15 | Nœud Renvoi `kind: "redirect"` (EVO-024, §6.2) : `title?`, `text`, `buttons[]` (`label`, `target?` = `{ questionnaire, prefill, replace }` ou `{ node }`, `when?`), `finishLabel?` ; codes de vérification du §13. | Aucune transformation (un document antérieur n'a pas de nœud Renvoi) ; seul `formatVersion` change. |

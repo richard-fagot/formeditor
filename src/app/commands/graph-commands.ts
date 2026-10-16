@@ -90,13 +90,15 @@ export function graphCommands(): Command[] {
     enabled: isLocalQuestion,
     run: () => updateQuestion((q) => (q.type === p.type ? q : p.create(commonQuestionFields(q), q))),
   }));
-  const page = (kind: 'info' | 'summary' | 'end') => () => createAfter((id) => nodeKind(kind).create!(id));
+  const page = (kind: 'info' | 'summary' | 'end' | 'redirect') => () => createAfter((id) => nodeKind(kind).create!(id));
   return [
     { id: 'node.newQuestion', label: 'node.newQuestion', keys: ['n'], scope: 'graph', enabled: inDiagram, run: () => createAfter(newQuestion) },
     { id: 'node.newBranch', label: 'node.newBranch', keys: ['Shift+N'], scope: 'graph', enabled: () => inDiagram() && !!selectedNode(), run: () => createAfter(newQuestion, true) },
     { id: 'node.newInfo', label: 'node.newInfo', keys: ['Alt+i'], scope: 'graph', enabled: inDiagram, run: page('info') },
     { id: 'node.newSummary', label: 'node.newSummary', keys: ['Alt+s'], scope: 'graph', enabled: inDiagram, run: page('summary') },
     { id: 'node.newEnd', label: 'node.newEnd', keys: ['Alt+f'], scope: 'graph', enabled: inQuestionnaireDiagram, run: page('end') },
+    // Nœud Renvoi (EVO-024) : questionnaire seulement, comme une fin.
+    { id: 'node.newRedirect', label: 'node.newRedirect', keys: ['Alt+r'], scope: 'graph', enabled: inQuestionnaireDiagram, run: page('redirect') },
     ...typeCommands,
     {
       id: 'node.toggleRequired', label: 'node.toggleRequired', keys: ['o'], scope: 'graph', enabled: isLocalQuestion,

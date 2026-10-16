@@ -1,5 +1,5 @@
 {
-  "formatVersion": 14,
+  "formatVersion": 15,
   "kind": "questionnaire",
   "id": "q_declaration",
   "key": "declaration_sinistre",
@@ -99,6 +99,58 @@
         },
         "detailRequired": true
       }
+    },
+    {
+      "kind": "redirect",
+      "id": "n_renvoi",
+      "description": "Bris de matériel associatif : relève d'une demande de remboursement, pas d'une déclaration de sinistre (EVO-024).",
+      "title": {
+        "fr": "Ce n'est pas la bonne déclaration",
+        "en": "This is not the right claim"
+      },
+      "text": {
+        "fr": "Le bris de matériel associatif se déclare par une demande de remboursement.",
+        "en": "Association equipment damage is claimed through a reimbursement request."
+      },
+      "buttons": [
+        {
+          "label": {
+            "fr": "Faire plutôt une demande de remboursement",
+            "en": "Make a reimbursement request instead"
+          },
+          "target": {
+            "questionnaire": "q_remboursement",
+            "prefill": true,
+            "replace": true
+          }
+        },
+        {
+          "label": {
+            "fr": "Rectifier le type de sinistre",
+            "en": "Correct the type of claim"
+          },
+          "target": {
+            "node": "n_type"
+          }
+        }
+      ],
+      "finishLabel": {
+        "fr": "Abandonner",
+        "en": "Give up"
+      }
+    },
+    {
+      "kind": "end",
+      "id": "n_fin_renvoi",
+      "title": {
+        "fr": "Déclaration abandonnée",
+        "en": "Claim abandoned"
+      },
+      "message": {
+        "fr": "Votre déclaration n'a pas été envoyée.",
+        "en": "Your claim has not been sent."
+      },
+      "outcome": "redirected"
     },
     {
       "kind": "question",
@@ -526,6 +578,18 @@
       "id": "e_intro_type",
       "from": "n_intro",
       "to": "n_type"
+    },
+    {
+      "id": "e_type_renvoi",
+      "from": "n_type",
+      "to": "n_renvoi",
+      "when": "type_sinistre = 'bris_materiel'",
+      "caption": "Bris de matériel"
+    },
+    {
+      "id": "e_renvoi_fin",
+      "from": "n_renvoi",
+      "to": "n_fin_renvoi"
     },
     {
       "id": "e_type_date",

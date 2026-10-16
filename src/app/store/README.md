@@ -33,11 +33,11 @@ Dépend de `core`, `format`, `app/i18n`, `app/feedback`, `plugin-api` (utilitair
   refus du dernier champ affiché ; liste vide → propriété retirée), `hiddenFieldUsages` (expressions du graphe qui lisent le champ ; dans un fragment, aussi `alias.cle.champ` chez ses appelants, imbriqués compris), `hiddenUsageCaller` (appelant d'où vient une de ces expressions : titre dans la langue du contenu, sinon clé), `setLibraryQuestionLabel`, `renameExit` (suit dans les arêtes des instances), type `LibraryItem`.
 - Copier-coller (EVO-010, `clipboard.ts`) : `copyNodes(ws, ref, ids)` → `Clip` (instantané : nœuds, arêtes internes, positions, départ, id du projet) ;
   `pasteNodes(ws, ref, clip, at?)` : nouveaux ids, clés et alias pris suffixés hors des clés de la cible et de la sélection, références de la sélection réécrites
-  (`renameKeysIn`), placés au point `at` (coin haut gauche) ou décalés de `PASTE_OFFSET` ; écartés (`PasteDrop`) : fin dans un fragment, sortie dans un questionnaire,
-  instance créant un cycle ; départ = rôle non collé (un questionnaire vide prend le départ collé ou le premier nœud). État `clipboard`.
+  (`renameKeysIn`), placés au point `at` (coin haut gauche) ou décalés de `PASTE_OFFSET` ; écartés (`PasteDrop`) : fin ou nœud Renvoi (EVO-024) dans un fragment, sortie dans un questionnaire,
+  instance créant un cycle ; boutons de renvoi repointés vers la copie de leur cible nœud (`retargetButtons`, EVO-024) ; départ = rôle non collé (un questionnaire vide prend le départ collé ou le premier nœud). État `clipboard`.
   `duplicateNodes(ws, ref, ids)` (Ctrl+D) = `copyNodes` puis `pasteNodes` dans le même graphe.
 - Duplication (EVO-010, `duplicate.ts`) : `duplicateQuestionnaire(ws, id, copyName)` (juste après, clé et fichier uniques), `duplicateLibraryItem(ws, item, copyName)`
-  (question ou fragment, juste après, clé unique) ; « Copie de » par langue (`CopyName`), nœuds et arêtes réidentifiés, mise en page reprise, références conservées ; copie provisoire (sans `status` ni `libraryVersions`, EVO-022), version gardée.
+  (question ou fragment, juste après, clé unique) ; « Copie de » par langue (`CopyName`), nœuds et arêtes réidentifiés (cibles nœud des boutons de renvoi repointées, EVO-024), mise en page reprise, références conservées ; copie provisoire (sans `status` ni `libraryVersions`, EVO-022), version gardée.
 - Commentaires de révision (EVO-011, `comment-edits.ts`) : rangés dans `layout.comments` de l'objet (`CommentHost` : questionnaire, fragment,
   question de bibliothèque ; `CommentRef` = objet + nœud ; `commentKey`, `hostScope`) : `commentOf`, `commentsOf`, `allComments` (questionnaires, fragments,
   questions), `addComment` (un par question, à droite de la question ; sans position pour une question de bibliothèque), `setCommentText`, `moveComment`,
@@ -47,7 +47,7 @@ Dépend de `core`, `format`, `app/i18n`, `app/feedback`, `plugin-api` (utilitair
   chargement), `centerRequest` (centrage demandé au logigramme), `focusRequest` de genre `comment` (`commentKey`, `#i` pour la réponse i), onglet `comments`.
 - Caractère obligatoire (EVO-012, `required-edits.ts`) : `setRequiredOverride(ws, ref, nodeId, value, path?)` (sans `path` : référence de bibliothèque ;
   avec `path` : appel de fragment ; `undefined` = hérité, carte vide retirée), `resetRequired` (retire la surcharge ou toutes celles de l'appel), `hasRequiredOverride`.
-- `groupIntoFragment(ws, ref, ids, title)` (`group.ts`) : extrait une sélection en fragment (`canExtract` : ni fin ni sortie) ; `entry` réglée si
+- `groupIntoFragment(ws, ref, ids, title)` (`group.ts`) : extrait une sélection en fragment (`canExtract` : ni fin, ni sortie, ni nœud Renvoi) ; `entry` réglée si
   l'entrée n'est pas l'unique nœud sans arête entrante ; entrée unique = départ ou cible
   des arêtes entrantes (`groupEntries` ; plusieurs entrées → refus) ; une sortie par cible extérieure ; références de l'hôte préfixées par l'alias (`qualifyKeys`).
 - État du système (`system-edits.ts`) : `addVariable`, `deleteVariable` (aussi dans les scénarios), `renameVariable`, `renameListField`

@@ -87,6 +87,8 @@ export const MIGRATIONS: Migrations = {
    * Absents = version vide, provisoire, référence vide (aucune alerte) : seul le numéro change.
    */
   13: (doc) => bump(doc, 14),
+  /** EVO-024 : nœud Renvoi (`kind: "redirect"`). Un document antérieur n'en a pas : seul le numéro change. */
+  14: (doc) => bump(doc, 15),
 };
 
 /**

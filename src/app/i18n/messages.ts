@@ -59,6 +59,7 @@ export const MESSAGES = {
   'node.newInfo': { fr: 'Nouvelle page d’information', en: 'New information page' },
   'node.newSummary': { fr: 'Nouvelle page de synthèse', en: 'New summary page' },
   'node.newEnd': { fr: 'Nouvelle fin', en: 'New end' },
+  'node.newRedirect': { fr: 'Nouveau nœud Renvoi', en: 'New redirect node' },
   'node.connect': { fr: 'Relier à un nœud…', en: 'Connect to a node…' },
   'node.editLabel': { fr: 'Éditer l’intitulé', en: 'Edit label' },
   'node.toggleRequired': { fr: 'Basculer obligatoire', en: 'Toggle required' },
@@ -160,6 +161,7 @@ export const MESSAGES = {
   'group.refused': { fr: 'Extraction en fragment impossible', en: 'Cannot extract into a fragment' },
   'group.multipleEntries': { fr: 'La sélection a plusieurs entrées ({list}) ; un fragment n’a qu’une entrée. Sélectionner des nœuds atteints par une seule entrée.', en: 'The selection has several entries ({list}); a fragment has a single entry. Select nodes reached through a single entry.' },
   'group.forbidden': { fr: 'La sélection contient une fin ou une sortie : un fragment n’en contient pas.', en: 'The selection contains an end or an exit: a fragment contains none.' },
+  'group.redirect': { fr: 'La sélection contient un nœud Renvoi : un fragment n’en contient pas.', en: 'The selection contains a redirect node: a fragment contains none.' },
   'node.group': { fr: 'Extraire la sélection en fragment', en: 'Extract selection into a fragment' },
   'insert.refused': { fr: 'Insertion refusée', en: 'Insertion refused' },
   'insert.cycle': { fr: 'Le fragment « {name} » appelle déjà ce fragment (directement ou non) : l’insérer créerait un cycle d’appels.', en: 'Fragment "{name}" already calls this fragment (directly or not): inserting it would create a call cycle.' },
@@ -263,6 +265,15 @@ export const MESSAGES = {
   'preview.values': { fr: 'Valeurs courantes', en: 'Current values' },
   'preview.error': { fr: 'erreur', en: 'error' },
   'preview.backToSummary': { fr: 'Revenir à la synthèse', en: 'Back to the summary' },
+  'preview.backToRedirect': { fr: 'Revenir au renvoi', en: 'Back to the redirect' },
+  'redirect.title': { fr: 'Prévisualisation : renvoi', en: 'Preview: redirect' },
+  'redirect.declaration': { fr: 'Renvoi vers le questionnaire « {target} ».', en: 'Redirect to the form "{target}".' },
+  'redirect.options': { fr: 'Options activées : {options}.', en: 'Enabled options: {options}.' },
+  'redirect.noOption': { fr: 'Aucune option activée.', en: 'No option enabled.' },
+  'redirect.prefill': { fr: 'pré-remplissage de la cible', en: 'prefill the target' },
+  'redirect.replace': { fr: 'annule et remplace', en: 'cancel and replace' },
+  'redirect.notSimulated': { fr: 'La prévisualisation reste sur cette page : ni sauvegarde, ni suppression, ni pré-remplissage ne sont simulés.', en: 'The preview stays on this page: saving, deleting and prefilling are not simulated.' },
+  'redirect.notVisited': { fr: 'La cible « {target} » n’a pas été parcourue dans cette session : retour impossible.', en: 'The target "{target}" has not been visited in this session: cannot go back.' },
 } satisfies Record<string, { fr: string; en: string }>;
 
 export type MessageKey = keyof typeof MESSAGES;

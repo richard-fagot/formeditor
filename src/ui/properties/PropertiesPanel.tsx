@@ -60,7 +60,7 @@ function NodeProperties({ graph, node, isStart }: { graph: GraphRef; node: Graph
       {node.kind === 'fragment' && <FragmentCallProperties graph={graph} node={node} />}
       {node.kind !== 'question' && node.kind !== 'fragment' && plugin.Properties && (
         <Section title={plugin.name[env.uiLang] ?? plugin.name.fr}>
-          <plugin.Properties node={node} env={env} update={(patch) => {
+          <plugin.Properties node={node} env={env} graphId={graph.id} update={(patch) => {
             // Renommer une sortie renomme aussi les arêtes des appels du fragment qui la visent.
             const name = (patch as { name?: string }).name;
             if (node.kind === 'exit' && name !== undefined && graph.kind === 'fragment') {

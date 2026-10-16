@@ -451,6 +451,45 @@
           }
         },
         {
+          "description": "Version 15 (EVO-024) : nœud Renvoi, page de texte portant des boutons de renvoi (vers un autre questionnaire ou vers un nœud du questionnaire en cours), en plus de la navigation par ses arêtes sortantes.",
+          "type": "object",
+          "required": [
+            "kind",
+            "id",
+            "text",
+            "buttons"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "$ref": "#/$defs/id"
+            },
+            "description": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "redirect"
+            },
+            "title": {
+              "$ref": "#/$defs/label"
+            },
+            "text": {
+              "$ref": "#/$defs/label"
+            },
+            "buttons": {
+              "type": "array",
+              "description": "Boutons de renvoi, dans l'ordre d'affichage.",
+              "items": {
+                "$ref": "#/$defs/redirectButton"
+              }
+            },
+            "finishLabel": {
+              "$ref": "#/$defs/label",
+              "description": "Libellé du bouton Terminer (affiché à la place de « Suivant » quand toutes les arêtes sortantes mènent à une fin) ; absent = « Terminer »."
+            }
+          }
+        },
+        {
           "description": "Sortie nommée d'un fragment (facultative, uniquement dans un fragment de la bibliothèque).",
           "type": "object",
           "required": [
@@ -478,6 +517,65 @@
           }
         }
       ]
+    },
+    "redirectButton": {
+      "type": "object",
+      "description": "Version 15 (EVO-024) : bouton d'un nœud Renvoi. `target` absente = cible à choisir (signalée par l'éditeur).",
+      "required": [
+        "label"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "$ref": "#/$defs/label"
+        },
+        "target": {
+          "oneOf": [
+            {
+              "type": "object",
+              "description": "Autre questionnaire du projet (déclaration) ; `prefill` et `replace` sont documentaires.",
+              "required": [
+                "questionnaire",
+                "prefill",
+                "replace"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "questionnaire": {
+                  "type": "string",
+                  "description": "Id du questionnaire visé."
+                },
+                "prefill": {
+                  "type": "boolean",
+                  "description": "Pré-remplissage de la cible."
+                },
+                "replace": {
+                  "type": "boolean",
+                  "description": "Annule et remplace le questionnaire en cours."
+                }
+              }
+            },
+            {
+              "type": "object",
+              "description": "Nœud du questionnaire en cours (retour pour corriger) : chemin d'ids, `n_type` ou `n_appel/n_question` pour une question de fragment.",
+              "required": [
+                "node"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "node": {
+                  "type": "string",
+                  "pattern": "^[^/]+(/[^/]+)*$"
+                }
+              }
+            }
+          ]
+        },
+        "when": {
+          "$ref": "#/$defs/expression",
+          "description": "Condition d'affichage ; absente = toujours affiché."
+        }
+      }
     },
     "edge": {
       "type": "object",
