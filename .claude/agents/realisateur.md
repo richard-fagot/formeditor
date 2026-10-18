@@ -25,6 +25,10 @@ Lecture économe (chaque token lu est relu à chaque appel suivant) :
 Règles :
 - Périmètre strict : faire ce qui est demandé, rien d'autre. Pas de refactorisation ni de
   factorisation non demandée ; un défaut voisin se signale dans le compte rendu.
+- Fonction retirée ou remplacée : supprimer tout ce qui ne servait qu'à elle — code, tests, textes
+  multilingues, commandes et raccourcis, dépendances de `package.json` (et `package-lock.json`),
+  mentions dans `docs/spec.md` (y compris la pile, §8.1), `docs/GUIDE.md`, `docs/FORMAT.md`, `docs/MAP.md`
+  et les README. Ce ménage fait partie de la demande, il n'est pas hors périmètre ; le dire dans le compte rendu.
 - Correction d'écarts : ne relire que les fichiers cités, pas toute la carte.
 - Tests : ciblés pendant le travail (Vitest sur les fichiers touchés, Playwright Chromium sur la spec
   concernée) ; `npm run check` complet une seule fois, à la fin.
