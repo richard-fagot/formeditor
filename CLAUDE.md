@@ -35,7 +35,8 @@ sans cérémonie. Préférer la solution la plus simple qui respecte la spec.
 
 ## Harnais (spec §8.4) — ne jamais casser
 
-- `npm run check` = typage + Vitest + tests de référence + dependency-cruiser + build + test de fumée Playwright
+- `npm run check` = typage + Vitest + tests de référence + dependency-cruiser + dépendances inutilisées
+  (`scripts/deps-inutilisees.mjs`) + build + test de fumée Playwright
   (Firefox et Chromium, `dist/index.html` ouvert en `file://`). Il doit être vert à la fin de chaque phase.
 - Pendant le travail, ne lancer que les tests ciblés : `npx vitest run <fichiers touchés>`,
   `npx playwright test <spec> --project=chromium`. `npm run check` complet **une seule fois**,
