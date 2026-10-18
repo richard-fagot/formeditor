@@ -19,6 +19,9 @@ La section « Modules » est générée par `npm run map` ; le reste est rédig�
   `scripts/guide/guide.test.ts` échouent si une commande n'est pas balisée, si une balise est inconnue ou si l'index est périmé.
 - `scripts/kit-dev.mjs` : `npm run kit-dev` (re)crée `kit-dev/` (ignoré par git) : `FORMAT.md`, `schemas/`, `exemple/` sans
   `*.layout.json`, `LISEZMOI.md` ; test `scripts/kit-dev.test.ts` (EVO-020).
+- `scripts/deps-inutilisees.mjs` : `npm run deps:inutilisees` (étape de `npm run check`) échoue si une dépendance de `package.json`
+  n'est utilisée nulle part (import, configuration, binaire d'un script npm) ; exceptions commentées dans le script ;
+  test `scripts/deps-inutilisees.test.ts`.
 
 ## Modules
 
