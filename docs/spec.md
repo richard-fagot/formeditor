@@ -478,6 +478,7 @@ Une seule commande, `npm run check`, dit si quelque chose est cassé. Elle encha
 - **Vitest** : tests unitaires de `core` et `format`, écrits avant le code ;
 - **tests de référence** sur le questionnaire d'exemple : validation par le schéma, aller-retour import/export à l'identique, et pour chaque scénario un chemin de parcours attendu stocké dans un fichier ;
 - **dependency-cruiser** : règles du §8.2 ;
+- **dépendances inutilisées** (`scripts/deps-inutilisees.mjs`) : échec, avec un message qui la nomme, si une dépendance de `package.json` (`dependencies`, `devDependencies`) n'est ni importée dans `src/`, `tests/`, `scripts/` ou un fichier de configuration, ni appelée comme binaire par un script npm (`@types/x` compte comme utilisée si `x` l'est) ; liste d'exceptions courte et commentée dans le script ;
 - **contrôle du guide** (`docs/GUIDE.md` ↔ catalogue de commandes, voir §8.3) ;
 - **build** du fichier unique ;
 - **test de fumée Playwright** sur `dist/index.html` ouvert en `file://`, dans Firefox et Chromium : ouvrir, créer deux questions au clavier, relier, prévisualiser, exporter.

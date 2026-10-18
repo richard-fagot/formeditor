@@ -40,6 +40,8 @@ Pour chaque phase ou évolution :
    Exigence non couverte ou non respectée = majeur ; dans le rapport, citer l'ID.
 5. Vérifie que `docs/MAP.md` et les `README.md` des modules touchés décrivent le code actuel.
 6. Vérifie les règles de `CLAUDE.md` (architecture, invariants, format JSON ↔ schéma ↔ FORMAT.md).
+   Fonction retirée : rien ne doit rester qui ne servait qu'à elle (code, tests, textes, dépendances,
+   mentions dans la spec, le guide, la carte) ; un reste est un écart majeur.
 7. Vérifie que `docs/GUIDE.md` décrit fidèlement les actions touchées, sur **l'ensemble des changements
    depuis le début de la branche** (`git diff main...`), pas seulement sur le dernier tour de correction :
    chemins (raccourci, palette, souris, nom exact des champs et boutons), préconditions, effets.

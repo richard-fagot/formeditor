@@ -10,12 +10,13 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "deps": "depcruise src --config .dependency-cruiser.cjs",
+    "deps:inutilisees": "node scripts/deps-inutilisees.mjs",
     "smoke": "playwright test",
     "map": "node scripts/map.mjs",
     "guide": "node scripts/guide.mjs",
     "guide:check": "node scripts/guide.mjs --check",
     "kit-dev": "node scripts/kit-dev.mjs",
-    "check": "npm run typecheck && npm test && npm run deps && npm run guide:check && npm run build && npm run smoke",
+    "check": "npm run typecheck && npm test && npm run deps && npm run deps:inutilisees && npm run guide:check && npm run build && npm run smoke",
     "prepare": "git config core.hooksPath .githooks"
   },
   "dependencies": {
