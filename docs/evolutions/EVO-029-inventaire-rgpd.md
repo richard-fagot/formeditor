@@ -1,7 +1,7 @@
 ---
 id: EVO-029
 titre: Export de l'inventaire des données (amorce RGPD)
-statut: en cours
+statut: fait 2026-10-19
 version: 1.0
 qualificatif: final
 derniere_exigence: EVO-029-051
