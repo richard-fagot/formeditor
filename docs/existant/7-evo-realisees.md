@@ -3,7 +3,7 @@
 Partie de l'inventaire : index, état au commit et conventions dans `docs/EXISTANT.md`.
 
 
-Les fiches EVO-001 à EVO-028 sont au statut « fait ». Une EVO peut apparaître dans plusieurs zones.
+Les fiches EVO-001 à EVO-028 sont au statut « fait » ; EVO-029 est réalisée sur la branche `evo-029`. Une EVO peut apparaître dans plusieurs zones.
 
 ### 1. Coque, commandes et transverse
 
@@ -45,6 +45,7 @@ Les fiches EVO-001 à EVO-028 sont au statut « fait ». Une EVO peut apparaîtr
   Rétablir sans effet ou refusé), `placeReappeared` (`travel.ts`), « Supprimer » du menu contextuel
   des onglets, `confirm(question, ...lignes)` d'`app/feedback`, messages `questionnaire.confirmDelete` / `delete*`.
 - (Format) **EVO-001, 003, 005, 006, 007, 016** : uniquement par leurs migrations dans `src/format/migrate.ts`.
+- **EVO-029** (branche `evo-029`) — Export de l'inventaire RGPD en xlsx : `app/commands/inventory-commands.ts` (`questionnaire.exportInventory`), `inventory-file.ts` (nom, onglets « Données » et « À propos »), bouton `export-inventory` dans `QuestionnaireView`, textes `inventory.export` / `inventory.short` (`messages-settings.ts`), dépendance `write-excel-file` (`write-excel-file/browser`) ; données calculées par `core/model/inventory.ts` (`inventoryRows`, `traversalOrder`, `PERSONAL_TYPES`). Format JSON inchangé (version 15).
 
 ### 2. Édition : logigramme, propriétés, commentaires, bibliothèque
 

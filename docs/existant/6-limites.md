@@ -36,6 +36,8 @@ Partie de l'inventaire : index, état au commit et conventions dans `docs/EXISTA
 - Valeurs par défaut du projet vierge (« Nouveau projet », « Questionnaire », langue `fr`) codées en français.
 - Les **éléments de bibliothèque** ne sont pas exportés en fichiers distincts (choix EVO-022) ; aucune comparaison de versions.
 
+- **Inventaire RGPD** (EVO-029) : questionnaire seul (pas de fragment, de projet entier, d'autre format que xlsx) ; colonnes RGPD laissées vides, sans liste déroulante ; pas de relecture d'un inventaire complété ; textes en français uniquement. La génération (`writeXlsxFile(...).toBlob().then(...)`, `inventory-commands.ts:20`) n'a pas de `catch` : un échec n'est pas signalé à l'utilisateur. Intitulés non interpolés (variantes : texte « sinon »).
+
 ### 2. Édition : logigramme, propriétés, commentaires, bibliothèque
 
 - Pas de « couper » (Ctrl+X) ; presse-papiers interne, limité au projet ouvert.

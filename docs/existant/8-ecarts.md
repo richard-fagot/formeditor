@@ -44,6 +44,7 @@ Fiches lues : EVO-002, EVO-004, EVO-015 (commandes et coque), EVO-022, EVO-023, 
   `persistence/index.ts:34` et `bind.ts:48`, sans code ajouté ; EVO-026-006 par l'import ordinaire).
 - **EVO-015** : aucun écart constaté dans la zone (boutons selon l'état `QuestionnaireView.tsx:69-81`, confirmation
   `edit-commands.ts:97-99`, marqueurs `Tabs.tsx:29-34`, `QuestionnaireView.tsx:96-101`).
+- **EVO-029** : aucun écart constaté en plus de ceux du relecteur déjà suivis dans `docs/ECARTS.md` (échec de génération non signalé, `inventory-commands.ts:20` ; tests d'EVO-029-020, 038, 039 faibles). Les 51 exigences se retrouvent dans `inventory.ts`, `inventory-file.ts`, `inventory-commands.ts` et `QuestionnaireView.tsx:54-60`.
 
 ### 2. Édition : logigramme, propriétés, commentaires, bibliothèque
 
