@@ -983,7 +983,7 @@ Sans version, tout fonctionne comme avant, sauf la validation (refusée) et le s
 - **Conserver les itérations d'une boucle** : un nouveau passage remplace la réponse ; utiliser une structure répétable.
 - **Modifier plusieurs nœuds à la fois** dans le panneau de propriétés (seuls copier, dupliquer, supprimer, extraire en fragment agissent sur une sélection).
 - **Rechercher / remplacer** dans les textes ; **traduire automatiquement**.
-- **Exporter autre chose que du JSON et l'image PNG du logigramme** (pas de PDF, de formulaire final).
+- **Exporter autre chose que du JSON, l'image PNG du logigramme et l'inventaire RGPD en xlsx** (pas de PDF, de formulaire final).
 - **Exporter le logigramme en SVG** : un SVG produit par capture de l'écran n'est qu'un bloc HTML enveloppé (`foreignObject`),
   que Word, PowerPoint et la plupart des éditeurs vectoriels n'affichent pas ; seul le PNG est proposé.
 - **Travailler à plusieurs** ou sur un serveur : la sauvegarde automatique reste dans le navigateur ; partager par l'export.
