@@ -1,5 +1,5 @@
 # Guide utilisateur — Éditeur de questionnaires
-Mis à jour le 2026-10-16 — jusqu'à EVO-028
+Mis à jour le 2026-10-19 — jusqu'à EVO-029
 
 ## Mode d'emploi du guide
 
@@ -71,6 +71,32 @@ Mis à jour le 2026-10-16 — jusqu'à EVO-028
   changé, joindre ceux dont la version a changé depuis la dernière livraison (section 18). Y joindre la documentation du format : dans le
   dépôt de l'outil, `npm run kit-dev` crée le répertoire `kit-dev/` (`FORMAT.md`, `schemas/`, `exemple/`, `LISEZMOI.md`) ;
   relancé, il le remplace.
+- **Exporter l'inventaire RGPD** — Onglet d'un questionnaire (provisoire ou validé) : bouton « Inventaire RGPD » de la barre
+  de la vue Logigramme (à côté de « Image »), ou palette « Exporter l'inventaire RGPD » ; aucun raccourci par défaut (à
+  associer dans les Paramètres, §14). Indisponible sur un fragment, la Bibliothèque, l'État du système, les Paramètres et les
+  Commentaires. Télécharge `<clé> - <version> - <final|provisoire> - inventaire.xlsx` (même nom que le fichier JSON du
+  questionnaire, ex. `declaration_sinistre - 1.0.5 - provisoire - inventaire.xlsx` ; sans version, segment omis). Le fichier
+  sert d'amorce au registre des traitements : à envoyer au DPO, qui complète les colonnes RGPD ; l'éditeur ne qualifie rien.
+  - Onglet « Données » : une ligne par donnée capturée, dans l'ordre de parcours du logigramme depuis le départ (profondeur
+    d'abord, arêtes sortantes dans leur ordre, chaque question une fois ; les questions non atteignables à la fin, dans
+    l'ordre du graphe) : question locale ou de bibliothèque (chemin = sa clé), question d'un fragment (`alias.cle`,
+    `a.b.cle` pour un fragment imbriqué), un champ de structure par ligne (`cle.champ` ; champs masqués exclus, aucune ligne
+    pour la structure elle-même), précision « Autre (préciser) » (`cle_other`, intitulé suivi de « — Autre (préciser) »,
+    type « Texte »), ces lignes à la suite de leur question. Aucune ligne pour le pays d'un téléphone ou d'une adresse, les
+    nœuds information, synthèse, fin, sortie, Renvoi, ni les variables de l'état du système.
+  - Colonnes remplies par l'éditeur (en-têtes en bleu) : Identifiant (`<clé du questionnaire>/<chemin>`), Chemin, Intitulé
+    (texte français de l'intitulé effectif, non interpolé ; vide sans traduction française), Type (nom affiché dans
+    l'éditeur), Obligatoire (« Oui », « Non » ou « Si : <expression> », surcharges comprises), Répétable (« Oui » pour un
+    champ de structure répétable), Donnée personnelle présumée (« Oui » pour mail, téléphone, adresse, civilité ; sinon vide),
+    Description (celle de la question ; référence de bibliothèque : celle du nœud, sinon celle de la bibliothèque).
+  - Colonnes à compléter, vides, en texte libre (en-têtes en jaune) : Catégorie de donnée, Donnée sensible (art. 9 / 10),
+    Finalité, Justification (minimisation), Base légale, Durée de conservation, Destinataires, Observations.
+  - Onglet « À propos » : nom du projet, clé et titre du questionnaire, version, statut, date d'export, version du format
+    JSON et la mention d'amorce. Le fichier est toujours en français, quelle que soit la langue de l'interface.
+  - Réexporter après une évolution : l'Identifiant reste le même tant que les clés et alias ne changent pas ; renommer une
+    question, un champ ou un alias donne un nouvel identifiant. Le rapprochement de deux exports revient à l'outil qui les reçoit.
+  - L'export ne modifie rien : ni le projet, ni l'annulation, ni la pastille « Modifications non exportées ».
+  `[cmd: questionnaire.exportInventory]`
 - **Savoir si le projet est exporté** — Pastille à côté du nom du projet : « Modifications non exportées » (orange) ou
   « Tout est exporté » (vert). Elle repasse au vert après un export.
 - **Renommer le projet** — Cliquer sur le nom en haut à gauche et le modifier. Il donne son nom au bundle exporté. `[cmd: project.rename]`
@@ -957,7 +983,7 @@ Sans version, tout fonctionne comme avant, sauf la validation (refusée) et le s
 - **Conserver les itérations d'une boucle** : un nouveau passage remplace la réponse ; utiliser une structure répétable.
 - **Modifier plusieurs nœuds à la fois** dans le panneau de propriétés (seuls copier, dupliquer, supprimer, extraire en fragment agissent sur une sélection).
 - **Rechercher / remplacer** dans les textes ; **traduire automatiquement**.
-- **Exporter autre chose que du JSON et l'image PNG du logigramme** (pas de PDF, de formulaire final).
+- **Exporter autre chose que du JSON, l'image PNG du logigramme et l'inventaire RGPD en xlsx** (pas de PDF, de formulaire final).
 - **Exporter le logigramme en SVG** : un SVG produit par capture de l'écran n'est qu'un bloc HTML enveloppé (`foreignObject`),
   que Word, PowerPoint et la plupart des éditeurs vectoriels n'affichent pas ; seul le PNG est proposé.
 - **Travailler à plusieurs** ou sur un serveur : la sauvegarde automatique reste dans le navigateur ; partager par l'export.
@@ -1073,6 +1099,7 @@ Sans version, tout fonctionne comme avant, sauf la validation (refusée) et le s
 | Vue côte à côte | — | `view.compare` |
 | Exporter le logigramme en image | `X` | `view.exportImage` |
 | Exporter l’image avec ces options | — | `view.exportImageRun` |
+| Exporter l’inventaire RGPD | — | `questionnaire.exportInventory` |
 | Copier | `Ctrl+C` | `node.copy` |
 | Coller | `Ctrl+V` | `node.paste` |
 | Dupliquer le questionnaire | — | `questionnaire.duplicate` |

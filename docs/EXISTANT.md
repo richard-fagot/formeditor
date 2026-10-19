@@ -1,6 +1,6 @@
 # Existant — fonctionnalités réellement implémentées
 
-État au commit `a4bed4c` (2026-10-16), jusqu'à EVO-028. Format JSON : version 15.
+État au commit `fbf3acb` (2026-10-19), jusqu'à EVO-029. Format JSON : version 15.
 
 Inventaire **factuel**, établi par lecture du code source (et non de la spec, du guide ou des fiches EVO).
 Il décrit ce que fait le code, y compris quand cela diffère de la spec ; les différences avec les fiches

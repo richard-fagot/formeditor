@@ -138,7 +138,7 @@ Partie de l'inventaire : index, état au commit et conventions dans `docs/EXISTA
 **Comportement observable**
 - Sous-onglets « Logigramme » / « Prévisualisation » (bascule par `view.toggle`, raccourci P).
 - En vue Logigramme, barre : « Mise en page automatique » (`view.layout`), « Image » (`view.exportImage`, libellé
-  « Export en cours… » pendant l'export), « Commentaires » (`comment.toggleAll`), « Vue côte à côte » (`view.compare`, si
+  « Export en cours… » pendant l'export), « Inventaire RGPD » (`questionnaire.exportInventory`, EVO-029, icône tableur, `data-testid="export-inventory"`, `QuestionnaireView.tsx:54-60`), « Commentaires » (`comment.toggleAll`), « Vue côte à côte » (`view.compare`, si
   le projet a plus d'un questionnaire, état enfoncé quand active), « Valider le formulaire » ou « Dévalider » selon l'état,
   « Bibliothèque » (panneau latéral, `view.libraryPanel`).
 - Zone : panneau Bibliothèque à gauche (s'il est affiché et sans vue côte à côte), logigramme + panneau Problèmes,
@@ -306,6 +306,7 @@ système, paramètres, image, presse-papiers, commentaires, versions, navigation
 | `view.compare` | Vue côte à côte | — | questionnaire actif et ≥ 2 questionnaires | Voir § Onglet de questionnaire. |
 | `view.exportImage` | Exporter le logigramme en image | X | questionnaire actif en vue Logigramme et non vide | Ouvre le dialogue d'options. |
 | `view.exportImageRun` (masquée) | Exporter l'image avec ces options | — | idem | Arg `{ scope, title }` : mémorise, ferme le dialogue, incrémente `imageRequest`. |
+| `questionnaire.exportInventory` | Exporter l'inventaire RGPD | — | questionnaire actif (même vide ; vue Logigramme ou non, via la palette) | Génère un xlsx (`write-excel-file/browser`) et le télécharge ; ne modifie ni le store ni l'historique (`inventory-commands.ts:11-23`). |
 | `node.copy` | Copier | Ctrl+C | logigramme affiché, nœuds sélectionnés, aucun texte sélectionné dans la page | Copie dans le presse-papiers interne (lié au projet). |
 | `node.paste` | Coller | Ctrl+V | logigramme affiché et presse-papiers du même projet | Colle au pointeur (ou position arg) ; éléments écartés listés (notice) ; cibles nœud des boutons de renvoi repointées (EVO-024). |
 | `questionnaire.duplicate` | Dupliquer le questionnaire | — | questionnaire visé (arg id, sinon actif) existant | Copie « Copie de … », ouvre son onglet. |
@@ -561,6 +562,30 @@ libellés `src/app/i18n/messages*.ts` ; raccourcis de types `src/plugins/questio
 **Références** : `src/app/commands/image-commands.ts:1-38`, `src/app/commands/image-file.ts:1-44`,
 `src/ui/diagram/ImageDialog.tsx:10-51`, `src/ui/diagram/useImageExport.ts:9-128`, `src/ui/diagram/Diagram.tsx:141-143`,
 `src/app/store/image-state.ts`.
+
+---
+
+### Export de l'inventaire RGPD en xlsx (EVO-029)
+
+**Comportement observable**
+- Commande `questionnaire.exportInventory` (« Exporter l'inventaire RGPD », aucun raccourci par défaut, palette) et bouton « Inventaire RGPD » de la barre du logigramme (vue Logigramme seulement, après « Image »), qui lance la commande. Télécharge un xlsx.
+- Nom : `inventoryFileName` = `questionnaireFileName` (`<clé> - <version> - <final|provisoire>.json`) avec « .json » remplacé par « - inventaire.xlsx » (`inventory-file.ts:22-24`) ; même nettoyage des caractères interdits que le JSON.
+- Onglet « Données » : ligne d'en-tête figée (`stickyRowsCount: 1`), en gras, retour à la ligne ; 8 colonnes pré-remplies (fond `#D9E1F2`) — Identifiant, Chemin, Intitulé, Type, Obligatoire, Répétable, Donnée personnelle présumée, Description — puis 8 colonnes à compléter (fond `#FFF2CC`, cellules vides, texte libre) — Catégorie de donnée, Donnée sensible (art. 9 / 10), Finalité, Justification (minimisation), Base légale, Durée de conservation, Destinataires, Observations. Largeurs 32 (deux premières) puis 22.
+- Une ligne par donnée (`inventoryRows`, `src/core/model/inventory.ts`) : Identifiant `<clé du questionnaire>/<chemin>` ; Chemin ; Intitulé = texte français de l'intitulé de la question effective, non interpolé (libellé à variantes : texte « sinon » français ; vide sans traduction française) ; Type = nom français du type (`questionType(t).name.fr`, sinon l'identifiant du type) ; Obligatoire = « Oui » / « Non » / « Si : <expression> » (expression vide → « Non ») ; Répétable « Oui » pour un champ de structure répétable, sinon vide ; Donnée personnelle présumée « Oui » pour mail, téléphone, adresse, civilité, sinon vide ; Description.
+- Ligne `<chemin>_other` après la donnée dont « Autre (préciser) » est activé : Intitulé « <intitulé> — Autre (préciser) » (intitulé vide → cellule vide), Type « Texte », Obligatoire = `other.detailRequired`, Répétable et Description de la question.
+- Onglet « À propos » (colonnes 26 / 60) : Projet (nom), Clé du questionnaire, Titre du questionnaire (français, sinon langue par défaut du projet, sinon vide), Version (vide si absente), Statut (« final » si validé, sinon « provisoire »), Date d'export (`AAAA-MM-JJ`, date locale), Version du format JSON (`FORMAT_VERSION`), puis la mention « Document d'amorce généré par l'éditeur : les colonnes RGPD sont à compléter et à valider par le DPO. » (étiquettes en gras). Noms d'onglets, en-têtes et textes fixes en français quelle que soit la langue de l'interface.
+
+**Règles de gestion et validations**
+- Ordre (`traversalOrder`, `inventory.ts:42-55`) : profondeur d'abord depuis le départ (`graphStart`), arêtes sortantes dans leur ordre, chaque nœud une fois (boucles comprises) ; puis les nœuds non atteignables dans l'ordre du graphe, sans signalement. Les lignes d'une structure et la ligne `_other` suivent leur question.
+- Nœuds : question locale ou à référence (`instanceQuestion` : intitulé surchargé, champs masqués exclus) ; fragment appelé déplié récursivement avec chemin préfixé `alias.` (`a.b.cle` en cas d'imbrication) ; fragment déjà en cours d'appel (récursion) et référence introuvable : ignorés. Information, synthèse, fin, sortie nommée, renvoi : aucune ligne ; les cibles d'un renvoi ne sont pas suivies. Variables système : aucune ligne ni onglet. Pays d'un téléphone ou d'une adresse : aucune ligne.
+- Structure : aucune ligne pour la structure elle-même ; une ligne `cle.champ` par champ, Obligatoire et Description du champ (`f.required`, `f.description`), Répétable = `repeat` de la structure.
+- Obligatoire d'une question : `resolveRequired(ws, nœud, appels de fragment)` (surcharges du nœud et des appels).
+- Description d'une référence : celle du nœud si renseignée, sinon celle de la définition de bibliothèque.
+- Lecture seule : aucun appel au store en écriture ; la commande est `enabled` si un questionnaire est actif (`activeQuestionnaire`).
+
+**Cas limites gérés**
+- Questionnaire sans question : onglet « Données » avec l'en-tête seul.
+- Cellule vide (`null`) pour toute valeur absente ou chaîne vide.
 
 ---
 

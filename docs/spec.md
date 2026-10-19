@@ -201,7 +201,7 @@ Objectif : pas de clicodrome. Chaque action courante doit se faire au clavier ou
 - **Vue côte à côte** (souhaitable) : deux questionnaires affichés en parallèle pour comparer.
 - Dans un onglet de questionnaire, deux sous-onglets : **Logigramme** et **Prévisualisation**.
 - Le logigramme est divisé en deux zones : à gauche le graphe, à droite le **panneau de propriétés** de l'objet sélectionné (question, arête, nœud fragment, champ de structure, page). Un panneau « Problèmes », repliable, liste les avertissements (§4.6).
-- **Barre du logigramme** : mise en page automatique, ajuster la vue, **exporter le logigramme en image** (§6.4), afficher / masquer les commentaires de révision (§4.7), valider / dévalider le formulaire (§3.10).
+- **Barre du logigramme** : mise en page automatique, ajuster la vue, **exporter le logigramme en image** (§6.4), exporter l'inventaire RGPD (§6.5), afficher / masquer les commentaires de révision (§4.7), valider / dévalider le formulaire (§3.10).
 - **Page des commentaires** (EVO-011) : onglet « Commentaires » (§4.7).
 
 ### 4.2 Représentation des nœuds
@@ -387,6 +387,24 @@ Le logigramme d'un questionnaire s'exporte en **image PNG**, pour l'insérer dan
 - **Titre dessiné** (option cochée, EVO-023) : titre du questionnaire, puis la version (si elle n'est pas vide) et le statut dans la langue de l'interface (« Validé » / « Provisoire », comme dans le panneau de propriétés), séparés par « — ». Option décochée : aucun titre.
 - **Pas de SVG** : un SVG produit par capture du HTML n'est qu'un `foreignObject`, que les outils bureautiques n'affichent pas.
 
+### 6.5 Inventaire des données (amorce RGPD, EVO-029)
+
+Pour un questionnaire, l'éditeur exporte un fichier **xlsx** qui liste chaque donnée capturée ; il sert d'amorce au registre des traitements, à la mention d'information et à l'AIPD. L'éditeur ne qualifie rien : les colonnes RGPD sont laissées vides, à compléter par le métier ou le DPO.
+
+- **Commande** « Exporter l'inventaire RGPD » (palette, bouton « Inventaire RGPD » de la barre de la vue Logigramme, à côté de « Image ») ; aucun raccourci par défaut, un raccourci personnalisé est possible (Paramètres). Disponible quand un onglet de questionnaire est actif, validé ou provisoire ; indisponible sur un fragment, la Bibliothèque, l'État du système, les Paramètres et les Commentaires. Seule cette commande produit un inventaire ; elle ne modifie ni le projet, ni l'historique d'annulation, ni l'indicateur « Modifications non exportées ».
+- **Fichier** : nom du JSON exporté du questionnaire (§3.10, EVO-022), « .json » remplacé par « - inventaire.xlsx » (`declaration_sinistre - 1.0.5 - provisoire - inventaire.xlsx` ; version vide → segment omis ; caractères interdits → `_`).
+- **Onglet « Données »**, une ligne par donnée, dans l'ordre de parcours du logigramme : profondeur d'abord depuis le départ, arêtes sortantes dans leur ordre, chaque nœud une seule fois ; puis les questions non atteignables, dans l'ordre du graphe, sans signalement. Un appel de fragment est remplacé à sa place par les lignes du fragment (même règle depuis son entrée).
+  - Question locale ou de bibliothèque : chemin = sa clé ; question d'un fragment : `alias.cle`, alias successifs pour un fragment imbriqué (`a.b.cle`).
+  - Structure : une ligne par champ (`cle.champ`), aucune pour la structure elle-même ; champs masqués d'une référence de bibliothèque exclus.
+  - « Autre (préciser) » activée : ligne supplémentaire `cle_other` (`cle.champ_other` pour un champ), intitulé « \<intitulé> — Autre (préciser) », type « Texte », obligatoire « Oui » si la précision est exigée, sinon « Non ».
+  - Lignes des champs et ligne `_other` à la suite, à la place de la question.
+  - Aucune ligne pour le pays d'un téléphone ou d'une adresse, les nœuds information, synthèse, fin, sortie nommée, Renvoi, ni les variables de l'état du système.
+- **Colonnes pré-remplies** : Identifiant (`<clé du questionnaire>/<chemin>`, stable tant que clés et alias ne changent pas ; le rapprochement de deux exports revient à l'outil qui les reçoit), Chemin, Intitulé (texte français de l'intitulé de la question effective, non interpolé ; vide sans traduction française), Type (nom français affiché dans l'éditeur), Obligatoire (« Oui », « Non » ou « Si : \<expression> », question effective : surcharges EVO-012 comprises), Répétable (« Oui » pour un champ de structure répétable, sinon vide), Donnée personnelle présumée (« Oui » pour mail, téléphone, adresse, civilité, sinon vide), Description (question locale : la sienne ; référence de bibliothèque : celle du nœud, sinon celle de la définition).
+- **Colonnes à compléter**, vides, en texte libre sans liste déroulante, en-têtes distingués visuellement (couleur de fond) : Catégorie de donnée, Donnée sensible (art. 9 / 10), Finalité, Justification (minimisation), Base légale, Durée de conservation, Destinataires, Observations.
+- **Onglet « À propos »** : nom du projet, clé et titre du questionnaire, version, statut, date d'export, version du format JSON et la mention « Document d'amorce généré par l'éditeur : les colonnes RGPD sont à compléter et à valider par le DPO. »
+- **Langue** : noms d'onglets, en-têtes et textes fixes toujours en français, quelle que soit la langue de l'interface.
+- Aucun changement du format JSON.
+
 ## 7. Contraintes
 
 - **Livrable** : une page HTML unique, ouverte sans serveur (double-clic, `file://`). Les librairies sont intégrées au fichier par le build : l'outil fonctionne aussi hors ligne.
@@ -416,6 +434,7 @@ L'architecture combine un **noyau métier pur**, sans interface et testé en TDD
 | Éditeur d'expression | CodeMirror 6 | Monaco | Léger ; autocomplétion et coloration extensibles. |
 | Validation du format | Ajv | — | Validation par JSON Schema, réutilisable par l'équipe de dev. |
 | Image du logigramme | html-to-image | modern-screenshot | Méthode d'export documentée par React Flow ; fonctionne en `file://`. |
+| Inventaire xlsx (EVO-029) | write-excel-file (`write-excel-file/browser`) | écriture du zip à la main, sans style | Vrai xlsx avec styles d'en-tête, hors ligne, ≈ 76 ko ajoutés au fichier unique. |
 | Persistance | idb-keyval | Dexie | IndexedDB en quelques lignes. |
 | Téléphones (EVO-007) | libphonenumber-js (métadonnées `max`) | contrôle E.164 générique + règles France | Validation par pays et type de ligne, hors ligne, données embarquées (≈ 160 ko). |
 | Raccourcis | tinykeys | hotkeys-js | Minuscule ; liaisons reconfigurables. |

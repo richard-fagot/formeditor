@@ -48,6 +48,7 @@ utilitaires purs. Aucun import externe : c'est la base de tous les autres module
   des fragments appelés en amont ; `value` = `q:<id>` | `n:<chemin>`), `targetValue` / `targetFromValue` (toggles à `false`), `targetName`, `nodeAtPath`,
   `upstreamNodes`, `isJustBeforeEnd`, `alwaysBefore` (dominance : cible traversée sur tous les chemins), `targetMissing` (cible absente, ou questionnaire en cours),
   `redirectButtonError` (`noLabel` | `noTarget` | `targetMissing`), `buttonLabel`, `retargetButtons(nœud, table des ids)` (collage, duplication).
+- `inventory.ts` (EVO-029) : `inventoryRows(ws, questionnaire)` → `InventoryRow[]` (`path`, `label`, `type`, `required` effectif, `repeatable`, `personal`, `description`, `other`) : données capturées dans l'ordre de parcours (`traversalOrder` : profondeur d'abord depuis le départ, arêtes dans leur ordre, puis non atteignables dans l'ordre du graphe), fragments dépliés (`alias.cle`), un champ de structure par ligne (masqués exclus), `_other` à la suite ; `PERSONAL_TYPES` (mail, téléphone, adresse, civilité).
 - `keys.ts` : `deriveKey` (« Date du sinistre » → `date_sinistre`), `uniqueKey`, `isValidKey`, `newId`, `RESERVED_KEYS` (dont `groupe`, `nsp`).
 
 ## Invariants
@@ -60,4 +61,4 @@ utilitaires purs. Aucun import externe : c'est la base de tous les autres module
 - `StructureField` exclut le type `structure` (pas de structure imbriquée).
 
 ## Tests
-`keys.test.ts`, `redirect.test.ts`, `fragment.test.ts`, `instance.test.ts`, `required.test.ts`, `validation.test.ts`, `versioning.test.ts`, `usage.test.ts`.
+`keys.test.ts`, `redirect.test.ts`, `fragment.test.ts`, `instance.test.ts`, `required.test.ts`, `validation.test.ts`, `versioning.test.ts`, `usage.test.ts`, `inventory.test.ts`.

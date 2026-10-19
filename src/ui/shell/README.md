@@ -12,7 +12,7 @@ Cadre de l'application. Dépend de `app/*`, `ui/*`, `ui-kit`.
   ou de fragment : « Dupliquer » (`questionnaire.duplicate`, `library.duplicate`, EVO-010) ; questionnaire seulement : « Supprimer » (`questionnaire.delete`, EVO-027). Pastille du nombre d'éléments de bibliothèque inutilisés (`UnusedTotal` de `ui/library`, EVO-028) sur l'onglet ou le lien « Bibliothèque ». Marqueur « Validé » (`validated-badge`, date au survol) sur l'onglet
   ou le bouton de réouverture d'un questionnaire validé (EVO-015).
 - `QuestionnaireView` : sous-onglets Logigramme / Prévisualisation ; boutons mise en page automatique (`view.layout`), image du logigramme
-  (`view.exportImage`, grisé sur un questionnaire vide ou pendant l'export : « Export en cours… ») vue
+  (`view.exportImage`, grisé sur un questionnaire vide ou pendant l'export : « Export en cours… »), « Inventaire RGPD » juste après (`questionnaire.exportInventory`, EVO-029, toujours actif), vue
   côte à côte (`view.compare`) et « Commentaires » (`comment.toggleAll`, grisé sans commentaire, EVO-011), « Valider le formulaire » (`validate`) ou « Dévalider » (`unvalidate`) selon l'état (EVO-015),
   marqueur « Validé » en haut à gauche du logigramme (`diagram-validated`), dessous l'alerte de dépendance `VersionAlert` (`version-alert`, EVO-022 : `versionAlerts`) ; panneau latéral de la bibliothèque (`ui/library`, affiché / masqué par `view.libraryPanel`,
   masqué pendant la vue côte à côte), graphe + panneau Problèmes (`ui/diagram` ; problèmes : `useIssues` d'`app/issues`), propriétés à droite.

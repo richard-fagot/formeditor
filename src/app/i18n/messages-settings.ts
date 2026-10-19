@@ -63,5 +63,7 @@ export const SETTINGS_MESSAGES = {
     fr: 'Logigramme trop grand pour la résolution 2× : résolution ramenée à {ratio}×.',
     en: 'Flowchart too large for 2× resolution: resolution lowered to {ratio}×.',
   },
+  'inventory.export': { fr: 'Exporter l’inventaire RGPD', en: 'Export the GDPR data inventory' },
+  'inventory.short': { fr: 'Inventaire RGPD', en: 'GDPR inventory' },
   'compare.readOnly': { fr: 'lecture seule', en: 'read-only' },
 } satisfies Record<string, { fr: string; en: string }>;
