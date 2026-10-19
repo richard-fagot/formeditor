@@ -9,6 +9,7 @@ import { libraryItemCommands } from './library-item-commands';
 import { systemCommands } from './system-commands';
 import { settingsCommands } from './settings-commands';
 import { imageCommands } from './image-commands';
+import { inventoryCommands } from './inventory-commands';
 import { clipboardCommands } from './clipboard-commands';
 import { deleteCommands } from './delete-commands';
 import { commentCommands } from './comment-commands';
@@ -24,7 +25,7 @@ let catalog: Command[] | undefined;
 
 /** Toutes les commandes (construites une fois). */
 export function commands(): Command[] {
-  catalog ??= [...projectCommands(), ...shellCommands(), ...graphCommands(), ...editCommands(), ...libraryCommands(), ...libraryItemCommands(), ...systemCommands(), ...settingsCommands(), ...imageCommands(), ...clipboardCommands(), ...deleteCommands(), ...commentCommands(), ...versionCommands(), ...navCommands()];
+  catalog ??= [...projectCommands(), ...shellCommands(), ...graphCommands(), ...editCommands(), ...libraryCommands(), ...libraryItemCommands(), ...systemCommands(), ...settingsCommands(), ...imageCommands(), ...inventoryCommands(), ...clipboardCommands(), ...deleteCommands(), ...commentCommands(), ...versionCommands(), ...navCommands()];
   return catalog;
 }
 

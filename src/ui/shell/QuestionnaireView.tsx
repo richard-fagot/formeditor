@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { BadgeCheck, BookOpen, Columns2, ImageDown, MessageSquare, Network } from 'lucide-react';
+import { BadgeCheck, BookOpen, Columns2, FileSpreadsheet, ImageDown, MessageSquare, Network } from 'lucide-react';
 import { isValidated } from '../../core/model';
 import { useStore, useT, type GraphRef } from '../../app/store';
 import { useIssues } from '../../app/issues';
@@ -49,6 +49,13 @@ export function QuestionnaireView({ id }: { id: string }) {
             className="flex items-center gap-1 rounded px-2 py-1 text-xs text-slate-500 hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-transparent"
             onClick={() => runCommand('view.exportImage')}>
             <ImageDown className="size-3.5" />{busy ? t('image.busy') : t('image.short')}
+          </button>
+        )}
+        {view === 'diagram' && (
+          <button type="button" data-testid="export-inventory" title={t('inventory.export')}
+            className="flex items-center gap-1 rounded px-2 py-1 text-xs text-slate-500 hover:bg-slate-100"
+            onClick={() => runCommand('questionnaire.exportInventory')}>
+            <FileSpreadsheet className="size-3.5" />{t('inventory.short')}
           </button>
         )}
         {view === 'diagram' && (

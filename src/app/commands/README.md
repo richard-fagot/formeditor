@@ -52,6 +52,7 @@ Catalogue unique des actions utilisateur (spec §4.4). Palette, menus et raccour
 - `image-commands.ts` (EVO-004) : `view.exportImage` (X, logigramme ; questionnaire non vide en vue Logigramme) ouvre le
   dialogue ; `view.exportImageRun` (cachée, `arg` = `{ scope, title }`) mémorise les choix, ferme le dialogue et incrémente
   `imageRequest`, que `ui/diagram` exécute (capture).
+- `inventory-commands.ts` (EVO-029) : `questionnaire.exportInventory` (« Exporter l’inventaire RGPD », sans raccourci par défaut ; onglet de questionnaire actif) : xlsx produit par `write-excel-file/browser` puis `download`, sans toucher au store. `inventory-file.ts` (pur) : `inventoryFileName` (`questionnaireFileName`, « .json » → « - inventaire.xlsx »), `inventorySheets(ws, q, date, nomDuType)` (onglets « Données » et « À propos », en-têtes et textes fixes en français, en-têtes pré-remplis bleus / à compléter jaunes), `frenchText`, `requiredText`.
 - `clipboard-commands.ts` (EVO-010) : `node.copy` (Ctrl+C, logigramme ; inactif si du texte est sélectionné dans la page), `node.paste` (Ctrl+V ; `arg` = `{ position }`,
   sinon pointeur posé par `setPastePoint` de `ui/diagram` ; indisponible si le presse-papiers vient d'un autre projet ; éléments écartés listés dans `notice`),
   `questionnaire.duplicate` (`arg` = id, sinon le questionnaire affiché ; ouvre la copie), `library.duplicate` (`arg` = `{ kind, id }`, sinon le fragment de l'onglet
@@ -72,6 +73,7 @@ Catalogue unique des actions utilisateur (spec §4.4). Palette, menus et raccour
 `system-commands.test.ts` (dictionnaire, scénarios, enregistrement depuis la prévisualisation, panneaux) ;
 `settings-commands.test.ts` (langues, langue de la prévisualisation, raccourcis, vue côte à côte, mise en page) ;
 `image-file.test.ts` (nom du fichier image, commandes d'export, entrée du guide) ;
+`inventory-file.test.ts` (EVO-029 : nom, colonnes, onglets, commande, non-régression, guide ; `write-excel-file` et `download` simulés) ;
 `clipboard-commands.test.ts` (EVO-010 : copier-coller, renommage, fragment, annulation, duplication, export / réimport, guide) ;
 `delete-commands.test.ts` (EVO-027 : un test par exigence hors interface) ;
 `comment-commands.test.ts` (EVO-011 : un test par critère d'acceptation testable sans navigateur, entrée du guide) ;

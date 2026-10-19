@@ -182,3 +182,92 @@ Aucune.
 | Version | Date | Ajoutées | Abrogées | Motif |
 | --- | --- | --- | --- | --- |
 | 1.0 | 2026-10-19 | 001 à 026, 028 à 051 | — | Création (027, colonne Origine, abandonnée en relecture) |
+
+## Analyse
+
+### 1. Faisabilité et modules impactés
+
+Faisable sans ambiguïté bloquante, sans changement du format JSON (`formatVersion` 15, aucune migration). Modules (d'après `docs/MAP.md`) :
+
+- `core/model` : `inventory.ts` (nouveau, pur) — `inventoryRows(ws, questionnaire)`, `traversalOrder(graphe, départ)`, `PERSONAL_TYPES` ; réutilise `instanceQuestion` (intitulé surchargé, champs masqués), `resolveRequired` (surcharges EVO-012 du nœud et des appels de fragment), `graphStart` (départ, entrée de fragment).
+- `app/commands` : `inventory-file.ts` (nom du fichier par `questionnaireFileName` de `format`, contenu des onglets, textes fixes en français), `inventory-commands.ts` (commande `questionnaire.exportInventory`, sans raccourci par défaut ; nom du type par `registry`), `download` existant.
+- `app/i18n` : libellés `inventory.export` (palette) et `inventory.short` (bouton), multilingues.
+- `ui/shell` : bouton « Inventaire RGPD » de la barre de la vue Logigramme (`QuestionnaireView`), juste après « Image ».
+- Aucun impact sur `format`, `app/store`, `app/persistence` : l'export lit l'état sans rien écrire (EVO-029-036, 039, 041).
+
+### 2. Production du xlsx
+
+Retenu : **write-excel-file** (4.1.1, export `write-excel-file/browser`, dépendance `fflate`), bibliothèque embarquée par le build, sans réseau, qui produit un vrai xlsx avec styles de cellule (gras, couleur de fond), ligne d'en-tête figée et largeurs de colonnes. Poids mesuré : `dist/index.html` passe de 3 132 ko à 3 208 ko (+76 ko, +22 ko compressé, ≈ 2,4 %), jugé acceptable : pas besoin de l'alternative sans style. Écartés : ExcelJS (plusieurs centaines de ko), SheetJS communautaire (pas de style à l'écriture), écrire le zip à la main (contraire à §7 « une librairie existante est préférée »).
+En-têtes (EVO-029-047) : gras sur fond bleu clair (`#D9E1F2`) pour les colonnes pré-remplies, gras sur fond jaune clair (`#FFF2CC`) pour les colonnes à compléter. Aucune validation de données (liste déroulante) : texte libre (EVO-029-046).
+
+### 3. Ordre de parcours (EVO-029-021, 045)
+
+- Graphe du questionnaire parcouru en profondeur d'abord depuis le départ ; les arêtes sortantes d'un nœud sont suivies dans leur ordre (rang du tableau `edges`) ; chaque nœud n'est visité qu'une fois (une boucle ne repasse pas sur une question déjà écrite).
+- Les nœuds non atteignables depuis le départ suivent, dans l'ordre du graphe (ordre du tableau `nodes`), sans parcours depuis eux et sans signalement (EVO-029-019).
+- Un nœud fragment est remplacé, à sa place, par les lignes de son fragment, calculées par la même règle à partir de son entrée (`graphStart`), récursivement pour les fragments imbriqués ; un cycle d'appels est coupé (fragment déjà en cours ignoré).
+- Les nœuds information, synthèse, fin, sortie nommée et Renvoi ne produisent aucune ligne mais sont traversés (leurs arêtes sortantes sont suivies) ; les cibles des boutons d'un Renvoi ne sont pas des arêtes et ne sont pas suivies.
+- Une question produit ses lignes à sa place : la question, puis sa ligne `_other` ; une structure, ses champs dans l'ordre (champs masqués exclus), chacun suivi de sa ligne `_other` le cas échéant.
+
+### 4. Choix de détail (notés dans `docs/DECISIONS.md`)
+
+- Intitulé à variantes : texte « sinon » (`otherwise`) en français. Ligne `_other` d'une question sans intitulé français : cellule vide.
+- Champ de structure : Obligatoire = caractère obligatoire du champ lui-même ; Description = celle du champ ; un champ « Autre (préciser) » donne `cle.champ_other` (chemin des expressions). Ligne `_other` : Description et Répétable de sa question ou de son champ.
+- Onglet « À propos » : titre en français, sinon dans la langue par défaut du projet ; statut écrit « final » ou « provisoire » (mots du nom de fichier) ; date d'export `AAAA-MM-JJ` (date locale).
+- Commande `questionnaire.exportInventory`, portée globale, disponible dans les deux vues (Logigramme et Prévisualisation) d'un onglet de questionnaire ; le bouton n'est affiché que dans la vue Logigramme, toujours actif (un questionnaire vide donne un inventaire réduit aux en-têtes).
+
+### 5. Matrice de couverture
+
+Tests unitaires : `src/core/model/inventory.test.ts` (noyau), `src/app/commands/inventory-file.test.ts` (fichier, commande) ; test de fumée : `tests/smoke/evo-029.spec.ts`.
+
+| ID | Test(s) |
+| --- | --- |
+| EVO-029-001 | `inventory-file.test.ts` « EVO-029-001 » ; `evo-029.spec.ts` « EVO-029-001 / EVO-029-004 / EVO-029-008 » |
+| EVO-029-002 | `evo-029.spec.ts` « EVO-029-002 / EVO-029-040 / EVO-029-036 » |
+| EVO-029-003 | `inventory-file.test.ts` « EVO-029-003 » |
+| EVO-029-004 | `inventory-file.test.ts` « EVO-029-004 » ; `evo-029.spec.ts` « EVO-029-001 / EVO-029-004 / EVO-029-008 » |
+| EVO-029-005 | `inventory-file.test.ts` « EVO-029-005 » |
+| EVO-029-006 | `evo-029.spec.ts` « EVO-029-006 » |
+| EVO-029-007 | `inventory-file.test.ts` « EVO-029-007 » ; `evo-029.spec.ts` « EVO-029-002 … » |
+| EVO-029-008 | `inventory-file.test.ts` « EVO-029-008 » ; `evo-029.spec.ts` « EVO-029-001 / EVO-029-004 / EVO-029-008 » |
+| EVO-029-009 | `inventory-file.test.ts` « EVO-029-009 » |
+| EVO-029-010 | `inventory-file.test.ts` « EVO-029-010 » |
+| EVO-029-011 | `inventory.test.ts` « EVO-029-011 » |
+| EVO-029-012 | `inventory.test.ts` « EVO-029-012 / EVO-029-013 » |
+| EVO-029-013 | `inventory.test.ts` « EVO-029-012 / EVO-029-013 » |
+| EVO-029-014 | `inventory.test.ts` « EVO-029-014 / EVO-029-042 » |
+| EVO-029-015 | `inventory.test.ts` « EVO-029-015 » |
+| EVO-029-016 | `inventory.test.ts` « EVO-029-016 / EVO-029-044 / EVO-029-049 » |
+| EVO-029-017 | `inventory.test.ts` « EVO-029-017 » |
+| EVO-029-018 | `inventory.test.ts` « EVO-029-018 » |
+| EVO-029-019 | `inventory.test.ts` « EVO-029-019 / EVO-029-021 » |
+| EVO-029-020 | `inventory.test.ts` « EVO-029-020 » |
+| EVO-029-021 | `inventory.test.ts` « EVO-029-019 / EVO-029-021 » |
+| EVO-029-022 | `inventory-file.test.ts` « EVO-029-022 / EVO-029-023 » |
+| EVO-029-023 | `inventory-file.test.ts` « EVO-029-022 / EVO-029-023 » |
+| EVO-029-024 | `inventory-file.test.ts` « EVO-029-024 » |
+| EVO-029-025 | `inventory.test.ts` « EVO-029-025 / EVO-029-028 » ; `inventory-file.test.ts` « EVO-029-025 / EVO-029-048 » |
+| EVO-029-026 | `inventory-file.test.ts` « EVO-029-026 » |
+| EVO-029-028 | `inventory.test.ts` « EVO-029-025 / EVO-029-028 » ; `inventory-file.test.ts` « EVO-029-028 » |
+| EVO-029-029 | `inventory.test.ts` « EVO-029-029 » ; `inventory-file.test.ts` « EVO-029-029 / EVO-029-030 / EVO-029-031 » |
+| EVO-029-030 | `inventory.test.ts` « EVO-029-030 » ; `inventory-file.test.ts` « EVO-029-029 / EVO-029-030 / EVO-029-031 » |
+| EVO-029-031 | `inventory.test.ts` « EVO-029-031 / EVO-029-050 » ; `inventory-file.test.ts` « EVO-029-029 / EVO-029-030 / EVO-029-031 » |
+| EVO-029-032 | `inventory-file.test.ts` « EVO-029-032 » ; `evo-029.spec.ts` « EVO-029-002 … » (fichier réel) |
+| EVO-029-033 | `inventory-file.test.ts` « EVO-029-033 » |
+| EVO-029-034 | `inventory.test.ts` « EVO-029-034 / EVO-029-035 » |
+| EVO-029-035 | `inventory.test.ts` « EVO-029-034 / EVO-029-035 » |
+| EVO-029-036 | `inventory-file.test.ts` « EVO-029-036 » ; `evo-029.spec.ts` « EVO-029-002 / EVO-029-040 / EVO-029-036 » |
+| EVO-029-037 | `inventory-file.test.ts` « EVO-029-037 » ; tests de référence (`tests/reference`) et `evo-004.spec.ts` inchangés |
+| EVO-029-038 | `inventory-file.test.ts` « EVO-029-038 » |
+| EVO-029-039 | `inventory-file.test.ts` « EVO-029-039 » |
+| EVO-029-040 | `evo-029.spec.ts` « EVO-029-002 / EVO-029-040 / EVO-029-036 » |
+| EVO-029-041 | `inventory-file.test.ts` « EVO-029-041 » |
+| EVO-029-042 | `inventory.test.ts` « EVO-029-014 / EVO-029-042 » |
+| EVO-029-043 | `inventory-file.test.ts` « EVO-029-043 / EVO-029-044 / EVO-029-049 » |
+| EVO-029-044 | `inventory.test.ts` « EVO-029-016 / EVO-029-044 / EVO-029-049 » ; `inventory-file.test.ts` « EVO-029-043 / EVO-029-044 / EVO-029-049 » |
+| EVO-029-045 | `inventory.test.ts` « EVO-029-045 » |
+| EVO-029-046 | `inventory-file.test.ts` « EVO-029-046 » |
+| EVO-029-047 | `inventory-file.test.ts` « EVO-029-047 » ; `evo-029.spec.ts` « EVO-029-002 … » (styles du fichier réel) |
+| EVO-029-048 | `inventory-file.test.ts` « EVO-029-025 / EVO-029-048 » |
+| EVO-029-049 | `inventory.test.ts` « EVO-029-016 / EVO-029-044 / EVO-029-049 » ; `inventory-file.test.ts` « EVO-029-043 / EVO-029-044 / EVO-029-049 » |
+| EVO-029-050 | `inventory.test.ts` « EVO-029-031 / EVO-029-050 » |
+| EVO-029-051 | `inventory-file.test.ts` « EVO-029-051 » |
